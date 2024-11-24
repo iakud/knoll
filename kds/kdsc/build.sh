@@ -28,4 +28,8 @@ function printUsage() {
     $colorful && tput setaf 7
 }
 
+shopt -s expand_aliases
+
+export CLASSPATH=".:/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH"
+alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
 antlr4 -Dlanguage=Go -o parser kds.g4

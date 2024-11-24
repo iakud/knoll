@@ -4,7 +4,6 @@ package parser // kds
 
 import "github.com/antlr4-go/antlr/v4"
 
-
 // kdsListener is a complete listener for a parse tree produced by kdsParser.
 type kdsListener interface {
 	antlr.ParseTreeListener
