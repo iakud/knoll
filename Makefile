@@ -10,6 +10,9 @@ protoc:
 	script/protoc.sh
 	script/protoc-gen-go.sh
 
+antlr4:
+	script/antlr4.sh
+
 kdspb:
 	TRACE=1 kds/kdspb/conv.sh
 

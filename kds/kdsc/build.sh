@@ -28,8 +28,10 @@ function printUsage() {
     $colorful && tput setaf 7
 }
 
-shopt -s expand_aliases
+NEW_PATH=`../../privatePath.sh`
+[[ $? -ne 0 ]] && exit 1
+PATH="$NEW_PATH"
 
-export CLASSPATH=".:/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH"
-alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
+source ../../var.sh
+
 antlr4 -Dlanguage=Go -o parser kds.g4

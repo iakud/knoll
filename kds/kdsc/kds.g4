@@ -2,7 +2,13 @@
 grammar kds;
 
 kds
-	: packageStatement topLevelDef* EOF
+	: packageStatement (importStatement | optionStatement | topLevelDef | emptyStatement_)* EOF
+	;
+
+// Import Statement
+
+importStatement
+	: IMPORT (WEAK | PUBLIC)? strLit SEMI
 	;
 
 // Package
@@ -10,6 +16,18 @@ kds
 packageStatement
 	: PACKAGE fullIdent SEMI
 	;
+
+// Option
+
+optionStatement
+	: OPTION optionName EQ constant SEMI
+	;
+
+optionName
+	: fullIdent
+	| LP fullIdent RP ( DOT fullIdent)?
+	;
+
 
 // Normal Field
 
@@ -111,6 +129,7 @@ entityBody
 entityElement
 	: field
 	| mapField
+	| emptyStatement_
 	;
 
 // component
@@ -130,6 +149,27 @@ componentBody
 componentElement
 	: field
 	| mapField
+	| emptyStatement_
+	;
+
+// lexical
+
+constant
+	: fullIdent
+	| (MINUS | PLUS)? intLit
+	| (MINUS | PLUS)? floatLit
+	| strLit
+	| boolLit
+	| blockLit
+	;
+
+// not specified in specification but used in tests
+blockLit
+	: LC (ident COLON constant)* RC
+	;
+
+emptyStatement_
+	: SEMI
 	;
 
 // Lexical elements
@@ -171,10 +211,40 @@ intLit
 	: INT_LIT
 	;
 
+strLit
+	: STR_LIT
+	| PROTO3_LIT_SINGLE
+	| PROTO3_LIT_DOBULE
+	;
+
+boolLit
+	: BOOL_LIT
+	;
+
+floatLit
+	: FLOAT_LIT
+	;
+
 // keywords
+
+IMPORT
+	: 'import'
+	;
+
+WEAK
+	: 'weak'
+	;
+
+PUBLIC
+	: 'public'
+	;
 
 PACKAGE
 	: 'package'
+	;
+
+OPTION
+	: 'option'
 	;
 
 REPEATED
@@ -257,6 +327,14 @@ COMPONENT
 	: 'component'
 	;
 
+PROTO3_LIT_SINGLE
+	: '"proto3"'
+	;
+
+PROTO3_LIT_DOBULE
+	: '\'proto3\''
+	;
+
 // symbols
 
 SEMI
@@ -319,9 +397,47 @@ MINUS
 	: '-'
 	;
 
+STR_LIT
+	: ('\'' ( CHAR_VALUE)*? '\'')
+	| ( '"' ( CHAR_VALUE)*? '"')
+	;
+
+fragment CHAR_VALUE
+	: HEX_ESCAPE
+	| OCT_ESCAPE
+	| CHAR_ESCAPE
+	| ~[\u0000\n\\]
+	;
+
+fragment HEX_ESCAPE
+	: '\\' ('x' | 'X') HEX_DIGIT HEX_DIGIT
+	;
+
+fragment OCT_ESCAPE
+	: '\\' OCTAL_DIGIT OCTAL_DIGIT OCTAL_DIGIT
+	;
+
+fragment CHAR_ESCAPE
+	: '\\' ('a' | 'b' | 'f' | 'n' | 'r' | 't' | 'v' | '\\' | '\'' | '"')
+	;
+
 BOOL_LIT
 	: 'true'
 	| 'false'
+	;
+
+FLOAT_LIT
+	: (DECIMALS DOT DECIMALS? EXPONENT? | DECIMALS EXPONENT | DOT DECIMALS EXPONENT?)
+	| 'inf'
+	| 'nan'
+	;
+
+fragment EXPONENT
+	: ('e' | 'E') (PLUS | MINUS)? DECIMALS
+	;
+
+fragment DECIMALS
+	: DECIMAL_DIGIT+
 	;
 
 INT_LIT
