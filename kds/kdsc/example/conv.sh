@@ -41,8 +41,6 @@ kdsc --tpl_path=tpls --out=examplekds *.kds
 rm -rf examplepb
 mkdir -p examplepb
 
-cp test.proto examplekds/
-
 protoc -I=./examplekds -I=../../../local/protoc/include \
 	--go_out=paths=source_relative:./examplepb \
 	`find examplekds -name "*.proto"`

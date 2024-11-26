@@ -6,6 +6,9 @@ package {{.Package}};
 
 option go_package="github.com/iakud/keeper/kds/kdsc/example/examplepb";
 
+{{- range .Imports}}
+import "{{.}}.proto";
+{{- end}}
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 {{""}}

@@ -1,0 +1,20 @@
+package examplekds;
+
+import "example1.kds";
+
+option go_package="github.com/iakud/keeper/kds/kdsc/example/examplepb";
+
+entity City {
+	int64 PlayerId = 1;
+	PlayerBasicInfo PlayerBasicInfo = 2;
+	CityBaseInfo CityInfo = 3;
+}
+
+component CityBaseInfo {
+	Vector Position = 1;
+}
+
+component Vector {
+	int32 X = 1;
+	int32 Y = 2;
+}

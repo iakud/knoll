@@ -33,6 +33,12 @@ func (s *BasekdsListener) EnterImportStatement(ctx *ImportStatementContext) {}
 // ExitImportStatement is called when production importStatement is exited.
 func (s *BasekdsListener) ExitImportStatement(ctx *ImportStatementContext) {}
 
+// EnterImportElement is called when production importElement is entered.
+func (s *BasekdsListener) EnterImportElement(ctx *ImportElementContext) {}
+
+// ExitImportElement is called when production importElement is exited.
+func (s *BasekdsListener) ExitImportElement(ctx *ImportElementContext) {}
+
 // EnterPackageStatement is called when production packageStatement is entered.
 func (s *BasekdsListener) EnterPackageStatement(ctx *PackageStatementContext) {}
 

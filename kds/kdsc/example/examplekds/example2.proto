@@ -5,23 +5,21 @@ syntax = "proto3";
 package examplekds;
 
 option go_package="github.com/iakud/keeper/kds/kdsc/example/examplepb";
-
+import "example1.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
-message Player {
-	int64 Id = 1;
-	BasicInfo Info = 2;
+message City {
+	int64 PlayerId = 1;
+	PlayerBasicInfo PlayerBasicInfo = 2;
+	CityBaseInfo CityInfo = 3;
 }
 
-message BasicInfo {
-	int64 Id = 1;
-	string Name = 2;
-	bool IsNew = 3;
+message CityBaseInfo {
+	Vector Position = 1;
 }
 
-message Test {
-	int64 Id = 1;
-	string Name = 2;
-	bool IsNew = 3;
+message Vector {
+	int32 X = 1;
+	int32 Y = 2;
 }

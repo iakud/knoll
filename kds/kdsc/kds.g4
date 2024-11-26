@@ -8,7 +8,11 @@ kds
 // Import Statement
 
 importStatement
-	: IMPORT (WEAK | PUBLIC)? strLit SEMI
+	: IMPORT importElement SEMI
+	;
+
+importElement
+	: STR_LIT
 	;
 
 // Package
@@ -27,7 +31,6 @@ optionName
 	: fullIdent
 	| LP fullIdent RP ( DOT fullIdent)?
 	;
-
 
 // Normal Field
 
