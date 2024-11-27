@@ -2,17 +2,7 @@
 grammar kds;
 
 kds
-	: packageStatement (importStatement | optionStatement | topLevelDef | emptyStatement_)* EOF
-	;
-
-// Import Statement
-
-importStatement
-	: IMPORT importElement SEMI
-	;
-
-importElement
-	: STR_LIT
+	: packageStatement (importStatement | topLevelDef | emptyStatement_)* EOF
 	;
 
 // Package
@@ -21,15 +11,10 @@ packageStatement
 	: PACKAGE fullIdent SEMI
 	;
 
-// Option
+// Import Statement
 
-optionStatement
-	: OPTION optionName EQ constant SEMI
-	;
-
-optionName
-	: fullIdent
-	| LP fullIdent RP ( DOT fullIdent)?
+importStatement
+	: IMPORT STR_LIT SEMI
 	;
 
 // Normal Field
@@ -157,20 +142,6 @@ componentElement
 
 // lexical
 
-constant
-	: fullIdent
-	| (MINUS | PLUS)? intLit
-	| (MINUS | PLUS)? floatLit
-	| strLit
-	| boolLit
-	| blockLit
-	;
-
-// not specified in specification but used in tests
-blockLit
-	: LC (ident COLON constant)* RC
-	;
-
 emptyStatement_
 	: SEMI
 	;
@@ -214,40 +185,14 @@ intLit
 	: INT_LIT
 	;
 
-strLit
-	: STR_LIT
-	| PROTO3_LIT_SINGLE
-	| PROTO3_LIT_DOBULE
-	;
-
-boolLit
-	: BOOL_LIT
-	;
-
-floatLit
-	: FLOAT_LIT
-	;
-
 // keywords
 
 IMPORT
 	: 'import'
 	;
 
-WEAK
-	: 'weak'
-	;
-
-PUBLIC
-	: 'public'
-	;
-
 PACKAGE
 	: 'package'
-	;
-
-OPTION
-	: 'option'
 	;
 
 REPEATED
@@ -328,14 +273,6 @@ ENTITY
 
 COMPONENT
 	: 'component'
-	;
-
-PROTO3_LIT_SINGLE
-	: '"proto3"'
-	;
-
-PROTO3_LIT_DOBULE
-	: '\'proto3\''
 	;
 
 // symbols
@@ -429,20 +366,6 @@ BOOL_LIT
 	| 'false'
 	;
 
-FLOAT_LIT
-	: (DECIMALS DOT DECIMALS? EXPONENT? | DECIMALS EXPONENT | DOT DECIMALS EXPONENT?)
-	| 'inf'
-	| 'nan'
-	;
-
-fragment EXPONENT
-	: ('e' | 'E') (PLUS | MINUS)? DECIMALS
-	;
-
-fragment DECIMALS
-	: DECIMAL_DIGIT+
-	;
-
 INT_LIT
 	: DECIMAL_LIT
 	| OCTAL_LIT
@@ -495,7 +418,8 @@ COMMENT
 	;
 
 keywords
-	: PACKAGE
+	: IMPORT
+	| PACKAGE
 	| MAP
 	| INT32
 	| INT64

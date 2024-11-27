@@ -2,12 +2,14 @@
 
 syntax = "proto3";
 
-package examplekds;
+package kds;
 
-option go_package="github.com/iakud/keeper/kds/kdsc/example/examplepb";
 import "example1.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
+
+option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";
+
 
 message City {
 	int64 PlayerId = 1;

@@ -1,6 +1,4 @@
-package examplekds;
-
-option go_package="github.com/iakud/keeper/kds/kdsc/example/examplepb";
+package kds;
 
 entity Player {
 	PlayerBasicInfo Info = 1;

@@ -3,16 +3,16 @@
 syntax = "proto3";
 
 package {{.Package}};
-
-option go_package="github.com/iakud/keeper/kds/kdsc/example/examplepb";
-
+{{""}}
 {{- range .Imports}}
 import "{{.}}.proto";
 {{- end}}
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
-{{""}}
 
+option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";
+
+{{""}}
 {{- range .Entities}}
 message {{.Name}} {
 {{- range .Fields}}

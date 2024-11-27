@@ -32,15 +32,15 @@ NEW_PATH=`../../../privatePath.sh`
 [[ $? -ne 0 ]] && exit 1
 PATH="$NEW_PATH"
 
-rm -rf examplekds
-mkdir -p examplekds
+rm -rf kds
+mkdir -p kds
 
-kdsc --tpl_path=tpls --out=examplekds *.kds
+kdsc --tpl_path=tpls --out=kds *.kds
 [[ $? -ne 0 ]] && exit 1
 
-rm -rf examplepb
-mkdir -p examplepb
+rm -rf pb
+mkdir -p pb
 
-protoc -I=./examplekds -I=../../../local/protoc/include \
-	--go_out=paths=source_relative:./examplepb \
-	`find examplekds -name "*.proto"`
+protoc -I=./kds -I=../../../local/protoc/include \
+	--go_out=paths=source_relative:./pb \
+	`find kds -name "*.proto"`

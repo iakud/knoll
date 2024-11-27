@@ -145,13 +145,7 @@ func (c *{{$ComponentName}}) MarshalMask() *pb.{{.Name}} {
 package {{.Package}};
 
 import (
-{{- $GoPackage := .GetOption "go_package" }}
-{{- if $GoPackage }}
-{{- with $GoPackage}}
-	{{.Constant}}
-{{- end}}
-{{- end}}
-
+	"github.com/iakud/keeper/kds/kdsc/example/pb"
 )
 
 type dirthParentFunc func()

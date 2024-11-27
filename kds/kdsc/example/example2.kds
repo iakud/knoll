@@ -1,8 +1,6 @@
-package examplekds;
+package kds;
 
 import "example1.kds";
-
-option go_package="github.com/iakud/keeper/kds/kdsc/example/examplepb";
 
 entity City {
 	int64 PlayerId = 1;

@@ -11,20 +11,11 @@ type kdsListener interface {
 	// EnterKds is called when entering the kds production.
 	EnterKds(c *KdsContext)
 
-	// EnterImportStatement is called when entering the importStatement production.
-	EnterImportStatement(c *ImportStatementContext)
-
-	// EnterImportElement is called when entering the importElement production.
-	EnterImportElement(c *ImportElementContext)
-
 	// EnterPackageStatement is called when entering the packageStatement production.
 	EnterPackageStatement(c *PackageStatementContext)
 
-	// EnterOptionStatement is called when entering the optionStatement production.
-	EnterOptionStatement(c *OptionStatementContext)
-
-	// EnterOptionName is called when entering the optionName production.
-	EnterOptionName(c *OptionNameContext)
+	// EnterImportStatement is called when entering the importStatement production.
+	EnterImportStatement(c *ImportStatementContext)
 
 	// EnterField is called when entering the field production.
 	EnterField(c *FieldContext)
@@ -83,12 +74,6 @@ type kdsListener interface {
 	// EnterComponentElement is called when entering the componentElement production.
 	EnterComponentElement(c *ComponentElementContext)
 
-	// EnterConstant is called when entering the constant production.
-	EnterConstant(c *ConstantContext)
-
-	// EnterBlockLit is called when entering the blockLit production.
-	EnterBlockLit(c *BlockLitContext)
-
 	// EnterEmptyStatement_ is called when entering the emptyStatement_ production.
 	EnterEmptyStatement_(c *EmptyStatement_Context)
 
@@ -119,35 +104,17 @@ type kdsListener interface {
 	// EnterIntLit is called when entering the intLit production.
 	EnterIntLit(c *IntLitContext)
 
-	// EnterStrLit is called when entering the strLit production.
-	EnterStrLit(c *StrLitContext)
-
-	// EnterBoolLit is called when entering the boolLit production.
-	EnterBoolLit(c *BoolLitContext)
-
-	// EnterFloatLit is called when entering the floatLit production.
-	EnterFloatLit(c *FloatLitContext)
-
 	// EnterKeywords is called when entering the keywords production.
 	EnterKeywords(c *KeywordsContext)
 
 	// ExitKds is called when exiting the kds production.
 	ExitKds(c *KdsContext)
 
-	// ExitImportStatement is called when exiting the importStatement production.
-	ExitImportStatement(c *ImportStatementContext)
-
-	// ExitImportElement is called when exiting the importElement production.
-	ExitImportElement(c *ImportElementContext)
-
 	// ExitPackageStatement is called when exiting the packageStatement production.
 	ExitPackageStatement(c *PackageStatementContext)
 
-	// ExitOptionStatement is called when exiting the optionStatement production.
-	ExitOptionStatement(c *OptionStatementContext)
-
-	// ExitOptionName is called when exiting the optionName production.
-	ExitOptionName(c *OptionNameContext)
+	// ExitImportStatement is called when exiting the importStatement production.
+	ExitImportStatement(c *ImportStatementContext)
 
 	// ExitField is called when exiting the field production.
 	ExitField(c *FieldContext)
@@ -206,12 +173,6 @@ type kdsListener interface {
 	// ExitComponentElement is called when exiting the componentElement production.
 	ExitComponentElement(c *ComponentElementContext)
 
-	// ExitConstant is called when exiting the constant production.
-	ExitConstant(c *ConstantContext)
-
-	// ExitBlockLit is called when exiting the blockLit production.
-	ExitBlockLit(c *BlockLitContext)
-
 	// ExitEmptyStatement_ is called when exiting the emptyStatement_ production.
 	ExitEmptyStatement_(c *EmptyStatement_Context)
 
@@ -241,15 +202,6 @@ type kdsListener interface {
 
 	// ExitIntLit is called when exiting the intLit production.
 	ExitIntLit(c *IntLitContext)
-
-	// ExitStrLit is called when exiting the strLit production.
-	ExitStrLit(c *StrLitContext)
-
-	// ExitBoolLit is called when exiting the boolLit production.
-	ExitBoolLit(c *BoolLitContext)
-
-	// ExitFloatLit is called when exiting the floatLit production.
-	ExitFloatLit(c *FloatLitContext)
 
 	// ExitKeywords is called when exiting the keywords production.
 	ExitKeywords(c *KeywordsContext)

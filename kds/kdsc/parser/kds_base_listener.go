@@ -27,35 +27,17 @@ func (s *BasekdsListener) EnterKds(ctx *KdsContext) {}
 // ExitKds is called when production kds is exited.
 func (s *BasekdsListener) ExitKds(ctx *KdsContext) {}
 
-// EnterImportStatement is called when production importStatement is entered.
-func (s *BasekdsListener) EnterImportStatement(ctx *ImportStatementContext) {}
-
-// ExitImportStatement is called when production importStatement is exited.
-func (s *BasekdsListener) ExitImportStatement(ctx *ImportStatementContext) {}
-
-// EnterImportElement is called when production importElement is entered.
-func (s *BasekdsListener) EnterImportElement(ctx *ImportElementContext) {}
-
-// ExitImportElement is called when production importElement is exited.
-func (s *BasekdsListener) ExitImportElement(ctx *ImportElementContext) {}
-
 // EnterPackageStatement is called when production packageStatement is entered.
 func (s *BasekdsListener) EnterPackageStatement(ctx *PackageStatementContext) {}
 
 // ExitPackageStatement is called when production packageStatement is exited.
 func (s *BasekdsListener) ExitPackageStatement(ctx *PackageStatementContext) {}
 
-// EnterOptionStatement is called when production optionStatement is entered.
-func (s *BasekdsListener) EnterOptionStatement(ctx *OptionStatementContext) {}
+// EnterImportStatement is called when production importStatement is entered.
+func (s *BasekdsListener) EnterImportStatement(ctx *ImportStatementContext) {}
 
-// ExitOptionStatement is called when production optionStatement is exited.
-func (s *BasekdsListener) ExitOptionStatement(ctx *OptionStatementContext) {}
-
-// EnterOptionName is called when production optionName is entered.
-func (s *BasekdsListener) EnterOptionName(ctx *OptionNameContext) {}
-
-// ExitOptionName is called when production optionName is exited.
-func (s *BasekdsListener) ExitOptionName(ctx *OptionNameContext) {}
+// ExitImportStatement is called when production importStatement is exited.
+func (s *BasekdsListener) ExitImportStatement(ctx *ImportStatementContext) {}
 
 // EnterField is called when production field is entered.
 func (s *BasekdsListener) EnterField(ctx *FieldContext) {}
@@ -171,18 +153,6 @@ func (s *BasekdsListener) EnterComponentElement(ctx *ComponentElementContext) {}
 // ExitComponentElement is called when production componentElement is exited.
 func (s *BasekdsListener) ExitComponentElement(ctx *ComponentElementContext) {}
 
-// EnterConstant is called when production constant is entered.
-func (s *BasekdsListener) EnterConstant(ctx *ConstantContext) {}
-
-// ExitConstant is called when production constant is exited.
-func (s *BasekdsListener) ExitConstant(ctx *ConstantContext) {}
-
-// EnterBlockLit is called when production blockLit is entered.
-func (s *BasekdsListener) EnterBlockLit(ctx *BlockLitContext) {}
-
-// ExitBlockLit is called when production blockLit is exited.
-func (s *BasekdsListener) ExitBlockLit(ctx *BlockLitContext) {}
-
 // EnterEmptyStatement_ is called when production emptyStatement_ is entered.
 func (s *BasekdsListener) EnterEmptyStatement_(ctx *EmptyStatement_Context) {}
 
@@ -242,24 +212,6 @@ func (s *BasekdsListener) EnterIntLit(ctx *IntLitContext) {}
 
 // ExitIntLit is called when production intLit is exited.
 func (s *BasekdsListener) ExitIntLit(ctx *IntLitContext) {}
-
-// EnterStrLit is called when production strLit is entered.
-func (s *BasekdsListener) EnterStrLit(ctx *StrLitContext) {}
-
-// ExitStrLit is called when production strLit is exited.
-func (s *BasekdsListener) ExitStrLit(ctx *StrLitContext) {}
-
-// EnterBoolLit is called when production boolLit is entered.
-func (s *BasekdsListener) EnterBoolLit(ctx *BoolLitContext) {}
-
-// ExitBoolLit is called when production boolLit is exited.
-func (s *BasekdsListener) ExitBoolLit(ctx *BoolLitContext) {}
-
-// EnterFloatLit is called when production floatLit is entered.
-func (s *BasekdsListener) EnterFloatLit(ctx *FloatLitContext) {}
-
-// ExitFloatLit is called when production floatLit is exited.
-func (s *BasekdsListener) ExitFloatLit(ctx *FloatLitContext) {}
 
 // EnterKeywords is called when production keywords is entered.
 func (s *BasekdsListener) EnterKeywords(ctx *KeywordsContext) {}
