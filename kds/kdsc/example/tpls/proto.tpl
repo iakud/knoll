@@ -11,8 +11,8 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
 option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";
-{{""}}
 {{- range .Enums}}
+
 enum {{.Name}} {
 {{- range .EnumFields}}
 	{{.Name}} = {{.Value}};
@@ -20,8 +20,8 @@ enum {{.Name}} {
 }
 {{- end}}
 
-{{""}}
 {{- range .Entities}}
+
 message {{.Name}} {
 {{- range .Fields}}
 	{{.Type}} {{.Name}} = {{.Number}};
@@ -30,7 +30,7 @@ message {{.Name}} {
 {{- end}}
 
 {{- range .Components}}
-{{""}}
+
 message {{.Name}} {
 {{- range .Fields}}
 	{{.Type}} {{.Name}} = {{.Number}};

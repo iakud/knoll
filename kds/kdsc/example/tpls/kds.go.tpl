@@ -2,7 +2,6 @@
 
 {{- define "Entity"}}
 {{- $EntityName := (print .Name)}}
-
 type {{$EntityName}} struct {
 	Id int64
 	syncable pb.{{.Name}}
@@ -69,7 +68,6 @@ func (e *{{$EntityName}}) MarshalMask() *pb.{{.Name}} {
 
 {{- define "Component"}}
 {{- $ComponentName := (print .Name)}}
-
 type {{$ComponentName}} struct {
 	syncable pb.{{.Name}}
 
@@ -83,7 +81,6 @@ type {{$ComponentName}} struct {
 }
 
 {{- range .Fields}}
-
 {{- if .IsComponent}}
 
 func (this *{{$ComponentName}}) Set{{.Name}}(v *{{.Type}}) {
@@ -158,9 +155,9 @@ func (f dirthParentFunc) invoke() {
 }
 
 {{- range .Entities}}
-{{- template "Entity" .}}
+{{template "Entity" .}}
 {{- end}}
 
 {{- range .Components}}
-{{- template "Component" .}}
+{{template "Component" .}}
 {{- end}}

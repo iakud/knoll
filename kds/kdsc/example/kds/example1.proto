@@ -15,7 +15,6 @@ enum HeroType {
 	HeroType3 = -5;
 }
 
-
 message Player {
 	PlayerBasicInfo Info = 1;
 	PlayerHero Hero = 2;
