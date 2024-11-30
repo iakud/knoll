@@ -22,4 +22,11 @@ component PlayerBag {
 component Hero {
 	int32 HeroId = 1;
 	int32 HeroLevel = 2;
+	HeroType Type = 3;
+}
+
+enum HeroType {
+	HeroType1 = 0;
+	HeroType2 = 2;
+	HeroType3 = -5;
 }

@@ -11,6 +11,7 @@ import "google/protobuf/duration.proto";
 option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";
 
 
+
 message City {
 	int64 PlayerId = 1;
 	PlayerBasicInfo PlayerBasicInfo = 2;

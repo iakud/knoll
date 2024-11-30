@@ -119,8 +119,8 @@ func kdsParserInit() {
 		0, 0, 128, 117, 1, 0, 0, 0, 128, 118, 1, 0, 0, 0, 128, 119, 1, 0, 0, 0,
 		128, 120, 1, 0, 0, 0, 128, 121, 1, 0, 0, 0, 128, 122, 1, 0, 0, 0, 128,
 		123, 1, 0, 0, 0, 128, 124, 1, 0, 0, 0, 128, 125, 1, 0, 0, 0, 128, 126,
-		1, 0, 0, 0, 128, 127, 1, 0, 0, 0, 129, 17, 1, 0, 0, 0, 130, 134, 3, 28,
-		14, 0, 131, 134, 3, 36, 18, 0, 132, 134, 3, 20, 10, 0, 133, 130, 1, 0,
+		1, 0, 0, 0, 128, 127, 1, 0, 0, 0, 129, 17, 1, 0, 0, 0, 130, 134, 3, 20,
+		10, 0, 131, 134, 3, 28, 14, 0, 132, 134, 3, 36, 18, 0, 133, 130, 1, 0,
 		0, 0, 133, 131, 1, 0, 0, 0, 133, 132, 1, 0, 0, 0, 134, 19, 1, 0, 0, 0,
 		135, 136, 5, 20, 0, 0, 136, 137, 3, 54, 27, 0, 137, 138, 3, 22, 11, 0,
 		138, 21, 1, 0, 0, 0, 139, 143, 5, 29, 0, 0, 140, 142, 3, 24, 12, 0, 141,
@@ -2024,9 +2024,9 @@ type ITopLevelDefContext interface {
 	GetParser() antlr.Parser
 
 	// Getter signatures
+	EnumDef() IEnumDefContext
 	EntityDef() IEntityDefContext
 	ComponentDef() IComponentDefContext
-	EnumDef() IEnumDefContext
 
 	// IsTopLevelDefContext differentiates from other interfaces.
 	IsTopLevelDefContext()
@@ -2064,6 +2064,22 @@ func NewTopLevelDefContext(parser antlr.Parser, parent antlr.ParserRuleContext, 
 
 func (s *TopLevelDefContext) GetParser() antlr.Parser { return s.parser }
 
+func (s *TopLevelDefContext) EnumDef() IEnumDefContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IEnumDefContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IEnumDefContext)
+}
+
 func (s *TopLevelDefContext) EntityDef() IEntityDefContext {
 	var t antlr.RuleContext
 	for _, ctx := range s.GetChildren() {
@@ -2096,22 +2112,6 @@ func (s *TopLevelDefContext) ComponentDef() IComponentDefContext {
 	return t.(IComponentDefContext)
 }
 
-func (s *TopLevelDefContext) EnumDef() IEnumDefContext {
-	var t antlr.RuleContext
-	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IEnumDefContext); ok {
-			t = ctx.(antlr.RuleContext)
-			break
-		}
-	}
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IEnumDefContext)
-}
-
 func (s *TopLevelDefContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -2142,25 +2142,25 @@ func (p *kdsParser) TopLevelDef() (localctx ITopLevelDefContext) {
 	}
 
 	switch p.GetTokenStream().LA(1) {
-	case kdsParserENTITY:
+	case kdsParserENUM:
 		p.EnterOuterAlt(localctx, 1)
 		{
 			p.SetState(130)
+			p.EnumDef()
+		}
+
+	case kdsParserENTITY:
+		p.EnterOuterAlt(localctx, 2)
+		{
+			p.SetState(131)
 			p.EntityDef()
 		}
 
 	case kdsParserCOMPONENT:
-		p.EnterOuterAlt(localctx, 2)
-		{
-			p.SetState(131)
-			p.ComponentDef()
-		}
-
-	case kdsParserENUM:
 		p.EnterOuterAlt(localctx, 3)
 		{
 			p.SetState(132)
-			p.EnumDef()
+			p.ComponentDef()
 		}
 
 	default:

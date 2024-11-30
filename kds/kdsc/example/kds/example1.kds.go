@@ -217,6 +217,7 @@ func (c *PlayerBag) MarshalMask() *pb.PlayerBag {
 
 type Hero struct {
 	syncable pb.Hero
+	Type *HeroType
 	dirty uint64
 	dirthParent dirthParentFunc
 }
@@ -232,6 +233,14 @@ func (this *Hero) SetHeroLevel(v int32) {
 	if v != this.syncable.HeroLevel {
 		this.syncable.HeroLevel = v
 		this.markDirty(uint64(0x01) << 2)
+	}
+}
+
+func (this *Hero) SetType(v *HeroType) {
+	if v != this.Type {
+		this.Type = v
+		this.syncable.Type = &v.syncable
+		this.markDirty(uint64(0x01) << 3)
 	}
 }
 
@@ -260,6 +269,9 @@ func (c *Hero) MarshalMask() *pb.Hero {
 	}
 	if c.dirty & uint64(0x01) << 2 != 0 {
 		v.HeroLevel = c.syncable.HeroLevel
+	}
+	if c.dirty & uint64(0x01) << 3 != 0 {
+		v.Type = c.Type.MarshalMask()
 	}
 	return v
 }

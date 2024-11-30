@@ -9,6 +9,12 @@ import "google/protobuf/duration.proto";
 
 option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";
 
+enum HeroType {
+	HeroType1 = 0;
+	HeroType2 = 2;
+	HeroType3 = -5;
+}
+
 
 message Player {
 	PlayerBasicInfo Info = 1;
@@ -32,4 +38,5 @@ message PlayerBag {
 message Hero {
 	int32 HeroId = 1;
 	int32 HeroLevel = 2;
+	HeroType Type = 3;
 }

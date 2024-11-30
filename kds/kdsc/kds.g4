@@ -77,9 +77,9 @@ type_
 // Top Level definitions
 
 topLevelDef
-	: entityDef
+	: enumDef
+	| entityDef
 	| componentDef
-	| enumDef
 	;
 
 // enum

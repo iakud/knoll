@@ -10,6 +10,7 @@ import (
 type Kds struct {
 	Package string
 	Imports []string
+	Enums []*Enum
 	Entities []*Entity
 	Components []*Component
 }
@@ -33,6 +34,8 @@ func New(ctx parser.IKdsContext) *Kds {
 	
 	for _, topLevel := range ctx.AllTopLevelDef() {
 		switch {
+		case topLevel.EnumDef() != nil:
+			kds.Enums = append(kds.Enums, newEnum(topLevel.EnumDef()))
 		case topLevel.EntityDef() != nil:
 			kds.Entities = append(kds.Entities, newEntity(topLevel.EntityDef()))
 		case topLevel.ComponentDef() != nil:

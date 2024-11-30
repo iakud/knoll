@@ -11,6 +11,14 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
 option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";
+{{""}}
+{{- range .Enums}}
+enum {{.Name}} {
+{{- range .EnumFields}}
+	{{.Name}} = {{.Value}};
+{{- end}}
+}
+{{- end}}
 
 {{""}}
 {{- range .Entities}}
