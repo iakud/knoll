@@ -31,13 +31,9 @@ func (this *City) SetPlayerId(v int64) {
 	}
 }
 
-func (this *City) SetPlayerBasicInfo(v *PlayerBasicInfo) {
-	if v != this.PlayerBasicInfo {
-		this.PlayerBasicInfo = v
-		this.syncable.PlayerBasicInfo = &v.syncable
-		v.dirthParent = func() {
-			this.markDirty(2)
-		}
+func (this *City) SetPlayerBasicInfo(v PlayerBasicInfo) {
+	if v != this.syncable.PlayerBasicInfo {
+		this.syncable.PlayerBasicInfo = v
 		this.markDirty(uint64(0x01) << 2)
 	}
 }

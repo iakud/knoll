@@ -236,10 +236,9 @@ func (this *Hero) SetHeroLevel(v int32) {
 	}
 }
 
-func (this *Hero) SetType(v *HeroType) {
+func (this *Hero) SetType(v pb.HeroType) {
 	if v != this.Type {
-		this.Type = v
-		this.syncable.Type = &v.syncable
+		this.syncable.Type = v
 		this.markDirty(uint64(0x01) << 3)
 	}
 }

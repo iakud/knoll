@@ -33,6 +33,10 @@ func (f *Field) IsComponent() bool {
 	return false
 }
 
+func (f *Field) IsEnum() bool {
+	return false
+}
+
 func newField(ctx parser.IFieldContext) *Field {
 	field := new(Field)
 	labelCtx := ctx.FieldLabel();

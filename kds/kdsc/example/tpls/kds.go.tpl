@@ -14,8 +14,8 @@ type {{$EntityName}} struct {
 	dirty uint64
 }
 {{- range .Fields}}
-{{- if .IsComponent}}
-
+{{""}}
+{{- if isComponent .Type}}
 func (this *{{$EntityName}}) Set{{.Name}}(v *{{.Type}}) {
 	if v != this.{{.Name}} {
 		this.{{.Name}} = v
@@ -26,8 +26,14 @@ func (this *{{$EntityName}}) Set{{.Name}}(v *{{.Type}}) {
 		this.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
+{{- else if isEnum .Type}}
+func (this *{{$EntityName}}) Set{{.Name}}(v pb.{{.Type}}) {
+	if v != this.syncable.{{.Name}} {
+		this.syncable.{{.Name}} = v
+		this.markDirty(uint64(0x01) << {{.Number}})
+	}
+}
 {{- else}}
-
 func (this *{{$EntityName}}) Set{{.Name}}(v {{.Type}}) {
 	if v != this.syncable.{{.Name}} {
 		this.syncable.{{.Name}} = v
@@ -81,8 +87,8 @@ type {{$ComponentName}} struct {
 }
 
 {{- range .Fields}}
-{{- if .IsComponent}}
-
+{{""}}
+{{- if isComponent .Type}}
 func (this *{{$ComponentName}}) Set{{.Name}}(v *{{.Type}}) {
 	if v != this.{{.Name}} {
 		this.{{.Name}} = v
@@ -90,8 +96,14 @@ func (this *{{$ComponentName}}) Set{{.Name}}(v *{{.Type}}) {
 		this.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
+{{- else if isEnum .Type}}
+func (this *{{$ComponentName}}) Set{{.Name}}(v pb.{{.Type}}) {
+	if v != this.{{.Name}} {
+		this.syncable.{{.Name}} = v
+		this.markDirty(uint64(0x01) << {{.Number}})
+	}
+}
 {{- else}}
-
 func (this *{{$ComponentName}}) Set{{.Name}}(v {{.Type}}) {
 	if v != this.syncable.{{.Name}} {
 		this.syncable.{{.Name}} = v

@@ -88,8 +88,32 @@ func execute(cmd *cobra.Command, args []string) {
 	if err != nil {
 		panic(err)
 	}
+	var gkds *tree.Kds
+	var funcs = template.FuncMap{
+		"isEnum": func(name string) bool {
+			for _, enum := range gkds.Enums {
+				if name == enum.Name {
+					return true
+				}
+			}
+			return false
+		},
+		"isComponent": func(name string) bool {
+			for _, component := range gkds.Components {
+				if name == component.Name {
+					return true
+				}
+			}
+			return false
+		},
+	}
 	for _, filename := range filenames {
-		tpl, err := template.ParseFiles(filename)
+		b, err := os.ReadFile(filename)
+		if err != nil {
+			panic(err)
+		}
+		name := filepath.Base(filename)
+		tpl, err := template.New(name).Funcs(funcs).Parse(string(b))
 		if err != nil {
 			panic(err)
 		}
@@ -108,7 +132,7 @@ func execute(cmd *cobra.Command, args []string) {
 		kds := tree.New(kdsParser.Kds())
 		// log debug
 		log.Printf("%+v", kds)
-		
+		gkds = kds		
 		for _, tpl := range tpls {
 			buf := bytes.NewBuffer(nil)
 			tpl.Execute(buf, kds)
