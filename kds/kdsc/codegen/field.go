@@ -1,4 +1,4 @@
-package tree
+package codegen
 
 import (
 	"github.com/iakud/keeper/kds/kdsc/parser"

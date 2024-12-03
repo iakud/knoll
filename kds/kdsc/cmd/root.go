@@ -13,9 +13,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/iakud/keeper/kds/kdsc/tree"
-	"github.com/iakud/keeper/kds/kdsc/parser"
-	"github.com/antlr4-go/antlr/v4"
+	"github.com/iakud/keeper/kds/kdsc/codegen"
 	"github.com/spf13/cobra"
 )
 
@@ -88,7 +86,7 @@ func execute(cmd *cobra.Command, args []string) {
 	if err != nil {
 		panic(err)
 	}
-	var gkds *tree.Kds
+	var gkds *codegen.Kds
 	var funcs = template.FuncMap{
 		"isEnum": func(name string) bool {
 			for _, enum := range gkds.Enums {
@@ -121,15 +119,7 @@ func execute(cmd *cobra.Command, args []string) {
 	}
 
 	for _, file := range files {
-		input, err := antlr.NewFileStream(file)
-		if err != nil {
-			panic(err)
-		}
-
-		lexer := parser.NewkdsLexer(input)
-		stream := antlr.NewCommonTokenStream(lexer, 0)
-		kdsParser := parser.NewkdsParser(stream)
-		kds := tree.New(kdsParser.Kds())
+		kds := codegen.Parse(file)
 		// log debug
 		log.Printf("%+v", kds)
 		gkds = kds		
