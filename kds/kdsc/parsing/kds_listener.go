@@ -1,7 +1,6 @@
 // Code generated from kds.g4 by ANTLR 4.13.2. DO NOT EDIT.
 
-package parser // kds
-
+package parsing // kds
 import "github.com/antlr4-go/antlr/v4"
 
 // kdsListener is a complete listener for a parse tree produced by kdsParser.

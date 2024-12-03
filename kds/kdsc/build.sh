@@ -34,4 +34,4 @@ PATH="$NEW_PATH"
 
 source ../../var.sh
 
-antlr4 -Dlanguage=Go -o parser kds.g4
+go generate ./...

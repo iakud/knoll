@@ -1,7 +1,6 @@
 // Code generated from kds.g4 by ANTLR 4.13.2. DO NOT EDIT.
 
-package parser // kds
-
+package parsing // kds
 import (
 	"fmt"
 	"strconv"
