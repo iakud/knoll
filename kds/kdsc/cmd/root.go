@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
-	"strings"
 
 	"github.com/iakud/keeper/kds/kdsc/codegen"
 	"github.com/spf13/cobra"
@@ -33,7 +32,7 @@ to quickly create a Cobra application.`,
 var kdsCommand KdsCommand
 
 type KdsCommand struct {
-	kdsPath []string
+	kdsPaths []string
 	tplPath string
 	out string
 }
@@ -44,44 +43,45 @@ func execute(cmd *cobra.Command, args []string) {
 			log.Printf("kds error: %v\n%s", err, debug.Stack())
 		}
 	}()
-	const suffix = ".kds"
-	var files []string
-	var unique = make(map[string]struct{})
-	log.Println("args:", args)
-	for _, pattern := range args {
-		for _, kdsPath := range kdsCommand.kdsPath {
-			matches, err := filepath.Glob(filepath.Join(kdsPath, pattern))
-			if err != nil {
-				panic(err)
-			}
-			for _, match := range matches {
-				abs, err := filepath.Abs(match)
-				if err != nil {
-					panic(err)
-				}
-				cleanpath := filepath.Clean(abs)
-				if _, ok := unique[cleanpath]; ok {
-					continue
-				}
-				if stat, err := os.Stat(match); err != nil {
-					panic(err)
-				} else if stat.IsDir() {
-					continue
-				} else if suffix != "" && !strings.HasSuffix(match, suffix) {
-					continue
-				}
-				files = append(files, match)
-				unique[cleanpath] = struct{}{}
-			}
-		}
-	}
-
-	// templates
-	filenames, err := filepath.Glob(filepath.Join(kdsCommand.tplPath, "*.tpl"))
+	// 获取全部kds文件
+	kdsFiles, err := globKdsFiles(args)
 	if err != nil {
 		panic(err)
 	}
-	codegen.Parse(files, filenames, kdsCommand.out)
+	// 生成kds
+	if err := codegen.Parse(kdsFiles, kdsCommand.tplPath, kdsCommand.out); err != nil {
+		panic(err)
+	}
+}
+
+func globKdsFiles(patterns []string) ([]string, error) {
+	var kdsFiles []string
+	var unique = make(map[string]struct{})
+	for _, pattern := range patterns {
+		for _, kdsPath := range kdsCommand.kdsPaths {
+			matcheFiles, err := filepath.Glob(filepath.Join(kdsPath, pattern))
+			if err != nil {
+				return nil, err
+			}
+			for _, matchFile := range matcheFiles {
+				absFile, err := filepath.Abs(matchFile)
+				if err != nil {
+					return nil, err
+				}
+				if _, ok := unique[absFile]; ok {
+					continue
+				}
+				if stat, err := os.Stat(matchFile); err != nil {
+					return nil, err
+				} else if stat.IsDir() {
+					continue
+				}
+				kdsFiles = append(kdsFiles, matchFile)
+				unique[absFile] = struct{}{}
+			}
+		}
+	}
+	return kdsFiles, nil
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -103,7 +103,7 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.Flags().StringArrayVarP(&kdsCommand.kdsPath, "kds_path", "I", []string{""}, "Specify the directory in which to search for imports. May be specified multiple times; directories will be searched in order. If not given, the current working directory is used.")
+	rootCmd.Flags().StringArrayVarP(&kdsCommand.kdsPaths, "kds_path", "I", []string{""}, "Specify the directory in which to search for imports. May be specified multiple times; directories will be searched in order. If not given, the current working directory is used.")
 	rootCmd.Flags().StringVar(&kdsCommand.tplPath, "tpl_path", "", "Template file.")
 	rootCmd.Flags().StringVar(&kdsCommand.out, "out", "", "Generate file.")
 }

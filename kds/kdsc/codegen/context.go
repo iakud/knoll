@@ -11,9 +11,7 @@ type Context struct {
 	KdsContexts []*Kds
 
 	Imports map[string]*Kds
-	Enums map[string]*Enum
-	Entities map[string]*Entity
-	Components map[string]*Component
+	topLevelDefs map[string]interface{}
 }
 
 type Kds struct {
@@ -25,6 +23,10 @@ type Kds struct {
 	Components []*Component
 
 	Defs []TopLevelDef
+}
+
+func (k *Kds) IsImportTimestamp() bool {
+	return false
 }
 
 type TopLevelDef interface{
@@ -86,6 +88,33 @@ func (f *Field) IsEnum() bool {
 	return false
 }
 
+func (ctx *Context) IsEnum(name string) bool {
+	topLevelDef, ok := ctx.topLevelDefs[name]
+	if !ok {
+		return false
+	}
+	_, ok = topLevelDef.(*Enum)
+	return ok
+}
+
+func (ctx *Context) IsEntity(name string) bool {
+	topLevelDef, ok := ctx.topLevelDefs[name]
+	if !ok {
+		return false
+	}
+	_, ok = topLevelDef.(*Entity)
+	return ok
+}
+
+func (ctx *Context) IsComponent(name string) bool {
+	topLevelDef, ok := ctx.topLevelDefs[name]
+	if !ok {
+		return false
+	}
+	_, ok = topLevelDef.(*Component)
+	return ok
+}
+
 func (ctx *Context) VisitKds(kdsCtx parser.IKdsContext) *Kds {
 	kds := new(Kds)
 	kds.Package = kdsCtx.PackageStatement().FullIdent().GetText()
@@ -126,6 +155,7 @@ func (ctx *Context) VisitEnum(enumCtx parser.IEnumDefContext) *Enum {
 	for _, element := range enumCtx.EnumBody().AllEnumElement() {
 		enum.EnumFields = append(enum.EnumFields, ctx.VisitEnumField(element.EnumField()))
 	}
+	ctx.topLevelDefs[enum.Name] = enum
 	return enum
 }
 
@@ -151,6 +181,7 @@ func (ctx *Context) VisitEntity(entityCtx parser.IEntityDefContext) *Entity {
 			entity.Fields = append(entity.Fields, ctx.VisitMapField(element.MapField()))
 		}
 	}
+	ctx.topLevelDefs[entity.Name] = entity
 	return entity
 }
 
@@ -165,6 +196,7 @@ func (ctx *Context)  VisitComponent(componentCtx parser.IComponentDefContext) *C
 			component.Fields = append(component.Fields, ctx.VisitMapField(element.MapField()))
 		}
 	}
+	ctx.topLevelDefs[component.Name] = component
 	return component
 }
 
