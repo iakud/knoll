@@ -4,14 +4,11 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"bytes"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime/debug"
 	"strings"
-	"text/template"
 
 	"github.com/iakud/keeper/kds/kdsc/codegen"
 	"github.com/spf13/cobra"
@@ -80,56 +77,11 @@ func execute(cmd *cobra.Command, args []string) {
 	}
 
 	// templates
-
-	var tpls []*template.Template
 	filenames, err := filepath.Glob(filepath.Join(kdsCommand.tplPath, "*.tpl"))
 	if err != nil {
 		panic(err)
 	}
-	var gkds *codegen.Kds
-	var funcs = template.FuncMap{
-		"isEnum": func(name string) bool {
-			for _, enum := range gkds.Enums {
-				if name == enum.Name {
-					return true
-				}
-			}
-			return false
-		},
-		"isComponent": func(name string) bool {
-			for _, component := range gkds.Components {
-				if name == component.Name {
-					return true
-				}
-			}
-			return false
-		},
-	}
-	for _, filename := range filenames {
-		b, err := os.ReadFile(filename)
-		if err != nil {
-			panic(err)
-		}
-		name := filepath.Base(filename)
-		tpl, err := template.New(name).Funcs(funcs).Parse(string(b))
-		if err != nil {
-			panic(err)
-		}
-		tpls = append(tpls, tpl)
-	}
-
-	for _, file := range files {
-		kds := codegen.Parse(file)
-		// log debug
-		log.Printf("%+v", kds)
-		gkds = kds		
-		for _, tpl := range tpls {
-			buf := bytes.NewBuffer(nil)
-			tpl.Execute(buf, kds)
-			outFile := filepath.Join(kdsCommand.out, strings.TrimSuffix(filepath.Base(file), filepath.Ext(file)) + "." + strings.TrimSuffix(filepath.Base(tpl.Name()), filepath.Ext(tpl.Name())))
-			ioutil.WriteFile(outFile, buf.Bytes(), 0777)
-		}
-	}
+	codegen.Parse(files, filenames, kdsCommand.out)
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
