@@ -7,15 +7,6 @@ import (
 	"github.com/iakud/keeper/kds/kdsc/example/pb"
 )
 
-type dirthParentFunc func()
-
-func (f dirthParentFunc) invoke() {
-	if f == nil {
-		return
-	}
-	f()
-}
-
 type City struct {
 	Id int64
 	syncable pb.City
@@ -24,28 +15,32 @@ type City struct {
 	dirty uint64
 }
 
-func (this *City) SetPlayerId(v int64) {
-	if v != this.syncable.PlayerId {
-		this.syncable.PlayerId = v
-		this.markDirty(uint64(0x01) << 1)
+func (e *City) SetPlayerId(v int64) {
+	if v != e.syncable.PlayerId {
+		e.syncable.PlayerId = v
+		e.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (this *City) SetPlayerBasicInfo(v PlayerBasicInfo) {
-	if v != this.syncable.PlayerBasicInfo {
-		this.syncable.PlayerBasicInfo = v
-		this.markDirty(uint64(0x01) << 2)
-	}
-}
-
-func (this *City) SetCityInfo(v *CityBaseInfo) {
-	if v != this.CityInfo {
-		this.CityInfo = v
-		this.syncable.CityInfo = &v.syncable
+func (e *City) SetPlayerBasicInfo(v *PlayerBasicInfo) {
+	if v != e.PlayerBasicInfo {
+		e.PlayerBasicInfo = v
+		e.syncable.PlayerBasicInfo = &v.syncable
 		v.dirthParent = func() {
-			this.markDirty(3)
+			e.markDirty(2)
 		}
-		this.markDirty(uint64(0x01) << 3)
+		e.markDirty(uint64(0x01) << 2)
+	}
+}
+
+func (e *City) SetCityInfo(v *CityBaseInfo) {
+	if v != e.CityInfo {
+		e.CityInfo = v
+		e.syncable.CityInfo = &v.syncable
+		v.dirthParent = func() {
+			e.markDirty(3)
+		}
+		e.markDirty(uint64(0x01) << 3)
 	}
 }
 
@@ -77,34 +72,43 @@ func (e *City) MarshalMask() *pb.City {
 	return v
 }
 
+type dirtyParentFunc_CityBaseInfo func()
+
+func (f dirtyParentFunc_CityBaseInfo) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
 type CityBaseInfo struct {
 	syncable pb.CityBaseInfo
 	Position *Vector
 	dirty uint64
-	dirthParent dirthParentFunc
+	dirthParent dirtyParentFunc_CityBaseInfo
 }
 
-func (this *CityBaseInfo) SetPosition(v *Vector) {
-	if v != this.Position {
-		this.Position = v
-		this.syncable.Position = &v.syncable
-		this.markDirty(uint64(0x01) << 1)
+func (c *CityBaseInfo) SetPosition(v *Vector) {
+	if v != c.Position {
+		c.Position = v
+		c.syncable.Position = &v.syncable
+		c.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (this *CityBaseInfo) markDirty(n uint64) {
-	if this.dirty&n == n {
+func (c *CityBaseInfo) markDirty(n uint64) {
+	if c.dirty&n == n {
 		return
 	}
-	this.dirty |= n
-	this.dirthParent.invoke()
+	c.dirty |= n
+	c.dirthParent.invoke()
 }
 
-func (e *CityBaseInfo) clearDirty() {
-	if e.dirty == 0 {
+func (c *CityBaseInfo) clearDirty() {
+	if c.dirty == 0 {
 		return
 	}
-	e.dirty = 0
+	c.dirty = 0
 }
 
 func (c *CityBaseInfo) MarshalMask() *pb.CityBaseInfo {
@@ -118,39 +122,48 @@ func (c *CityBaseInfo) MarshalMask() *pb.CityBaseInfo {
 	return v
 }
 
+type dirtyParentFunc_Vector func()
+
+func (f dirtyParentFunc_Vector) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
 type Vector struct {
 	syncable pb.Vector
 	dirty uint64
-	dirthParent dirthParentFunc
+	dirthParent dirtyParentFunc_Vector
 }
 
-func (this *Vector) SetX(v int32) {
-	if v != this.syncable.X {
-		this.syncable.X = v
-		this.markDirty(uint64(0x01) << 1)
+func (c *Vector) SetX(v int32) {
+	if v != c.syncable.X {
+		c.syncable.X = v
+		c.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (this *Vector) SetY(v int32) {
-	if v != this.syncable.Y {
-		this.syncable.Y = v
-		this.markDirty(uint64(0x01) << 2)
+func (c *Vector) SetY(v int32) {
+	if v != c.syncable.Y {
+		c.syncable.Y = v
+		c.markDirty(uint64(0x01) << 2)
 	}
 }
 
-func (this *Vector) markDirty(n uint64) {
-	if this.dirty&n == n {
+func (c *Vector) markDirty(n uint64) {
+	if c.dirty&n == n {
 		return
 	}
-	this.dirty |= n
-	this.dirthParent.invoke()
+	c.dirty |= n
+	c.dirthParent.invoke()
 }
 
-func (e *Vector) clearDirty() {
-	if e.dirty == 0 {
+func (c *Vector) clearDirty() {
+	if c.dirty == 0 {
 		return
 	}
-	e.dirty = 0
+	c.dirty = 0
 }
 
 func (c *Vector) MarshalMask() *pb.Vector {

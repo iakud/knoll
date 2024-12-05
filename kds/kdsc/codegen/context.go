@@ -11,108 +11,50 @@ type Context struct {
 	KdsContexts []*Kds
 
 	Imports map[string]*Kds
-	topLevelDefs map[string]interface{}
+	Defs map[string]interface{}
 }
 
-type Kds struct {
-	Filename string
-	Package string
-	Imports []string
-	Enums []*Enum
-	Entities []*Entity
-	Components []*Component
-
-	Defs []TopLevelDef
-}
-
-func (k *Kds) IsImportTimestamp() bool {
-	return false
-}
-
-type TopLevelDef interface{
-	Enum() *Enum
-	Entity() *Entity
-	Component() *Component
-}
-
-type Enum struct {
-	Name string
-	EnumFields []*EnumField
-}
-
-type EnumField struct {
-	Name string
-	Value int
-}
-
-type Entity struct {
-	Name string
-	Fields []*Field
-}
-
-type Component struct {
-	Name string
-	Fields []*Field
-}
-
-type FieldKind int32
-
-const (
-	FieldKind_Primitive FieldKind = iota
-	FieldKind_Enum
-	FieldKind_Entity
-	FieldKind_Component
-)
-
-type Field struct {
-	Repeated bool
-	Type string
-	KeyType string
-	ValueType string
-	Name string
-	Number int
-	Kind string
-}
-
-func (f *Field) IsComponent() bool {
-	switch f.Type {
-	case "double", "float", "int32", "int64", "sint32", "sint64", "fixed32", "fixed64", "bool", "string", "bytes":
-		break
-	default:
-		return true
+func newContext() *Context {
+	return &Context{
+		Imports: make(map[string]*Kds),
+		Defs: make(map[string]interface{}),
 	}
-	return false
 }
 
-func (f *Field) IsEnum() bool {
-	return false
-}
-
-func (ctx *Context) IsEnum(name string) bool {
-	topLevelDef, ok := ctx.topLevelDefs[name]
+func (ctx *Context) FindEnum(name string) *Enum {
+	topLevelDef, ok := ctx.Defs[name]
 	if !ok {
-		return false
+		return nil
 	}
-	_, ok = topLevelDef.(*Enum)
-	return ok
+	enum, ok := topLevelDef.(*Enum)
+	if !ok {
+		return nil
+	}
+	return enum
 }
 
-func (ctx *Context) IsEntity(name string) bool {
-	topLevelDef, ok := ctx.topLevelDefs[name]
+func (ctx *Context) FindEntity(name string) *Entity {
+	topLevelDef, ok := ctx.Defs[name]
 	if !ok {
-		return false
+		return nil
 	}
-	_, ok = topLevelDef.(*Entity)
-	return ok
+	entity, ok := topLevelDef.(*Entity)
+	if !ok {
+		return nil
+	}
+	return entity
 }
 
-func (ctx *Context) IsComponent(name string) bool {
-	topLevelDef, ok := ctx.topLevelDefs[name]
+func (ctx *Context) FindComponent(name string) *Component {
+	topLevelDef, ok := ctx.Defs[name]
 	if !ok {
-		return false
+		return nil
 	}
-	_, ok = topLevelDef.(*Component)
-	return ok
+	component, ok := topLevelDef.(*Component)
+	if !ok {
+		return nil
+	}
+	return component
 }
 
 func (ctx *Context) VisitKds(kdsCtx parser.IKdsContext) *Kds {
@@ -128,11 +70,17 @@ func (ctx *Context) VisitKds(kdsCtx parser.IKdsContext) *Kds {
 	for _, topLevel := range kdsCtx.AllTopLevelDef() {
 		switch {
 		case topLevel.EnumDef() != nil:
-			kds.Enums = append(kds.Enums, ctx.VisitEnum(topLevel.EnumDef()))
+			enum := ctx.VisitEnum(topLevel.EnumDef())
+			kds.Enums = append(kds.Enums, enum)
+			kds.Defs = append(kds.Defs, enum)
 		case topLevel.EntityDef() != nil:
-			kds.Entities = append(kds.Entities, ctx.VisitEntity(topLevel.EntityDef()))
+			entity := ctx.VisitEntity(topLevel.EntityDef())
+			kds.Entities = append(kds.Entities, entity)
+			kds.Defs = append(kds.Defs, entity)
 		case topLevel.ComponentDef() != nil:
-			kds.Components = append(kds.Components, ctx.VisitComponent(topLevel.ComponentDef()))
+			component := ctx.VisitComponent(topLevel.ComponentDef())
+			kds.Components = append(kds.Components, component)
+			kds.Defs = append(kds.Defs, component)
 		}
 	}
 	return kds
@@ -155,7 +103,7 @@ func (ctx *Context) VisitEnum(enumCtx parser.IEnumDefContext) *Enum {
 	for _, element := range enumCtx.EnumBody().AllEnumElement() {
 		enum.EnumFields = append(enum.EnumFields, ctx.VisitEnumField(element.EnumField()))
 	}
-	ctx.topLevelDefs[enum.Name] = enum
+	ctx.Defs[enum.Name] = enum
 	return enum
 }
 
@@ -181,7 +129,7 @@ func (ctx *Context) VisitEntity(entityCtx parser.IEntityDefContext) *Entity {
 			entity.Fields = append(entity.Fields, ctx.VisitMapField(element.MapField()))
 		}
 	}
-	ctx.topLevelDefs[entity.Name] = entity
+	ctx.Defs[entity.Name] = entity
 	return entity
 }
 
@@ -196,7 +144,7 @@ func (ctx *Context)  VisitComponent(componentCtx parser.IComponentDefContext) *C
 			component.Fields = append(component.Fields, ctx.VisitMapField(element.MapField()))
 		}
 	}
-	ctx.topLevelDefs[component.Name] = component
+	ctx.Defs[component.Name] = component
 	return component
 }
 

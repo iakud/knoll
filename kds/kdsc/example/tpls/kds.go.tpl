@@ -15,29 +15,29 @@ type {{$EntityName}} struct {
 }
 {{- range .Fields}}
 {{""}}
-{{- if isComponent .Type}}
-func (this *{{$EntityName}}) Set{{.Name}}(v *{{.Type}}) {
-	if v != this.{{.Name}} {
-		this.{{.Name}} = v
-		this.syncable.{{.Name}} = &v.syncable
+{{- if FindComponent .Type}}
+func (e *{{$EntityName}}) Set{{.Name}}(v *{{.Type}}) {
+	if v != e.{{.Name}} {
+		e.{{.Name}} = v
+		e.syncable.{{.Name}} = &v.syncable
 		v.dirthParent = func() {
-			this.markDirty({{.Number}})
+			e.markDirty({{.Number}})
 		}
-		this.markDirty(uint64(0x01) << {{.Number}})
+		e.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
-{{- else if isEnum .Type}}
-func (this *{{$EntityName}}) Set{{.Name}}(v pb.{{.Type}}) {
-	if v != this.syncable.{{.Name}} {
-		this.syncable.{{.Name}} = v
-		this.markDirty(uint64(0x01) << {{.Number}})
+{{- else if FindEnum .Type}}
+func (e *{{$EntityName}}) Set{{.Name}}(v pb.{{.Type}}) {
+	if v != e.syncable.{{.Name}} {
+		e.syncable.{{.Name}} = v
+		e.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
 {{- else}}
-func (this *{{$EntityName}}) Set{{.Name}}(v {{.Type}}) {
-	if v != this.syncable.{{.Name}} {
-		this.syncable.{{.Name}} = v
-		this.markDirty(uint64(0x01) << {{.Number}})
+func (e *{{$EntityName}}) Set{{.Name}}(v {{.Type}}) {
+	if v != e.syncable.{{.Name}} {
+		e.syncable.{{.Name}} = v
+		e.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
 {{- end}}
@@ -74,58 +74,67 @@ func (e *{{$EntityName}}) MarshalMask() *pb.{{.Name}} {
 
 {{- define "Component"}}
 {{- $ComponentName := (print .Name)}}
+type dirtyParentFunc_{{.Name}} func()
+
+func (f dirtyParentFunc_{{.Name}}) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
 type {{$ComponentName}} struct {
 	syncable pb.{{.Name}}
 
 {{- range .Fields}}
-	{{- if .IsComponent}}
+{{- if FindComponent .Type}}
 	{{.Name}} *{{.Type}}
-	{{- end}}
+{{- end}}
 {{- end}}
 	dirty uint64
-	dirthParent dirthParentFunc
+	dirthParent dirtyParentFunc_{{.Name}}
 }
 
 {{- range .Fields}}
 {{""}}
-{{- if isComponent .Type}}
-func (this *{{$ComponentName}}) Set{{.Name}}(v *{{.Type}}) {
-	if v != this.{{.Name}} {
-		this.{{.Name}} = v
-		this.syncable.{{.Name}} = &v.syncable
-		this.markDirty(uint64(0x01) << {{.Number}})
+{{- if FindComponent .Type}}
+func (c *{{$ComponentName}}) Set{{.Name}}(v *{{.Type}}) {
+	if v != c.{{.Name}} {
+		c.{{.Name}} = v
+		c.syncable.{{.Name}} = &v.syncable
+		c.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
-{{- else if isEnum .Type}}
-func (this *{{$ComponentName}}) Set{{.Name}}(v pb.{{.Type}}) {
-	if v != this.{{.Name}} {
-		this.syncable.{{.Name}} = v
-		this.markDirty(uint64(0x01) << {{.Number}})
+{{- else if FindEnum .Type}}
+func (c *{{$ComponentName}}) Set{{.Name}}(v pb.{{.Type}}) {
+	if v != c.syncable.{{.Name}} {
+		c.syncable.{{.Name}} = v
+		c.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
 {{- else}}
-func (this *{{$ComponentName}}) Set{{.Name}}(v {{.Type}}) {
-	if v != this.syncable.{{.Name}} {
-		this.syncable.{{.Name}} = v
-		this.markDirty(uint64(0x01) << {{.Number}})
+func (c *{{$ComponentName}}) Set{{.Name}}(v {{.Type}}) {
+	if v != c.syncable.{{.Name}} {
+		c.syncable.{{.Name}} = v
+		c.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
 {{- end}}
 {{- end}}
 
-func (this *{{$ComponentName}}) markDirty(n uint64) {
-	if this.dirty&n == n {
+func (c *{{$ComponentName}}) markDirty(n uint64) {
+	if c.dirty&n == n {
 		return
 	}
-	this.dirty |= n
-	this.dirthParent.invoke()
+	c.dirty |= n
+	c.dirthParent.invoke()
 }
 
-func (e *{{$ComponentName}}) clearDirty() {
-	if e.dirty == 0 {
+func (c *{{$ComponentName}}) clearDirty() {
+	if c.dirty == 0 {
 		return
 	}
-	e.dirty = 0
+	c.dirty = 0
 }
 
 func (c *{{$ComponentName}}) MarshalMask() *pb.{{.Name}} {
@@ -135,7 +144,7 @@ func (c *{{$ComponentName}}) MarshalMask() *pb.{{.Name}} {
 	v := new(pb.{{.Name}})
 {{- range .Fields}}
 	if c.dirty & uint64(0x01) << {{.Number}} != 0 {
-{{- if .IsComponent}}
+{{- if FindComponent .Type}}
 		v.{{.Name}} = c.{{.Name}}.MarshalMask()
 {{- else}}
 		v.{{.Name}} = c.syncable.{{.Name}}
@@ -157,19 +166,10 @@ import (
 	"github.com/iakud/keeper/kds/kdsc/example/pb"
 )
 
-type dirthParentFunc func()
-
-func (f dirthParentFunc) invoke() {
-	if f == nil {
-		return
-	}
-	f()
-}
-
-{{- range .Entities}}
+{{- range .Defs}}
+{{- if IsEntity .}}
 {{template "Entity" .}}
-{{- end}}
-
-{{- range .Components}}
+{{- else if IsComponent .}}
 {{template "Component" .}}
+{{- end}}
 {{- end}}

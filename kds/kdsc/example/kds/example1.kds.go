@@ -7,15 +7,6 @@ import (
 	"github.com/iakud/keeper/kds/kdsc/example/pb"
 )
 
-type dirthParentFunc func()
-
-func (f dirthParentFunc) invoke() {
-	if f == nil {
-		return
-	}
-	f()
-}
-
 type Player struct {
 	Id int64
 	syncable pb.Player
@@ -25,36 +16,36 @@ type Player struct {
 	dirty uint64
 }
 
-func (this *Player) SetInfo(v *PlayerBasicInfo) {
-	if v != this.Info {
-		this.Info = v
-		this.syncable.Info = &v.syncable
+func (e *Player) SetInfo(v *PlayerBasicInfo) {
+	if v != e.Info {
+		e.Info = v
+		e.syncable.Info = &v.syncable
 		v.dirthParent = func() {
-			this.markDirty(1)
+			e.markDirty(1)
 		}
-		this.markDirty(uint64(0x01) << 1)
+		e.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (this *Player) SetHero(v *PlayerHero) {
-	if v != this.Hero {
-		this.Hero = v
-		this.syncable.Hero = &v.syncable
+func (e *Player) SetHero(v *PlayerHero) {
+	if v != e.Hero {
+		e.Hero = v
+		e.syncable.Hero = &v.syncable
 		v.dirthParent = func() {
-			this.markDirty(2)
+			e.markDirty(2)
 		}
-		this.markDirty(uint64(0x01) << 2)
+		e.markDirty(uint64(0x01) << 2)
 	}
 }
 
-func (this *Player) SetBag(v *PlayerBag) {
-	if v != this.Bag {
-		this.Bag = v
-		this.syncable.Bag = &v.syncable
+func (e *Player) SetBag(v *PlayerBag) {
+	if v != e.Bag {
+		e.Bag = v
+		e.syncable.Bag = &v.syncable
 		v.dirthParent = func() {
-			this.markDirty(3)
+			e.markDirty(3)
 		}
-		this.markDirty(uint64(0x01) << 3)
+		e.markDirty(uint64(0x01) << 3)
 	}
 }
 
@@ -86,39 +77,48 @@ func (e *Player) MarshalMask() *pb.Player {
 	return v
 }
 
+type dirtyParentFunc_PlayerBasicInfo func()
+
+func (f dirtyParentFunc_PlayerBasicInfo) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
 type PlayerBasicInfo struct {
 	syncable pb.PlayerBasicInfo
 	dirty uint64
-	dirthParent dirthParentFunc
+	dirthParent dirtyParentFunc_PlayerBasicInfo
 }
 
-func (this *PlayerBasicInfo) SetName(v string) {
-	if v != this.syncable.Name {
-		this.syncable.Name = v
-		this.markDirty(uint64(0x01) << 1)
+func (c *PlayerBasicInfo) SetName(v string) {
+	if v != c.syncable.Name {
+		c.syncable.Name = v
+		c.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (this *PlayerBasicInfo) SetIsNew(v bool) {
-	if v != this.syncable.IsNew {
-		this.syncable.IsNew = v
-		this.markDirty(uint64(0x01) << 3)
+func (c *PlayerBasicInfo) SetIsNew(v bool) {
+	if v != c.syncable.IsNew {
+		c.syncable.IsNew = v
+		c.markDirty(uint64(0x01) << 3)
 	}
 }
 
-func (this *PlayerBasicInfo) markDirty(n uint64) {
-	if this.dirty&n == n {
+func (c *PlayerBasicInfo) markDirty(n uint64) {
+	if c.dirty&n == n {
 		return
 	}
-	this.dirty |= n
-	this.dirthParent.invoke()
+	c.dirty |= n
+	c.dirthParent.invoke()
 }
 
-func (e *PlayerBasicInfo) clearDirty() {
-	if e.dirty == 0 {
+func (c *PlayerBasicInfo) clearDirty() {
+	if c.dirty == 0 {
 		return
 	}
-	e.dirty = 0
+	c.dirty = 0
 }
 
 func (c *PlayerBasicInfo) MarshalMask() *pb.PlayerBasicInfo {
@@ -135,34 +135,43 @@ func (c *PlayerBasicInfo) MarshalMask() *pb.PlayerBasicInfo {
 	return v
 }
 
+type dirtyParentFunc_PlayerHero func()
+
+func (f dirtyParentFunc_PlayerHero) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
 type PlayerHero struct {
 	syncable pb.PlayerHero
 	Heroes *Hero
 	dirty uint64
-	dirthParent dirthParentFunc
+	dirthParent dirtyParentFunc_PlayerHero
 }
 
-func (this *PlayerHero) SetHeroes(v *Hero) {
-	if v != this.Heroes {
-		this.Heroes = v
-		this.syncable.Heroes = &v.syncable
-		this.markDirty(uint64(0x01) << 1)
+func (c *PlayerHero) SetHeroes(v *Hero) {
+	if v != c.Heroes {
+		c.Heroes = v
+		c.syncable.Heroes = &v.syncable
+		c.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (this *PlayerHero) markDirty(n uint64) {
-	if this.dirty&n == n {
+func (c *PlayerHero) markDirty(n uint64) {
+	if c.dirty&n == n {
 		return
 	}
-	this.dirty |= n
-	this.dirthParent.invoke()
+	c.dirty |= n
+	c.dirthParent.invoke()
 }
 
-func (e *PlayerHero) clearDirty() {
-	if e.dirty == 0 {
+func (c *PlayerHero) clearDirty() {
+	if c.dirty == 0 {
 		return
 	}
-	e.dirty = 0
+	c.dirty = 0
 }
 
 func (c *PlayerHero) MarshalMask() *pb.PlayerHero {
@@ -176,32 +185,41 @@ func (c *PlayerHero) MarshalMask() *pb.PlayerHero {
 	return v
 }
 
+type dirtyParentFunc_PlayerBag func()
+
+func (f dirtyParentFunc_PlayerBag) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
 type PlayerBag struct {
 	syncable pb.PlayerBag
 	dirty uint64
-	dirthParent dirthParentFunc
+	dirthParent dirtyParentFunc_PlayerBag
 }
 
-func (this *PlayerBag) SetResources(v int32) {
-	if v != this.syncable.Resources {
-		this.syncable.Resources = v
-		this.markDirty(uint64(0x01) << 1)
+func (c *PlayerBag) SetResources(v int32) {
+	if v != c.syncable.Resources {
+		c.syncable.Resources = v
+		c.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (this *PlayerBag) markDirty(n uint64) {
-	if this.dirty&n == n {
+func (c *PlayerBag) markDirty(n uint64) {
+	if c.dirty&n == n {
 		return
 	}
-	this.dirty |= n
-	this.dirthParent.invoke()
+	c.dirty |= n
+	c.dirthParent.invoke()
 }
 
-func (e *PlayerBag) clearDirty() {
-	if e.dirty == 0 {
+func (c *PlayerBag) clearDirty() {
+	if c.dirty == 0 {
 		return
 	}
-	e.dirty = 0
+	c.dirty = 0
 }
 
 func (c *PlayerBag) MarshalMask() *pb.PlayerBag {
@@ -215,47 +233,55 @@ func (c *PlayerBag) MarshalMask() *pb.PlayerBag {
 	return v
 }
 
+type dirtyParentFunc_Hero func()
+
+func (f dirtyParentFunc_Hero) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
 type Hero struct {
 	syncable pb.Hero
-	Type *HeroType
 	dirty uint64
-	dirthParent dirthParentFunc
+	dirthParent dirtyParentFunc_Hero
 }
 
-func (this *Hero) SetHeroId(v int32) {
-	if v != this.syncable.HeroId {
-		this.syncable.HeroId = v
-		this.markDirty(uint64(0x01) << 1)
+func (c *Hero) SetHeroId(v int32) {
+	if v != c.syncable.HeroId {
+		c.syncable.HeroId = v
+		c.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (this *Hero) SetHeroLevel(v int32) {
-	if v != this.syncable.HeroLevel {
-		this.syncable.HeroLevel = v
-		this.markDirty(uint64(0x01) << 2)
+func (c *Hero) SetHeroLevel(v int32) {
+	if v != c.syncable.HeroLevel {
+		c.syncable.HeroLevel = v
+		c.markDirty(uint64(0x01) << 2)
 	}
 }
 
-func (this *Hero) SetType(v pb.HeroType) {
-	if v != this.Type {
-		this.syncable.Type = v
-		this.markDirty(uint64(0x01) << 3)
+func (c *Hero) SetType(v pb.HeroType) {
+	if v != c.syncable.Type {
+		c.syncable.Type = v
+		c.markDirty(uint64(0x01) << 3)
 	}
 }
 
-func (this *Hero) markDirty(n uint64) {
-	if this.dirty&n == n {
+func (c *Hero) markDirty(n uint64) {
+	if c.dirty&n == n {
 		return
 	}
-	this.dirty |= n
-	this.dirthParent.invoke()
+	c.dirty |= n
+	c.dirthParent.invoke()
 }
 
-func (e *Hero) clearDirty() {
-	if e.dirty == 0 {
+func (c *Hero) clearDirty() {
+	if c.dirty == 0 {
 		return
 	}
-	e.dirty = 0
+	c.dirty = 0
 }
 
 func (c *Hero) MarshalMask() *pb.Hero {
@@ -270,7 +296,7 @@ func (c *Hero) MarshalMask() *pb.Hero {
 		v.HeroLevel = c.syncable.HeroLevel
 	}
 	if c.dirty & uint64(0x01) << 3 != 0 {
-		v.Type = c.Type.MarshalMask()
+		v.Type = c.syncable.Type
 	}
 	return v
 }

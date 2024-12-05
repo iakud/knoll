@@ -40,16 +40,12 @@ import "google/protobuf/duration.proto";
 
 option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";
 
-{{- range .Enums}}
+{{- range .Defs}}
+{{- if IsEnum .}}
 {{template "Enum" .}}
-{{- end}}
-
-{{- range .Entities}}
-
-message {{.Name}} {
+{{- else if IsEntity .}}
 {{template "Entity" .}}
-{{- end}}
-
-{{- range .Components}}
+{{- else if IsComponent .}}
 {{template "Component" .}}
+{{- end}}
 {{- end}}
