@@ -34,7 +34,7 @@ func (e *{{$EntityName}}) Set{{.Name}}(v pb.{{.Type}}) {
 	}
 }
 {{- else}}
-func (e *{{$EntityName}}) Set{{.Name}}(v {{.Type}}) {
+func (e *{{$EntityName}}) Set{{.Name}}(v {{GoType .Type}}) {
 	if v != e.syncable.{{.Name}} {
 		e.syncable.{{.Name}} = v
 		e.markDirty(uint64(0x01) << {{.Number}})
@@ -57,16 +57,28 @@ func (e *{{$EntityName}}) clearDirty() {
 	e.dirty = 0
 }
 
-func (e *{{$EntityName}}) MarshalMask() *pb.{{.Name}} {
+func (e *{{$EntityName}}) DumpChange() *pb.{{.Name}} {
 	v := new(pb.{{.Name}})
 {{- range .Fields}}
 	if e.dirty & uint64(0x01) << {{.Number}} != 0 {
 {{- if .IsComponent}}
-		v.{{.Name}} = e.{{.Name}}.MarshalMask()
+		v.{{.Name}} = e.{{.Name}}.DumpChange()
 {{- else}}
 		v.{{.Name}} = e.syncable.{{.Name}}
 {{- end}}
 	}
+{{- end}}
+	return v
+}
+
+func (e *{{$EntityName}}) DumpFull() *pb.{{.Name}} {
+	v := new(pb.{{.Name}})
+{{- range .Fields}}
+{{- if FindComponent .Type}}
+	v.{{.Name}} = e.{{.Name}}.DumpFull()
+{{- else}}
+	v.{{.Name}} = e.syncable.{{.Name}}
+{{- end}}
 {{- end}}
 	return v
 }
@@ -113,7 +125,7 @@ func (c *{{$ComponentName}}) Set{{.Name}}(v pb.{{.Type}}) {
 	}
 }
 {{- else}}
-func (c *{{$ComponentName}}) Set{{.Name}}(v {{.Type}}) {
+func (c *{{$ComponentName}}) Set{{.Name}}(v {{GoType .Type}}) {
 	if v != c.syncable.{{.Name}} {
 		c.syncable.{{.Name}} = v
 		c.markDirty(uint64(0x01) << {{.Number}})
@@ -137,7 +149,7 @@ func (c *{{$ComponentName}}) clearDirty() {
 	c.dirty = 0
 }
 
-func (c *{{$ComponentName}}) MarshalMask() *pb.{{.Name}} {
+func (c *{{$ComponentName}}) DumpChange() *pb.{{.Name}} {
 	if c == nil {
 		return nil
 	}
@@ -145,11 +157,23 @@ func (c *{{$ComponentName}}) MarshalMask() *pb.{{.Name}} {
 {{- range .Fields}}
 	if c.dirty & uint64(0x01) << {{.Number}} != 0 {
 {{- if FindComponent .Type}}
-		v.{{.Name}} = c.{{.Name}}.MarshalMask()
+		v.{{.Name}} = c.{{.Name}}.DumpChange()
 {{- else}}
 		v.{{.Name}} = c.syncable.{{.Name}}
 {{- end}}
 	}
+{{- end}}
+	return v
+}
+
+func (c *{{$ComponentName}}) DumpFull() *pb.{{.Name}} {
+	v := new(pb.{{.Name}})
+{{- range .Fields}}
+{{- if FindComponent .Type}}
+	v.{{.Name}} = c.{{.Name}}.DumpFull()
+{{- else}}
+	v.{{.Name}} = c.syncable.{{.Name}}
+{{- end}}
 {{- end}}
 	return v
 }
@@ -163,6 +187,10 @@ func (c *{{$ComponentName}}) MarshalMask() *pb.{{.Name}} {
 package {{.Package}};
 
 import (
+{{- if or .ImportTimestamp .ImportDuration}}
+	"time"
+{{""}}
+{{- end}}
 	"github.com/iakud/keeper/kds/kdsc/example/pb"
 )
 

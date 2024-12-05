@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"text/template"
 
@@ -24,7 +23,7 @@ func Parse(kdsFiles []string, tplPath string, out string) error {
 		lexer := parser.NewkdsLexer(input)
 		stream := antlr.NewCommonTokenStream(lexer, 0)
 		kdsParser := parser.NewkdsParser(stream)
-		kds := ctx.VisitKds(kdsParser.Kds())
+		kds := visitKds(ctx, kdsParser.Kds())
 		kds.Filename = kdsFile
 		kdsList = append(kdsList, kds)
 	}
@@ -59,35 +58,3 @@ func Parse(kdsFiles []string, tplPath string, out string) error {
 	return nil
 }
 
-func Funcs(ctx *Context) template.FuncMap {
-	return template.FuncMap{
-		"IsEnum": IsEnum,
-		"IsEntity": IsEntity,
-		"IsComponent": IsComponent,
-		"FindEnum": ctx.FindEnum,
-		"FindEntity": ctx.FindEntity,
-		"FindComponent": ctx.FindComponent,
-	}
-}
-
-var enumType = reflect.TypeOf((*Enum)(nil))
-var entityType = reflect.TypeOf((*Entity)(nil))
-var componentType = reflect.TypeOf((*Component)(nil))
-
-// 
-func IsEnum(def interface{}) bool {
-	return reflect.TypeOf(def) == enumType
-}
-
-func IsEntity(def interface{}) bool {
-	return reflect.TypeOf(def) == entityType
-}
-
-func IsComponent(def interface{}) bool {
-	return reflect.TypeOf(def) == componentType
-}
-
-func IsTopLevelDefType[T Enum|Entity|Component](def interface{}) bool {
-	_, ok := def.(*T)
-	return ok
-}

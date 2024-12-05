@@ -4,6 +4,8 @@
 package kds;
 
 import (
+	"time"
+
 	"github.com/iakud/keeper/kds/kdsc/example/pb"
 )
 
@@ -63,17 +65,25 @@ func (e *Player) clearDirty() {
 	e.dirty = 0
 }
 
-func (e *Player) MarshalMask() *pb.Player {
+func (e *Player) DumpChange() *pb.Player {
 	v := new(pb.Player)
 	if e.dirty & uint64(0x01) << 1 != 0 {
-		v.Info = e.Info.MarshalMask()
+		v.Info = e.Info.DumpChange()
 	}
 	if e.dirty & uint64(0x01) << 2 != 0 {
-		v.Hero = e.Hero.MarshalMask()
+		v.Hero = e.Hero.DumpChange()
 	}
 	if e.dirty & uint64(0x01) << 3 != 0 {
-		v.Bag = e.Bag.MarshalMask()
+		v.Bag = e.Bag.DumpChange()
 	}
+	return v
+}
+
+func (e *Player) DumpFull() *pb.Player {
+	v := new(pb.Player)
+	v.Info = e.Info.DumpFull()
+	v.Hero = e.Hero.DumpFull()
+	v.Bag = e.Bag.DumpFull()
 	return v
 }
 
@@ -106,6 +116,13 @@ func (c *PlayerBasicInfo) SetIsNew(v bool) {
 	}
 }
 
+func (c *PlayerBasicInfo) SetCreateTime(v time.Time) {
+	if v != c.syncable.CreateTime {
+		c.syncable.CreateTime = v
+		c.markDirty(uint64(0x01) << 5)
+	}
+}
+
 func (c *PlayerBasicInfo) markDirty(n uint64) {
 	if c.dirty&n == n {
 		return
@@ -121,7 +138,7 @@ func (c *PlayerBasicInfo) clearDirty() {
 	c.dirty = 0
 }
 
-func (c *PlayerBasicInfo) MarshalMask() *pb.PlayerBasicInfo {
+func (c *PlayerBasicInfo) DumpChange() *pb.PlayerBasicInfo {
 	if c == nil {
 		return nil
 	}
@@ -132,6 +149,17 @@ func (c *PlayerBasicInfo) MarshalMask() *pb.PlayerBasicInfo {
 	if c.dirty & uint64(0x01) << 3 != 0 {
 		v.IsNew = c.syncable.IsNew
 	}
+	if c.dirty & uint64(0x01) << 5 != 0 {
+		v.CreateTime = c.syncable.CreateTime
+	}
+	return v
+}
+
+func (c *PlayerBasicInfo) DumpFull() *pb.PlayerBasicInfo {
+	v := new(pb.PlayerBasicInfo)
+	v.Name = c.syncable.Name
+	v.IsNew = c.syncable.IsNew
+	v.CreateTime = c.syncable.CreateTime
 	return v
 }
 
@@ -174,14 +202,20 @@ func (c *PlayerHero) clearDirty() {
 	c.dirty = 0
 }
 
-func (c *PlayerHero) MarshalMask() *pb.PlayerHero {
+func (c *PlayerHero) DumpChange() *pb.PlayerHero {
 	if c == nil {
 		return nil
 	}
 	v := new(pb.PlayerHero)
 	if c.dirty & uint64(0x01) << 1 != 0 {
-		v.Heroes = c.Heroes.MarshalMask()
+		v.Heroes = c.Heroes.DumpChange()
 	}
+	return v
+}
+
+func (c *PlayerHero) DumpFull() *pb.PlayerHero {
+	v := new(pb.PlayerHero)
+	v.Heroes = c.Heroes.DumpFull()
 	return v
 }
 
@@ -222,7 +256,7 @@ func (c *PlayerBag) clearDirty() {
 	c.dirty = 0
 }
 
-func (c *PlayerBag) MarshalMask() *pb.PlayerBag {
+func (c *PlayerBag) DumpChange() *pb.PlayerBag {
 	if c == nil {
 		return nil
 	}
@@ -230,6 +264,12 @@ func (c *PlayerBag) MarshalMask() *pb.PlayerBag {
 	if c.dirty & uint64(0x01) << 1 != 0 {
 		v.Resources = c.syncable.Resources
 	}
+	return v
+}
+
+func (c *PlayerBag) DumpFull() *pb.PlayerBag {
+	v := new(pb.PlayerBag)
+	v.Resources = c.syncable.Resources
 	return v
 }
 
@@ -269,6 +309,13 @@ func (c *Hero) SetType(v pb.HeroType) {
 	}
 }
 
+func (c *Hero) SetNeedTime(v time.Duration) {
+	if v != c.syncable.NeedTime {
+		c.syncable.NeedTime = v
+		c.markDirty(uint64(0x01) << 4)
+	}
+}
+
 func (c *Hero) markDirty(n uint64) {
 	if c.dirty&n == n {
 		return
@@ -284,7 +331,7 @@ func (c *Hero) clearDirty() {
 	c.dirty = 0
 }
 
-func (c *Hero) MarshalMask() *pb.Hero {
+func (c *Hero) DumpChange() *pb.Hero {
 	if c == nil {
 		return nil
 	}
@@ -298,5 +345,17 @@ func (c *Hero) MarshalMask() *pb.Hero {
 	if c.dirty & uint64(0x01) << 3 != 0 {
 		v.Type = c.syncable.Type
 	}
+	if c.dirty & uint64(0x01) << 4 != 0 {
+		v.NeedTime = c.syncable.NeedTime
+	}
+	return v
+}
+
+func (c *Hero) DumpFull() *pb.Hero {
+	v := new(pb.Hero)
+	v.HeroId = c.syncable.HeroId
+	v.HeroLevel = c.syncable.HeroLevel
+	v.Type = c.syncable.Type
+	v.NeedTime = c.syncable.NeedTime
 	return v
 }

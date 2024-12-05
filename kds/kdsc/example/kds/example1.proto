@@ -18,6 +18,7 @@ message Player {
 message PlayerBasicInfo {
 	string Name = 1;
 	bool IsNew = 3;
+	google.protobuf.Timestamp CreateTime = 5;
 }
 
 message PlayerHero {
@@ -32,6 +33,7 @@ message Hero {
 	int32 HeroId = 1;
 	int32 HeroLevel = 2;
 	HeroType Type = 3;
+	google.protobuf.Duration NeedTime = 4;
 }
 
 enum HeroType {

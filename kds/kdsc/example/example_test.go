@@ -1,7 +1,7 @@
 package example
 
 import (
-	"github.com/iakud/keeper/kds/kdsc/example/examplepb"
+	// "github.com/iakud/keeper/kds/kdsc/example/pb"
 	"github.com/iakud/keeper/kds/kdspb"
 	"testing"
 
@@ -19,11 +19,11 @@ type MapFieldMask[T interface{}] struct {
 }
 
 func TestExample(t *testing.T) {
-	player := new(examplepb.PlayerTest)
+	// player := new(pb.PlayerTest)
 
 	// protoreflect.
 
-	player.Info = new(examplepb.BasicInfo)
+	// player.Info = new(pb.BasicInfo)
 	buf, err := Marshal(t)
 	if err != nil {
 		panic(err)

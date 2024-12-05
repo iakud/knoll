@@ -11,7 +11,13 @@ enum {{.Name}} {
 {{- define "Entity"}}
 message {{.Name}} {
 {{- range .Fields}}
+{{- if .IsTimestamp}}
+	google.protobuf.Timestamp {{.Name}} = {{.Number}};
+{{- else if .IsDuration}}
+	google.protobuf.Duration {{.Name}} = {{.Number}};
+{{- else}}
 	{{.Type}} {{.Name}} = {{.Number}};
+{{- end}}
 {{- end}}
 }
 {{- end}}
@@ -19,7 +25,13 @@ message {{.Name}} {
 {{- define "Component"}}
 message {{.Name}} {
 {{- range .Fields}}
+{{- if .IsTimestamp}}
+	google.protobuf.Timestamp {{.Name}} = {{.Number}};
+{{- else if .IsDuration}}
+	google.protobuf.Duration {{.Name}} = {{.Number}};
+{{- else}}
 	{{.Type}} {{.Name}} = {{.Number}};
+{{- end}}
 {{- end}}
 }
 {{- end}}
@@ -35,8 +47,12 @@ package {{.Package}};
 {{- range .Imports}}
 import "{{.}}.proto";
 {{- end}}
+{{- if .ImportTimestamp}}
 import "google/protobuf/timestamp.proto";
+{{- end}}
+{{- if .ImportDuration}}
 import "google/protobuf/duration.proto";
+{{- end}}
 
 option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";
 

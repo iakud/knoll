@@ -58,17 +58,25 @@ func (e *City) clearDirty() {
 	e.dirty = 0
 }
 
-func (e *City) MarshalMask() *pb.City {
+func (e *City) DumpChange() *pb.City {
 	v := new(pb.City)
 	if e.dirty & uint64(0x01) << 1 != 0 {
 		v.PlayerId = e.syncable.PlayerId
 	}
 	if e.dirty & uint64(0x01) << 2 != 0 {
-		v.PlayerBasicInfo = e.PlayerBasicInfo.MarshalMask()
+		v.PlayerBasicInfo = e.PlayerBasicInfo.DumpChange()
 	}
 	if e.dirty & uint64(0x01) << 3 != 0 {
-		v.CityInfo = e.CityInfo.MarshalMask()
+		v.CityInfo = e.CityInfo.DumpChange()
 	}
+	return v
+}
+
+func (e *City) DumpFull() *pb.City {
+	v := new(pb.City)
+	v.PlayerId = e.syncable.PlayerId
+	v.PlayerBasicInfo = e.PlayerBasicInfo.DumpFull()
+	v.CityInfo = e.CityInfo.DumpFull()
 	return v
 }
 
@@ -111,14 +119,20 @@ func (c *CityBaseInfo) clearDirty() {
 	c.dirty = 0
 }
 
-func (c *CityBaseInfo) MarshalMask() *pb.CityBaseInfo {
+func (c *CityBaseInfo) DumpChange() *pb.CityBaseInfo {
 	if c == nil {
 		return nil
 	}
 	v := new(pb.CityBaseInfo)
 	if c.dirty & uint64(0x01) << 1 != 0 {
-		v.Position = c.Position.MarshalMask()
+		v.Position = c.Position.DumpChange()
 	}
+	return v
+}
+
+func (c *CityBaseInfo) DumpFull() *pb.CityBaseInfo {
+	v := new(pb.CityBaseInfo)
+	v.Position = c.Position.DumpFull()
 	return v
 }
 
@@ -166,7 +180,7 @@ func (c *Vector) clearDirty() {
 	c.dirty = 0
 }
 
-func (c *Vector) MarshalMask() *pb.Vector {
+func (c *Vector) DumpChange() *pb.Vector {
 	if c == nil {
 		return nil
 	}
@@ -177,5 +191,12 @@ func (c *Vector) MarshalMask() *pb.Vector {
 	if c.dirty & uint64(0x01) << 2 != 0 {
 		v.Y = c.syncable.Y
 	}
+	return v
+}
+
+func (c *Vector) DumpFull() *pb.Vector {
+	v := new(pb.Vector)
+	v.X = c.syncable.X
+	v.Y = c.syncable.Y
 	return v
 }

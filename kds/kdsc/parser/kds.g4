@@ -70,6 +70,8 @@ type_
 	| BOOL
 	| STRING
 	| BYTES
+	| TIMESTAMP
+	| DURATION
 	| messageType
 	| enumType
 	;
@@ -261,6 +263,14 @@ FLOAT
 
 BYTES
 	: 'bytes'
+	;
+
+TIMESTAMP
+	: 'Timestamp'
+	;
+
+DURATION
+	: 'Duration'
 	;
 
 ENUM

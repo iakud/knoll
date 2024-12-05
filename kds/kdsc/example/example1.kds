@@ -9,6 +9,7 @@ entity Player {
 component PlayerBasicInfo {
 	string Name = 1;
 	bool IsNew = 3;
+	Timestamp CreateTime = 5;
 }
 
 component PlayerHero {
@@ -23,6 +24,7 @@ component Hero {
 	int32 HeroId = 1;
 	int32 HeroLevel = 2;
 	HeroType Type = 3;
+	Duration NeedTime = 4;
 }
 
 enum HeroType {

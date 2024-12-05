@@ -4,9 +4,9 @@ type Kds struct {
 	Filename string
 	Package string
 	Imports []string
-	Enums []*Enum
-	Entities []*Entity
-	Components []*Component
+
+	ImportTimestamp bool
+	ImportDuration bool
 
 	Defs []interface{}
 }
@@ -51,6 +51,9 @@ type Field struct {
 	ValueType string
 	Name string
 	Number int
+
+	IsTimestamp bool
+	IsDuration bool
 	Kind string
 }
 
