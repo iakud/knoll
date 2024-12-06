@@ -62,9 +62,9 @@ func GoType(type_ string) string {
 		return "string"
 	case "bytes":
 		return "[]byte"
-	case "Timestamp":
+	case "timestamp":
 		return "time.Time"
-	case "Duration":
+	case "duration":
 		return "time.Duration"
 	default:
 		return type_

@@ -266,11 +266,11 @@ BYTES
 	;
 
 TIMESTAMP
-	: 'Timestamp'
+	: 'timestamp'
 	;
 
 DURATION
-	: 'Duration'
+	: 'duration'
 	;
 
 ENUM
