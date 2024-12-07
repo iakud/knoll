@@ -13,10 +13,15 @@ func Funcs(ctx *Context) template.FuncMap {
 		"IsEnum": IsEnum,
 		"IsEntity": IsEntity,
 		"IsComponent": IsComponent,
+		"isTimestamp": isTimestamp,
+		"isDuration": isDuration,
 		"FindEnum": ctx.FindEnum,
 		"FindEntity": ctx.FindEntity,
 		"FindComponent": ctx.FindComponent,
 		"GoType": GoType,
+
+		"findArray": ctx.FindArray,
+		"findMap": ctx.FindMap,
 	}
 }
 
@@ -36,7 +41,7 @@ func ucFirst(s string) string {
 	}
 	
 	r := []rune(s)
-	r[0] = unicode.ToLower(r[0])
+	r[0] = unicode.ToUpper(r[0])
 	return string(r)
 }
 
@@ -55,6 +60,14 @@ func IsEntity(def interface{}) bool {
 
 func IsComponent(def interface{}) bool {
 	return reflect.TypeOf(def) == componentType
+}
+
+func isTimestamp(name string) bool {
+	return "timestamp" == name
+}
+
+func isDuration(name string) bool {
+	return "duration" == name
 }
 
 func GoType(type_ string) string {

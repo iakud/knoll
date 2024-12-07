@@ -11,10 +11,6 @@ type Kds struct {
 	Defs []interface{}
 }
 
-func (k *Kds) IsImportTimestamp() bool {
-	return false
-}
-
 type Enum struct {
 	Name string
 	EnumFields []*EnumField
@@ -45,6 +41,8 @@ const (
 	FieldKind_Enum
 	FieldKind_Entity
 	FieldKind_Component
+	FieldKind_Timestamp
+	FieldKind_Duration
 )
 
 type Field struct {
@@ -56,6 +54,8 @@ type Field struct {
 	Number int
 
 	GoVarName string
+	GoType string
+
 	IsTimestamp bool
 	IsDuration bool
 	Kind string
