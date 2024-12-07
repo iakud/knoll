@@ -24,18 +24,27 @@ type syncable{{.Name}} struct {
 }
 
 {{- range .Fields}}
-{{""}}
 {{- if FindComponent .Type}}
-func (x *{{$MessageName}}) Set{{.Name}}(v *{{.Type}}) {
+
+func (x *{{$MessageName}}) Get{{.Name}}() *{{.Type}} {
+	return x.syncable.{{.Name}}
+}
+
+func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
 	if v != x.syncable.{{.Name}} {
 		x.syncable.{{.Name}} = v
 		v.dirthParent = func() {
-			x.markDirty({{.Number}})
+			x.markDirty(uint64(0x01) << {{.Number}})
 		}
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
 {{- else if FindEnum .Type}}
+
+func (x *{{$MessageName}}) Get{{.Name}}() {{.Type}} {
+	return x.syncable.{{.Name}}
+}
+
 func (x *{{$MessageName}}) Set{{.Name}}(v {{.Type}}) {
 	if v != x.syncable.{{.Name}} {
 		x.syncable.{{.Name}} = v
@@ -43,6 +52,11 @@ func (x *{{$MessageName}}) Set{{.Name}}(v {{.Type}}) {
 	}
 }
 {{- else}}
+
+func (x *{{$MessageName}}) Get{{.Name}}() {{GoType .Type}} {
+	return x.syncable.{{.Name}}
+}
+
 func (x *{{$MessageName}}) Set{{.Name}}(v {{GoType .Type}}) {
 	if v != x.syncable.{{.Name}} {
 		x.syncable.{{.Name}} = v
@@ -55,7 +69,7 @@ func (x *{{$MessageName}}) Set{{.Name}}(v {{GoType .Type}}) {
 func (x *{{$MessageName}}) DumpChange() *pb.{{.Name}} {
 	v := new(pb.{{.Name}})
 {{- range .Fields}}
-	if x.checkDirty({{.Number}}) {
+	if x.checkDirty(uint64(0x01) << {{.Number}}) {
 {{- if FindComponent .Type}}
 		v.{{.Name}} = x.syncable.{{.Name}}.DumpChange()
 {{- else if .IsTimestamp}}
@@ -91,10 +105,26 @@ func (x *{{$MessageName}}) DumpFull() *pb.{{.Name}} {
 {{- define "Entity"}}
 {{- $EntityName := (print .Name)}}
 type {{$EntityName}} struct {
-	Id int64
+	id int64
 	syncable syncable{{.Name}}
 
 	dirty uint64
+}
+
+func New{{$EntityName}}() *{{$EntityName}} {
+	x := new({{$EntityName}})
+	x.dirty = 1
+	x.id = 0 // FIXME: gen nextId()
+{{- range .Fields}}
+{{- if FindComponent .Type}}
+	x.set{{.Name}}(New{{.Type}}())
+{{- end}}
+{{- end}}
+	return x
+}
+
+func (x *{{$EntityName}}) GetId() int64 {
+	return x.id
 }
 {{template "Message" .}}
 
@@ -118,7 +148,7 @@ func (x *{{$EntityName}}) clearDirty() {
 }
 
 func (x *{{$EntityName}}) checkDirty(n uint64) bool {
-	return x.dirty & uint64(0x01) << n != 0
+	return x.dirty & n != 0
 }
 
 {{- end}}
@@ -139,6 +169,17 @@ type {{$ComponentName}} struct {
 
 	dirty uint64
 	dirthParent dirtyParentFunc_{{.Name}}
+}
+
+func New{{$ComponentName}}() *{{$ComponentName}} {
+	x := new({{$ComponentName}})
+	x.dirty = 1
+{{- range .Fields}}
+{{- if FindComponent .Type}}
+	x.set{{.Name}}(New{{.Type}}())
+{{- end}}
+{{- end}}
+	return x
 }
 {{template "Message" .}}
 
@@ -163,7 +204,7 @@ func (x *{{$ComponentName}}) clearDirty() {
 }
 
 func (x *{{$ComponentName}}) checkDirty(n uint64) bool {
-	return x.dirty & uint64(0x01) << n != 0
+	return x.dirty & n != 0
 }
 {{- end}}
 

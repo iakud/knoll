@@ -8,16 +8,33 @@ import (
 )
 
 type City struct {
-	Id int64
+	id int64
 	syncable syncableCity
 
 	dirty uint64
+}
+
+func NewCity() *City {
+	x := new(City)
+	x.dirty = 1
+	x.id = 0 // FIXME: gen nextId()
+	x.setPlayerBasicInfo(NewPlayerBasicInfo())
+	x.setCityInfo(NewCityBaseInfo())
+	return x
+}
+
+func (x *City) GetId() int64 {
+	return x.id
 }
 
 type syncableCity struct {
 	PlayerId int64
 	PlayerBasicInfo *PlayerBasicInfo
 	CityInfo *CityBaseInfo
+}
+
+func (x *City) GetPlayerId() int64 {
+	return x.syncable.PlayerId
 }
 
 func (x *City) SetPlayerId(v int64) {
@@ -27,21 +44,29 @@ func (x *City) SetPlayerId(v int64) {
 	}
 }
 
-func (x *City) SetPlayerBasicInfo(v *PlayerBasicInfo) {
+func (x *City) GetPlayerBasicInfo() *PlayerBasicInfo {
+	return x.syncable.PlayerBasicInfo
+}
+
+func (x *City) setPlayerBasicInfo(v *PlayerBasicInfo) {
 	if v != x.syncable.PlayerBasicInfo {
 		x.syncable.PlayerBasicInfo = v
 		v.dirthParent = func() {
-			x.markDirty(2)
+			x.markDirty(uint64(0x01) << 2)
 		}
 		x.markDirty(uint64(0x01) << 2)
 	}
 }
 
-func (x *City) SetCityInfo(v *CityBaseInfo) {
+func (x *City) GetCityInfo() *CityBaseInfo {
+	return x.syncable.CityInfo
+}
+
+func (x *City) setCityInfo(v *CityBaseInfo) {
 	if v != x.syncable.CityInfo {
 		x.syncable.CityInfo = v
 		v.dirthParent = func() {
-			x.markDirty(3)
+			x.markDirty(uint64(0x01) << 3)
 		}
 		x.markDirty(uint64(0x01) << 3)
 	}
@@ -49,13 +74,13 @@ func (x *City) SetCityInfo(v *CityBaseInfo) {
 
 func (x *City) DumpChange() *pb.City {
 	v := new(pb.City)
-	if x.checkDirty(1) {
+	if x.checkDirty(uint64(0x01) << 1) {
 		v.PlayerId = x.syncable.PlayerId
 	}
-	if x.checkDirty(2) {
+	if x.checkDirty(uint64(0x01) << 2) {
 		v.PlayerBasicInfo = x.syncable.PlayerBasicInfo.DumpChange()
 	}
-	if x.checkDirty(3) {
+	if x.checkDirty(uint64(0x01) << 3) {
 		v.CityInfo = x.syncable.CityInfo.DumpChange()
 	}
 	return v
@@ -86,7 +111,7 @@ func (x *City) clearDirty() {
 }
 
 func (x *City) checkDirty(n uint64) bool {
-	return x.dirty & uint64(0x01) << n != 0
+	return x.dirty & n != 0
 }
 
 type dirtyParentFunc_CityBaseInfo func()
@@ -105,15 +130,26 @@ type CityBaseInfo struct {
 	dirthParent dirtyParentFunc_CityBaseInfo
 }
 
+func NewCityBaseInfo() *CityBaseInfo {
+	x := new(CityBaseInfo)
+	x.dirty = 1
+	x.setPosition(NewVector())
+	return x
+}
+
 type syncableCityBaseInfo struct {
 	Position *Vector
 }
 
-func (x *CityBaseInfo) SetPosition(v *Vector) {
+func (x *CityBaseInfo) GetPosition() *Vector {
+	return x.syncable.Position
+}
+
+func (x *CityBaseInfo) setPosition(v *Vector) {
 	if v != x.syncable.Position {
 		x.syncable.Position = v
 		v.dirthParent = func() {
-			x.markDirty(1)
+			x.markDirty(uint64(0x01) << 1)
 		}
 		x.markDirty(uint64(0x01) << 1)
 	}
@@ -121,7 +157,7 @@ func (x *CityBaseInfo) SetPosition(v *Vector) {
 
 func (x *CityBaseInfo) DumpChange() *pb.CityBaseInfo {
 	v := new(pb.CityBaseInfo)
-	if x.checkDirty(1) {
+	if x.checkDirty(uint64(0x01) << 1) {
 		v.Position = x.syncable.Position.DumpChange()
 	}
 	return v
@@ -150,7 +186,7 @@ func (x *CityBaseInfo) clearDirty() {
 }
 
 func (x *CityBaseInfo) checkDirty(n uint64) bool {
-	return x.dirty & uint64(0x01) << n != 0
+	return x.dirty & n != 0
 }
 
 type dirtyParentFunc_Vector func()
@@ -169,9 +205,19 @@ type Vector struct {
 	dirthParent dirtyParentFunc_Vector
 }
 
+func NewVector() *Vector {
+	x := new(Vector)
+	x.dirty = 1
+	return x
+}
+
 type syncableVector struct {
 	X int32
 	Y int32
+}
+
+func (x *Vector) GetX() int32 {
+	return x.syncable.X
 }
 
 func (x *Vector) SetX(v int32) {
@@ -179,6 +225,10 @@ func (x *Vector) SetX(v int32) {
 		x.syncable.X = v
 		x.markDirty(uint64(0x01) << 1)
 	}
+}
+
+func (x *Vector) GetY() int32 {
+	return x.syncable.Y
 }
 
 func (x *Vector) SetY(v int32) {
@@ -190,10 +240,10 @@ func (x *Vector) SetY(v int32) {
 
 func (x *Vector) DumpChange() *pb.Vector {
 	v := new(pb.Vector)
-	if x.checkDirty(1) {
+	if x.checkDirty(uint64(0x01) << 1) {
 		v.X = x.syncable.X
 	}
-	if x.checkDirty(2) {
+	if x.checkDirty(uint64(0x01) << 2) {
 		v.Y = x.syncable.Y
 	}
 	return v
@@ -222,5 +272,5 @@ func (x *Vector) clearDirty() {
 }
 
 func (x *Vector) checkDirty(n uint64) bool {
-	return x.dirty & uint64(0x01) << n != 0
+	return x.dirty & n != 0
 }
