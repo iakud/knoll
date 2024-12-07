@@ -7,84 +7,94 @@ import (
 	"time"
 
 	"github.com/iakud/keeper/kds/kdsc/example/pb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 type Player struct {
 	Id int64
-	syncable pb.Player
-	Info *PlayerBasicInfo
-	Hero *PlayerHero
-	Bag *PlayerBag
+	syncable syncablePlayer
+
 	dirty uint64
 }
 
-func (e *Player) SetInfo(v *PlayerBasicInfo) {
-	if v != e.Info {
-		e.Info = v
-		e.syncable.Info = &v.syncable
+type syncablePlayer struct {
+	Info *PlayerBasicInfo
+	Hero *PlayerHero
+	Bag *PlayerBag
+}
+
+func (x *Player) SetInfo(v *PlayerBasicInfo) {
+	if v != x.syncable.Info {
+		x.syncable.Info = v
 		v.dirthParent = func() {
-			e.markDirty(1)
+			x.markDirty(1)
 		}
-		e.markDirty(uint64(0x01) << 1)
+		x.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (e *Player) SetHero(v *PlayerHero) {
-	if v != e.Hero {
-		e.Hero = v
-		e.syncable.Hero = &v.syncable
+func (x *Player) SetHero(v *PlayerHero) {
+	if v != x.syncable.Hero {
+		x.syncable.Hero = v
 		v.dirthParent = func() {
-			e.markDirty(2)
+			x.markDirty(2)
 		}
-		e.markDirty(uint64(0x01) << 2)
+		x.markDirty(uint64(0x01) << 2)
 	}
 }
 
-func (e *Player) SetBag(v *PlayerBag) {
-	if v != e.Bag {
-		e.Bag = v
-		e.syncable.Bag = &v.syncable
+func (x *Player) SetBag(v *PlayerBag) {
+	if v != x.syncable.Bag {
+		x.syncable.Bag = v
 		v.dirthParent = func() {
-			e.markDirty(3)
+			x.markDirty(3)
 		}
-		e.markDirty(uint64(0x01) << 3)
+		x.markDirty(uint64(0x01) << 3)
 	}
 }
 
-func (e *Player) markDirty(n uint64) {
-	if e.dirty & n == n {
-		return
-	}
-	e.dirty |= n
-}
-
-func (e *Player) clearDirty() {
-	if e.dirty == 0 {
-		return
-	}
-	e.dirty = 0
-}
-
-func (e *Player) DumpChange() *pb.Player {
+func (x *Player) DumpChange() *pb.Player {
 	v := new(pb.Player)
-	if e.dirty & uint64(0x01) << 1 != 0 {
-		v.Info = e.Info.DumpChange()
+	if x.checkDirty(1) {
+		v.Info = x.syncable.Info.DumpChange()
 	}
-	if e.dirty & uint64(0x01) << 2 != 0 {
-		v.Hero = e.Hero.DumpChange()
+	if x.checkDirty(2) {
+		v.Hero = x.syncable.Hero.DumpChange()
 	}
-	if e.dirty & uint64(0x01) << 3 != 0 {
-		v.Bag = e.Bag.DumpChange()
+	if x.checkDirty(3) {
+		v.Bag = x.syncable.Bag.DumpChange()
 	}
 	return v
 }
 
-func (e *Player) DumpFull() *pb.Player {
+func (x *Player) DumpFull() *pb.Player {
 	v := new(pb.Player)
-	v.Info = e.Info.DumpFull()
-	v.Hero = e.Hero.DumpFull()
-	v.Bag = e.Bag.DumpFull()
+	v.Info = x.syncable.Info.DumpFull()
+	v.Hero = x.syncable.Hero.DumpFull()
+	v.Bag = x.syncable.Bag.DumpFull()
 	return v
+}
+
+func (x *Player) markDirty(n uint64) {
+	if x.dirty & n == n {
+		return
+	}
+	x.dirty |= n
+}
+
+func (x *Player) clearDirty() {
+	if x.dirty == 0 {
+		return
+	}
+	x.dirty = 0
+	x.syncable.Info.clearDirty()
+	x.syncable.Hero.clearDirty()
+	x.syncable.Bag.clearDirty()
+}
+
+func (x *Player) checkDirty(n uint64) bool {
+	return x.dirty & uint64(0x01) << n != 0
 }
 
 type dirtyParentFunc_PlayerBasicInfo func()
@@ -97,70 +107,78 @@ func (f dirtyParentFunc_PlayerBasicInfo) invoke() {
 }
 
 type PlayerBasicInfo struct {
-	syncable pb.PlayerBasicInfo
+	syncable syncablePlayerBasicInfo
+
 	dirty uint64
 	dirthParent dirtyParentFunc_PlayerBasicInfo
 }
 
-func (c *PlayerBasicInfo) SetName(v string) {
-	if v != c.syncable.Name {
-		c.syncable.Name = v
-		c.markDirty(uint64(0x01) << 1)
+type syncablePlayerBasicInfo struct {
+	Name string
+	IsNew bool
+	CreateTime time.Time
+}
+
+func (x *PlayerBasicInfo) SetName(v string) {
+	if v != x.syncable.Name {
+		x.syncable.Name = v
+		x.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (c *PlayerBasicInfo) SetIsNew(v bool) {
-	if v != c.syncable.IsNew {
-		c.syncable.IsNew = v
-		c.markDirty(uint64(0x01) << 3)
+func (x *PlayerBasicInfo) SetIsNew(v bool) {
+	if v != x.syncable.IsNew {
+		x.syncable.IsNew = v
+		x.markDirty(uint64(0x01) << 3)
 	}
 }
 
-func (c *PlayerBasicInfo) SetCreateTime(v time.Time) {
-	if v != c.syncable.CreateTime {
-		c.syncable.CreateTime = v
-		c.markDirty(uint64(0x01) << 5)
+func (x *PlayerBasicInfo) SetCreateTime(v time.Time) {
+	if v != x.syncable.CreateTime {
+		x.syncable.CreateTime = v
+		x.markDirty(uint64(0x01) << 5)
 	}
 }
 
-func (c *PlayerBasicInfo) markDirty(n uint64) {
-	if c.dirty&n == n {
-		return
-	}
-	c.dirty |= n
-	c.dirthParent.invoke()
-}
-
-func (c *PlayerBasicInfo) clearDirty() {
-	if c.dirty == 0 {
-		return
-	}
-	c.dirty = 0
-}
-
-func (c *PlayerBasicInfo) DumpChange() *pb.PlayerBasicInfo {
-	if c == nil {
-		return nil
-	}
+func (x *PlayerBasicInfo) DumpChange() *pb.PlayerBasicInfo {
 	v := new(pb.PlayerBasicInfo)
-	if c.dirty & uint64(0x01) << 1 != 0 {
-		v.Name = c.syncable.Name
+	if x.checkDirty(1) {
+		v.Name = x.syncable.Name
 	}
-	if c.dirty & uint64(0x01) << 3 != 0 {
-		v.IsNew = c.syncable.IsNew
+	if x.checkDirty(3) {
+		v.IsNew = x.syncable.IsNew
 	}
-	if c.dirty & uint64(0x01) << 5 != 0 {
-		v.CreateTime = c.syncable.CreateTime
+	if x.checkDirty(5) {
+		v.CreateTime = timestamppb.New(x.syncable.CreateTime)
 	}
 	return v
 }
 
-func (c *PlayerBasicInfo) DumpFull() *pb.PlayerBasicInfo {
+func (x *PlayerBasicInfo) DumpFull() *pb.PlayerBasicInfo {
 	v := new(pb.PlayerBasicInfo)
-	v.Name = c.syncable.Name
-	v.IsNew = c.syncable.IsNew
-	v.CreateTime = c.syncable.CreateTime
+	v.Name = x.syncable.Name
+	v.IsNew = x.syncable.IsNew
+	v.CreateTime = timestamppb.New(x.syncable.CreateTime)
 	return v
+}
+
+func (x *PlayerBasicInfo) markDirty(n uint64) {
+	if x.dirty & n == n {
+		return
+	}
+	x.dirty |= n
+	x.dirthParent.invoke()
+}
+
+func (x *PlayerBasicInfo) clearDirty() {
+	if x.dirty == 0 {
+		return
+	}
+	x.dirty = 0
+}
+
+func (x *PlayerBasicInfo) checkDirty(n uint64) bool {
+	return x.dirty & uint64(0x01) << n != 0
 }
 
 type dirtyParentFunc_PlayerHero func()
@@ -173,50 +191,58 @@ func (f dirtyParentFunc_PlayerHero) invoke() {
 }
 
 type PlayerHero struct {
-	syncable pb.PlayerHero
-	Heroes *Hero
+	syncable syncablePlayerHero
+
 	dirty uint64
 	dirthParent dirtyParentFunc_PlayerHero
 }
 
-func (c *PlayerHero) SetHeroes(v *Hero) {
-	if v != c.Heroes {
-		c.Heroes = v
-		c.syncable.Heroes = &v.syncable
-		c.markDirty(uint64(0x01) << 1)
+type syncablePlayerHero struct {
+	Heroes *Hero
+}
+
+func (x *PlayerHero) SetHeroes(v *Hero) {
+	if v != x.syncable.Heroes {
+		x.syncable.Heroes = v
+		v.dirthParent = func() {
+			x.markDirty(1)
+		}
+		x.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (c *PlayerHero) markDirty(n uint64) {
-	if c.dirty&n == n {
-		return
-	}
-	c.dirty |= n
-	c.dirthParent.invoke()
-}
-
-func (c *PlayerHero) clearDirty() {
-	if c.dirty == 0 {
-		return
-	}
-	c.dirty = 0
-}
-
-func (c *PlayerHero) DumpChange() *pb.PlayerHero {
-	if c == nil {
-		return nil
-	}
+func (x *PlayerHero) DumpChange() *pb.PlayerHero {
 	v := new(pb.PlayerHero)
-	if c.dirty & uint64(0x01) << 1 != 0 {
-		v.Heroes = c.Heroes.DumpChange()
+	if x.checkDirty(1) {
+		v.Heroes = x.syncable.Heroes.DumpChange()
 	}
 	return v
 }
 
-func (c *PlayerHero) DumpFull() *pb.PlayerHero {
+func (x *PlayerHero) DumpFull() *pb.PlayerHero {
 	v := new(pb.PlayerHero)
-	v.Heroes = c.Heroes.DumpFull()
+	v.Heroes = x.syncable.Heroes.DumpFull()
 	return v
+}
+
+func (x *PlayerHero) markDirty(n uint64) {
+	if x.dirty & n == n {
+		return
+	}
+	x.dirty |= n
+	x.dirthParent.invoke()
+}
+
+func (x *PlayerHero) clearDirty() {
+	if x.dirty == 0 {
+		return
+	}
+	x.dirty = 0
+	x.syncable.Heroes.clearDirty()
+}
+
+func (x *PlayerHero) checkDirty(n uint64) bool {
+	return x.dirty & uint64(0x01) << n != 0
 }
 
 type dirtyParentFunc_PlayerBag func()
@@ -229,48 +255,54 @@ func (f dirtyParentFunc_PlayerBag) invoke() {
 }
 
 type PlayerBag struct {
-	syncable pb.PlayerBag
+	syncable syncablePlayerBag
+
 	dirty uint64
 	dirthParent dirtyParentFunc_PlayerBag
 }
 
-func (c *PlayerBag) SetResources(v int32) {
-	if v != c.syncable.Resources {
-		c.syncable.Resources = v
-		c.markDirty(uint64(0x01) << 1)
+type syncablePlayerBag struct {
+	Resources int32
+}
+
+func (x *PlayerBag) SetResources(v int32) {
+	if v != x.syncable.Resources {
+		x.syncable.Resources = v
+		x.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (c *PlayerBag) markDirty(n uint64) {
-	if c.dirty&n == n {
-		return
-	}
-	c.dirty |= n
-	c.dirthParent.invoke()
-}
-
-func (c *PlayerBag) clearDirty() {
-	if c.dirty == 0 {
-		return
-	}
-	c.dirty = 0
-}
-
-func (c *PlayerBag) DumpChange() *pb.PlayerBag {
-	if c == nil {
-		return nil
-	}
+func (x *PlayerBag) DumpChange() *pb.PlayerBag {
 	v := new(pb.PlayerBag)
-	if c.dirty & uint64(0x01) << 1 != 0 {
-		v.Resources = c.syncable.Resources
+	if x.checkDirty(1) {
+		v.Resources = x.syncable.Resources
 	}
 	return v
 }
 
-func (c *PlayerBag) DumpFull() *pb.PlayerBag {
+func (x *PlayerBag) DumpFull() *pb.PlayerBag {
 	v := new(pb.PlayerBag)
-	v.Resources = c.syncable.Resources
+	v.Resources = x.syncable.Resources
 	return v
+}
+
+func (x *PlayerBag) markDirty(n uint64) {
+	if x.dirty & n == n {
+		return
+	}
+	x.dirty |= n
+	x.dirthParent.invoke()
+}
+
+func (x *PlayerBag) clearDirty() {
+	if x.dirty == 0 {
+		return
+	}
+	x.dirty = 0
+}
+
+func (x *PlayerBag) checkDirty(n uint64) bool {
+	return x.dirty & uint64(0x01) << n != 0
 }
 
 type dirtyParentFunc_Hero func()
@@ -283,79 +315,96 @@ func (f dirtyParentFunc_Hero) invoke() {
 }
 
 type Hero struct {
-	syncable pb.Hero
+	syncable syncableHero
+
 	dirty uint64
 	dirthParent dirtyParentFunc_Hero
 }
 
-func (c *Hero) SetHeroId(v int32) {
-	if v != c.syncable.HeroId {
-		c.syncable.HeroId = v
-		c.markDirty(uint64(0x01) << 1)
+type syncableHero struct {
+	HeroId int32
+	HeroLevel int32
+	Type HeroType
+	NeedTime time.Duration
+}
+
+func (x *Hero) SetHeroId(v int32) {
+	if v != x.syncable.HeroId {
+		x.syncable.HeroId = v
+		x.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (c *Hero) SetHeroLevel(v int32) {
-	if v != c.syncable.HeroLevel {
-		c.syncable.HeroLevel = v
-		c.markDirty(uint64(0x01) << 2)
+func (x *Hero) SetHeroLevel(v int32) {
+	if v != x.syncable.HeroLevel {
+		x.syncable.HeroLevel = v
+		x.markDirty(uint64(0x01) << 2)
 	}
 }
 
-func (c *Hero) SetType(v pb.HeroType) {
-	if v != c.syncable.Type {
-		c.syncable.Type = v
-		c.markDirty(uint64(0x01) << 3)
+func (x *Hero) SetType(v HeroType) {
+	if v != x.syncable.Type {
+		x.syncable.Type = v
+		x.markDirty(uint64(0x01) << 3)
 	}
 }
 
-func (c *Hero) SetNeedTime(v time.Duration) {
-	if v != c.syncable.NeedTime {
-		c.syncable.NeedTime = v
-		c.markDirty(uint64(0x01) << 4)
+func (x *Hero) SetNeedTime(v time.Duration) {
+	if v != x.syncable.NeedTime {
+		x.syncable.NeedTime = v
+		x.markDirty(uint64(0x01) << 4)
 	}
 }
 
-func (c *Hero) markDirty(n uint64) {
-	if c.dirty&n == n {
-		return
-	}
-	c.dirty |= n
-	c.dirthParent.invoke()
-}
-
-func (c *Hero) clearDirty() {
-	if c.dirty == 0 {
-		return
-	}
-	c.dirty = 0
-}
-
-func (c *Hero) DumpChange() *pb.Hero {
-	if c == nil {
-		return nil
-	}
+func (x *Hero) DumpChange() *pb.Hero {
 	v := new(pb.Hero)
-	if c.dirty & uint64(0x01) << 1 != 0 {
-		v.HeroId = c.syncable.HeroId
+	if x.checkDirty(1) {
+		v.HeroId = x.syncable.HeroId
 	}
-	if c.dirty & uint64(0x01) << 2 != 0 {
-		v.HeroLevel = c.syncable.HeroLevel
+	if x.checkDirty(2) {
+		v.HeroLevel = x.syncable.HeroLevel
 	}
-	if c.dirty & uint64(0x01) << 3 != 0 {
-		v.Type = c.syncable.Type
+	if x.checkDirty(3) {
+		v.Type = x.syncable.Type
 	}
-	if c.dirty & uint64(0x01) << 4 != 0 {
-		v.NeedTime = c.syncable.NeedTime
+	if x.checkDirty(4) {
+		v.NeedTime = durationpb.New(x.syncable.NeedTime)
 	}
 	return v
 }
 
-func (c *Hero) DumpFull() *pb.Hero {
+func (x *Hero) DumpFull() *pb.Hero {
 	v := new(pb.Hero)
-	v.HeroId = c.syncable.HeroId
-	v.HeroLevel = c.syncable.HeroLevel
-	v.Type = c.syncable.Type
-	v.NeedTime = c.syncable.NeedTime
+	v.HeroId = x.syncable.HeroId
+	v.HeroLevel = x.syncable.HeroLevel
+	v.Type = x.syncable.Type
+	v.NeedTime = durationpb.New(x.syncable.NeedTime)
 	return v
 }
+
+func (x *Hero) markDirty(n uint64) {
+	if x.dirty & n == n {
+		return
+	}
+	x.dirty |= n
+	x.dirthParent.invoke()
+}
+
+func (x *Hero) clearDirty() {
+	if x.dirty == 0 {
+		return
+	}
+	x.dirty = 0
+}
+
+func (x *Hero) checkDirty(n uint64) bool {
+	return x.dirty & uint64(0x01) << n != 0
+}
+
+type HeroType = pb.HeroType
+
+const (
+	HeroType_HeroType1 HeroType = 0
+	HeroType_HeroType2 HeroType = 2
+	HeroType_HeroType3 HeroType = -5
+)

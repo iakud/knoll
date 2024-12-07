@@ -7,7 +7,6 @@ import (
 	"github.com/iakud/keeper/kds/kdsc/parser"
 )
 
-
 func visitKds(ctx *Context, kdsCtx parser.IKdsContext) *Kds {
 	kds := new(Kds)
 	kds.Package = kdsCtx.PackageStatement().FullIdent().GetText()
@@ -50,7 +49,7 @@ func visitImport(importCtx parser.IImportStatementContext) string {
 
 func visitEnum(kds *Kds, enumCtx parser.IEnumDefContext) *Enum {
 	enum := new(Enum)
-	enum.Name = enumCtx.EnumName().GetText()
+	enum.Name = GoCamelCase(enumCtx.EnumName().GetText())
 	for _, element := range enumCtx.EnumBody().AllEnumElement() {
 		enum.EnumFields = append(enum.EnumFields, visitEnumField(element.EnumField()))
 	}
@@ -59,7 +58,7 @@ func visitEnum(kds *Kds, enumCtx parser.IEnumDefContext) *Enum {
 
 func visitEnumField(enumFieldCtx parser.IEnumFieldContext) *EnumField {
 	enumField := new(EnumField)
-	enumField.Name = enumFieldCtx.Ident().GetText()
+	enumField.Name = GoCamelCase(enumFieldCtx.Ident().GetText())
 	if enumFieldCtx.MINUS() != nil {
 		enumField.Value, _ = strconv.Atoi(enumFieldCtx.MINUS().GetText() + enumFieldCtx.IntLit().GetText())
 	} else {
@@ -70,7 +69,7 @@ func visitEnumField(enumFieldCtx parser.IEnumFieldContext) *EnumField {
 
 func visitEntity(kds *Kds, entityCtx parser.IEntityDefContext) *Entity {
 	entity := new(Entity)
-	entity.Name = entityCtx.EntityName().GetText()
+	entity.Name = GoCamelCase(entityCtx.EntityName().GetText())
 	for _, element := range entityCtx.EntityBody().AllEntityElement() {
 		switch {
 		case element.Field() != nil:
@@ -90,7 +89,7 @@ func visitComponent(kds *Kds, componentCtx parser.IComponentDefContext) *Compone
 		case element.Field() != nil:
 			field := visitField(kds, element.Field())
 			component.Fields = append(component.Fields, field)
-			
+
 			kds.ImportTimestamp = kds.ImportTimestamp || field.IsTimestamp
 			kds.ImportDuration = kds.ImportDuration || field.IsDuration
 		case element.MapField() != nil:
@@ -107,9 +106,12 @@ func visitComponent(kds *Kds, componentCtx parser.IComponentDefContext) *Compone
 func visitField(kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	field := new(Field)
 	field.Repeated = fieldCtx.FieldLabel() != nil && fieldCtx.FieldLabel().REPEATED() != nil
-	fieldCtx.Type_().MessageType()
-	field.Type = fieldCtx.Type_().GetText()
-	field.Name = fieldCtx.FieldName().GetText()
+	if fieldCtx.Type_().MessageType() != nil || fieldCtx.Type_().EnumType() != nil {
+		field.Type = GoCamelCase(fieldCtx.Type_().GetText())
+	} else {
+		field.Type = fieldCtx.Type_().GetText()
+	}
+	field.Name = GoCamelCase(fieldCtx.FieldName().GetText())
 	field.Number, _ = strconv.Atoi(fieldCtx.FieldNumber().GetText())
 
 	field.IsTimestamp = fieldCtx.Type_().TIMESTAMP() != nil
@@ -120,8 +122,12 @@ func visitField(kds *Kds, fieldCtx parser.IFieldContext) *Field {
 func visitMapField(kds *Kds, mapFieldCtx parser.IMapFieldContext) *Field {
 	field := new(Field)
 	field.KeyType = mapFieldCtx.KeyType().GetText()
-	field.Type = mapFieldCtx.Type_().GetText()
-	field.Name = mapFieldCtx.MapName().GetText()
+	if mapFieldCtx.Type_().MessageType() != nil || mapFieldCtx.Type_().EnumType() != nil {
+		field.Type = GoCamelCase(mapFieldCtx.Type_().GetText())
+	} else {
+		field.Type = mapFieldCtx.Type_().GetText()
+	}
+	field.Name = GoCamelCase(mapFieldCtx.MapName().GetText())
 	field.Number, _ = strconv.Atoi(mapFieldCtx.FieldNumber().GetText())
 
 	field.IsTimestamp = mapFieldCtx.Type_().TIMESTAMP() != nil

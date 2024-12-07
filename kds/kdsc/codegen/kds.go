@@ -25,14 +25,17 @@ type EnumField struct {
 	Value int
 }
 
-type Entity struct {
+type Message struct {
 	Name string
 	Fields []*Field
 }
 
+type Entity struct {
+	Message
+}
+
 type Component struct {
-	Name string
-	Fields []*Field
+	Message
 }
 
 type FieldKind int32
@@ -52,21 +55,8 @@ type Field struct {
 	Name string
 	Number int
 
+	GoVarName string
 	IsTimestamp bool
 	IsDuration bool
 	Kind string
-}
-
-func (f *Field) IsComponent() bool {
-	switch f.Type {
-	case "double", "float", "int32", "int64", "sint32", "sint64", "fixed32", "fixed64", "bool", "string", "bytes":
-		break
-	default:
-		return true
-	}
-	return false
-}
-
-func (f *Field) IsEnum() bool {
-	return false
 }

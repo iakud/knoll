@@ -9,75 +9,84 @@ import (
 
 type City struct {
 	Id int64
-	syncable pb.City
-	PlayerBasicInfo *PlayerBasicInfo
-	CityInfo *CityBaseInfo
+	syncable syncableCity
+
 	dirty uint64
 }
 
-func (e *City) SetPlayerId(v int64) {
-	if v != e.syncable.PlayerId {
-		e.syncable.PlayerId = v
-		e.markDirty(uint64(0x01) << 1)
+type syncableCity struct {
+	PlayerId int64
+	PlayerBasicInfo *PlayerBasicInfo
+	CityInfo *CityBaseInfo
+}
+
+func (x *City) SetPlayerId(v int64) {
+	if v != x.syncable.PlayerId {
+		x.syncable.PlayerId = v
+		x.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (e *City) SetPlayerBasicInfo(v *PlayerBasicInfo) {
-	if v != e.PlayerBasicInfo {
-		e.PlayerBasicInfo = v
-		e.syncable.PlayerBasicInfo = &v.syncable
+func (x *City) SetPlayerBasicInfo(v *PlayerBasicInfo) {
+	if v != x.syncable.PlayerBasicInfo {
+		x.syncable.PlayerBasicInfo = v
 		v.dirthParent = func() {
-			e.markDirty(2)
+			x.markDirty(2)
 		}
-		e.markDirty(uint64(0x01) << 2)
+		x.markDirty(uint64(0x01) << 2)
 	}
 }
 
-func (e *City) SetCityInfo(v *CityBaseInfo) {
-	if v != e.CityInfo {
-		e.CityInfo = v
-		e.syncable.CityInfo = &v.syncable
+func (x *City) SetCityInfo(v *CityBaseInfo) {
+	if v != x.syncable.CityInfo {
+		x.syncable.CityInfo = v
 		v.dirthParent = func() {
-			e.markDirty(3)
+			x.markDirty(3)
 		}
-		e.markDirty(uint64(0x01) << 3)
+		x.markDirty(uint64(0x01) << 3)
 	}
 }
 
-func (e *City) markDirty(n uint64) {
-	if e.dirty & n == n {
-		return
-	}
-	e.dirty |= n
-}
-
-func (e *City) clearDirty() {
-	if e.dirty == 0 {
-		return
-	}
-	e.dirty = 0
-}
-
-func (e *City) DumpChange() *pb.City {
+func (x *City) DumpChange() *pb.City {
 	v := new(pb.City)
-	if e.dirty & uint64(0x01) << 1 != 0 {
-		v.PlayerId = e.syncable.PlayerId
+	if x.checkDirty(1) {
+		v.PlayerId = x.syncable.PlayerId
 	}
-	if e.dirty & uint64(0x01) << 2 != 0 {
-		v.PlayerBasicInfo = e.PlayerBasicInfo.DumpChange()
+	if x.checkDirty(2) {
+		v.PlayerBasicInfo = x.syncable.PlayerBasicInfo.DumpChange()
 	}
-	if e.dirty & uint64(0x01) << 3 != 0 {
-		v.CityInfo = e.CityInfo.DumpChange()
+	if x.checkDirty(3) {
+		v.CityInfo = x.syncable.CityInfo.DumpChange()
 	}
 	return v
 }
 
-func (e *City) DumpFull() *pb.City {
+func (x *City) DumpFull() *pb.City {
 	v := new(pb.City)
-	v.PlayerId = e.syncable.PlayerId
-	v.PlayerBasicInfo = e.PlayerBasicInfo.DumpFull()
-	v.CityInfo = e.CityInfo.DumpFull()
+	v.PlayerId = x.syncable.PlayerId
+	v.PlayerBasicInfo = x.syncable.PlayerBasicInfo.DumpFull()
+	v.CityInfo = x.syncable.CityInfo.DumpFull()
 	return v
+}
+
+func (x *City) markDirty(n uint64) {
+	if x.dirty & n == n {
+		return
+	}
+	x.dirty |= n
+}
+
+func (x *City) clearDirty() {
+	if x.dirty == 0 {
+		return
+	}
+	x.dirty = 0
+	x.syncable.PlayerBasicInfo.clearDirty()
+	x.syncable.CityInfo.clearDirty()
+}
+
+func (x *City) checkDirty(n uint64) bool {
+	return x.dirty & uint64(0x01) << n != 0
 }
 
 type dirtyParentFunc_CityBaseInfo func()
@@ -90,50 +99,58 @@ func (f dirtyParentFunc_CityBaseInfo) invoke() {
 }
 
 type CityBaseInfo struct {
-	syncable pb.CityBaseInfo
-	Position *Vector
+	syncable syncableCityBaseInfo
+
 	dirty uint64
 	dirthParent dirtyParentFunc_CityBaseInfo
 }
 
-func (c *CityBaseInfo) SetPosition(v *Vector) {
-	if v != c.Position {
-		c.Position = v
-		c.syncable.Position = &v.syncable
-		c.markDirty(uint64(0x01) << 1)
+type syncableCityBaseInfo struct {
+	Position *Vector
+}
+
+func (x *CityBaseInfo) SetPosition(v *Vector) {
+	if v != x.syncable.Position {
+		x.syncable.Position = v
+		v.dirthParent = func() {
+			x.markDirty(1)
+		}
+		x.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (c *CityBaseInfo) markDirty(n uint64) {
-	if c.dirty&n == n {
-		return
-	}
-	c.dirty |= n
-	c.dirthParent.invoke()
-}
-
-func (c *CityBaseInfo) clearDirty() {
-	if c.dirty == 0 {
-		return
-	}
-	c.dirty = 0
-}
-
-func (c *CityBaseInfo) DumpChange() *pb.CityBaseInfo {
-	if c == nil {
-		return nil
-	}
+func (x *CityBaseInfo) DumpChange() *pb.CityBaseInfo {
 	v := new(pb.CityBaseInfo)
-	if c.dirty & uint64(0x01) << 1 != 0 {
-		v.Position = c.Position.DumpChange()
+	if x.checkDirty(1) {
+		v.Position = x.syncable.Position.DumpChange()
 	}
 	return v
 }
 
-func (c *CityBaseInfo) DumpFull() *pb.CityBaseInfo {
+func (x *CityBaseInfo) DumpFull() *pb.CityBaseInfo {
 	v := new(pb.CityBaseInfo)
-	v.Position = c.Position.DumpFull()
+	v.Position = x.syncable.Position.DumpFull()
 	return v
+}
+
+func (x *CityBaseInfo) markDirty(n uint64) {
+	if x.dirty & n == n {
+		return
+	}
+	x.dirty |= n
+	x.dirthParent.invoke()
+}
+
+func (x *CityBaseInfo) clearDirty() {
+	if x.dirty == 0 {
+		return
+	}
+	x.dirty = 0
+	x.syncable.Position.clearDirty()
+}
+
+func (x *CityBaseInfo) checkDirty(n uint64) bool {
+	return x.dirty & uint64(0x01) << n != 0
 }
 
 type dirtyParentFunc_Vector func()
@@ -146,57 +163,64 @@ func (f dirtyParentFunc_Vector) invoke() {
 }
 
 type Vector struct {
-	syncable pb.Vector
+	syncable syncableVector
+
 	dirty uint64
 	dirthParent dirtyParentFunc_Vector
 }
 
-func (c *Vector) SetX(v int32) {
-	if v != c.syncable.X {
-		c.syncable.X = v
-		c.markDirty(uint64(0x01) << 1)
+type syncableVector struct {
+	X int32
+	Y int32
+}
+
+func (x *Vector) SetX(v int32) {
+	if v != x.syncable.X {
+		x.syncable.X = v
+		x.markDirty(uint64(0x01) << 1)
 	}
 }
 
-func (c *Vector) SetY(v int32) {
-	if v != c.syncable.Y {
-		c.syncable.Y = v
-		c.markDirty(uint64(0x01) << 2)
+func (x *Vector) SetY(v int32) {
+	if v != x.syncable.Y {
+		x.syncable.Y = v
+		x.markDirty(uint64(0x01) << 2)
 	}
 }
 
-func (c *Vector) markDirty(n uint64) {
-	if c.dirty&n == n {
-		return
-	}
-	c.dirty |= n
-	c.dirthParent.invoke()
-}
-
-func (c *Vector) clearDirty() {
-	if c.dirty == 0 {
-		return
-	}
-	c.dirty = 0
-}
-
-func (c *Vector) DumpChange() *pb.Vector {
-	if c == nil {
-		return nil
-	}
+func (x *Vector) DumpChange() *pb.Vector {
 	v := new(pb.Vector)
-	if c.dirty & uint64(0x01) << 1 != 0 {
-		v.X = c.syncable.X
+	if x.checkDirty(1) {
+		v.X = x.syncable.X
 	}
-	if c.dirty & uint64(0x01) << 2 != 0 {
-		v.Y = c.syncable.Y
+	if x.checkDirty(2) {
+		v.Y = x.syncable.Y
 	}
 	return v
 }
 
-func (c *Vector) DumpFull() *pb.Vector {
+func (x *Vector) DumpFull() *pb.Vector {
 	v := new(pb.Vector)
-	v.X = c.syncable.X
-	v.Y = c.syncable.Y
+	v.X = x.syncable.X
+	v.Y = x.syncable.Y
 	return v
+}
+
+func (x *Vector) markDirty(n uint64) {
+	if x.dirty & n == n {
+		return
+	}
+	x.dirty |= n
+	x.dirthParent.invoke()
+}
+
+func (x *Vector) clearDirty() {
+	if x.dirty == 0 {
+		return
+	}
+	x.dirty = 0
+}
+
+func (x *Vector) checkDirty(n uint64) bool {
+	return x.dirty & uint64(0x01) << n != 0
 }

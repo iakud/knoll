@@ -1,87 +1,126 @@
 {{- /* BEGIN DEFINE */ -}}
 
+{{- define "Enum"}}
+{{- $EnumType := (print .Name)}}
+type {{.Name}} = pb.{{.Name}}
+
+const (
+{{- range .EnumFields}}
+	{{$EnumType}}_{{.Name}} {{$EnumType}} = {{.Value}}
+{{- end}}
+)
+{{- end}}
+
+{{- define "Message"}}
+{{- $MessageName := (print .Name)}}
+type syncable{{.Name}} struct {
+{{- range .Fields}}
+{{- if FindComponent .Type}}
+	{{.Name}} *{{.Type}}
+{{- else}}
+	{{.Name}} {{GoType .Type}}
+{{- end}}
+{{- end}}
+}
+
+{{- range .Fields}}
+{{""}}
+{{- if FindComponent .Type}}
+func (x *{{$MessageName}}) Set{{.Name}}(v *{{.Type}}) {
+	if v != x.syncable.{{.Name}} {
+		x.syncable.{{.Name}} = v
+		v.dirthParent = func() {
+			x.markDirty({{.Number}})
+		}
+		x.markDirty(uint64(0x01) << {{.Number}})
+	}
+}
+{{- else if FindEnum .Type}}
+func (x *{{$MessageName}}) Set{{.Name}}(v {{.Type}}) {
+	if v != x.syncable.{{.Name}} {
+		x.syncable.{{.Name}} = v
+		x.markDirty(uint64(0x01) << {{.Number}})
+	}
+}
+{{- else}}
+func (x *{{$MessageName}}) Set{{.Name}}(v {{GoType .Type}}) {
+	if v != x.syncable.{{.Name}} {
+		x.syncable.{{.Name}} = v
+		x.markDirty(uint64(0x01) << {{.Number}})
+	}
+}
+{{- end}}
+{{- end}}
+
+func (x *{{$MessageName}}) DumpChange() *pb.{{.Name}} {
+	v := new(pb.{{.Name}})
+{{- range .Fields}}
+	if x.checkDirty({{.Number}}) {
+{{- if FindComponent .Type}}
+		v.{{.Name}} = x.syncable.{{.Name}}.DumpChange()
+{{- else if .IsTimestamp}}
+		v.{{.Name}} = timestamppb.New(x.syncable.{{.Name}})
+{{- else if .IsDuration}}
+		v.{{.Name}} = durationpb.New(x.syncable.{{.Name}})
+{{- else}}
+		v.{{.Name}} = x.syncable.{{.Name}}
+{{- end}}
+	}
+{{- end}}
+	return v
+}
+
+func (x *{{$MessageName}}) DumpFull() *pb.{{.Name}} {
+	v := new(pb.{{.Name}})
+{{- range .Fields}}
+{{- if FindComponent .Type}}
+	v.{{.Name}} = x.syncable.{{.Name}}.DumpFull()
+{{- else if .IsTimestamp}}
+	v.{{.Name}} = timestamppb.New(x.syncable.{{.Name}})
+{{- else if .IsDuration}}
+	v.{{.Name}} = durationpb.New(x.syncable.{{.Name}})
+{{- else}}
+	v.{{.Name}} = x.syncable.{{.Name}}
+{{- end}}
+{{- end}}
+	return v
+}
+
+{{- end}}
+
 {{- define "Entity"}}
 {{- $EntityName := (print .Name)}}
 type {{$EntityName}} struct {
 	Id int64
-	syncable pb.{{.Name}}
+	syncable syncable{{.Name}}
 
-{{- range .Fields}}
-{{- if .IsComponent}}
-	{{.Name}} *{{.Type}}
-{{- end}}
-{{- end}}
 	dirty uint64
 }
-{{- range .Fields}}
-{{""}}
-{{- if FindComponent .Type}}
-func (e *{{$EntityName}}) Set{{.Name}}(v *{{.Type}}) {
-	if v != e.{{.Name}} {
-		e.{{.Name}} = v
-		e.syncable.{{.Name}} = &v.syncable
-		v.dirthParent = func() {
-			e.markDirty({{.Number}})
-		}
-		e.markDirty(uint64(0x01) << {{.Number}})
-	}
-}
-{{- else if FindEnum .Type}}
-func (e *{{$EntityName}}) Set{{.Name}}(v pb.{{.Type}}) {
-	if v != e.syncable.{{.Name}} {
-		e.syncable.{{.Name}} = v
-		e.markDirty(uint64(0x01) << {{.Number}})
-	}
-}
-{{- else}}
-func (e *{{$EntityName}}) Set{{.Name}}(v {{GoType .Type}}) {
-	if v != e.syncable.{{.Name}} {
-		e.syncable.{{.Name}} = v
-		e.markDirty(uint64(0x01) << {{.Number}})
-	}
-}
-{{- end}}
-{{- end}}
+{{template "Message" .}}
 
-func (e *{{$EntityName}}) markDirty(n uint64) {
-	if e.dirty & n == n {
+func (x *{{$EntityName}}) markDirty(n uint64) {
+	if x.dirty & n == n {
 		return
 	}
-	e.dirty |= n
+	x.dirty |= n
 }
 
-func (e *{{$EntityName}}) clearDirty() {
-	if e.dirty == 0 {
+func (x *{{$EntityName}}) clearDirty() {
+	if x.dirty == 0 {
 		return
 	}
-	e.dirty = 0
-}
-
-func (e *{{$EntityName}}) DumpChange() *pb.{{.Name}} {
-	v := new(pb.{{.Name}})
-{{- range .Fields}}
-	if e.dirty & uint64(0x01) << {{.Number}} != 0 {
-{{- if .IsComponent}}
-		v.{{.Name}} = e.{{.Name}}.DumpChange()
-{{- else}}
-		v.{{.Name}} = e.syncable.{{.Name}}
-{{- end}}
-	}
-{{- end}}
-	return v
-}
-
-func (e *{{$EntityName}}) DumpFull() *pb.{{.Name}} {
-	v := new(pb.{{.Name}})
+	x.dirty = 0
 {{- range .Fields}}
 {{- if FindComponent .Type}}
-	v.{{.Name}} = e.{{.Name}}.DumpFull()
-{{- else}}
-	v.{{.Name}} = e.syncable.{{.Name}}
+	x.syncable.{{.Name}}.clearDirty()
 {{- end}}
 {{- end}}
-	return v
 }
+
+func (x *{{$EntityName}}) checkDirty(n uint64) bool {
+	return x.dirty & uint64(0x01) << n != 0
+}
+
 {{- end}}
 
 {{- define "Component"}}
@@ -96,86 +135,35 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 }
 
 type {{$ComponentName}} struct {
-	syncable pb.{{.Name}}
+	syncable syncable{{.Name}}
 
-{{- range .Fields}}
-{{- if FindComponent .Type}}
-	{{.Name}} *{{.Type}}
-{{- end}}
-{{- end}}
 	dirty uint64
 	dirthParent dirtyParentFunc_{{.Name}}
 }
+{{template "Message" .}}
 
-{{- range .Fields}}
-{{""}}
-{{- if FindComponent .Type}}
-func (c *{{$ComponentName}}) Set{{.Name}}(v *{{.Type}}) {
-	if v != c.{{.Name}} {
-		c.{{.Name}} = v
-		c.syncable.{{.Name}} = &v.syncable
-		c.markDirty(uint64(0x01) << {{.Number}})
-	}
-}
-{{- else if FindEnum .Type}}
-func (c *{{$ComponentName}}) Set{{.Name}}(v pb.{{.Type}}) {
-	if v != c.syncable.{{.Name}} {
-		c.syncable.{{.Name}} = v
-		c.markDirty(uint64(0x01) << {{.Number}})
-	}
-}
-{{- else}}
-func (c *{{$ComponentName}}) Set{{.Name}}(v {{GoType .Type}}) {
-	if v != c.syncable.{{.Name}} {
-		c.syncable.{{.Name}} = v
-		c.markDirty(uint64(0x01) << {{.Number}})
-	}
-}
-{{- end}}
-{{- end}}
-
-func (c *{{$ComponentName}}) markDirty(n uint64) {
-	if c.dirty&n == n {
+func (x *{{$ComponentName}}) markDirty(n uint64) {
+	if x.dirty & n == n {
 		return
 	}
-	c.dirty |= n
-	c.dirthParent.invoke()
+	x.dirty |= n
+	x.dirthParent.invoke()
 }
 
-func (c *{{$ComponentName}}) clearDirty() {
-	if c.dirty == 0 {
+func (x *{{$ComponentName}}) clearDirty() {
+	if x.dirty == 0 {
 		return
 	}
-	c.dirty = 0
-}
-
-func (c *{{$ComponentName}}) DumpChange() *pb.{{.Name}} {
-	if c == nil {
-		return nil
-	}
-	v := new(pb.{{.Name}})
-{{- range .Fields}}
-	if c.dirty & uint64(0x01) << {{.Number}} != 0 {
-{{- if FindComponent .Type}}
-		v.{{.Name}} = c.{{.Name}}.DumpChange()
-{{- else}}
-		v.{{.Name}} = c.syncable.{{.Name}}
-{{- end}}
-	}
-{{- end}}
-	return v
-}
-
-func (c *{{$ComponentName}}) DumpFull() *pb.{{.Name}} {
-	v := new(pb.{{.Name}})
+	x.dirty = 0
 {{- range .Fields}}
 {{- if FindComponent .Type}}
-	v.{{.Name}} = c.{{.Name}}.DumpFull()
-{{- else}}
-	v.{{.Name}} = c.syncable.{{.Name}}
+	x.syncable.{{.Name}}.clearDirty()
 {{- end}}
 {{- end}}
-	return v
+}
+
+func (x *{{$ComponentName}}) checkDirty(n uint64) bool {
+	return x.dirty & uint64(0x01) << n != 0
 }
 {{- end}}
 
@@ -192,10 +180,18 @@ import (
 {{""}}
 {{- end}}
 	"github.com/iakud/keeper/kds/kdsc/example/pb"
+{{- if .ImportTimestamp}}
+	"google.golang.org/protobuf/types/known/timestamppb"
+{{- end}}
+{{- if .ImportDuration}}
+	"google.golang.org/protobuf/types/known/durationpb"
+{{- end}}
 )
 
 {{- range .Defs}}
-{{- if IsEntity .}}
+{{- if IsEnum .}}
+{{template "Enum" .}}
+{{- else if IsEntity .}}
 {{template "Entity" .}}
 {{- else if IsComponent .}}
 {{template "Component" .}}
