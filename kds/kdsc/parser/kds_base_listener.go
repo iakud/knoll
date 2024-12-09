@@ -50,6 +50,18 @@ func (s *BasekdsListener) EnterFieldLabel(ctx *FieldLabelContext) {}
 // ExitFieldLabel is called when production fieldLabel is exited.
 func (s *BasekdsListener) ExitFieldLabel(ctx *FieldLabelContext) {}
 
+// EnterFieldOptions is called when production fieldOptions is entered.
+func (s *BasekdsListener) EnterFieldOptions(ctx *FieldOptionsContext) {}
+
+// ExitFieldOptions is called when production fieldOptions is exited.
+func (s *BasekdsListener) ExitFieldOptions(ctx *FieldOptionsContext) {}
+
+// EnterFieldOption is called when production fieldOption is entered.
+func (s *BasekdsListener) EnterFieldOption(ctx *FieldOptionContext) {}
+
+// ExitFieldOption is called when production fieldOption is exited.
+func (s *BasekdsListener) ExitFieldOption(ctx *FieldOptionContext) {}
+
 // EnterFieldNumber is called when production fieldNumber is entered.
 func (s *BasekdsListener) EnterFieldNumber(ctx *FieldNumberContext) {}
 

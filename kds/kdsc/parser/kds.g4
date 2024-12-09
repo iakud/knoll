@@ -20,11 +20,19 @@ importStatement
 // Normal Field
 
 field
-	: fieldLabel? type_ fieldName EQ fieldNumber SEMI
+	: fieldLabel? type_ fieldName EQ fieldNumber (LB fieldOptions RB)? SEMI
 	;
 
 fieldLabel
 	: REPEATED
+	;
+
+fieldOptions
+	: fieldOption (COMMA fieldOption)*
+	;
+
+fieldOption
+	: fullIdent
 	;
 
 fieldNumber

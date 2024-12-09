@@ -22,6 +22,12 @@ type kdsListener interface {
 	// EnterFieldLabel is called when entering the fieldLabel production.
 	EnterFieldLabel(c *FieldLabelContext)
 
+	// EnterFieldOptions is called when entering the fieldOptions production.
+	EnterFieldOptions(c *FieldOptionsContext)
+
+	// EnterFieldOption is called when entering the fieldOption production.
+	EnterFieldOption(c *FieldOptionContext)
+
 	// EnterFieldNumber is called when entering the fieldNumber production.
 	EnterFieldNumber(c *FieldNumberContext)
 
@@ -120,6 +126,12 @@ type kdsListener interface {
 
 	// ExitFieldLabel is called when exiting the fieldLabel production.
 	ExitFieldLabel(c *FieldLabelContext)
+
+	// ExitFieldOptions is called when exiting the fieldOptions production.
+	ExitFieldOptions(c *FieldOptionsContext)
+
+	// ExitFieldOption is called when exiting the fieldOption production.
+	ExitFieldOption(c *FieldOptionContext)
 
 	// ExitFieldNumber is called when exiting the fieldNumber production.
 	ExitFieldNumber(c *FieldNumberContext)
