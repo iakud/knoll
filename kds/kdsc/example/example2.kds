@@ -9,7 +9,7 @@ entity City {
 }
 
 component CityBaseInfo {
-	Vector Position = 1;
+	repeated Vector Positions = 1;
 }
 
 component Vector {

@@ -11,12 +11,30 @@ enum {{.Name}} {
 {{- define "Entity"}}
 message {{.Name}} {
 {{- range .Fields}}
-{{- if .IsTimestamp}}
+{{- if .Repeated}}
+{{- if isTimestamp .Type}}
+	repeated google.protobuf.Timestamp {{.Name}} = {{.Number}};
+{{- else if isDuration .Type}}
+	repeated google.protobuf.Duration {{.Name}} = {{.Number}};
+{{- else}}
+	repeated {{.Type}} {{.Name}} = {{.Number}};
+{{- end}}
+{{- else if len .KeyType}}
+{{- if isTimestamp .Type}}
+	map<{{.KeyType}}, google.protobuf.Timestamp> {{.Name}} = {{.Number}};
+{{- else if isDuration .Type}}
+	map<{{.KeyType}}, google.protobuf.Duration> {{.Name}} = {{.Number}};
+{{- else}}
+	map<{{.KeyType}}, {{.Type}}> {{.Name}} = {{.Number}};
+{{- end}}
+{{- else}}
+{{- if isTimestamp .Type}}
 	google.protobuf.Timestamp {{.Name}} = {{.Number}};
-{{- else if .IsDuration}}
+{{- else if isDuration .Type}}
 	google.protobuf.Duration {{.Name}} = {{.Number}};
 {{- else}}
 	{{.Type}} {{.Name}} = {{.Number}};
+{{- end}}
 {{- end}}
 {{- end}}
 }
@@ -25,12 +43,30 @@ message {{.Name}} {
 {{- define "Component"}}
 message {{.Name}} {
 {{- range .Fields}}
-{{- if .IsTimestamp}}
+{{- if .Repeated}}
+{{- if isTimestamp .Type}}
+	repeated google.protobuf.Timestamp {{.Name}} = {{.Number}};
+{{- else if isDuration .Type}}
+	repeated google.protobuf.Duration {{.Name}} = {{.Number}};
+{{- else}}
+	repeated {{.Type}} {{.Name}} = {{.Number}};
+{{- end}}
+{{- else if len .KeyType}}
+{{- if isTimestamp .Type}}
+	map<{{.KeyType}}, google.protobuf.Timestamp> {{.Name}} = {{.Number}};
+{{- else if isDuration .Type}}
+	map<{{.KeyType}}, google.protobuf.Duration> {{.Name}} = {{.Number}};
+{{- else}}
+	map<{{.KeyType}}, {{.Type}}> {{.Name}} = {{.Number}};
+{{- end}}
+{{- else}}
+{{- if isTimestamp .Type}}
 	google.protobuf.Timestamp {{.Name}} = {{.Number}};
-{{- else if .IsDuration}}
+{{- else if isDuration .Type}}
 	google.protobuf.Duration {{.Name}} = {{.Number}};
 {{- else}}
 	{{.Type}} {{.Name}} = {{.Number}};
+{{- end}}
 {{- end}}
 {{- end}}
 }
@@ -57,11 +93,11 @@ import "google/protobuf/duration.proto";
 option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";
 
 {{- range .Defs}}
-{{- if IsEnum .}}
+{{- if findEnum .Name}}
 {{template "Enum" .}}
-{{- else if IsEntity .}}
+{{- else if findEntity .Name}}
 {{template "Entity" .}}
-{{- else if IsComponent .}}
+{{- else if findComponent .Name}}
 {{template "Component" .}}
 {{- end}}
 {{- end}}

@@ -10,15 +10,14 @@ func Funcs(ctx *Context) template.FuncMap {
 	return template.FuncMap{
 		"lcFirst": lcFirst,
 		"ucFirst": ucFirst,
-		"IsEnum": IsEnum,
-		"IsEntity": IsEntity,
-		"IsComponent": IsComponent,
+		"isEnum": IsEnum,
+		"isEntity": IsEntity,
+		"isComponent": IsComponent,
 		"isTimestamp": isTimestamp,
 		"isDuration": isDuration,
-		"FindEnum": ctx.FindEnum,
-		"FindEntity": ctx.FindEntity,
-		"FindComponent": ctx.FindComponent,
-		"GoType": GoType,
+		"findEnum": ctx.FindEnum,
+		"findEntity": ctx.FindEntity,
+		"findComponent": ctx.FindComponent,
 
 		"findArray": ctx.FindArray,
 		"findMap": ctx.FindMap,
@@ -68,41 +67,4 @@ func isTimestamp(name string) bool {
 
 func isDuration(name string) bool {
 	return "duration" == name
-}
-
-func GoType(type_ string) string {
-	switch type_ {
-	case "double":
-		return "float64"
-	case "float":
-		return "float32"
-	case "int32":
-		return "int32"
-	case "int64":
-		return "int64"
-	case "sint32":
-		return "int32"
-	case "sint64":
-		return "int64"
-	case "fixed32":
-		return "uint32"
-	case "fixed64":
-		return "uint64"
-	case "sfixed32":
-		return "int32"
-	case "sfixed64":
-		return "int64"
-	case "bool":
-		return "bool"
-	case "string":
-		return "string"
-	case "bytes":
-		return "[]byte"
-	case "timestamp":
-		return "time.Time"
-	case "duration":
-		return "time.Duration"
-	default:
-		return type_
-	}
 }

@@ -15,7 +15,7 @@ message City {
 }
 
 message CityBaseInfo {
-	Vector Position = 1;
+	repeated Vector Positions = 1;
 }
 
 message Vector {

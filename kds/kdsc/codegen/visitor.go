@@ -75,18 +75,12 @@ func visitEntity(ctx *Context, kds *Kds, entityCtx parser.IEntityDefContext) *En
 		case element.Field() != nil:
 			field := visitField(ctx, kds, element.Field())
 			entity.Fields = append(entity.Fields, field)
-
-			kds.ImportTimestamp = kds.ImportTimestamp || field.IsTimestamp
-			kds.ImportDuration = kds.ImportDuration || field.IsDuration
 			if field.Repeated {
 				ctx.AddArray(field.Type)
 			}
 		case element.MapField() != nil:
 			field := visitMapField(ctx, kds, element.MapField())
 			entity.Fields = append(entity.Fields, field)
-
-			kds.ImportTimestamp = kds.ImportTimestamp || field.IsTimestamp
-			kds.ImportDuration = kds.ImportDuration || field.IsDuration
 			ctx.AddMap(field.Type, field.KeyType)
 		}
 	}
@@ -101,18 +95,12 @@ func visitComponent(ctx *Context, kds *Kds, componentCtx parser.IComponentDefCon
 		case element.Field() != nil:
 			field := visitField(ctx, kds, element.Field())
 			component.Fields = append(component.Fields, field)
-
-			kds.ImportTimestamp = kds.ImportTimestamp || field.IsTimestamp
-			kds.ImportDuration = kds.ImportDuration || field.IsDuration
 			if field.Repeated {
 				ctx.AddArray(field.Type)
 			}
 		case element.MapField() != nil:
 			field := visitMapField(ctx, kds, element.MapField())
 			component.Fields = append(component.Fields, field)
-
-			kds.ImportTimestamp = kds.ImportTimestamp || field.IsTimestamp
-			kds.ImportDuration = kds.ImportDuration || field.IsDuration
 			ctx.AddMap(field.Type, field.KeyType)
 		}
 	}
@@ -132,8 +120,9 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 
 	field.GoVarName = GoSanitized(ToLowerFirst(field.Name))
 	field.GoType = GoType(field.Type)
-	field.IsTimestamp = fieldCtx.Type_().TIMESTAMP() != nil
-	field.IsDuration = fieldCtx.Type_().DURATION() != nil
+	
+	kds.ImportTimestamp = kds.ImportTimestamp || fieldCtx.Type_().TIMESTAMP() != nil
+	kds.ImportDuration = kds.ImportDuration || fieldCtx.Type_().DURATION() != nil
 	return field
 }
 
@@ -150,7 +139,8 @@ func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) 
 
 	field.GoVarName = GoSanitized(ToLowerFirst(field.Name))
 	field.GoType = GoType(field.Type)
-	field.IsTimestamp = mapFieldCtx.Type_().TIMESTAMP() != nil
-	field.IsDuration = mapFieldCtx.Type_().DURATION() != nil
+
+	kds.ImportTimestamp = kds.ImportTimestamp || mapFieldCtx.Type_().TIMESTAMP() != nil
+	kds.ImportDuration = kds.ImportDuration || mapFieldCtx.Type_().DURATION() != nil
 	return field
 }

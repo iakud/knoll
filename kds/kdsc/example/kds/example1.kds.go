@@ -13,7 +13,9 @@ import (
 
 type Player struct {
 	id int64
-	syncable syncablePlayer
+	info *PlayerBasicInfo
+	hero *PlayerHero
+	bag *PlayerBag
 
 	dirty uint64
 }
@@ -32,19 +34,14 @@ func (x *Player) GetId() int64 {
 	return x.id
 }
 
-type syncablePlayer struct {
-	Info *PlayerBasicInfo
-	Hero *PlayerHero
-	Bag *PlayerBag
-}
 
 func (x *Player) GetInfo() *PlayerBasicInfo {
-	return x.syncable.Info
+	return x.info
 }
 
 func (x *Player) setInfo(v *PlayerBasicInfo) {
-	if v != x.syncable.Info {
-		x.syncable.Info = v
+	if v != x.info {
+		x.info = v
 		v.dirthParent = func() {
 			x.markDirty(uint64(0x01) << 1)
 		}
@@ -53,12 +50,12 @@ func (x *Player) setInfo(v *PlayerBasicInfo) {
 }
 
 func (x *Player) GetHero() *PlayerHero {
-	return x.syncable.Hero
+	return x.hero
 }
 
 func (x *Player) setHero(v *PlayerHero) {
-	if v != x.syncable.Hero {
-		x.syncable.Hero = v
+	if v != x.hero {
+		x.hero = v
 		v.dirthParent = func() {
 			x.markDirty(uint64(0x01) << 2)
 		}
@@ -67,12 +64,12 @@ func (x *Player) setHero(v *PlayerHero) {
 }
 
 func (x *Player) GetBag() *PlayerBag {
-	return x.syncable.Bag
+	return x.bag
 }
 
 func (x *Player) setBag(v *PlayerBag) {
-	if v != x.syncable.Bag {
-		x.syncable.Bag = v
+	if v != x.bag {
+		x.bag = v
 		v.dirthParent = func() {
 			x.markDirty(uint64(0x01) << 3)
 		}
@@ -81,25 +78,25 @@ func (x *Player) setBag(v *PlayerBag) {
 }
 
 func (x *Player) DumpChange() *pb.Player {
-	v := new(pb.Player)
+	m := new(pb.Player)
 	if x.checkDirty(uint64(0x01) << 1) {
-		v.Info = x.syncable.Info.DumpChange()
+		m.Info = x.info.DumpChange()
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		v.Hero = x.syncable.Hero.DumpChange()
+		m.Hero = x.hero.DumpChange()
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		v.Bag = x.syncable.Bag.DumpChange()
+		m.Bag = x.bag.DumpChange()
 	}
-	return v
+	return m
 }
 
 func (x *Player) DumpFull() *pb.Player {
-	v := new(pb.Player)
-	v.Info = x.syncable.Info.DumpFull()
-	v.Hero = x.syncable.Hero.DumpFull()
-	v.Bag = x.syncable.Bag.DumpFull()
-	return v
+	m := new(pb.Player)
+	m.Info = x.info.DumpFull()
+	m.Hero = x.hero.DumpFull()
+	m.Bag = x.bag.DumpFull()
+	return m
 }
 
 func (x *Player) markDirty(n uint64) {
@@ -114,9 +111,9 @@ func (x *Player) clearDirty() {
 		return
 	}
 	x.dirty = 0
-	x.syncable.Info.clearDirty()
-	x.syncable.Hero.clearDirty()
-	x.syncable.Bag.clearDirty()
+	x.info.clearDirty()
+	x.hero.clearDirty()
+	x.bag.clearDirty()
 }
 
 func (x *Player) checkDirty(n uint64) bool {
@@ -133,7 +130,9 @@ func (f dirtyParentFunc_PlayerBasicInfo) invoke() {
 }
 
 type PlayerBasicInfo struct {
-	syncable syncablePlayerBasicInfo
+	name string
+	isNew bool
+	createTime time.Time
 
 	dirty uint64
 	dirthParent dirtyParentFunc_PlayerBasicInfo
@@ -145,65 +144,60 @@ func NewPlayerBasicInfo() *PlayerBasicInfo {
 	return x
 }
 
-type syncablePlayerBasicInfo struct {
-	Name string
-	IsNew bool
-	CreateTime time.Time
-}
 
 func (x *PlayerBasicInfo) GetName() string {
-	return x.syncable.Name
+	return x.name
 }
 
 func (x *PlayerBasicInfo) SetName(v string) {
-	if v != x.syncable.Name {
-		x.syncable.Name = v
+	if v != x.name {
+		x.name = v
 		x.markDirty(uint64(0x01) << 1)
 	}
 }
 
 func (x *PlayerBasicInfo) GetIsNew() bool {
-	return x.syncable.IsNew
+	return x.isNew
 }
 
 func (x *PlayerBasicInfo) SetIsNew(v bool) {
-	if v != x.syncable.IsNew {
-		x.syncable.IsNew = v
+	if v != x.isNew {
+		x.isNew = v
 		x.markDirty(uint64(0x01) << 3)
 	}
 }
 
 func (x *PlayerBasicInfo) GetCreateTime() time.Time {
-	return x.syncable.CreateTime
+	return x.createTime
 }
 
 func (x *PlayerBasicInfo) SetCreateTime(v time.Time) {
-	if v != x.syncable.CreateTime {
-		x.syncable.CreateTime = v
+	if v != x.createTime {
+		x.createTime = v
 		x.markDirty(uint64(0x01) << 5)
 	}
 }
 
 func (x *PlayerBasicInfo) DumpChange() *pb.PlayerBasicInfo {
-	v := new(pb.PlayerBasicInfo)
+	m := new(pb.PlayerBasicInfo)
 	if x.checkDirty(uint64(0x01) << 1) {
-		v.Name = x.syncable.Name
+		m.Name = x.name
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		v.IsNew = x.syncable.IsNew
+		m.IsNew = x.isNew
 	}
 	if x.checkDirty(uint64(0x01) << 5) {
-		v.CreateTime = timestamppb.New(x.syncable.CreateTime)
+		m.CreateTime = timestamppb.New(x.createTime)
 	}
-	return v
+	return m
 }
 
 func (x *PlayerBasicInfo) DumpFull() *pb.PlayerBasicInfo {
-	v := new(pb.PlayerBasicInfo)
-	v.Name = x.syncable.Name
-	v.IsNew = x.syncable.IsNew
-	v.CreateTime = timestamppb.New(x.syncable.CreateTime)
-	return v
+	m := new(pb.PlayerBasicInfo)
+	m.Name = x.name
+	m.IsNew = x.isNew
+	m.CreateTime = timestamppb.New(x.createTime)
+	return m
 }
 
 func (x *PlayerBasicInfo) markDirty(n uint64) {
@@ -235,7 +229,7 @@ func (f dirtyParentFunc_PlayerHero) invoke() {
 }
 
 type PlayerHero struct {
-	syncable syncablePlayerHero
+	heroes map[int64]*Hero
 
 	dirty uint64
 	dirthParent dirtyParentFunc_PlayerHero
@@ -244,40 +238,27 @@ type PlayerHero struct {
 func NewPlayerHero() *PlayerHero {
 	x := new(PlayerHero)
 	x.dirty = 1
-	x.setHeroes(NewHero())
+	x.heroes = make(map[int64]*Hero)
 	return x
 }
 
-type syncablePlayerHero struct {
-	Heroes *Hero
-}
-
-func (x *PlayerHero) GetHeroes() *Hero {
-	return x.syncable.Heroes
-}
-
-func (x *PlayerHero) setHeroes(v *Hero) {
-	if v != x.syncable.Heroes {
-		x.syncable.Heroes = v
-		v.dirthParent = func() {
-			x.markDirty(uint64(0x01) << 1)
-		}
-		x.markDirty(uint64(0x01) << 1)
-	}
-}
 
 func (x *PlayerHero) DumpChange() *pb.PlayerHero {
-	v := new(pb.PlayerHero)
+	m := new(pb.PlayerHero)
 	if x.checkDirty(uint64(0x01) << 1) {
-		v.Heroes = x.syncable.Heroes.DumpChange()
+		for k, v := range x.heroes {
+			m.Heroes[k] = v.DumpChange()
+		}
 	}
-	return v
+	return m
 }
 
 func (x *PlayerHero) DumpFull() *pb.PlayerHero {
-	v := new(pb.PlayerHero)
-	v.Heroes = x.syncable.Heroes.DumpFull()
-	return v
+	m := new(pb.PlayerHero)
+	for k, v := range x.heroes {
+		m.Heroes[k] = v.DumpFull()
+	}
+	return m
 }
 
 func (x *PlayerHero) markDirty(n uint64) {
@@ -293,7 +274,9 @@ func (x *PlayerHero) clearDirty() {
 		return
 	}
 	x.dirty = 0
-	x.syncable.Heroes.clearDirty()
+	for _, v := range x.heroes {
+		v.clearDirty()
+	}
 }
 
 func (x *PlayerHero) checkDirty(n uint64) bool {
@@ -310,7 +293,7 @@ func (f dirtyParentFunc_PlayerBag) invoke() {
 }
 
 type PlayerBag struct {
-	syncable syncablePlayerBag
+	resources map[int32]int32
 
 	dirty uint64
 	dirthParent dirtyParentFunc_PlayerBag
@@ -319,36 +302,27 @@ type PlayerBag struct {
 func NewPlayerBag() *PlayerBag {
 	x := new(PlayerBag)
 	x.dirty = 1
+	x.resources = make(map[int32]int32)
 	return x
 }
 
-type syncablePlayerBag struct {
-	Resources int32
-}
-
-func (x *PlayerBag) GetResources() int32 {
-	return x.syncable.Resources
-}
-
-func (x *PlayerBag) SetResources(v int32) {
-	if v != x.syncable.Resources {
-		x.syncable.Resources = v
-		x.markDirty(uint64(0x01) << 1)
-	}
-}
 
 func (x *PlayerBag) DumpChange() *pb.PlayerBag {
-	v := new(pb.PlayerBag)
+	m := new(pb.PlayerBag)
 	if x.checkDirty(uint64(0x01) << 1) {
-		v.Resources = x.syncable.Resources
+		for k, v := range x.resources {
+			m.Resources[k] = v
+		}
 	}
-	return v
+	return m
 }
 
 func (x *PlayerBag) DumpFull() *pb.PlayerBag {
-	v := new(pb.PlayerBag)
-	v.Resources = x.syncable.Resources
-	return v
+	m := new(pb.PlayerBag)
+	for k, v := range x.resources {
+		m.Resources[k] = v
+	}
+	return m
 }
 
 func (x *PlayerBag) markDirty(n uint64) {
@@ -380,7 +354,10 @@ func (f dirtyParentFunc_Hero) invoke() {
 }
 
 type Hero struct {
-	syncable syncableHero
+	heroId int32
+	heroLevel int32
+	_type HeroType
+	needTime time.Duration
 
 	dirty uint64
 	dirthParent dirtyParentFunc_Hero
@@ -392,81 +369,75 @@ func NewHero() *Hero {
 	return x
 }
 
-type syncableHero struct {
-	HeroId int32
-	HeroLevel int32
-	Type HeroType
-	NeedTime time.Duration
-}
 
 func (x *Hero) GetHeroId() int32 {
-	return x.syncable.HeroId
+	return x.heroId
 }
 
 func (x *Hero) SetHeroId(v int32) {
-	if v != x.syncable.HeroId {
-		x.syncable.HeroId = v
+	if v != x.heroId {
+		x.heroId = v
 		x.markDirty(uint64(0x01) << 1)
 	}
 }
 
 func (x *Hero) GetHeroLevel() int32 {
-	return x.syncable.HeroLevel
+	return x.heroLevel
 }
 
 func (x *Hero) SetHeroLevel(v int32) {
-	if v != x.syncable.HeroLevel {
-		x.syncable.HeroLevel = v
+	if v != x.heroLevel {
+		x.heroLevel = v
 		x.markDirty(uint64(0x01) << 2)
 	}
 }
 
 func (x *Hero) GetType() HeroType {
-	return x.syncable.Type
+	return x._type
 }
 
 func (x *Hero) SetType(v HeroType) {
-	if v != x.syncable.Type {
-		x.syncable.Type = v
+	if v != x._type {
+		x._type = v
 		x.markDirty(uint64(0x01) << 3)
 	}
 }
 
 func (x *Hero) GetNeedTime() time.Duration {
-	return x.syncable.NeedTime
+	return x.needTime
 }
 
 func (x *Hero) SetNeedTime(v time.Duration) {
-	if v != x.syncable.NeedTime {
-		x.syncable.NeedTime = v
+	if v != x.needTime {
+		x.needTime = v
 		x.markDirty(uint64(0x01) << 4)
 	}
 }
 
 func (x *Hero) DumpChange() *pb.Hero {
-	v := new(pb.Hero)
+	m := new(pb.Hero)
 	if x.checkDirty(uint64(0x01) << 1) {
-		v.HeroId = x.syncable.HeroId
+		m.HeroId = x.heroId
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		v.HeroLevel = x.syncable.HeroLevel
+		m.HeroLevel = x.heroLevel
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		v.Type = x.syncable.Type
+		m.Type = x._type
 	}
 	if x.checkDirty(uint64(0x01) << 4) {
-		v.NeedTime = durationpb.New(x.syncable.NeedTime)
+		m.NeedTime = durationpb.New(x.needTime)
 	}
-	return v
+	return m
 }
 
 func (x *Hero) DumpFull() *pb.Hero {
-	v := new(pb.Hero)
-	v.HeroId = x.syncable.HeroId
-	v.HeroLevel = x.syncable.HeroLevel
-	v.Type = x.syncable.Type
-	v.NeedTime = durationpb.New(x.syncable.NeedTime)
-	return v
+	m := new(pb.Hero)
+	m.HeroId = x.heroId
+	m.HeroLevel = x.heroLevel
+	m.Type = x._type
+	m.NeedTime = durationpb.New(x.needTime)
+	return m
 }
 
 func (x *Hero) markDirty(n uint64) {

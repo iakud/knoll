@@ -22,11 +22,11 @@ message PlayerBasicInfo {
 }
 
 message PlayerHero {
-	Hero Heroes = 1;
+	map<int64, Hero> Heroes = 1;
 }
 
 message PlayerBag {
-	int32 Resources = 1;
+	map<int32, int32> Resources = 1;
 }
 
 message Hero {

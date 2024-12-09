@@ -56,7 +56,5 @@ type Field struct {
 	GoVarName string
 	GoType string
 
-	IsTimestamp bool
-	IsDuration bool
 	Kind string
 }
