@@ -2,8 +2,10 @@ package codegen
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"text/template"
 
@@ -15,16 +17,8 @@ func Parse(kdsFiles []string, tplPath string, out string) error {
 	ctx := newContext()
 	var kdsList []*Kds
 	for _, kdsFile := range kdsFiles {
-		input, err := antlr.NewFileStream(kdsFile)
-		if err != nil {
-			return err
-		}
-
-		lexer := parser.NewkdsLexer(input)
-		stream := antlr.NewCommonTokenStream(lexer, 0)
-		kdsParser := parser.NewkdsParser(stream)
-		kds := visitKds(ctx, kdsParser.Kds())
-		kds.Filename = kdsFile
+		kds := parseKds(ctx, kdsFile)
+		
 		kdsList = append(kdsList, kds)
 	}
 	var tpls []*template.Template
@@ -58,3 +52,22 @@ func Parse(kdsFiles []string, tplPath string, out string) error {
 	return nil
 }
 
+func parseKds(ctx *Context, kdsFile string) *Kds {
+	defer func() {
+		if err := recover(); err != nil {
+			panic(fmt.Errorf("kds parse file %s error: %v\n%s", kdsFile, err, debug.Stack()))
+		}
+	}()
+
+	input, err := antlr.NewFileStream(kdsFile)
+	if err != nil {
+		panic(err)
+	}
+
+	lexer := parser.NewkdsLexer(input)
+	stream := antlr.NewCommonTokenStream(lexer, 0)
+	kdsParser := parser.NewkdsParser(stream)
+	kds := visitKds(ctx, kdsParser.Kds())
+	kds.Filename = kdsFile
+	return kds
+}
