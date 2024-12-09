@@ -42,7 +42,7 @@ fieldNumber
 // Map field
 
 mapField
-	: MAP LT keyType COMMA type_ GT mapName EQ fieldNumber SEMI
+	: MAP LT keyType COMMA type_ GT mapName EQ fieldNumber (LB fieldOptions RB)? SEMI
 	;
 
 keyType
