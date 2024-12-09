@@ -54,7 +54,7 @@ func (x *Player) setInfo(v *PlayerBasicInfo) {
 	}
 	x.markDirty(uint64(0x01) << 1)
 	if v != nil {
-		v.dirty |= uint64(0x01)
+		v.markDirty(uint64(0x01))
 	}
 }
 
@@ -78,7 +78,7 @@ func (x *Player) setHero(v *PlayerHero) {
 	}
 	x.markDirty(uint64(0x01) << 2)
 	if v != nil {
-		v.dirty |= uint64(0x01)
+		v.markDirty(uint64(0x01))
 	}
 }
 
@@ -102,11 +102,14 @@ func (x *Player) setBag(v *PlayerBag) {
 	}
 	x.markDirty(uint64(0x01) << 3)
 	if v != nil {
-		v.dirty |= uint64(0x01)
+		v.markDirty(uint64(0x01))
 	}
 }
 
 func (x *Player) DumpChange() *pb.Player {
+	if x.checkDirty(uint64(0x01)) {
+		return x.DumpFull()
+	}
 	m := new(pb.Player)
 	if x.checkDirty(uint64(0x01) << 1) {
 		m.Info = x.info.DumpChange()
@@ -210,6 +213,9 @@ func (x *PlayerBasicInfo) SetCreateTime(v time.Time) {
 }
 
 func (x *PlayerBasicInfo) DumpChange() *pb.PlayerBasicInfo {
+	if x.checkDirty(uint64(0x01)) {
+		return x.DumpFull()
+	}
 	m := new(pb.PlayerBasicInfo)
 	if x.checkDirty(uint64(0x01) << 1) {
 		m.Name = x.name
@@ -274,6 +280,9 @@ func NewPlayerHero() *PlayerHero {
 }
 
 func (x *PlayerHero) DumpChange() *pb.PlayerHero {
+	if x.checkDirty(uint64(0x01)) {
+		return x.DumpFull()
+	}
 	m := new(pb.PlayerHero)
 	if x.checkDirty(uint64(0x01) << 1) {
 		for k, v := range x.heroes {
@@ -337,6 +346,9 @@ func NewPlayerBag() *PlayerBag {
 }
 
 func (x *PlayerBag) DumpChange() *pb.PlayerBag {
+	if x.checkDirty(uint64(0x01)) {
+		return x.DumpFull()
+	}
 	m := new(pb.PlayerBag)
 	if x.checkDirty(uint64(0x01) << 1) {
 		for k, v := range x.resources {
@@ -447,6 +459,9 @@ func (x *Hero) SetNeedTime(v time.Duration) {
 }
 
 func (x *Hero) DumpChange() *pb.Hero {
+	if x.checkDirty(uint64(0x01)) {
+		return x.DumpFull()
+	}
 	m := new(pb.Hero)
 	if x.checkDirty(uint64(0x01) << 1) {
 		m.HeroId = x.heroId

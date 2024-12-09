@@ -61,7 +61,7 @@ func (x *City) setPlayerBasicInfo(v *PlayerBasicInfo) {
 	}
 	x.markDirty(uint64(0x01) << 2)
 	if v != nil {
-		v.dirty |= uint64(0x01)
+		v.markDirty(uint64(0x01))
 	}
 }
 
@@ -85,11 +85,14 @@ func (x *City) setCityInfo(v *CityBaseInfo) {
 	}
 	x.markDirty(uint64(0x01) << 3)
 	if v != nil {
-		v.dirty |= uint64(0x01)
+		v.markDirty(uint64(0x01))
 	}
 }
 
 func (x *City) DumpChange() *pb.City {
+	if x.checkDirty(uint64(0x01)) {
+		return x.DumpFull()
+	}
 	m := new(pb.City)
 	if x.checkDirty(uint64(0x01) << 1) {
 		m.PlayerId = x.playerId
@@ -154,6 +157,9 @@ func NewCityBaseInfo() *CityBaseInfo {
 }
 
 func (x *CityBaseInfo) DumpChange() *pb.CityBaseInfo {
+	if x.checkDirty(uint64(0x01)) {
+		return x.DumpFull()
+	}
 	m := new(pb.CityBaseInfo)
 	if x.checkDirty(uint64(0x01) << 1) {
 		for _, v := range x.positions {
@@ -241,6 +247,9 @@ func (x *Vector) SetY(v int32) {
 }
 
 func (x *Vector) DumpChange() *pb.Vector {
+	if x.checkDirty(uint64(0x01)) {
+		return x.DumpFull()
+	}
 	m := new(pb.Vector)
 	if x.checkDirty(uint64(0x01) << 1) {
 		m.X = x.x

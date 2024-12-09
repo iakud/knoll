@@ -43,7 +43,7 @@ func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
 	}
 	x.markDirty(uint64(0x01) << {{.Number}})
 	if v != nil {
-		v.dirty |= uint64(0x01)
+		v.markDirty(uint64(0x01))
 	}
 }
 {{- else if findEnum .Type}}
@@ -77,6 +77,9 @@ func (x *{{$MessageName}}) Set{{.Name}}(v {{.GoType}}) {
 {{- end}}
 
 func (x *{{$MessageName}}) DumpChange() *pb.{{.Name}} {
+	if x.checkDirty(uint64(0x01)) {
+		return x.DumpFull()
+	}
 	m := new(pb.{{.Name}})
 {{- range .Fields}}
 	if x.checkDirty(uint64(0x01) << {{.Number}}) {
