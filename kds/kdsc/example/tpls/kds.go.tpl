@@ -1,7 +1,8 @@
 {{- /* BEGIN DEFINE */ -}}
 
 {{- define "Enum"}}
-{{- $EnumType := (print .Name)}}
+{{- $EnumType := .Name}}
+
 type {{.Name}} = pb.{{.Name}}
 
 const (
@@ -12,7 +13,7 @@ const (
 {{- end}}
 
 {{- define "Message"}}
-{{- $MessageName := (print .Name)}}
+{{- $MessageName := .Name}}
 
 {{- range .Fields}}
 {{- if .Repeated}}
@@ -20,7 +21,6 @@ const (
 {{- else if len .KeyType}}
 
 {{- else}}
-
 {{- if findComponent .Type}}
 
 func (x *{{$MessageName}}) Get{{.Name}}() *{{.Type}} {
@@ -28,12 +28,22 @@ func (x *{{$MessageName}}) Get{{.Name}}() *{{.Type}} {
 }
 
 func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
-	if v != x.{{.GoVarName}} {
-		x.{{.GoVarName}} = v
-		v.dirthParent = func() {
-			x.markDirty(uint64(0x01) << {{.Number}})
-		}
+	if v != nil && v.dirtyParent != nil {
+		panic("the component should be removed or evicted from its original place first")
+	}
+	if v == x.{{.GoVarName}} {
+		return
+	}
+	if x.{{.GoVarName}} != nil {
+		x.{{.GoVarName}}.dirtyParent = nil
+	}
+	x.{{.GoVarName}} = v
+	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << {{.Number}})
+	}
+	x.markDirty(uint64(0x01) << {{.Number}})
+	if v != nil {
+		v.dirty |= uint64(0x01)
 	}
 }
 {{- else if findEnum .Type}}
@@ -43,10 +53,11 @@ func (x *{{$MessageName}}) Get{{.Name}}() {{.Type}} {
 }
 
 func (x *{{$MessageName}}) Set{{.Name}}(v {{.Type}}) {
-	if v != x.{{.GoVarName}} {
-		x.{{.GoVarName}} = v
-		x.markDirty(uint64(0x01) << {{.Number}})
+	if v == x.{{.GoVarName}} {
+		return
 	}
+	x.{{.GoVarName}} = v
+	x.markDirty(uint64(0x01) << {{.Number}})
 }
 {{- else}}
 
@@ -55,10 +66,11 @@ func (x *{{$MessageName}}) Get{{.Name}}() {{.GoType}} {
 }
 
 func (x *{{$MessageName}}) Set{{.Name}}(v {{.GoType}}) {
-	if v != x.{{.GoVarName}} {
-		x.{{.GoVarName}} = v
-		x.markDirty(uint64(0x01) << {{.Number}})
+	if v == x.{{.GoVarName}} {
+		return
 	}
+	x.{{.GoVarName}} = v
+	x.markDirty(uint64(0x01) << {{.Number}})
 }
 {{- end}}
 {{- end}}
@@ -154,6 +166,7 @@ func (x *{{$MessageName}}) DumpFull() *pb.{{.Name}} {
 
 {{- define "Entity"}}
 {{- $EntityName := (print .Name)}}
+
 type {{$EntityName}} struct {
 	id int64
 {{- range .Fields}}
@@ -213,7 +226,7 @@ func New{{$EntityName}}() *{{$EntityName}} {
 func (x *{{$EntityName}}) GetId() int64 {
 	return x.id
 }
-{{template "Message" .}}
+{{- template "Message" .}}
 
 func (x *{{$EntityName}}) markDirty(n uint64) {
 	if x.dirty & n == n {
@@ -255,7 +268,8 @@ func (x *{{$EntityName}}) checkDirty(n uint64) bool {
 {{- end}}
 
 {{- define "Component"}}
-{{- $ComponentName := (print .Name)}}
+{{- $ComponentName := .Name}}
+
 type dirtyParentFunc_{{.Name}} func()
 
 func (f dirtyParentFunc_{{.Name}}) invoke() {
@@ -295,7 +309,7 @@ type {{$ComponentName}} struct {
 {{- end}}
 
 	dirty uint64
-	dirthParent dirtyParentFunc_{{.Name}}
+	dirtyParent dirtyParentFunc_{{.Name}}
 }
 
 func New{{$ComponentName}}() *{{$ComponentName}} {
@@ -319,14 +333,14 @@ func New{{$ComponentName}}() *{{$ComponentName}} {
 {{- end}}
 	return x
 }
-{{template "Message" .}}
+{{- template "Message" .}}
 
 func (x *{{$ComponentName}}) markDirty(n uint64) {
 	if x.dirty & n == n {
 		return
 	}
 	x.dirty |= n
-	x.dirthParent.invoke()
+	x.dirtyParent.invoke()
 }
 
 func (x *{{$ComponentName}}) clearDirty() {
@@ -383,10 +397,10 @@ import (
 
 {{- range .Defs}}
 {{- if findEnum .Name}}
-{{template "Enum" .}}
+{{- template "Enum" .}}
 {{- else if findEntity .Name}}
-{{template "Entity" .}}
+{{- template "Entity" .}}
 {{- else if findComponent .Name}}
-{{template "Component" .}}
+{{- template "Component" .}}
 {{- end}}
 {{- end}}

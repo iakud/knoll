@@ -4,5 +4,4 @@ syntax = "proto3";
 
 package kds;
 
-
 option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";

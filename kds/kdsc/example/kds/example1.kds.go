@@ -34,18 +34,27 @@ func (x *Player) GetId() int64 {
 	return x.id
 }
 
-
 func (x *Player) GetInfo() *PlayerBasicInfo {
 	return x.info
 }
 
 func (x *Player) setInfo(v *PlayerBasicInfo) {
-	if v != x.info {
-		x.info = v
-		v.dirthParent = func() {
-			x.markDirty(uint64(0x01) << 1)
-		}
+	if v != nil && v.dirtyParent != nil {
+		panic("the component should be removed or evicted from its original place first")
+	}
+	if v == x.info {
+		return
+	}
+	if x.info != nil {
+		x.info.dirtyParent = nil
+	}
+	x.info = v
+	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 1)
+	}
+	x.markDirty(uint64(0x01) << 1)
+	if v != nil {
+		v.dirty |= uint64(0x01)
 	}
 }
 
@@ -54,12 +63,22 @@ func (x *Player) GetHero() *PlayerHero {
 }
 
 func (x *Player) setHero(v *PlayerHero) {
-	if v != x.hero {
-		x.hero = v
-		v.dirthParent = func() {
-			x.markDirty(uint64(0x01) << 2)
-		}
+	if v != nil && v.dirtyParent != nil {
+		panic("the component should be removed or evicted from its original place first")
+	}
+	if v == x.hero {
+		return
+	}
+	if x.hero != nil {
+		x.hero.dirtyParent = nil
+	}
+	x.hero = v
+	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 2)
+	}
+	x.markDirty(uint64(0x01) << 2)
+	if v != nil {
+		v.dirty |= uint64(0x01)
 	}
 }
 
@@ -68,12 +87,22 @@ func (x *Player) GetBag() *PlayerBag {
 }
 
 func (x *Player) setBag(v *PlayerBag) {
-	if v != x.bag {
-		x.bag = v
-		v.dirthParent = func() {
-			x.markDirty(uint64(0x01) << 3)
-		}
+	if v != nil && v.dirtyParent != nil {
+		panic("the component should be removed or evicted from its original place first")
+	}
+	if v == x.bag {
+		return
+	}
+	if x.bag != nil {
+		x.bag.dirtyParent = nil
+	}
+	x.bag = v
+	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 3)
+	}
+	x.markDirty(uint64(0x01) << 3)
+	if v != nil {
+		v.dirty |= uint64(0x01)
 	}
 }
 
@@ -135,7 +164,7 @@ type PlayerBasicInfo struct {
 	createTime time.Time
 
 	dirty uint64
-	dirthParent dirtyParentFunc_PlayerBasicInfo
+	dirtyParent dirtyParentFunc_PlayerBasicInfo
 }
 
 func NewPlayerBasicInfo() *PlayerBasicInfo {
@@ -144,16 +173,16 @@ func NewPlayerBasicInfo() *PlayerBasicInfo {
 	return x
 }
 
-
 func (x *PlayerBasicInfo) GetName() string {
 	return x.name
 }
 
 func (x *PlayerBasicInfo) SetName(v string) {
-	if v != x.name {
-		x.name = v
-		x.markDirty(uint64(0x01) << 1)
+	if v == x.name {
+		return
 	}
+	x.name = v
+	x.markDirty(uint64(0x01) << 1)
 }
 
 func (x *PlayerBasicInfo) GetIsNew() bool {
@@ -161,10 +190,11 @@ func (x *PlayerBasicInfo) GetIsNew() bool {
 }
 
 func (x *PlayerBasicInfo) SetIsNew(v bool) {
-	if v != x.isNew {
-		x.isNew = v
-		x.markDirty(uint64(0x01) << 3)
+	if v == x.isNew {
+		return
 	}
+	x.isNew = v
+	x.markDirty(uint64(0x01) << 3)
 }
 
 func (x *PlayerBasicInfo) GetCreateTime() time.Time {
@@ -172,10 +202,11 @@ func (x *PlayerBasicInfo) GetCreateTime() time.Time {
 }
 
 func (x *PlayerBasicInfo) SetCreateTime(v time.Time) {
-	if v != x.createTime {
-		x.createTime = v
-		x.markDirty(uint64(0x01) << 5)
+	if v == x.createTime {
+		return
 	}
+	x.createTime = v
+	x.markDirty(uint64(0x01) << 5)
 }
 
 func (x *PlayerBasicInfo) DumpChange() *pb.PlayerBasicInfo {
@@ -205,7 +236,7 @@ func (x *PlayerBasicInfo) markDirty(n uint64) {
 		return
 	}
 	x.dirty |= n
-	x.dirthParent.invoke()
+	x.dirtyParent.invoke()
 }
 
 func (x *PlayerBasicInfo) clearDirty() {
@@ -232,7 +263,7 @@ type PlayerHero struct {
 	heroes map[int64]*Hero
 
 	dirty uint64
-	dirthParent dirtyParentFunc_PlayerHero
+	dirtyParent dirtyParentFunc_PlayerHero
 }
 
 func NewPlayerHero() *PlayerHero {
@@ -241,7 +272,6 @@ func NewPlayerHero() *PlayerHero {
 	x.heroes = make(map[int64]*Hero)
 	return x
 }
-
 
 func (x *PlayerHero) DumpChange() *pb.PlayerHero {
 	m := new(pb.PlayerHero)
@@ -266,7 +296,7 @@ func (x *PlayerHero) markDirty(n uint64) {
 		return
 	}
 	x.dirty |= n
-	x.dirthParent.invoke()
+	x.dirtyParent.invoke()
 }
 
 func (x *PlayerHero) clearDirty() {
@@ -296,7 +326,7 @@ type PlayerBag struct {
 	resources map[int32]int32
 
 	dirty uint64
-	dirthParent dirtyParentFunc_PlayerBag
+	dirtyParent dirtyParentFunc_PlayerBag
 }
 
 func NewPlayerBag() *PlayerBag {
@@ -305,7 +335,6 @@ func NewPlayerBag() *PlayerBag {
 	x.resources = make(map[int32]int32)
 	return x
 }
-
 
 func (x *PlayerBag) DumpChange() *pb.PlayerBag {
 	m := new(pb.PlayerBag)
@@ -330,7 +359,7 @@ func (x *PlayerBag) markDirty(n uint64) {
 		return
 	}
 	x.dirty |= n
-	x.dirthParent.invoke()
+	x.dirtyParent.invoke()
 }
 
 func (x *PlayerBag) clearDirty() {
@@ -360,7 +389,7 @@ type Hero struct {
 	needTime time.Duration
 
 	dirty uint64
-	dirthParent dirtyParentFunc_Hero
+	dirtyParent dirtyParentFunc_Hero
 }
 
 func NewHero() *Hero {
@@ -369,16 +398,16 @@ func NewHero() *Hero {
 	return x
 }
 
-
 func (x *Hero) GetHeroId() int32 {
 	return x.heroId
 }
 
 func (x *Hero) SetHeroId(v int32) {
-	if v != x.heroId {
-		x.heroId = v
-		x.markDirty(uint64(0x01) << 1)
+	if v == x.heroId {
+		return
 	}
+	x.heroId = v
+	x.markDirty(uint64(0x01) << 1)
 }
 
 func (x *Hero) GetHeroLevel() int32 {
@@ -386,10 +415,11 @@ func (x *Hero) GetHeroLevel() int32 {
 }
 
 func (x *Hero) SetHeroLevel(v int32) {
-	if v != x.heroLevel {
-		x.heroLevel = v
-		x.markDirty(uint64(0x01) << 2)
+	if v == x.heroLevel {
+		return
 	}
+	x.heroLevel = v
+	x.markDirty(uint64(0x01) << 2)
 }
 
 func (x *Hero) GetType() HeroType {
@@ -397,10 +427,11 @@ func (x *Hero) GetType() HeroType {
 }
 
 func (x *Hero) SetType(v HeroType) {
-	if v != x._type {
-		x._type = v
-		x.markDirty(uint64(0x01) << 3)
+	if v == x._type {
+		return
 	}
+	x._type = v
+	x.markDirty(uint64(0x01) << 3)
 }
 
 func (x *Hero) GetNeedTime() time.Duration {
@@ -408,10 +439,11 @@ func (x *Hero) GetNeedTime() time.Duration {
 }
 
 func (x *Hero) SetNeedTime(v time.Duration) {
-	if v != x.needTime {
-		x.needTime = v
-		x.markDirty(uint64(0x01) << 4)
+	if v == x.needTime {
+		return
 	}
+	x.needTime = v
+	x.markDirty(uint64(0x01) << 4)
 }
 
 func (x *Hero) DumpChange() *pb.Hero {
@@ -445,7 +477,7 @@ func (x *Hero) markDirty(n uint64) {
 		return
 	}
 	x.dirty |= n
-	x.dirthParent.invoke()
+	x.dirtyParent.invoke()
 }
 
 func (x *Hero) clearDirty() {

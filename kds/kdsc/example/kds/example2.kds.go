@@ -29,16 +29,16 @@ func (x *City) GetId() int64 {
 	return x.id
 }
 
-
 func (x *City) GetPlayerId() int64 {
 	return x.playerId
 }
 
 func (x *City) SetPlayerId(v int64) {
-	if v != x.playerId {
-		x.playerId = v
-		x.markDirty(uint64(0x01) << 1)
+	if v == x.playerId {
+		return
 	}
+	x.playerId = v
+	x.markDirty(uint64(0x01) << 1)
 }
 
 func (x *City) GetPlayerBasicInfo() *PlayerBasicInfo {
@@ -46,12 +46,22 @@ func (x *City) GetPlayerBasicInfo() *PlayerBasicInfo {
 }
 
 func (x *City) setPlayerBasicInfo(v *PlayerBasicInfo) {
-	if v != x.playerBasicInfo {
-		x.playerBasicInfo = v
-		v.dirthParent = func() {
-			x.markDirty(uint64(0x01) << 2)
-		}
+	if v != nil && v.dirtyParent != nil {
+		panic("the component should be removed or evicted from its original place first")
+	}
+	if v == x.playerBasicInfo {
+		return
+	}
+	if x.playerBasicInfo != nil {
+		x.playerBasicInfo.dirtyParent = nil
+	}
+	x.playerBasicInfo = v
+	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 2)
+	}
+	x.markDirty(uint64(0x01) << 2)
+	if v != nil {
+		v.dirty |= uint64(0x01)
 	}
 }
 
@@ -60,12 +70,22 @@ func (x *City) GetCityInfo() *CityBaseInfo {
 }
 
 func (x *City) setCityInfo(v *CityBaseInfo) {
-	if v != x.cityInfo {
-		x.cityInfo = v
-		v.dirthParent = func() {
-			x.markDirty(uint64(0x01) << 3)
-		}
+	if v != nil && v.dirtyParent != nil {
+		panic("the component should be removed or evicted from its original place first")
+	}
+	if v == x.cityInfo {
+		return
+	}
+	if x.cityInfo != nil {
+		x.cityInfo.dirtyParent = nil
+	}
+	x.cityInfo = v
+	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 3)
+	}
+	x.markDirty(uint64(0x01) << 3)
+	if v != nil {
+		v.dirty |= uint64(0x01)
 	}
 }
 
@@ -124,7 +144,7 @@ type CityBaseInfo struct {
 	positions []*Vector
 
 	dirty uint64
-	dirthParent dirtyParentFunc_CityBaseInfo
+	dirtyParent dirtyParentFunc_CityBaseInfo
 }
 
 func NewCityBaseInfo() *CityBaseInfo {
@@ -132,7 +152,6 @@ func NewCityBaseInfo() *CityBaseInfo {
 	x.dirty = 1
 	return x
 }
-
 
 func (x *CityBaseInfo) DumpChange() *pb.CityBaseInfo {
 	m := new(pb.CityBaseInfo)
@@ -157,7 +176,7 @@ func (x *CityBaseInfo) markDirty(n uint64) {
 		return
 	}
 	x.dirty |= n
-	x.dirthParent.invoke()
+	x.dirtyParent.invoke()
 }
 
 func (x *CityBaseInfo) clearDirty() {
@@ -188,7 +207,7 @@ type Vector struct {
 	y int32
 
 	dirty uint64
-	dirthParent dirtyParentFunc_Vector
+	dirtyParent dirtyParentFunc_Vector
 }
 
 func NewVector() *Vector {
@@ -197,16 +216,16 @@ func NewVector() *Vector {
 	return x
 }
 
-
 func (x *Vector) GetX() int32 {
 	return x.x
 }
 
 func (x *Vector) SetX(v int32) {
-	if v != x.x {
-		x.x = v
-		x.markDirty(uint64(0x01) << 1)
+	if v == x.x {
+		return
 	}
+	x.x = v
+	x.markDirty(uint64(0x01) << 1)
 }
 
 func (x *Vector) GetY() int32 {
@@ -214,10 +233,11 @@ func (x *Vector) GetY() int32 {
 }
 
 func (x *Vector) SetY(v int32) {
-	if v != x.y {
-		x.y = v
-		x.markDirty(uint64(0x01) << 2)
+	if v == x.y {
+		return
 	}
+	x.y = v
+	x.markDirty(uint64(0x01) << 2)
 }
 
 func (x *Vector) DumpChange() *pb.Vector {
@@ -243,7 +263,7 @@ func (x *Vector) markDirty(n uint64) {
 		return
 	}
 	x.dirty |= n
-	x.dirthParent.invoke()
+	x.dirtyParent.invoke()
 }
 
 func (x *Vector) clearDirty() {

@@ -79,9 +79,16 @@ message {{.Name}} {
 syntax = "proto3";
 
 package {{.Package}};
-{{""}}
+
+{{- if len .Imports}}
+{{/* 空一行 */}}
+{{- end}}
 {{- range .Imports}}
 import "{{.}}.proto";
+{{- end}}
+
+{{- if or .ImportTimestamp .ImportDuration}}
+{{/* 空一行 */}}
 {{- end}}
 {{- if .ImportTimestamp}}
 import "google/protobuf/timestamp.proto";
