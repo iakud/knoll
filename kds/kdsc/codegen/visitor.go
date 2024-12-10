@@ -123,6 +123,7 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	
 	kds.ImportTimestamp = kds.ImportTimestamp || fieldCtx.Type_().TIMESTAMP() != nil
 	kds.ImportDuration = kds.ImportDuration || fieldCtx.Type_().DURATION() != nil
+	kds.ImportEmpty = kds.ImportEmpty || fieldCtx.Type_().EMPTY() != nil
 	return field
 }
 
@@ -142,5 +143,6 @@ func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) 
 
 	kds.ImportTimestamp = kds.ImportTimestamp || mapFieldCtx.Type_().TIMESTAMP() != nil
 	kds.ImportDuration = kds.ImportDuration || mapFieldCtx.Type_().DURATION() != nil
+	kds.ImportEmpty = kds.ImportEmpty || mapFieldCtx.Type_().EMPTY() != nil
 	return field
 }

@@ -32,6 +32,8 @@ func GoType(type_ string) string {
 		return "time.Time"
 	case "duration":
 		return "time.Duration"
+	case "empty":
+		return "struct{}"
 	default:
 		return type_
 	}

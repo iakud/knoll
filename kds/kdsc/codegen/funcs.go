@@ -10,11 +10,12 @@ func Funcs(ctx *Context) template.FuncMap {
 	return template.FuncMap{
 		"lcFirst": lcFirst,
 		"ucFirst": ucFirst,
+		"isTimestamp": isTimestamp,
+		"isDuration": isDuration,
+		"isEmpty": isEmpty,
 		"isEnum": IsEnum,
 		"isEntity": IsEntity,
 		"isComponent": IsComponent,
-		"isTimestamp": isTimestamp,
-		"isDuration": isDuration,
 		"findEnum": ctx.FindEnum,
 		"findEntity": ctx.FindEntity,
 		"findComponent": ctx.FindComponent,
@@ -67,4 +68,8 @@ func isTimestamp(name string) bool {
 
 func isDuration(name string) bool {
 	return "duration" == name
+}
+
+func isEmpty(name string) bool {
+	return "empty" == name
 }

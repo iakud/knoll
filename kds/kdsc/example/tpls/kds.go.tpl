@@ -15,6 +15,36 @@ const (
 {{- define "Message"}}
 {{- $MessageName := .Name}}
 
+type syncable{{.Name}} struct {
+{{- range .Fields}}
+{{- if .Repeated}}{{/* Array */}}
+{{- if findComponent .Type}}
+	{{.Name}} []*{{.Type}}
+{{- else if findEnum .Type}}
+	{{.Name}} []{{.Type}}
+{{- else}}
+	{{.Name}} []{{.GoType}}
+{{- end}}
+{{- else if len .KeyType}}{{/* Map */}}
+{{- if findComponent .Type}}
+	{{.Name}} map[{{.KeyType}}]*{{.Type}}
+{{- else if findEnum .Type}}
+	{{.Name}} map[{{.KeyType}}]{{.Type}}
+{{- else}}
+	{{.Name}} map[{{.KeyType}}]{{.GoType}}
+{{- end}}
+{{- else}}{{/* Field */}}
+{{- if findComponent .Type}}
+	{{.Name}} *{{.Type}}
+{{- else if findEnum .Type}}
+	{{.Name}} {{.Type}}
+{{- else}}
+	{{.Name}} {{.GoType}}
+{{- end}}
+{{- end}}
+{{- end}}
+}
+
 {{- range .Fields}}
 {{- if .Repeated}}
 
@@ -24,20 +54,20 @@ const (
 {{- if findComponent .Type}}
 
 func (x *{{$MessageName}}) Get{{.Name}}() *{{.Type}} {
-	return x.{{.GoVarName}}
+	return x.syncable.{{.Name}}
 }
 
 func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed or evicted from its original place first")
 	}
-	if v == x.{{.GoVarName}} {
+	if v == x.syncable.{{.Name}} {
 		return
 	}
-	if x.{{.GoVarName}} != nil {
-		x.{{.GoVarName}}.dirtyParent = nil
+	if x.syncable.{{.Name}} != nil {
+		x.syncable.{{.Name}}.dirtyParent = nil
 	}
-	x.{{.GoVarName}} = v
+	x.syncable.{{.Name}} = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
@@ -49,27 +79,27 @@ func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
 {{- else if findEnum .Type}}
 
 func (x *{{$MessageName}}) Get{{.Name}}() {{.Type}} {
-	return x.{{.GoVarName}}
+	return x.syncable.{{.Name}}
 }
 
 func (x *{{$MessageName}}) Set{{.Name}}(v {{.Type}}) {
-	if v == x.{{.GoVarName}} {
+	if v == x.syncable.{{.Name}} {
 		return
 	}
-	x.{{.GoVarName}} = v
+	x.syncable.{{.Name}} = v
 	x.markDirty(uint64(0x01) << {{.Number}})
 }
 {{- else}}
 
 func (x *{{$MessageName}}) Get{{.Name}}() {{.GoType}} {
-	return x.{{.GoVarName}}
+	return x.syncable.{{.Name}}
 }
 
 func (x *{{$MessageName}}) Set{{.Name}}(v {{.GoType}}) {
-	if v == x.{{.GoVarName}} {
+	if v == x.syncable.{{.Name}} {
 		return
 	}
-	x.{{.GoVarName}} = v
+	x.syncable.{{.Name}} = v
 	x.markDirty(uint64(0x01) << {{.Number}})
 }
 {{- end}}
@@ -84,38 +114,61 @@ func (x *{{$MessageName}}) DumpChange() *pb.{{.Name}} {
 {{- range .Fields}}
 	if x.checkDirty(uint64(0x01) << {{.Number}}) {
 {{- if .Repeated}}
-		for _, v := range x.{{.GoVarName}} {
+		
 {{- if findComponent .Type}}
+		for _, v := range x.syncable.{{.Name}} {
 			m.{{.Name}} = append(m.{{.Name}}, v.DumpChange())
+		}
 {{- else if isTimestamp .Type}}
+		for _, v := range x.syncable.{{.Name}} {
 			m.{{.Name}} = append(m.{{.Name}}, timestamppb.New(v))
+		}
 {{- else if isDuration .Type}}
+		for _, v := range x.syncable.{{.Name}} {
 			m.{{.Name}} = append(m.{{.Name}}, durationpb.New(v))
+		}
+{{- else if isEmpty .Type}}
+		for _, _ = range x.syncable.{{.Name}} {
+			m.{{.Name}} = append(m.{{.Name}}, new(emptypb.Empty))
+		}
 {{- else}}
+		for _, v := range x.syncable.{{.Name}} {
 			m.{{.Name}} = append(m.{{.Name}}, v)
-{{- end}}
 		}
+{{- end}}
 {{- else if len .KeyType}}
-		for k, v := range x.{{.GoVarName}} {
 {{- if findComponent .Type}}
+		for k, v := range x.syncable.{{.Name}} {
 			m.{{.Name}}[k] = v.DumpChange()
+		}
 {{- else if isTimestamp .Type}}
+		for k, v := range x.syncable.{{.Name}} {
 			m.{{.Name}}[k] = timestamppb.New(v)
+		}
 {{- else if isDuration .Type}}
+		for k, v := range x.syncable.{{.Name}} {
 			m.{{.Name}}[k] = durationpb.New(v)
-{{- else}}
-			m.{{.Name}}[k] = v
-{{- end}}
+		}
+{{- else if isEmpty .Type}}
+		for k, _ := range x.syncable.{{.Name}} {
+			m.{{.Name}}[k] = new(emptypb.Empty)
 		}
 {{- else}}
-{{- if findComponent .Type}}
-		m.{{.Name}} = x.{{.GoVarName}}.DumpChange()
-{{- else if isTimestamp .Type}}
-		m.{{.Name}} = timestamppb.New(x.{{.GoVarName}})
-{{- else if isDuration .Type}}
-		m.{{.Name}} = durationpb.New(x.{{.GoVarName}})
+		for k, v := range x.syncable.{{.Name}} {
+			m.{{.Name}}[k] = v
+		}
+{{- end}}
 {{- else}}
-		m.{{.Name}} = x.{{.GoVarName}}
+{{- if findComponent .Type}}
+		m.{{.Name}} = x.syncable.{{.Name}}.DumpChange()
+{{- else if isTimestamp .Type}}
+		m.{{.Name}} = timestamppb.New(x.syncable.{{.Name}})
+{{- else if isDuration .Type}}
+		m.{{.Name}} = durationpb.New(x.syncable.{{.Name}})
+{{- else if isEmpty .Type}}
+		m.{{.Name}} = new(emptypb.Empty)
+{{- else}}
+		m.{{.Name}} = x.syncable.{{.Name}}
 {{- end}}
 {{- end}}
 	}
@@ -127,38 +180,60 @@ func (x *{{$MessageName}}) DumpFull() *pb.{{.Name}} {
 	m := new(pb.{{.Name}})
 {{- range .Fields}}
 {{- if .Repeated}}
-	for _, v := range x.{{.GoVarName}} {
 {{- if findComponent .Type}}
+	for _, v := range x.syncable.{{.Name}} {
 		m.{{.Name}} = append(m.{{.Name}}, v.DumpFull())
+	}
 {{- else if isTimestamp .Type}}
+	for _, v := range x.syncable.{{.Name}} {
 		m.{{.Name}} = append(m.{{.Name}}, timestamppb.New(v))
+	}
 {{- else if isDuration .Type}}
+	for _, v := range x.syncable.{{.Name}} {
 		m.{{.Name}} = append(m.{{.Name}}, durationpb.New(v))
+	}
+{{- else if isEmpty .Type}}
+	for _, _ = range x.syncable.{{.Name}} {
+		m.{{.Name}} = append(m.{{.Name}}, new(emptypb.Empty))
+	}
 {{- else}}
+	for _, v := range x.syncable.{{.Name}} {
 		m.{{.Name}} = append(m.{{.Name}}, v)
-{{- end}}
 	}
+{{- end}}
 {{- else if len .KeyType}}
-	for k, v := range x.{{.GoVarName}} {
 {{- if findComponent .Type}}
+	for k, v := range x.syncable.{{.Name}} {
 		m.{{.Name}}[k] = v.DumpFull()
+	}
 {{- else if isTimestamp .Type}}
+	for k, v := range x.syncable.{{.Name}} {
 		m.{{.Name}}[k] = timestamppb.New(v)
+	}
 {{- else if isDuration .Type}}
+	for k, v := range x.syncable.{{.Name}} {
 		m.{{.Name}}[k] = durationpb.New(v)
-{{- else}}
-		m.{{.Name}}[k] = v
-{{- end}}
+	}
+{{- else if isEmpty .Type}}
+	for k, _ := range x.syncable.{{.Name}} {
+		m.{{.Name}}[k] = new(emptypb.Empty)
 	}
 {{- else}}
-{{- if findComponent .Type}}
-	m.{{.Name}} = x.{{.GoVarName}}.DumpFull()
-{{- else if isTimestamp .Type}}
-	m.{{.Name}} = timestamppb.New(x.{{.GoVarName}})
-{{- else if isDuration .Type}}
-	m.{{.Name}} = durationpb.New(x.{{.GoVarName}})
+	for k, v := range x.syncable.{{.Name}} {
+		m.{{.Name}}[k] = v
+	}
+{{- end}}
 {{- else}}
-	m.{{.Name}} = x.{{.GoVarName}}
+{{- if findComponent .Type}}
+	m.{{.Name}} = x.syncable.{{.Name}}.DumpFull()
+{{- else if isTimestamp .Type}}
+	m.{{.Name}} = timestamppb.New(x.syncable.{{.Name}})
+{{- else if isDuration .Type}}
+	m.{{.Name}} = durationpb.New(x.syncable.{{.Name}})
+{{- else if isEmpty .Type}}
+	m.{{.Name}} = new(emptypb.Empty)
+{{- else}}
+	m.{{.Name}} = x.syncable.{{.Name}}
 {{- end}}
 {{- end}}
 {{- end}}
@@ -172,33 +247,7 @@ func (x *{{$MessageName}}) DumpFull() *pb.{{.Name}} {
 
 type {{$EntityName}} struct {
 	id int64
-{{- range .Fields}}
-{{- if .Repeated}}{{/* Array */}}
-{{- if findComponent .Type}}
-	{{.GoVarName}} []*{{.Type}}
-{{- else if findEnum .Type}}
-	{{.GoVarName}} []{{.Type}}
-{{- else}}
-	{{.GoVarName}} []{{.GoType}}
-{{- end}}
-{{- else if len .KeyType}}{{/* Map */}}
-{{- if findComponent .Type}}
-	{{.GoVarName}} map[{{.KeyType}}]*{{.Type}}
-{{- else if findEnum .Type}}
-	{{.GoVarName}} map[{{.KeyType}}]{{.Type}}
-{{- else}}
-	{{.GoVarName}} map[{{.KeyType}}]{{.GoType}}
-{{- end}}
-{{- else}}{{/* Field */}}
-{{- if findComponent .Type}}
-	{{.GoVarName}} *{{.Type}}
-{{- else if findEnum .Type}}
-	{{.GoVarName}} {{.Type}}
-{{- else}}
-	{{.GoVarName}} {{.GoType}}
-{{- end}}
-{{- end}}
-{{- end}}
+	syncable syncable{{.Name}}
 
 	dirty uint64
 }
@@ -211,11 +260,11 @@ func New{{$EntityName}}() *{{$EntityName}} {
 {{- if .Repeated}}{{/* nothing to do*/}}
 {{- else if len .KeyType}}
 {{- if findComponent .Type}}
-	x.{{.GoVarName}} = make(map[{{.KeyType}}]*{{.Type}})
+	x.syncable.{{.Name}} = make(map[{{.KeyType}}]*{{.Type}})
 {{- else if findEnum .Type}}
-	x.{{.GoVarName}} = make(map[{{.KeyType}}]{{.Type}})
+	x.syncable.{{.Name}} = make(map[{{.KeyType}}]{{.Type}})
 {{- else}}
-	x.{{.GoVarName}} = make(map[{{.KeyType}}]{{.GoType}})
+	x.syncable.{{.Name}} = make(map[{{.KeyType}}]{{.GoType}})
 {{- end}}
 {{- else}}
 {{- if findComponent .Type}}
@@ -226,7 +275,7 @@ func New{{$EntityName}}() *{{$EntityName}} {
 	return x
 }
 
-func (x *{{$EntityName}}) GetId() int64 {
+func (x *{{$EntityName}}) Id() int64 {
 	return x.id
 }
 {{- template "Message" .}}
@@ -246,19 +295,19 @@ func (x *{{$EntityName}}) clearDirty() {
 {{- range .Fields}}
 {{- if .Repeated}}
 {{- if findComponent .Type}}
-	for i := 0; i < len(x.{{.GoVarName}}); i++ {
-		x.{{.GoVarName}}[i].clearDirty()
+	for i := 0; i < len(x.syncable.{{.Name}}); i++ {
+		x.syncable.{{.Name}}[i].clearDirty()
 	}
 {{- end}}
 {{- else if len .KeyType}}
 {{- if findComponent .Type}}
-	for _, v := range x.{{.GoVarName}} {
+	for _, v := range x.syncable.{{.Name}} {
 		v.clearDirty()
 	}
 {{- end}}
 {{- else}}
 {{- if findComponent .Type}}
-	x.{{.GoVarName}}.clearDirty()
+	x.syncable.{{.Name}}.clearDirty()
 {{- end}}
 {{- end}}
 {{- end}}
@@ -283,33 +332,7 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 }
 
 type {{$ComponentName}} struct {
-{{- range .Fields}}
-{{- if .Repeated}}{{/* Array */}}
-{{- if findComponent .Type}}
-	{{.GoVarName}} []*{{.Type}}
-{{- else if findEnum .Type}}
-	{{.GoVarName}} []{{.Type}}
-{{- else}}
-	{{.GoVarName}} []{{.GoType}}
-{{- end}}
-{{- else if len .KeyType}}{{/* Map */}}
-{{- if findComponent .Type}}
-	{{.GoVarName}} map[{{.KeyType}}]*{{.Type}}
-{{- else if findEnum .Type}}
-	{{.GoVarName}} map[{{.KeyType}}]{{.Type}}
-{{- else}}
-	{{.GoVarName}} map[{{.KeyType}}]{{.GoType}}
-{{- end}}
-{{- else}}{{/* Field */}}
-{{- if findComponent .Type}}
-	{{.GoVarName}} *{{.Type}}
-{{- else if findEnum .Type}}
-	{{.GoVarName}} {{.Type}}
-{{- else}}
-	{{.GoVarName}} {{.GoType}}
-{{- end}}
-{{- end}}
-{{- end}}
+	syncable syncable{{.Name}}
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_{{.Name}}
@@ -322,11 +345,11 @@ func New{{$ComponentName}}() *{{$ComponentName}} {
 {{- if .Repeated}}{{/* nothing to do*/}}
 {{- else if len .KeyType}}
 {{- if findComponent .Type}}
-	x.{{.GoVarName}} = make(map[{{.KeyType}}]*{{.Type}})
+	x.syncable.{{.Name}} = make(map[{{.KeyType}}]*{{.Type}})
 {{- else if findEnum .Type}}
-	x.{{.GoVarName}} = make(map[{{.KeyType}}]{{.Type}})
+	x.syncable.{{.Name}} = make(map[{{.KeyType}}]{{.Type}})
 {{- else}}
-	x.{{.GoVarName}} = make(map[{{.KeyType}}]{{.GoType}})
+	x.syncable.{{.Name}} = make(map[{{.KeyType}}]{{.GoType}})
 {{- end}}
 {{- else}}
 {{- if findComponent .Type}}
@@ -354,19 +377,19 @@ func (x *{{$ComponentName}}) clearDirty() {
 {{- range .Fields}}
 {{- if .Repeated}}
 {{- if findComponent .Type}}
-	for _, v := range x.{{.GoVarName}} {
+	for _, v := range x.syncable.{{.Name}} {
 		v.clearDirty()
 	}
 {{- end}}
 {{- else if len .KeyType}}
 {{- if findComponent .Type}}
-	for _, v := range x.{{.GoVarName}} {
+	for _, v := range x.syncable.{{.Name}} {
 		v.clearDirty()
 	}
 {{- end}}
 {{- else}}
 {{- if findComponent .Type}}
-	x.{{.GoVarName}}.clearDirty()
+	x.syncable.{{.Name}}.clearDirty()
 {{- end}}
 {{- end}}
 {{- end}}
@@ -395,6 +418,9 @@ import (
 {{- end}}
 {{- if .ImportDuration}}
 	"google.golang.org/protobuf/types/known/durationpb"
+{{- end}}
+{{- if .ImportEmpty}}
+	"google.golang.org/protobuf/types/known/emptypb"
 {{- end}}
 )
 

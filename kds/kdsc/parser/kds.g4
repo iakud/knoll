@@ -80,6 +80,7 @@ type_
 	| BYTES
 	| TIMESTAMP
 	| DURATION
+	| EMPTY
 	| messageType
 	| enumType
 	;
@@ -196,17 +197,40 @@ intLit
 	;
 
 // keywords
+SYNTAX
+	: 'syntax'
+	;
 
 IMPORT
 	: 'import'
+	;
+
+WEAK
+	: 'weak'
+	;
+
+PUBLIC
+	: 'public'
 	;
 
 PACKAGE
 	: 'package'
 	;
 
+OPTION
+	: 'option'
+	;
+
+OPTIONAL
+	: 'optional'
+	;
+
 REPEATED
 	: 'repeated'
+	;
+
+ONEOF
+	: 'oneof'
 	;
 
 MAP
@@ -281,6 +305,22 @@ DURATION
 	: 'duration'
 	;
 
+EMPTY
+	: 'empty'
+	;
+
+RESERVED
+	: 'reserved'
+	;
+
+TO
+	: 'to'
+	;
+
+MAX
+	: 'max'
+	;
+
 ENUM
 	: 'enum'
 	;
@@ -291,6 +331,30 @@ ENTITY
 
 COMPONENT
 	: 'component'
+	;
+
+MESSAGE
+	: 'message'
+	;
+
+SERVICE
+	: 'service'
+	;
+
+EXTEND
+	: 'extend'
+	;
+
+RPC
+	: 'rpc'
+	;
+
+STREAM
+	: 'stream'
+	;
+
+RETURNS
+	: 'returns'
 	;
 
 // symbols
@@ -436,8 +500,15 @@ COMMENT
 	;
 
 keywords
-	: IMPORT
+	: SYNTAX
+	| IMPORT
+	| WEAK
+	| PUBLIC
 	| PACKAGE
+	| OPTION
+	| OPTIONAL
+	| REPEATED
+	| ONEOF
 	| MAP
 	| INT32
 	| INT64
@@ -454,8 +525,20 @@ keywords
 	| DOUBLE
 	| FLOAT
 	| BYTES
+	| TIMESTAMP
+	| DURATION
+	| EMPTY
+	| RESERVED
+	| TO
+	| MAX
 	| ENUM
 	| ENTITY
 	| COMPONENT
+	| MESSAGE
+	| SERVICE
+	| EXTEND
+	| RPC
+	| STREAM
+	| RETURNS
 	| BOOL_LIT
 	;

@@ -5,6 +5,7 @@ syntax = "proto3";
 package kds;
 
 import "example1.proto";
+import "google/protobuf/empty.proto";
 
 option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";
 
@@ -16,6 +17,7 @@ message City {
 
 message CityBaseInfo {
 	repeated Vector Positions = 1;
+	map<int32, google.protobuf.Empty> Troops = 2;
 }
 
 message Vector {

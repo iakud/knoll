@@ -5,13 +5,12 @@ package kds;
 
 import (
 	"github.com/iakud/keeper/kds/kdsc/example/pb"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type City struct {
 	id int64
-	playerId int64
-	playerBasicInfo *PlayerBasicInfo
-	cityInfo *CityBaseInfo
+	syncable syncableCity
 
 	dirty uint64
 }
@@ -25,37 +24,43 @@ func NewCity() *City {
 	return x
 }
 
-func (x *City) GetId() int64 {
+func (x *City) Id() int64 {
 	return x.id
 }
 
+type syncableCity struct {
+	PlayerId int64
+	PlayerBasicInfo *PlayerBasicInfo
+	CityInfo *CityBaseInfo
+}
+
 func (x *City) GetPlayerId() int64 {
-	return x.playerId
+	return x.syncable.PlayerId
 }
 
 func (x *City) SetPlayerId(v int64) {
-	if v == x.playerId {
+	if v == x.syncable.PlayerId {
 		return
 	}
-	x.playerId = v
+	x.syncable.PlayerId = v
 	x.markDirty(uint64(0x01) << 1)
 }
 
 func (x *City) GetPlayerBasicInfo() *PlayerBasicInfo {
-	return x.playerBasicInfo
+	return x.syncable.PlayerBasicInfo
 }
 
 func (x *City) setPlayerBasicInfo(v *PlayerBasicInfo) {
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed or evicted from its original place first")
 	}
-	if v == x.playerBasicInfo {
+	if v == x.syncable.PlayerBasicInfo {
 		return
 	}
-	if x.playerBasicInfo != nil {
-		x.playerBasicInfo.dirtyParent = nil
+	if x.syncable.PlayerBasicInfo != nil {
+		x.syncable.PlayerBasicInfo.dirtyParent = nil
 	}
-	x.playerBasicInfo = v
+	x.syncable.PlayerBasicInfo = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 2)
 	}
@@ -66,20 +71,20 @@ func (x *City) setPlayerBasicInfo(v *PlayerBasicInfo) {
 }
 
 func (x *City) GetCityInfo() *CityBaseInfo {
-	return x.cityInfo
+	return x.syncable.CityInfo
 }
 
 func (x *City) setCityInfo(v *CityBaseInfo) {
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed or evicted from its original place first")
 	}
-	if v == x.cityInfo {
+	if v == x.syncable.CityInfo {
 		return
 	}
-	if x.cityInfo != nil {
-		x.cityInfo.dirtyParent = nil
+	if x.syncable.CityInfo != nil {
+		x.syncable.CityInfo.dirtyParent = nil
 	}
-	x.cityInfo = v
+	x.syncable.CityInfo = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 3)
 	}
@@ -95,22 +100,22 @@ func (x *City) DumpChange() *pb.City {
 	}
 	m := new(pb.City)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.PlayerId = x.playerId
+		m.PlayerId = x.syncable.PlayerId
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.PlayerBasicInfo = x.playerBasicInfo.DumpChange()
+		m.PlayerBasicInfo = x.syncable.PlayerBasicInfo.DumpChange()
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.CityInfo = x.cityInfo.DumpChange()
+		m.CityInfo = x.syncable.CityInfo.DumpChange()
 	}
 	return m
 }
 
 func (x *City) DumpFull() *pb.City {
 	m := new(pb.City)
-	m.PlayerId = x.playerId
-	m.PlayerBasicInfo = x.playerBasicInfo.DumpFull()
-	m.CityInfo = x.cityInfo.DumpFull()
+	m.PlayerId = x.syncable.PlayerId
+	m.PlayerBasicInfo = x.syncable.PlayerBasicInfo.DumpFull()
+	m.CityInfo = x.syncable.CityInfo.DumpFull()
 	return m
 }
 
@@ -126,8 +131,8 @@ func (x *City) clearDirty() {
 		return
 	}
 	x.dirty = 0
-	x.playerBasicInfo.clearDirty()
-	x.cityInfo.clearDirty()
+	x.syncable.PlayerBasicInfo.clearDirty()
+	x.syncable.CityInfo.clearDirty()
 }
 
 func (x *City) checkDirty(n uint64) bool {
@@ -144,7 +149,7 @@ func (f dirtyParentFunc_CityBaseInfo) invoke() {
 }
 
 type CityBaseInfo struct {
-	positions []*Vector
+	syncable syncableCityBaseInfo
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_CityBaseInfo
@@ -153,7 +158,13 @@ type CityBaseInfo struct {
 func NewCityBaseInfo() *CityBaseInfo {
 	x := new(CityBaseInfo)
 	x.dirty = 1
+	x.syncable.Troops = make(map[int32]struct{})
 	return x
+}
+
+type syncableCityBaseInfo struct {
+	Positions []*Vector
+	Troops map[int32]struct{}
 }
 
 func (x *CityBaseInfo) DumpChange() *pb.CityBaseInfo {
@@ -162,8 +173,13 @@ func (x *CityBaseInfo) DumpChange() *pb.CityBaseInfo {
 	}
 	m := new(pb.CityBaseInfo)
 	if x.checkDirty(uint64(0x01) << 1) {
-		for _, v := range x.positions {
+		for _, v := range x.syncable.Positions {
 			m.Positions = append(m.Positions, v.DumpChange())
+		}
+	}
+	if x.checkDirty(uint64(0x01) << 2) {
+		for k, _ := range x.syncable.Troops {
+			m.Troops[k] = new(emptypb.Empty)
 		}
 	}
 	return m
@@ -171,8 +187,11 @@ func (x *CityBaseInfo) DumpChange() *pb.CityBaseInfo {
 
 func (x *CityBaseInfo) DumpFull() *pb.CityBaseInfo {
 	m := new(pb.CityBaseInfo)
-	for _, v := range x.positions {
+	for _, v := range x.syncable.Positions {
 		m.Positions = append(m.Positions, v.DumpFull())
+	}
+	for k, _ := range x.syncable.Troops {
+		m.Troops[k] = new(emptypb.Empty)
 	}
 	return m
 }
@@ -190,7 +209,7 @@ func (x *CityBaseInfo) clearDirty() {
 		return
 	}
 	x.dirty = 0
-	for _, v := range x.positions {
+	for _, v := range x.syncable.Positions {
 		v.clearDirty()
 	}
 }
@@ -209,8 +228,7 @@ func (f dirtyParentFunc_Vector) invoke() {
 }
 
 type Vector struct {
-	x int32
-	y int32
+	syncable syncableVector
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_Vector
@@ -222,27 +240,32 @@ func NewVector() *Vector {
 	return x
 }
 
+type syncableVector struct {
+	X int32
+	Y int32
+}
+
 func (x *Vector) GetX() int32 {
-	return x.x
+	return x.syncable.X
 }
 
 func (x *Vector) SetX(v int32) {
-	if v == x.x {
+	if v == x.syncable.X {
 		return
 	}
-	x.x = v
+	x.syncable.X = v
 	x.markDirty(uint64(0x01) << 1)
 }
 
 func (x *Vector) GetY() int32 {
-	return x.y
+	return x.syncable.Y
 }
 
 func (x *Vector) SetY(v int32) {
-	if v == x.y {
+	if v == x.syncable.Y {
 		return
 	}
-	x.y = v
+	x.syncable.Y = v
 	x.markDirty(uint64(0x01) << 2)
 }
 
@@ -252,18 +275,18 @@ func (x *Vector) DumpChange() *pb.Vector {
 	}
 	m := new(pb.Vector)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.X = x.x
+		m.X = x.syncable.X
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.Y = x.y
+		m.Y = x.syncable.Y
 	}
 	return m
 }
 
 func (x *Vector) DumpFull() *pb.Vector {
 	m := new(pb.Vector)
-	m.X = x.x
-	m.Y = x.y
+	m.X = x.syncable.X
+	m.Y = x.syncable.Y
 	return m
 }
 

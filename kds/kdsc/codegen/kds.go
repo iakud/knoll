@@ -7,6 +7,7 @@ type Kds struct {
 
 	ImportTimestamp bool
 	ImportDuration bool
+	ImportEmpty bool
 
 	Defs []interface{}
 }

@@ -16,6 +16,8 @@ message {{.Name}} {
 	repeated google.protobuf.Timestamp {{.Name}} = {{.Number}};
 {{- else if isDuration .Type}}
 	repeated google.protobuf.Duration {{.Name}} = {{.Number}};
+{{- else if isEmpty .Type}}
+	repeated google.protobuf.Empty {{.Name}} = {{.Number}};
 {{- else}}
 	repeated {{.Type}} {{.Name}} = {{.Number}};
 {{- end}}
@@ -24,6 +26,8 @@ message {{.Name}} {
 	map<{{.KeyType}}, google.protobuf.Timestamp> {{.Name}} = {{.Number}};
 {{- else if isDuration .Type}}
 	map<{{.KeyType}}, google.protobuf.Duration> {{.Name}} = {{.Number}};
+{{- else if isEmpty .Type}}
+	map<{{.KeyType}}, google.protobuf.Empty> {{.Name}} = {{.Number}};
 {{- else}}
 	map<{{.KeyType}}, {{.Type}}> {{.Name}} = {{.Number}};
 {{- end}}
@@ -32,6 +36,8 @@ message {{.Name}} {
 	google.protobuf.Timestamp {{.Name}} = {{.Number}};
 {{- else if isDuration .Type}}
 	google.protobuf.Duration {{.Name}} = {{.Number}};
+{{- else if isEmpty .Type}}
+	google.protobuf.Empty {{.Name}} = {{.Number}};
 {{- else}}
 	{{.Type}} {{.Name}} = {{.Number}};
 {{- end}}
@@ -48,6 +54,8 @@ message {{.Name}} {
 	repeated google.protobuf.Timestamp {{.Name}} = {{.Number}};
 {{- else if isDuration .Type}}
 	repeated google.protobuf.Duration {{.Name}} = {{.Number}};
+{{- else if isEmpty .Type}}
+	repeated google.protobuf.Empty {{.Name}} = {{.Number}};
 {{- else}}
 	repeated {{.Type}} {{.Name}} = {{.Number}};
 {{- end}}
@@ -56,6 +64,8 @@ message {{.Name}} {
 	map<{{.KeyType}}, google.protobuf.Timestamp> {{.Name}} = {{.Number}};
 {{- else if isDuration .Type}}
 	map<{{.KeyType}}, google.protobuf.Duration> {{.Name}} = {{.Number}};
+{{- else if isEmpty .Type}}
+	map<{{.KeyType}}, google.protobuf.Empty> {{.Name}} = {{.Number}};
 {{- else}}
 	map<{{.KeyType}}, {{.Type}}> {{.Name}} = {{.Number}};
 {{- end}}
@@ -64,6 +74,8 @@ message {{.Name}} {
 	google.protobuf.Timestamp {{.Name}} = {{.Number}};
 {{- else if isDuration .Type}}
 	google.protobuf.Duration {{.Name}} = {{.Number}};
+{{- else if isEmpty .Type}}
+	google.protobuf.Empty {{.Name}} = {{.Number}};
 {{- else}}
 	{{.Type}} {{.Name}} = {{.Number}};
 {{- end}}
@@ -95,6 +107,9 @@ import "google/protobuf/timestamp.proto";
 {{- end}}
 {{- if .ImportDuration}}
 import "google/protobuf/duration.proto";
+{{- end}}
+{{- if .ImportEmpty}}
+import "google/protobuf/empty.proto";
 {{- end}}
 
 option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";
