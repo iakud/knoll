@@ -3,6 +3,8 @@ package codegen
 type Kds struct {
 	Filename string
 	Package string
+	ProtoGoPackage string
+	ProtoPackage string
 	Imports []string
 
 	ImportTimestamp bool
@@ -15,6 +17,7 @@ type Kds struct {
 type Enum struct {
 	Name string
 	EnumFields []*EnumField
+	ProtoPackage string
 }
 
 type EnumField struct {
@@ -25,6 +28,7 @@ type EnumField struct {
 type Message struct {
 	Name string
 	Fields []*Field
+	ProtoPackage string
 }
 
 type Entity struct {

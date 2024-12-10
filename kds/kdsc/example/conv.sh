@@ -35,12 +35,18 @@ PATH="$NEW_PATH"
 rm -rf kds
 mkdir -p kds
 
-kdsc --tpl_path=tpls --out=kds *.kds
+kdsc --tpl_path=tpls/kds --out=kds *.kds
 [[ $? -ne 0 ]] && exit 1
 
-rm -rf pb
-mkdir -p pb
+rm -rf proto
+mkdir -p proto
 
-protoc -I=./kds -I=../../../local/protoc/include \
-	--go_out=paths=source_relative:./pb \
-	`find kds -name "*.proto"`
+kdsc --tpl_path=tpls/proto --out=proto *.kds
+[[ $? -ne 0 ]] && exit 1
+
+rm -rf kdspb
+mkdir -p kdspb
+
+protoc -I=./proto -I=../../../local/protoc/include \
+	--go_out=paths=source_relative:./kdspb \
+	`find proto -name "*.proto"`

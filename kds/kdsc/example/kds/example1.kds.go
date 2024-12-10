@@ -6,10 +6,16 @@ package kds;
 import (
 	"time"
 
-	"github.com/iakud/keeper/kds/kdsc/example/pb"
+	"github.com/iakud/keeper/kds/kdsc/example/kdspb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
+
+type syncablePlayer struct {
+	Info *PlayerBasicInfo
+	Hero *PlayerHero
+	Bag *PlayerBag
+}
 
 type Player struct {
 	id int64
@@ -30,12 +36,6 @@ func NewPlayer() *Player {
 
 func (x *Player) Id() int64 {
 	return x.id
-}
-
-type syncablePlayer struct {
-	Info *PlayerBasicInfo
-	Hero *PlayerHero
-	Bag *PlayerBag
 }
 
 func (x *Player) GetInfo() *PlayerBasicInfo {
@@ -110,11 +110,11 @@ func (x *Player) setBag(v *PlayerBag) {
 	}
 }
 
-func (x *Player) DumpChange() *pb.Player {
+func (x *Player) DumpChange() *kdspb.Player {
 	if x.checkDirty(uint64(0x01)) {
 		return x.DumpFull()
 	}
-	m := new(pb.Player)
+	m := new(kdspb.Player)
 	if x.checkDirty(uint64(0x01) << 1) {
 		m.Info = x.syncable.Info.DumpChange()
 	}
@@ -127,8 +127,8 @@ func (x *Player) DumpChange() *pb.Player {
 	return m
 }
 
-func (x *Player) DumpFull() *pb.Player {
-	m := new(pb.Player)
+func (x *Player) DumpFull() *kdspb.Player {
+	m := new(kdspb.Player)
 	m.Info = x.syncable.Info.DumpFull()
 	m.Hero = x.syncable.Hero.DumpFull()
 	m.Bag = x.syncable.Bag.DumpFull()
@@ -156,6 +156,12 @@ func (x *Player) checkDirty(n uint64) bool {
 	return x.dirty & n != 0
 }
 
+type syncablePlayerBasicInfo struct {
+	Name string
+	IsNew bool
+	CreateTime time.Time
+}
+
 type dirtyParentFunc_PlayerBasicInfo func()
 
 func (f dirtyParentFunc_PlayerBasicInfo) invoke() {
@@ -176,12 +182,6 @@ func NewPlayerBasicInfo() *PlayerBasicInfo {
 	x := new(PlayerBasicInfo)
 	x.dirty = 1
 	return x
-}
-
-type syncablePlayerBasicInfo struct {
-	Name string
-	IsNew bool
-	CreateTime time.Time
 }
 
 func (x *PlayerBasicInfo) GetName() string {
@@ -220,11 +220,11 @@ func (x *PlayerBasicInfo) SetCreateTime(v time.Time) {
 	x.markDirty(uint64(0x01) << 5)
 }
 
-func (x *PlayerBasicInfo) DumpChange() *pb.PlayerBasicInfo {
+func (x *PlayerBasicInfo) DumpChange() *kdspb.PlayerBasicInfo {
 	if x.checkDirty(uint64(0x01)) {
 		return x.DumpFull()
 	}
-	m := new(pb.PlayerBasicInfo)
+	m := new(kdspb.PlayerBasicInfo)
 	if x.checkDirty(uint64(0x01) << 1) {
 		m.Name = x.syncable.Name
 	}
@@ -237,8 +237,8 @@ func (x *PlayerBasicInfo) DumpChange() *pb.PlayerBasicInfo {
 	return m
 }
 
-func (x *PlayerBasicInfo) DumpFull() *pb.PlayerBasicInfo {
-	m := new(pb.PlayerBasicInfo)
+func (x *PlayerBasicInfo) DumpFull() *kdspb.PlayerBasicInfo {
+	m := new(kdspb.PlayerBasicInfo)
 	m.Name = x.syncable.Name
 	m.IsNew = x.syncable.IsNew
 	m.CreateTime = timestamppb.New(x.syncable.CreateTime)
@@ -264,6 +264,10 @@ func (x *PlayerBasicInfo) checkDirty(n uint64) bool {
 	return x.dirty & n != 0
 }
 
+type syncablePlayerHero struct {
+	Heroes map[int64]*Hero
+}
+
 type dirtyParentFunc_PlayerHero func()
 
 func (f dirtyParentFunc_PlayerHero) invoke() {
@@ -287,15 +291,11 @@ func NewPlayerHero() *PlayerHero {
 	return x
 }
 
-type syncablePlayerHero struct {
-	Heroes map[int64]*Hero
-}
-
-func (x *PlayerHero) DumpChange() *pb.PlayerHero {
+func (x *PlayerHero) DumpChange() *kdspb.PlayerHero {
 	if x.checkDirty(uint64(0x01)) {
 		return x.DumpFull()
 	}
-	m := new(pb.PlayerHero)
+	m := new(kdspb.PlayerHero)
 	if x.checkDirty(uint64(0x01) << 1) {
 		for k, v := range x.syncable.Heroes {
 			m.Heroes[k] = v.DumpChange()
@@ -304,8 +304,8 @@ func (x *PlayerHero) DumpChange() *pb.PlayerHero {
 	return m
 }
 
-func (x *PlayerHero) DumpFull() *pb.PlayerHero {
-	m := new(pb.PlayerHero)
+func (x *PlayerHero) DumpFull() *kdspb.PlayerHero {
+	m := new(kdspb.PlayerHero)
 	for k, v := range x.syncable.Heroes {
 		m.Heroes[k] = v.DumpFull()
 	}
@@ -334,6 +334,10 @@ func (x *PlayerHero) checkDirty(n uint64) bool {
 	return x.dirty & n != 0
 }
 
+type syncablePlayerBag struct {
+	Resources map[int32]int32
+}
+
 type dirtyParentFunc_PlayerBag func()
 
 func (f dirtyParentFunc_PlayerBag) invoke() {
@@ -357,15 +361,11 @@ func NewPlayerBag() *PlayerBag {
 	return x
 }
 
-type syncablePlayerBag struct {
-	Resources map[int32]int32
-}
-
-func (x *PlayerBag) DumpChange() *pb.PlayerBag {
+func (x *PlayerBag) DumpChange() *kdspb.PlayerBag {
 	if x.checkDirty(uint64(0x01)) {
 		return x.DumpFull()
 	}
-	m := new(pb.PlayerBag)
+	m := new(kdspb.PlayerBag)
 	if x.checkDirty(uint64(0x01) << 1) {
 		for k, v := range x.syncable.Resources {
 			m.Resources[k] = v
@@ -374,8 +374,8 @@ func (x *PlayerBag) DumpChange() *pb.PlayerBag {
 	return m
 }
 
-func (x *PlayerBag) DumpFull() *pb.PlayerBag {
-	m := new(pb.PlayerBag)
+func (x *PlayerBag) DumpFull() *kdspb.PlayerBag {
+	m := new(kdspb.PlayerBag)
 	for k, v := range x.syncable.Resources {
 		m.Resources[k] = v
 	}
@@ -401,6 +401,13 @@ func (x *PlayerBag) checkDirty(n uint64) bool {
 	return x.dirty & n != 0
 }
 
+type syncableHero struct {
+	HeroId int32
+	HeroLevel int32
+	Type HeroType
+	NeedTime time.Duration
+}
+
 type dirtyParentFunc_Hero func()
 
 func (f dirtyParentFunc_Hero) invoke() {
@@ -421,13 +428,6 @@ func NewHero() *Hero {
 	x := new(Hero)
 	x.dirty = 1
 	return x
-}
-
-type syncableHero struct {
-	HeroId int32
-	HeroLevel int32
-	Type HeroType
-	NeedTime time.Duration
 }
 
 func (x *Hero) GetHeroId() int32 {
@@ -478,11 +478,11 @@ func (x *Hero) SetNeedTime(v time.Duration) {
 	x.markDirty(uint64(0x01) << 4)
 }
 
-func (x *Hero) DumpChange() *pb.Hero {
+func (x *Hero) DumpChange() *kdspb.Hero {
 	if x.checkDirty(uint64(0x01)) {
 		return x.DumpFull()
 	}
-	m := new(pb.Hero)
+	m := new(kdspb.Hero)
 	if x.checkDirty(uint64(0x01) << 1) {
 		m.HeroId = x.syncable.HeroId
 	}
@@ -498,8 +498,8 @@ func (x *Hero) DumpChange() *pb.Hero {
 	return m
 }
 
-func (x *Hero) DumpFull() *pb.Hero {
-	m := new(pb.Hero)
+func (x *Hero) DumpFull() *kdspb.Hero {
+	m := new(kdspb.Hero)
 	m.HeroId = x.syncable.HeroId
 	m.HeroLevel = x.syncable.HeroLevel
 	m.Type = x.syncable.Type
@@ -526,7 +526,7 @@ func (x *Hero) checkDirty(n uint64) bool {
 	return x.dirty & n != 0
 }
 
-type HeroType = pb.HeroType
+type HeroType = kdspb.HeroType
 
 const (
 	HeroType_HeroType1 HeroType = 0

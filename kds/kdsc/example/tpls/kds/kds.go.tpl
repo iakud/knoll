@@ -3,7 +3,7 @@
 {{- define "Enum"}}
 {{- $EnumType := .Name}}
 
-type {{.Name}} = pb.{{.Name}}
+type {{.Name}} = {{.ProtoPackage}}.{{.Name}}
 
 const (
 {{- range .EnumFields}}
@@ -12,8 +12,7 @@ const (
 )
 {{- end}}
 
-{{- define "Message"}}
-{{- $MessageName := .Name}}
+{{- define "Syncable"}}
 
 type syncable{{.Name}} struct {
 {{- range .Fields}}
@@ -44,6 +43,10 @@ type syncable{{.Name}} struct {
 {{- end}}
 {{- end}}
 }
+{{- end}}
+
+{{- define "Message"}}
+{{- $MessageName := .Name}}
 
 {{- range .Fields}}
 {{- if .Repeated}}
@@ -106,11 +109,11 @@ func (x *{{$MessageName}}) Set{{.Name}}(v {{.GoType}}) {
 {{- end}}
 {{- end}}
 
-func (x *{{$MessageName}}) DumpChange() *pb.{{.Name}} {
+func (x *{{$MessageName}}) DumpChange() *{{.ProtoPackage}}.{{.Name}} {
 	if x.checkDirty(uint64(0x01)) {
 		return x.DumpFull()
 	}
-	m := new(pb.{{.Name}})
+	m := new({{.ProtoPackage}}.{{.Name}})
 {{- range .Fields}}
 	if x.checkDirty(uint64(0x01) << {{.Number}}) {
 {{- if .Repeated}}
@@ -176,8 +179,8 @@ func (x *{{$MessageName}}) DumpChange() *pb.{{.Name}} {
 	return m
 }
 
-func (x *{{$MessageName}}) DumpFull() *pb.{{.Name}} {
-	m := new(pb.{{.Name}})
+func (x *{{$MessageName}}) DumpFull() *{{.ProtoPackage}}.{{.Name}} {
+	m := new({{.ProtoPackage}}.{{.Name}})
 {{- range .Fields}}
 {{- if .Repeated}}
 {{- if findComponent .Type}}
@@ -243,17 +246,17 @@ func (x *{{$MessageName}}) DumpFull() *pb.{{.Name}} {
 {{- end}}
 
 {{- define "Entity"}}
-{{- $EntityName := (print .Name)}}
+{{- template "Syncable" .}}
 
-type {{$EntityName}} struct {
+type {{.Name}} struct {
 	id int64
 	syncable syncable{{.Name}}
 
 	dirty uint64
 }
 
-func New{{$EntityName}}() *{{$EntityName}} {
-	x := new({{$EntityName}})
+func New{{.Name}}() *{{.Name}} {
+	x := new({{.Name}})
 	x.dirty = 1
 	x.id = 0 // FIXME: gen nextId()
 {{- range .Fields}}
@@ -275,19 +278,19 @@ func New{{$EntityName}}() *{{$EntityName}} {
 	return x
 }
 
-func (x *{{$EntityName}}) Id() int64 {
+func (x *{{.Name}}) Id() int64 {
 	return x.id
 }
 {{- template "Message" .}}
 
-func (x *{{$EntityName}}) markDirty(n uint64) {
+func (x *{{.Name}}) markDirty(n uint64) {
 	if x.dirty & n == n {
 		return
 	}
 	x.dirty |= n
 }
 
-func (x *{{$EntityName}}) clearDirty() {
+func (x *{{.Name}}) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
@@ -313,14 +316,14 @@ func (x *{{$EntityName}}) clearDirty() {
 {{- end}}
 }
 
-func (x *{{$EntityName}}) checkDirty(n uint64) bool {
+func (x *{{.Name}}) checkDirty(n uint64) bool {
 	return x.dirty & n != 0
 }
 
 {{- end}}
 
 {{- define "Component"}}
-{{- $ComponentName := .Name}}
+{{- template "Syncable" .}}
 
 type dirtyParentFunc_{{.Name}} func()
 
@@ -331,15 +334,15 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 	f()
 }
 
-type {{$ComponentName}} struct {
+type {{.Name}} struct {
 	syncable syncable{{.Name}}
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_{{.Name}}
 }
 
-func New{{$ComponentName}}() *{{$ComponentName}} {
-	x := new({{$ComponentName}})
+func New{{.Name}}() *{{.Name}} {
+	x := new({{.Name}})
 	x.dirty = 1
 {{- range .Fields}}
 {{- if .Repeated}}{{/* nothing to do*/}}
@@ -361,7 +364,7 @@ func New{{$ComponentName}}() *{{$ComponentName}} {
 }
 {{- template "Message" .}}
 
-func (x *{{$ComponentName}}) markDirty(n uint64) {
+func (x *{{.Name}}) markDirty(n uint64) {
 	if x.dirty & n == n {
 		return
 	}
@@ -369,7 +372,7 @@ func (x *{{$ComponentName}}) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
-func (x *{{$ComponentName}}) clearDirty() {
+func (x *{{.Name}}) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
@@ -395,7 +398,7 @@ func (x *{{$ComponentName}}) clearDirty() {
 {{- end}}
 }
 
-func (x *{{$ComponentName}}) checkDirty(n uint64) bool {
+func (x *{{.Name}}) checkDirty(n uint64) bool {
 	return x.dirty & n != 0
 }
 {{- end}}
@@ -412,7 +415,11 @@ import (
 	"time"
 {{""}}
 {{- end}}
-	"github.com/iakud/keeper/kds/kdsc/example/pb"
+{{- if len .Defs}}
+	"{{.ProtoGoPackage}}"
+{{- else}}
+	_ "{{.ProtoGoPackage}}"
+{{- end}}
 {{- if .ImportTimestamp}}
 	"google.golang.org/protobuf/types/known/timestamppb"
 {{- end}}

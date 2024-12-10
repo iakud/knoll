@@ -1,1 +1,3 @@
 package kds;
+
+proto_go_package="github.com/iakud/keeper/kds/kdsc/example/kdspb";

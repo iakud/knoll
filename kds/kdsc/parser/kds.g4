@@ -2,13 +2,17 @@
 grammar kds;
 
 kds
-	: packageStatement (importStatement | topLevelDef | emptyStatement_)* EOF
+	: packageStatement protoGoPackageStatement (importStatement | topLevelDef | emptyStatement_)* EOF
 	;
 
 // Package
 
 packageStatement
 	: PACKAGE fullIdent SEMI
+	;
+
+protoGoPackageStatement
+	: PROTO_GO_PACKAGE EQ STR_LIT SEMI
 	;
 
 // Import Statement
@@ -203,6 +207,10 @@ SYNTAX
 
 IMPORT
 	: 'import'
+	;
+
+PROTO_GO_PACKAGE
+	: 'proto_go_package'
 	;
 
 WEAK
@@ -502,6 +510,7 @@ COMMENT
 keywords
 	: SYNTAX
 	| IMPORT
+	| PROTO_GO_PACKAGE
 	| WEAK
 	| PUBLIC
 	| PACKAGE

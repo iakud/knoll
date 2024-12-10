@@ -1,6 +1,7 @@
 package codegen
 
 import (
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -16,7 +17,9 @@ func visitKds(ctx *Context, kdsCtx parser.IKdsContext) *Kds {
 	for i := 0; i < len(kds.Imports); i++ {
 		kds.Imports[i] = strings.TrimSuffix(kds.Imports[i], ".kds")
 	}
-	
+	kds.ProtoGoPackage = visitProtoGoPackage(kdsCtx.ProtoGoPackageStatement())
+	kds.ProtoPackage = filepath.Base(kds.ProtoGoPackage)
+
 	for _, topLevel := range kdsCtx.AllTopLevelDef() {
 		switch {
 		case topLevel.EnumDef() != nil:
@@ -36,6 +39,17 @@ func visitKds(ctx *Context, kdsCtx parser.IKdsContext) *Kds {
 	return kds
 }
 
+func visitProtoGoPackage(protoGoPackageCtx parser.IProtoGoPackageStatementContext) string {
+	protoGoPackageText := protoGoPackageCtx.STR_LIT().GetText()
+	switch {
+	case strings.HasPrefix(protoGoPackageText, "\"") && strings.HasSuffix(protoGoPackageText, "\"") :
+		return strings.TrimSuffix(strings.TrimPrefix(protoGoPackageText, "\""), "\"")
+	case strings.HasPrefix(protoGoPackageText, "'") && strings.HasSuffix(protoGoPackageText, "'") :
+		return strings.TrimSuffix(strings.TrimPrefix(protoGoPackageText, "'"), "'")
+	}
+	return protoGoPackageText
+}
+
 func visitImport(importCtx parser.IImportStatementContext) string {
 	importText := importCtx.STR_LIT().GetText()
 	switch {
@@ -53,6 +67,7 @@ func visitEnum(kds *Kds, enumCtx parser.IEnumDefContext) *Enum {
 	for _, element := range enumCtx.EnumBody().AllEnumElement() {
 		enum.EnumFields = append(enum.EnumFields, visitEnumField(element.EnumField()))
 	}
+	enum.ProtoPackage = kds.ProtoPackage
 	return enum
 }
 
@@ -84,6 +99,7 @@ func visitEntity(ctx *Context, kds *Kds, entityCtx parser.IEntityDefContext) *En
 			ctx.AddMap(field.Type, field.KeyType)
 		}
 	}
+	entity.ProtoPackage = kds.ProtoPackage
 	return entity
 }
 
@@ -104,6 +120,7 @@ func visitComponent(ctx *Context, kds *Kds, componentCtx parser.IComponentDefCon
 			ctx.AddMap(field.Type, field.KeyType)
 		}
 	}
+	component.ProtoPackage = kds.ProtoPackage
 	return component
 }
 

@@ -1,5 +1,7 @@
 package kds;
 
+proto_go_package="github.com/iakud/keeper/kds/kdsc/example/kdspb";
+
 import "example1.kds";
 
 entity City {

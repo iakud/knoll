@@ -1,5 +1,7 @@
 package kds;
 
+proto_go_package="github.com/iakud/keeper/kds/kdsc/example/kdspb";
+
 entity Player {
 	PlayerBasicInfo Info = 1;
 	PlayerHero Hero = 2;

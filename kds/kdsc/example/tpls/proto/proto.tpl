@@ -112,7 +112,7 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/empty.proto";
 {{- end}}
 
-option go_package="github.com/iakud/keeper/kds/kdsc/example/pb";
+option go_package="{{.ProtoGoPackage}}";
 
 {{- range .Defs}}
 {{- if findEnum .Name}}

@@ -32,156 +32,161 @@ var KdsParserStaticData struct {
 func kdsParserInit() {
 	staticData := &KdsParserStaticData
 	staticData.LiteralNames = []string{
-		"", "'syntax'", "'import'", "'weak'", "'public'", "'package'", "'option'",
-		"'optional'", "'repeated'", "'oneof'", "'map'", "'int32'", "'int64'",
-		"'uint32'", "'uint64'", "'sint32'", "'sint64'", "'fixed32'", "'fixed64'",
-		"'sfixed32'", "'sfixed64'", "'bool'", "'string'", "'double'", "'float'",
-		"'bytes'", "'timestamp'", "'duration'", "'empty'", "'reserved'", "'to'",
-		"'max'", "'enum'", "'entity'", "'component'", "'message'", "'service'",
-		"'extend'", "'rpc'", "'stream'", "'returns'", "';'", "'='", "'('", "')'",
-		"'['", "']'", "'{'", "'}'", "'<'", "'>'", "'.'", "','", "':'", "'+'",
-		"'-'",
+		"", "'syntax'", "'import'", "'proto_go_package'", "'weak'", "'public'",
+		"'package'", "'option'", "'optional'", "'repeated'", "'oneof'", "'map'",
+		"'int32'", "'int64'", "'uint32'", "'uint64'", "'sint32'", "'sint64'",
+		"'fixed32'", "'fixed64'", "'sfixed32'", "'sfixed64'", "'bool'", "'string'",
+		"'double'", "'float'", "'bytes'", "'timestamp'", "'duration'", "'empty'",
+		"'reserved'", "'to'", "'max'", "'enum'", "'entity'", "'component'",
+		"'message'", "'service'", "'extend'", "'rpc'", "'stream'", "'returns'",
+		"';'", "'='", "'('", "')'", "'['", "']'", "'{'", "'}'", "'<'", "'>'",
+		"'.'", "','", "':'", "'+'", "'-'",
 	}
 	staticData.SymbolicNames = []string{
-		"", "SYNTAX", "IMPORT", "WEAK", "PUBLIC", "PACKAGE", "OPTION", "OPTIONAL",
-		"REPEATED", "ONEOF", "MAP", "INT32", "INT64", "UINT32", "UINT64", "SINT32",
-		"SINT64", "FIXED32", "FIXED64", "SFIXED32", "SFIXED64", "BOOL", "STRING",
-		"DOUBLE", "FLOAT", "BYTES", "TIMESTAMP", "DURATION", "EMPTY", "RESERVED",
-		"TO", "MAX", "ENUM", "ENTITY", "COMPONENT", "MESSAGE", "SERVICE", "EXTEND",
-		"RPC", "STREAM", "RETURNS", "SEMI", "EQ", "LP", "RP", "LB", "RB", "LC",
-		"RC", "LT", "GT", "DOT", "COMMA", "COLON", "PLUS", "MINUS", "STR_LIT",
-		"BOOL_LIT", "INT_LIT", "IDENTIFIER", "WS", "LINE_COMMENT", "COMMENT",
+		"", "SYNTAX", "IMPORT", "PROTO_GO_PACKAGE", "WEAK", "PUBLIC", "PACKAGE",
+		"OPTION", "OPTIONAL", "REPEATED", "ONEOF", "MAP", "INT32", "INT64",
+		"UINT32", "UINT64", "SINT32", "SINT64", "FIXED32", "FIXED64", "SFIXED32",
+		"SFIXED64", "BOOL", "STRING", "DOUBLE", "FLOAT", "BYTES", "TIMESTAMP",
+		"DURATION", "EMPTY", "RESERVED", "TO", "MAX", "ENUM", "ENTITY", "COMPONENT",
+		"MESSAGE", "SERVICE", "EXTEND", "RPC", "STREAM", "RETURNS", "SEMI",
+		"EQ", "LP", "RP", "LB", "RB", "LC", "RC", "LT", "GT", "DOT", "COMMA",
+		"COLON", "PLUS", "MINUS", "STR_LIT", "BOOL_LIT", "INT_LIT", "IDENTIFIER",
+		"WS", "LINE_COMMENT", "COMMENT",
 	}
 	staticData.RuleNames = []string{
-		"kds", "packageStatement", "importStatement", "field", "fieldLabel",
-		"fieldOptions", "fieldOption", "fieldNumber", "mapField", "keyType",
-		"type_", "topLevelDef", "enumDef", "enumBody", "enumElement", "enumField",
-		"entityDef", "entityName", "entityBody", "entityElement", "componentDef",
-		"componentName", "componentBody", "componentElement", "emptyStatement_",
-		"ident", "fullIdent", "fieldName", "messageName", "enumName", "mapName",
-		"messageType", "enumType", "intLit", "keywords",
+		"kds", "packageStatement", "protoGoPackageStatement", "importStatement",
+		"field", "fieldLabel", "fieldOptions", "fieldOption", "fieldNumber",
+		"mapField", "keyType", "type_", "topLevelDef", "enumDef", "enumBody",
+		"enumElement", "enumField", "entityDef", "entityName", "entityBody",
+		"entityElement", "componentDef", "componentName", "componentBody", "componentElement",
+		"emptyStatement_", "ident", "fullIdent", "fieldName", "messageName",
+		"enumName", "mapName", "messageType", "enumType", "intLit", "keywords",
 	}
 	staticData.PredictionContextCache = antlr.NewPredictionContextCache()
 	staticData.serializedATN = []int32{
-		4, 1, 62, 280, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
+		4, 1, 63, 288, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
 		4, 2, 5, 7, 5, 2, 6, 7, 6, 2, 7, 7, 7, 2, 8, 7, 8, 2, 9, 7, 9, 2, 10, 7,
 		10, 2, 11, 7, 11, 2, 12, 7, 12, 2, 13, 7, 13, 2, 14, 7, 14, 2, 15, 7, 15,
 		2, 16, 7, 16, 2, 17, 7, 17, 2, 18, 7, 18, 2, 19, 7, 19, 2, 20, 7, 20, 2,
 		21, 7, 21, 2, 22, 7, 22, 2, 23, 7, 23, 2, 24, 7, 24, 2, 25, 7, 25, 2, 26,
 		7, 26, 2, 27, 7, 27, 2, 28, 7, 28, 2, 29, 7, 29, 2, 30, 7, 30, 2, 31, 7,
-		31, 2, 32, 7, 32, 2, 33, 7, 33, 2, 34, 7, 34, 1, 0, 1, 0, 1, 0, 1, 0, 5,
-		0, 75, 8, 0, 10, 0, 12, 0, 78, 9, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 2, 1, 2, 1, 2, 1, 2, 1, 3, 3, 3, 91, 8, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1,
-		3, 1, 3, 1, 3, 1, 3, 3, 3, 101, 8, 3, 1, 3, 1, 3, 1, 4, 1, 4, 1, 5, 1,
-		5, 1, 5, 5, 5, 110, 8, 5, 10, 5, 12, 5, 113, 9, 5, 1, 6, 1, 6, 1, 7, 1,
-		7, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8, 1,
-		8, 1, 8, 3, 8, 132, 8, 8, 1, 8, 1, 8, 1, 9, 1, 9, 1, 10, 1, 10, 1, 10,
-		1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1,
-		10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 3, 10, 158, 8, 10, 1, 11,
-		1, 11, 1, 11, 3, 11, 163, 8, 11, 1, 12, 1, 12, 1, 12, 1, 12, 1, 13, 1,
-		13, 5, 13, 171, 8, 13, 10, 13, 12, 13, 174, 9, 13, 1, 13, 1, 13, 1, 14,
-		1, 14, 1, 15, 1, 15, 1, 15, 3, 15, 183, 8, 15, 1, 15, 1, 15, 1, 15, 1,
-		16, 1, 16, 1, 16, 1, 16, 1, 17, 1, 17, 1, 18, 1, 18, 5, 18, 196, 8, 18,
-		10, 18, 12, 18, 199, 9, 18, 1, 18, 1, 18, 1, 19, 1, 19, 1, 19, 3, 19, 206,
-		8, 19, 1, 20, 1, 20, 1, 20, 1, 20, 1, 21, 1, 21, 1, 22, 1, 22, 5, 22, 216,
-		8, 22, 10, 22, 12, 22, 219, 9, 22, 1, 22, 1, 22, 1, 23, 1, 23, 1, 23, 3,
-		23, 226, 8, 23, 1, 24, 1, 24, 1, 25, 1, 25, 3, 25, 232, 8, 25, 1, 26, 1,
-		26, 1, 26, 5, 26, 237, 8, 26, 10, 26, 12, 26, 240, 9, 26, 1, 27, 1, 27,
-		1, 28, 1, 28, 1, 29, 1, 29, 1, 30, 1, 30, 1, 31, 3, 31, 251, 8, 31, 1,
-		31, 1, 31, 1, 31, 5, 31, 256, 8, 31, 10, 31, 12, 31, 259, 9, 31, 1, 31,
-		1, 31, 1, 32, 3, 32, 264, 8, 32, 1, 32, 1, 32, 1, 32, 5, 32, 269, 8, 32,
-		10, 32, 12, 32, 272, 9, 32, 1, 32, 1, 32, 1, 33, 1, 33, 1, 34, 1, 34, 1,
-		34, 0, 0, 35, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30,
-		32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66,
-		68, 0, 2, 1, 0, 11, 22, 2, 0, 1, 40, 57, 57, 286, 0, 70, 1, 0, 0, 0, 2,
-		81, 1, 0, 0, 0, 4, 85, 1, 0, 0, 0, 6, 90, 1, 0, 0, 0, 8, 104, 1, 0, 0,
-		0, 10, 106, 1, 0, 0, 0, 12, 114, 1, 0, 0, 0, 14, 116, 1, 0, 0, 0, 16, 118,
-		1, 0, 0, 0, 18, 135, 1, 0, 0, 0, 20, 157, 1, 0, 0, 0, 22, 162, 1, 0, 0,
-		0, 24, 164, 1, 0, 0, 0, 26, 168, 1, 0, 0, 0, 28, 177, 1, 0, 0, 0, 30, 179,
-		1, 0, 0, 0, 32, 187, 1, 0, 0, 0, 34, 191, 1, 0, 0, 0, 36, 193, 1, 0, 0,
-		0, 38, 205, 1, 0, 0, 0, 40, 207, 1, 0, 0, 0, 42, 211, 1, 0, 0, 0, 44, 213,
-		1, 0, 0, 0, 46, 225, 1, 0, 0, 0, 48, 227, 1, 0, 0, 0, 50, 231, 1, 0, 0,
-		0, 52, 233, 1, 0, 0, 0, 54, 241, 1, 0, 0, 0, 56, 243, 1, 0, 0, 0, 58, 245,
-		1, 0, 0, 0, 60, 247, 1, 0, 0, 0, 62, 250, 1, 0, 0, 0, 64, 263, 1, 0, 0,
-		0, 66, 275, 1, 0, 0, 0, 68, 277, 1, 0, 0, 0, 70, 76, 3, 2, 1, 0, 71, 75,
-		3, 4, 2, 0, 72, 75, 3, 22, 11, 0, 73, 75, 3, 48, 24, 0, 74, 71, 1, 0, 0,
-		0, 74, 72, 1, 0, 0, 0, 74, 73, 1, 0, 0, 0, 75, 78, 1, 0, 0, 0, 76, 74,
-		1, 0, 0, 0, 76, 77, 1, 0, 0, 0, 77, 79, 1, 0, 0, 0, 78, 76, 1, 0, 0, 0,
-		79, 80, 5, 0, 0, 1, 80, 1, 1, 0, 0, 0, 81, 82, 5, 5, 0, 0, 82, 83, 3, 52,
-		26, 0, 83, 84, 5, 41, 0, 0, 84, 3, 1, 0, 0, 0, 85, 86, 5, 2, 0, 0, 86,
-		87, 5, 56, 0, 0, 87, 88, 5, 41, 0, 0, 88, 5, 1, 0, 0, 0, 89, 91, 3, 8,
-		4, 0, 90, 89, 1, 0, 0, 0, 90, 91, 1, 0, 0, 0, 91, 92, 1, 0, 0, 0, 92, 93,
-		3, 20, 10, 0, 93, 94, 3, 54, 27, 0, 94, 95, 5, 42, 0, 0, 95, 100, 3, 14,
-		7, 0, 96, 97, 5, 45, 0, 0, 97, 98, 3, 10, 5, 0, 98, 99, 5, 46, 0, 0, 99,
-		101, 1, 0, 0, 0, 100, 96, 1, 0, 0, 0, 100, 101, 1, 0, 0, 0, 101, 102, 1,
-		0, 0, 0, 102, 103, 5, 41, 0, 0, 103, 7, 1, 0, 0, 0, 104, 105, 5, 8, 0,
-		0, 105, 9, 1, 0, 0, 0, 106, 111, 3, 12, 6, 0, 107, 108, 5, 52, 0, 0, 108,
-		110, 3, 12, 6, 0, 109, 107, 1, 0, 0, 0, 110, 113, 1, 0, 0, 0, 111, 109,
-		1, 0, 0, 0, 111, 112, 1, 0, 0, 0, 112, 11, 1, 0, 0, 0, 113, 111, 1, 0,
-		0, 0, 114, 115, 3, 52, 26, 0, 115, 13, 1, 0, 0, 0, 116, 117, 3, 66, 33,
-		0, 117, 15, 1, 0, 0, 0, 118, 119, 5, 10, 0, 0, 119, 120, 5, 49, 0, 0, 120,
-		121, 3, 18, 9, 0, 121, 122, 5, 52, 0, 0, 122, 123, 3, 20, 10, 0, 123, 124,
-		5, 50, 0, 0, 124, 125, 3, 60, 30, 0, 125, 126, 5, 42, 0, 0, 126, 131, 3,
-		14, 7, 0, 127, 128, 5, 45, 0, 0, 128, 129, 3, 10, 5, 0, 129, 130, 5, 46,
-		0, 0, 130, 132, 1, 0, 0, 0, 131, 127, 1, 0, 0, 0, 131, 132, 1, 0, 0, 0,
-		132, 133, 1, 0, 0, 0, 133, 134, 5, 41, 0, 0, 134, 17, 1, 0, 0, 0, 135,
-		136, 7, 0, 0, 0, 136, 19, 1, 0, 0, 0, 137, 158, 5, 23, 0, 0, 138, 158,
-		5, 24, 0, 0, 139, 158, 5, 11, 0, 0, 140, 158, 5, 12, 0, 0, 141, 158, 5,
-		13, 0, 0, 142, 158, 5, 14, 0, 0, 143, 158, 5, 15, 0, 0, 144, 158, 5, 16,
-		0, 0, 145, 158, 5, 17, 0, 0, 146, 158, 5, 18, 0, 0, 147, 158, 5, 19, 0,
-		0, 148, 158, 5, 20, 0, 0, 149, 158, 5, 21, 0, 0, 150, 158, 5, 22, 0, 0,
-		151, 158, 5, 25, 0, 0, 152, 158, 5, 26, 0, 0, 153, 158, 5, 27, 0, 0, 154,
-		158, 5, 28, 0, 0, 155, 158, 3, 62, 31, 0, 156, 158, 3, 64, 32, 0, 157,
-		137, 1, 0, 0, 0, 157, 138, 1, 0, 0, 0, 157, 139, 1, 0, 0, 0, 157, 140,
-		1, 0, 0, 0, 157, 141, 1, 0, 0, 0, 157, 142, 1, 0, 0, 0, 157, 143, 1, 0,
-		0, 0, 157, 144, 1, 0, 0, 0, 157, 145, 1, 0, 0, 0, 157, 146, 1, 0, 0, 0,
-		157, 147, 1, 0, 0, 0, 157, 148, 1, 0, 0, 0, 157, 149, 1, 0, 0, 0, 157,
-		150, 1, 0, 0, 0, 157, 151, 1, 0, 0, 0, 157, 152, 1, 0, 0, 0, 157, 153,
-		1, 0, 0, 0, 157, 154, 1, 0, 0, 0, 157, 155, 1, 0, 0, 0, 157, 156, 1, 0,
-		0, 0, 158, 21, 1, 0, 0, 0, 159, 163, 3, 24, 12, 0, 160, 163, 3, 32, 16,
-		0, 161, 163, 3, 40, 20, 0, 162, 159, 1, 0, 0, 0, 162, 160, 1, 0, 0, 0,
-		162, 161, 1, 0, 0, 0, 163, 23, 1, 0, 0, 0, 164, 165, 5, 32, 0, 0, 165,
-		166, 3, 58, 29, 0, 166, 167, 3, 26, 13, 0, 167, 25, 1, 0, 0, 0, 168, 172,
-		5, 47, 0, 0, 169, 171, 3, 28, 14, 0, 170, 169, 1, 0, 0, 0, 171, 174, 1,
-		0, 0, 0, 172, 170, 1, 0, 0, 0, 172, 173, 1, 0, 0, 0, 173, 175, 1, 0, 0,
-		0, 174, 172, 1, 0, 0, 0, 175, 176, 5, 48, 0, 0, 176, 27, 1, 0, 0, 0, 177,
-		178, 3, 30, 15, 0, 178, 29, 1, 0, 0, 0, 179, 180, 3, 50, 25, 0, 180, 182,
-		5, 42, 0, 0, 181, 183, 5, 55, 0, 0, 182, 181, 1, 0, 0, 0, 182, 183, 1,
-		0, 0, 0, 183, 184, 1, 0, 0, 0, 184, 185, 3, 66, 33, 0, 185, 186, 5, 41,
-		0, 0, 186, 31, 1, 0, 0, 0, 187, 188, 5, 33, 0, 0, 188, 189, 3, 34, 17,
-		0, 189, 190, 3, 36, 18, 0, 190, 33, 1, 0, 0, 0, 191, 192, 3, 50, 25, 0,
-		192, 35, 1, 0, 0, 0, 193, 197, 5, 47, 0, 0, 194, 196, 3, 38, 19, 0, 195,
-		194, 1, 0, 0, 0, 196, 199, 1, 0, 0, 0, 197, 195, 1, 0, 0, 0, 197, 198,
-		1, 0, 0, 0, 198, 200, 1, 0, 0, 0, 199, 197, 1, 0, 0, 0, 200, 201, 5, 48,
-		0, 0, 201, 37, 1, 0, 0, 0, 202, 206, 3, 6, 3, 0, 203, 206, 3, 16, 8, 0,
-		204, 206, 3, 48, 24, 0, 205, 202, 1, 0, 0, 0, 205, 203, 1, 0, 0, 0, 205,
-		204, 1, 0, 0, 0, 206, 39, 1, 0, 0, 0, 207, 208, 5, 34, 0, 0, 208, 209,
-		3, 42, 21, 0, 209, 210, 3, 44, 22, 0, 210, 41, 1, 0, 0, 0, 211, 212, 3,
-		50, 25, 0, 212, 43, 1, 0, 0, 0, 213, 217, 5, 47, 0, 0, 214, 216, 3, 46,
-		23, 0, 215, 214, 1, 0, 0, 0, 216, 219, 1, 0, 0, 0, 217, 215, 1, 0, 0, 0,
-		217, 218, 1, 0, 0, 0, 218, 220, 1, 0, 0, 0, 219, 217, 1, 0, 0, 0, 220,
-		221, 5, 48, 0, 0, 221, 45, 1, 0, 0, 0, 222, 226, 3, 6, 3, 0, 223, 226,
-		3, 16, 8, 0, 224, 226, 3, 48, 24, 0, 225, 222, 1, 0, 0, 0, 225, 223, 1,
-		0, 0, 0, 225, 224, 1, 0, 0, 0, 226, 47, 1, 0, 0, 0, 227, 228, 5, 41, 0,
-		0, 228, 49, 1, 0, 0, 0, 229, 232, 5, 59, 0, 0, 230, 232, 3, 68, 34, 0,
-		231, 229, 1, 0, 0, 0, 231, 230, 1, 0, 0, 0, 232, 51, 1, 0, 0, 0, 233, 238,
-		3, 50, 25, 0, 234, 235, 5, 51, 0, 0, 235, 237, 3, 50, 25, 0, 236, 234,
-		1, 0, 0, 0, 237, 240, 1, 0, 0, 0, 238, 236, 1, 0, 0, 0, 238, 239, 1, 0,
-		0, 0, 239, 53, 1, 0, 0, 0, 240, 238, 1, 0, 0, 0, 241, 242, 3, 50, 25, 0,
-		242, 55, 1, 0, 0, 0, 243, 244, 3, 50, 25, 0, 244, 57, 1, 0, 0, 0, 245,
-		246, 3, 50, 25, 0, 246, 59, 1, 0, 0, 0, 247, 248, 3, 50, 25, 0, 248, 61,
-		1, 0, 0, 0, 249, 251, 5, 51, 0, 0, 250, 249, 1, 0, 0, 0, 250, 251, 1, 0,
-		0, 0, 251, 257, 1, 0, 0, 0, 252, 253, 3, 50, 25, 0, 253, 254, 5, 51, 0,
-		0, 254, 256, 1, 0, 0, 0, 255, 252, 1, 0, 0, 0, 256, 259, 1, 0, 0, 0, 257,
-		255, 1, 0, 0, 0, 257, 258, 1, 0, 0, 0, 258, 260, 1, 0, 0, 0, 259, 257,
-		1, 0, 0, 0, 260, 261, 3, 56, 28, 0, 261, 63, 1, 0, 0, 0, 262, 264, 5, 51,
-		0, 0, 263, 262, 1, 0, 0, 0, 263, 264, 1, 0, 0, 0, 264, 270, 1, 0, 0, 0,
-		265, 266, 3, 50, 25, 0, 266, 267, 5, 51, 0, 0, 267, 269, 1, 0, 0, 0, 268,
-		265, 1, 0, 0, 0, 269, 272, 1, 0, 0, 0, 270, 268, 1, 0, 0, 0, 270, 271,
-		1, 0, 0, 0, 271, 273, 1, 0, 0, 0, 272, 270, 1, 0, 0, 0, 273, 274, 3, 58,
-		29, 0, 274, 65, 1, 0, 0, 0, 275, 276, 5, 58, 0, 0, 276, 67, 1, 0, 0, 0,
-		277, 278, 7, 1, 0, 0, 278, 69, 1, 0, 0, 0, 20, 74, 76, 90, 100, 111, 131,
-		157, 162, 172, 182, 197, 205, 217, 225, 231, 238, 250, 257, 263, 270,
+		31, 2, 32, 7, 32, 2, 33, 7, 33, 2, 34, 7, 34, 2, 35, 7, 35, 1, 0, 1, 0,
+		1, 0, 1, 0, 1, 0, 5, 0, 78, 8, 0, 10, 0, 12, 0, 81, 9, 0, 1, 0, 1, 0, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 3, 1, 3, 1, 3, 1,
+		3, 1, 4, 3, 4, 99, 8, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4,
+		3, 4, 109, 8, 4, 1, 4, 1, 4, 1, 5, 1, 5, 1, 6, 1, 6, 1, 6, 5, 6, 118, 8,
+		6, 10, 6, 12, 6, 121, 9, 6, 1, 7, 1, 7, 1, 8, 1, 8, 1, 9, 1, 9, 1, 9, 1,
+		9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9, 3, 9, 140, 8,
+		9, 1, 9, 1, 9, 1, 10, 1, 10, 1, 11, 1, 11, 1, 11, 1, 11, 1, 11, 1, 11,
+		1, 11, 1, 11, 1, 11, 1, 11, 1, 11, 1, 11, 1, 11, 1, 11, 1, 11, 1, 11, 1,
+		11, 1, 11, 1, 11, 1, 11, 3, 11, 166, 8, 11, 1, 12, 1, 12, 1, 12, 3, 12,
+		171, 8, 12, 1, 13, 1, 13, 1, 13, 1, 13, 1, 14, 1, 14, 5, 14, 179, 8, 14,
+		10, 14, 12, 14, 182, 9, 14, 1, 14, 1, 14, 1, 15, 1, 15, 1, 16, 1, 16, 1,
+		16, 3, 16, 191, 8, 16, 1, 16, 1, 16, 1, 16, 1, 17, 1, 17, 1, 17, 1, 17,
+		1, 18, 1, 18, 1, 19, 1, 19, 5, 19, 204, 8, 19, 10, 19, 12, 19, 207, 9,
+		19, 1, 19, 1, 19, 1, 20, 1, 20, 1, 20, 3, 20, 214, 8, 20, 1, 21, 1, 21,
+		1, 21, 1, 21, 1, 22, 1, 22, 1, 23, 1, 23, 5, 23, 224, 8, 23, 10, 23, 12,
+		23, 227, 9, 23, 1, 23, 1, 23, 1, 24, 1, 24, 1, 24, 3, 24, 234, 8, 24, 1,
+		25, 1, 25, 1, 26, 1, 26, 3, 26, 240, 8, 26, 1, 27, 1, 27, 1, 27, 5, 27,
+		245, 8, 27, 10, 27, 12, 27, 248, 9, 27, 1, 28, 1, 28, 1, 29, 1, 29, 1,
+		30, 1, 30, 1, 31, 1, 31, 1, 32, 3, 32, 259, 8, 32, 1, 32, 1, 32, 1, 32,
+		5, 32, 264, 8, 32, 10, 32, 12, 32, 267, 9, 32, 1, 32, 1, 32, 1, 33, 3,
+		33, 272, 8, 33, 1, 33, 1, 33, 1, 33, 5, 33, 277, 8, 33, 10, 33, 12, 33,
+		280, 9, 33, 1, 33, 1, 33, 1, 34, 1, 34, 1, 35, 1, 35, 1, 35, 0, 0, 36,
+		0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36,
+		38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 0,
+		2, 1, 0, 12, 23, 2, 0, 1, 41, 58, 58, 293, 0, 72, 1, 0, 0, 0, 2, 84, 1,
+		0, 0, 0, 4, 88, 1, 0, 0, 0, 6, 93, 1, 0, 0, 0, 8, 98, 1, 0, 0, 0, 10, 112,
+		1, 0, 0, 0, 12, 114, 1, 0, 0, 0, 14, 122, 1, 0, 0, 0, 16, 124, 1, 0, 0,
+		0, 18, 126, 1, 0, 0, 0, 20, 143, 1, 0, 0, 0, 22, 165, 1, 0, 0, 0, 24, 170,
+		1, 0, 0, 0, 26, 172, 1, 0, 0, 0, 28, 176, 1, 0, 0, 0, 30, 185, 1, 0, 0,
+		0, 32, 187, 1, 0, 0, 0, 34, 195, 1, 0, 0, 0, 36, 199, 1, 0, 0, 0, 38, 201,
+		1, 0, 0, 0, 40, 213, 1, 0, 0, 0, 42, 215, 1, 0, 0, 0, 44, 219, 1, 0, 0,
+		0, 46, 221, 1, 0, 0, 0, 48, 233, 1, 0, 0, 0, 50, 235, 1, 0, 0, 0, 52, 239,
+		1, 0, 0, 0, 54, 241, 1, 0, 0, 0, 56, 249, 1, 0, 0, 0, 58, 251, 1, 0, 0,
+		0, 60, 253, 1, 0, 0, 0, 62, 255, 1, 0, 0, 0, 64, 258, 1, 0, 0, 0, 66, 271,
+		1, 0, 0, 0, 68, 283, 1, 0, 0, 0, 70, 285, 1, 0, 0, 0, 72, 73, 3, 2, 1,
+		0, 73, 79, 3, 4, 2, 0, 74, 78, 3, 6, 3, 0, 75, 78, 3, 24, 12, 0, 76, 78,
+		3, 50, 25, 0, 77, 74, 1, 0, 0, 0, 77, 75, 1, 0, 0, 0, 77, 76, 1, 0, 0,
+		0, 78, 81, 1, 0, 0, 0, 79, 77, 1, 0, 0, 0, 79, 80, 1, 0, 0, 0, 80, 82,
+		1, 0, 0, 0, 81, 79, 1, 0, 0, 0, 82, 83, 5, 0, 0, 1, 83, 1, 1, 0, 0, 0,
+		84, 85, 5, 6, 0, 0, 85, 86, 3, 54, 27, 0, 86, 87, 5, 42, 0, 0, 87, 3, 1,
+		0, 0, 0, 88, 89, 5, 3, 0, 0, 89, 90, 5, 43, 0, 0, 90, 91, 5, 57, 0, 0,
+		91, 92, 5, 42, 0, 0, 92, 5, 1, 0, 0, 0, 93, 94, 5, 2, 0, 0, 94, 95, 5,
+		57, 0, 0, 95, 96, 5, 42, 0, 0, 96, 7, 1, 0, 0, 0, 97, 99, 3, 10, 5, 0,
+		98, 97, 1, 0, 0, 0, 98, 99, 1, 0, 0, 0, 99, 100, 1, 0, 0, 0, 100, 101,
+		3, 22, 11, 0, 101, 102, 3, 56, 28, 0, 102, 103, 5, 43, 0, 0, 103, 108,
+		3, 16, 8, 0, 104, 105, 5, 46, 0, 0, 105, 106, 3, 12, 6, 0, 106, 107, 5,
+		47, 0, 0, 107, 109, 1, 0, 0, 0, 108, 104, 1, 0, 0, 0, 108, 109, 1, 0, 0,
+		0, 109, 110, 1, 0, 0, 0, 110, 111, 5, 42, 0, 0, 111, 9, 1, 0, 0, 0, 112,
+		113, 5, 9, 0, 0, 113, 11, 1, 0, 0, 0, 114, 119, 3, 14, 7, 0, 115, 116,
+		5, 53, 0, 0, 116, 118, 3, 14, 7, 0, 117, 115, 1, 0, 0, 0, 118, 121, 1,
+		0, 0, 0, 119, 117, 1, 0, 0, 0, 119, 120, 1, 0, 0, 0, 120, 13, 1, 0, 0,
+		0, 121, 119, 1, 0, 0, 0, 122, 123, 3, 54, 27, 0, 123, 15, 1, 0, 0, 0, 124,
+		125, 3, 68, 34, 0, 125, 17, 1, 0, 0, 0, 126, 127, 5, 11, 0, 0, 127, 128,
+		5, 50, 0, 0, 128, 129, 3, 20, 10, 0, 129, 130, 5, 53, 0, 0, 130, 131, 3,
+		22, 11, 0, 131, 132, 5, 51, 0, 0, 132, 133, 3, 62, 31, 0, 133, 134, 5,
+		43, 0, 0, 134, 139, 3, 16, 8, 0, 135, 136, 5, 46, 0, 0, 136, 137, 3, 12,
+		6, 0, 137, 138, 5, 47, 0, 0, 138, 140, 1, 0, 0, 0, 139, 135, 1, 0, 0, 0,
+		139, 140, 1, 0, 0, 0, 140, 141, 1, 0, 0, 0, 141, 142, 5, 42, 0, 0, 142,
+		19, 1, 0, 0, 0, 143, 144, 7, 0, 0, 0, 144, 21, 1, 0, 0, 0, 145, 166, 5,
+		24, 0, 0, 146, 166, 5, 25, 0, 0, 147, 166, 5, 12, 0, 0, 148, 166, 5, 13,
+		0, 0, 149, 166, 5, 14, 0, 0, 150, 166, 5, 15, 0, 0, 151, 166, 5, 16, 0,
+		0, 152, 166, 5, 17, 0, 0, 153, 166, 5, 18, 0, 0, 154, 166, 5, 19, 0, 0,
+		155, 166, 5, 20, 0, 0, 156, 166, 5, 21, 0, 0, 157, 166, 5, 22, 0, 0, 158,
+		166, 5, 23, 0, 0, 159, 166, 5, 26, 0, 0, 160, 166, 5, 27, 0, 0, 161, 166,
+		5, 28, 0, 0, 162, 166, 5, 29, 0, 0, 163, 166, 3, 64, 32, 0, 164, 166, 3,
+		66, 33, 0, 165, 145, 1, 0, 0, 0, 165, 146, 1, 0, 0, 0, 165, 147, 1, 0,
+		0, 0, 165, 148, 1, 0, 0, 0, 165, 149, 1, 0, 0, 0, 165, 150, 1, 0, 0, 0,
+		165, 151, 1, 0, 0, 0, 165, 152, 1, 0, 0, 0, 165, 153, 1, 0, 0, 0, 165,
+		154, 1, 0, 0, 0, 165, 155, 1, 0, 0, 0, 165, 156, 1, 0, 0, 0, 165, 157,
+		1, 0, 0, 0, 165, 158, 1, 0, 0, 0, 165, 159, 1, 0, 0, 0, 165, 160, 1, 0,
+		0, 0, 165, 161, 1, 0, 0, 0, 165, 162, 1, 0, 0, 0, 165, 163, 1, 0, 0, 0,
+		165, 164, 1, 0, 0, 0, 166, 23, 1, 0, 0, 0, 167, 171, 3, 26, 13, 0, 168,
+		171, 3, 34, 17, 0, 169, 171, 3, 42, 21, 0, 170, 167, 1, 0, 0, 0, 170, 168,
+		1, 0, 0, 0, 170, 169, 1, 0, 0, 0, 171, 25, 1, 0, 0, 0, 172, 173, 5, 33,
+		0, 0, 173, 174, 3, 60, 30, 0, 174, 175, 3, 28, 14, 0, 175, 27, 1, 0, 0,
+		0, 176, 180, 5, 48, 0, 0, 177, 179, 3, 30, 15, 0, 178, 177, 1, 0, 0, 0,
+		179, 182, 1, 0, 0, 0, 180, 178, 1, 0, 0, 0, 180, 181, 1, 0, 0, 0, 181,
+		183, 1, 0, 0, 0, 182, 180, 1, 0, 0, 0, 183, 184, 5, 49, 0, 0, 184, 29,
+		1, 0, 0, 0, 185, 186, 3, 32, 16, 0, 186, 31, 1, 0, 0, 0, 187, 188, 3, 52,
+		26, 0, 188, 190, 5, 43, 0, 0, 189, 191, 5, 56, 0, 0, 190, 189, 1, 0, 0,
+		0, 190, 191, 1, 0, 0, 0, 191, 192, 1, 0, 0, 0, 192, 193, 3, 68, 34, 0,
+		193, 194, 5, 42, 0, 0, 194, 33, 1, 0, 0, 0, 195, 196, 5, 34, 0, 0, 196,
+		197, 3, 36, 18, 0, 197, 198, 3, 38, 19, 0, 198, 35, 1, 0, 0, 0, 199, 200,
+		3, 52, 26, 0, 200, 37, 1, 0, 0, 0, 201, 205, 5, 48, 0, 0, 202, 204, 3,
+		40, 20, 0, 203, 202, 1, 0, 0, 0, 204, 207, 1, 0, 0, 0, 205, 203, 1, 0,
+		0, 0, 205, 206, 1, 0, 0, 0, 206, 208, 1, 0, 0, 0, 207, 205, 1, 0, 0, 0,
+		208, 209, 5, 49, 0, 0, 209, 39, 1, 0, 0, 0, 210, 214, 3, 8, 4, 0, 211,
+		214, 3, 18, 9, 0, 212, 214, 3, 50, 25, 0, 213, 210, 1, 0, 0, 0, 213, 211,
+		1, 0, 0, 0, 213, 212, 1, 0, 0, 0, 214, 41, 1, 0, 0, 0, 215, 216, 5, 35,
+		0, 0, 216, 217, 3, 44, 22, 0, 217, 218, 3, 46, 23, 0, 218, 43, 1, 0, 0,
+		0, 219, 220, 3, 52, 26, 0, 220, 45, 1, 0, 0, 0, 221, 225, 5, 48, 0, 0,
+		222, 224, 3, 48, 24, 0, 223, 222, 1, 0, 0, 0, 224, 227, 1, 0, 0, 0, 225,
+		223, 1, 0, 0, 0, 225, 226, 1, 0, 0, 0, 226, 228, 1, 0, 0, 0, 227, 225,
+		1, 0, 0, 0, 228, 229, 5, 49, 0, 0, 229, 47, 1, 0, 0, 0, 230, 234, 3, 8,
+		4, 0, 231, 234, 3, 18, 9, 0, 232, 234, 3, 50, 25, 0, 233, 230, 1, 0, 0,
+		0, 233, 231, 1, 0, 0, 0, 233, 232, 1, 0, 0, 0, 234, 49, 1, 0, 0, 0, 235,
+		236, 5, 42, 0, 0, 236, 51, 1, 0, 0, 0, 237, 240, 5, 60, 0, 0, 238, 240,
+		3, 70, 35, 0, 239, 237, 1, 0, 0, 0, 239, 238, 1, 0, 0, 0, 240, 53, 1, 0,
+		0, 0, 241, 246, 3, 52, 26, 0, 242, 243, 5, 52, 0, 0, 243, 245, 3, 52, 26,
+		0, 244, 242, 1, 0, 0, 0, 245, 248, 1, 0, 0, 0, 246, 244, 1, 0, 0, 0, 246,
+		247, 1, 0, 0, 0, 247, 55, 1, 0, 0, 0, 248, 246, 1, 0, 0, 0, 249, 250, 3,
+		52, 26, 0, 250, 57, 1, 0, 0, 0, 251, 252, 3, 52, 26, 0, 252, 59, 1, 0,
+		0, 0, 253, 254, 3, 52, 26, 0, 254, 61, 1, 0, 0, 0, 255, 256, 3, 52, 26,
+		0, 256, 63, 1, 0, 0, 0, 257, 259, 5, 52, 0, 0, 258, 257, 1, 0, 0, 0, 258,
+		259, 1, 0, 0, 0, 259, 265, 1, 0, 0, 0, 260, 261, 3, 52, 26, 0, 261, 262,
+		5, 52, 0, 0, 262, 264, 1, 0, 0, 0, 263, 260, 1, 0, 0, 0, 264, 267, 1, 0,
+		0, 0, 265, 263, 1, 0, 0, 0, 265, 266, 1, 0, 0, 0, 266, 268, 1, 0, 0, 0,
+		267, 265, 1, 0, 0, 0, 268, 269, 3, 58, 29, 0, 269, 65, 1, 0, 0, 0, 270,
+		272, 5, 52, 0, 0, 271, 270, 1, 0, 0, 0, 271, 272, 1, 0, 0, 0, 272, 278,
+		1, 0, 0, 0, 273, 274, 3, 52, 26, 0, 274, 275, 5, 52, 0, 0, 275, 277, 1,
+		0, 0, 0, 276, 273, 1, 0, 0, 0, 277, 280, 1, 0, 0, 0, 278, 276, 1, 0, 0,
+		0, 278, 279, 1, 0, 0, 0, 279, 281, 1, 0, 0, 0, 280, 278, 1, 0, 0, 0, 281,
+		282, 3, 60, 30, 0, 282, 67, 1, 0, 0, 0, 283, 284, 5, 59, 0, 0, 284, 69,
+		1, 0, 0, 0, 285, 286, 7, 1, 0, 0, 286, 71, 1, 0, 0, 0, 20, 77, 79, 98,
+		108, 119, 139, 165, 170, 180, 190, 205, 213, 225, 233, 239, 246, 258, 265,
+		271, 278,
 	}
 	deserializer := antlr.NewATNDeserializer(nil)
 	staticData.atn = deserializer.Deserialize(staticData.serializedATN)
@@ -219,108 +224,110 @@ func NewkdsParser(input antlr.TokenStream) *kdsParser {
 
 // kdsParser tokens.
 const (
-	kdsParserEOF          = antlr.TokenEOF
-	kdsParserSYNTAX       = 1
-	kdsParserIMPORT       = 2
-	kdsParserWEAK         = 3
-	kdsParserPUBLIC       = 4
-	kdsParserPACKAGE      = 5
-	kdsParserOPTION       = 6
-	kdsParserOPTIONAL     = 7
-	kdsParserREPEATED     = 8
-	kdsParserONEOF        = 9
-	kdsParserMAP          = 10
-	kdsParserINT32        = 11
-	kdsParserINT64        = 12
-	kdsParserUINT32       = 13
-	kdsParserUINT64       = 14
-	kdsParserSINT32       = 15
-	kdsParserSINT64       = 16
-	kdsParserFIXED32      = 17
-	kdsParserFIXED64      = 18
-	kdsParserSFIXED32     = 19
-	kdsParserSFIXED64     = 20
-	kdsParserBOOL         = 21
-	kdsParserSTRING       = 22
-	kdsParserDOUBLE       = 23
-	kdsParserFLOAT        = 24
-	kdsParserBYTES        = 25
-	kdsParserTIMESTAMP    = 26
-	kdsParserDURATION     = 27
-	kdsParserEMPTY        = 28
-	kdsParserRESERVED     = 29
-	kdsParserTO           = 30
-	kdsParserMAX          = 31
-	kdsParserENUM         = 32
-	kdsParserENTITY       = 33
-	kdsParserCOMPONENT    = 34
-	kdsParserMESSAGE      = 35
-	kdsParserSERVICE      = 36
-	kdsParserEXTEND       = 37
-	kdsParserRPC          = 38
-	kdsParserSTREAM       = 39
-	kdsParserRETURNS      = 40
-	kdsParserSEMI         = 41
-	kdsParserEQ           = 42
-	kdsParserLP           = 43
-	kdsParserRP           = 44
-	kdsParserLB           = 45
-	kdsParserRB           = 46
-	kdsParserLC           = 47
-	kdsParserRC           = 48
-	kdsParserLT           = 49
-	kdsParserGT           = 50
-	kdsParserDOT          = 51
-	kdsParserCOMMA        = 52
-	kdsParserCOLON        = 53
-	kdsParserPLUS         = 54
-	kdsParserMINUS        = 55
-	kdsParserSTR_LIT      = 56
-	kdsParserBOOL_LIT     = 57
-	kdsParserINT_LIT      = 58
-	kdsParserIDENTIFIER   = 59
-	kdsParserWS           = 60
-	kdsParserLINE_COMMENT = 61
-	kdsParserCOMMENT      = 62
+	kdsParserEOF              = antlr.TokenEOF
+	kdsParserSYNTAX           = 1
+	kdsParserIMPORT           = 2
+	kdsParserPROTO_GO_PACKAGE = 3
+	kdsParserWEAK             = 4
+	kdsParserPUBLIC           = 5
+	kdsParserPACKAGE          = 6
+	kdsParserOPTION           = 7
+	kdsParserOPTIONAL         = 8
+	kdsParserREPEATED         = 9
+	kdsParserONEOF            = 10
+	kdsParserMAP              = 11
+	kdsParserINT32            = 12
+	kdsParserINT64            = 13
+	kdsParserUINT32           = 14
+	kdsParserUINT64           = 15
+	kdsParserSINT32           = 16
+	kdsParserSINT64           = 17
+	kdsParserFIXED32          = 18
+	kdsParserFIXED64          = 19
+	kdsParserSFIXED32         = 20
+	kdsParserSFIXED64         = 21
+	kdsParserBOOL             = 22
+	kdsParserSTRING           = 23
+	kdsParserDOUBLE           = 24
+	kdsParserFLOAT            = 25
+	kdsParserBYTES            = 26
+	kdsParserTIMESTAMP        = 27
+	kdsParserDURATION         = 28
+	kdsParserEMPTY            = 29
+	kdsParserRESERVED         = 30
+	kdsParserTO               = 31
+	kdsParserMAX              = 32
+	kdsParserENUM             = 33
+	kdsParserENTITY           = 34
+	kdsParserCOMPONENT        = 35
+	kdsParserMESSAGE          = 36
+	kdsParserSERVICE          = 37
+	kdsParserEXTEND           = 38
+	kdsParserRPC              = 39
+	kdsParserSTREAM           = 40
+	kdsParserRETURNS          = 41
+	kdsParserSEMI             = 42
+	kdsParserEQ               = 43
+	kdsParserLP               = 44
+	kdsParserRP               = 45
+	kdsParserLB               = 46
+	kdsParserRB               = 47
+	kdsParserLC               = 48
+	kdsParserRC               = 49
+	kdsParserLT               = 50
+	kdsParserGT               = 51
+	kdsParserDOT              = 52
+	kdsParserCOMMA            = 53
+	kdsParserCOLON            = 54
+	kdsParserPLUS             = 55
+	kdsParserMINUS            = 56
+	kdsParserSTR_LIT          = 57
+	kdsParserBOOL_LIT         = 58
+	kdsParserINT_LIT          = 59
+	kdsParserIDENTIFIER       = 60
+	kdsParserWS               = 61
+	kdsParserLINE_COMMENT     = 62
+	kdsParserCOMMENT          = 63
 )
 
 // kdsParser rules.
 const (
-	kdsParserRULE_kds              = 0
-	kdsParserRULE_packageStatement = 1
-	kdsParserRULE_importStatement  = 2
-	kdsParserRULE_field            = 3
-	kdsParserRULE_fieldLabel       = 4
-	kdsParserRULE_fieldOptions     = 5
-	kdsParserRULE_fieldOption      = 6
-	kdsParserRULE_fieldNumber      = 7
-	kdsParserRULE_mapField         = 8
-	kdsParserRULE_keyType          = 9
-	kdsParserRULE_type_            = 10
-	kdsParserRULE_topLevelDef      = 11
-	kdsParserRULE_enumDef          = 12
-	kdsParserRULE_enumBody         = 13
-	kdsParserRULE_enumElement      = 14
-	kdsParserRULE_enumField        = 15
-	kdsParserRULE_entityDef        = 16
-	kdsParserRULE_entityName       = 17
-	kdsParserRULE_entityBody       = 18
-	kdsParserRULE_entityElement    = 19
-	kdsParserRULE_componentDef     = 20
-	kdsParserRULE_componentName    = 21
-	kdsParserRULE_componentBody    = 22
-	kdsParserRULE_componentElement = 23
-	kdsParserRULE_emptyStatement_  = 24
-	kdsParserRULE_ident            = 25
-	kdsParserRULE_fullIdent        = 26
-	kdsParserRULE_fieldName        = 27
-	kdsParserRULE_messageName      = 28
-	kdsParserRULE_enumName         = 29
-	kdsParserRULE_mapName          = 30
-	kdsParserRULE_messageType      = 31
-	kdsParserRULE_enumType         = 32
-	kdsParserRULE_intLit           = 33
-	kdsParserRULE_keywords         = 34
+	kdsParserRULE_kds                     = 0
+	kdsParserRULE_packageStatement        = 1
+	kdsParserRULE_protoGoPackageStatement = 2
+	kdsParserRULE_importStatement         = 3
+	kdsParserRULE_field                   = 4
+	kdsParserRULE_fieldLabel              = 5
+	kdsParserRULE_fieldOptions            = 6
+	kdsParserRULE_fieldOption             = 7
+	kdsParserRULE_fieldNumber             = 8
+	kdsParserRULE_mapField                = 9
+	kdsParserRULE_keyType                 = 10
+	kdsParserRULE_type_                   = 11
+	kdsParserRULE_topLevelDef             = 12
+	kdsParserRULE_enumDef                 = 13
+	kdsParserRULE_enumBody                = 14
+	kdsParserRULE_enumElement             = 15
+	kdsParserRULE_enumField               = 16
+	kdsParserRULE_entityDef               = 17
+	kdsParserRULE_entityName              = 18
+	kdsParserRULE_entityBody              = 19
+	kdsParserRULE_entityElement           = 20
+	kdsParserRULE_componentDef            = 21
+	kdsParserRULE_componentName           = 22
+	kdsParserRULE_componentBody           = 23
+	kdsParserRULE_componentElement        = 24
+	kdsParserRULE_emptyStatement_         = 25
+	kdsParserRULE_ident                   = 26
+	kdsParserRULE_fullIdent               = 27
+	kdsParserRULE_fieldName               = 28
+	kdsParserRULE_messageName             = 29
+	kdsParserRULE_enumName                = 30
+	kdsParserRULE_mapName                 = 31
+	kdsParserRULE_messageType             = 32
+	kdsParserRULE_enumType                = 33
+	kdsParserRULE_intLit                  = 34
+	kdsParserRULE_keywords                = 35
 )
 
 // IKdsContext is an interface to support dynamic dispatch.
@@ -332,6 +339,7 @@ type IKdsContext interface {
 
 	// Getter signatures
 	PackageStatement() IPackageStatementContext
+	ProtoGoPackageStatement() IProtoGoPackageStatementContext
 	EOF() antlr.TerminalNode
 	AllImportStatement() []IImportStatementContext
 	ImportStatement(i int) IImportStatementContext
@@ -390,6 +398,22 @@ func (s *KdsContext) PackageStatement() IPackageStatementContext {
 	}
 
 	return t.(IPackageStatementContext)
+}
+
+func (s *KdsContext) ProtoGoPackageStatement() IProtoGoPackageStatementContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IProtoGoPackageStatementContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IProtoGoPackageStatementContext)
 }
 
 func (s *KdsContext) EOF() antlr.TerminalNode {
@@ -546,18 +570,22 @@ func (p *kdsParser) Kds() (localctx IKdsContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(70)
+		p.SetState(72)
 		p.PackageStatement()
 	}
-	p.SetState(76)
+	{
+		p.SetState(73)
+		p.ProtoGoPackageStatement()
+	}
+	p.SetState(79)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&2229088026628) != 0 {
-		p.SetState(74)
+	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&4458176053252) != 0 {
+		p.SetState(77)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -566,19 +594,19 @@ func (p *kdsParser) Kds() (localctx IKdsContext) {
 		switch p.GetTokenStream().LA(1) {
 		case kdsParserIMPORT:
 			{
-				p.SetState(71)
+				p.SetState(74)
 				p.ImportStatement()
 			}
 
 		case kdsParserENUM, kdsParserENTITY, kdsParserCOMPONENT:
 			{
-				p.SetState(72)
+				p.SetState(75)
 				p.TopLevelDef()
 			}
 
 		case kdsParserSEMI:
 			{
-				p.SetState(73)
+				p.SetState(76)
 				p.EmptyStatement_()
 			}
 
@@ -587,7 +615,7 @@ func (p *kdsParser) Kds() (localctx IKdsContext) {
 			goto errorExit
 		}
 
-		p.SetState(78)
+		p.SetState(81)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -595,7 +623,7 @@ func (p *kdsParser) Kds() (localctx IKdsContext) {
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(79)
+		p.SetState(82)
 		p.Match(kdsParserEOF)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -713,7 +741,7 @@ func (p *kdsParser) PackageStatement() (localctx IPackageStatementContext) {
 	p.EnterRule(localctx, 2, kdsParserRULE_packageStatement)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(81)
+		p.SetState(84)
 		p.Match(kdsParserPACKAGE)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -721,11 +749,146 @@ func (p *kdsParser) PackageStatement() (localctx IPackageStatementContext) {
 		}
 	}
 	{
-		p.SetState(82)
+		p.SetState(85)
 		p.FullIdent()
 	}
 	{
-		p.SetState(83)
+		p.SetState(86)
+		p.Match(kdsParserSEMI)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+
+errorExit:
+	if p.HasError() {
+		v := p.GetError()
+		localctx.SetException(v)
+		p.GetErrorHandler().ReportError(p, v)
+		p.GetErrorHandler().Recover(p, v)
+		p.SetError(nil)
+	}
+	p.ExitRule()
+	return localctx
+	goto errorExit // Trick to prevent compiler error if the label is not used
+}
+
+// IProtoGoPackageStatementContext is an interface to support dynamic dispatch.
+type IProtoGoPackageStatementContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// Getter signatures
+	PROTO_GO_PACKAGE() antlr.TerminalNode
+	EQ() antlr.TerminalNode
+	STR_LIT() antlr.TerminalNode
+	SEMI() antlr.TerminalNode
+
+	// IsProtoGoPackageStatementContext differentiates from other interfaces.
+	IsProtoGoPackageStatementContext()
+}
+
+type ProtoGoPackageStatementContext struct {
+	antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptyProtoGoPackageStatementContext() *ProtoGoPackageStatementContext {
+	var p = new(ProtoGoPackageStatementContext)
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = kdsParserRULE_protoGoPackageStatement
+	return p
+}
+
+func InitEmptyProtoGoPackageStatementContext(p *ProtoGoPackageStatementContext) {
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = kdsParserRULE_protoGoPackageStatement
+}
+
+func (*ProtoGoPackageStatementContext) IsProtoGoPackageStatementContext() {}
+
+func NewProtoGoPackageStatementContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *ProtoGoPackageStatementContext {
+	var p = new(ProtoGoPackageStatementContext)
+
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = kdsParserRULE_protoGoPackageStatement
+
+	return p
+}
+
+func (s *ProtoGoPackageStatementContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *ProtoGoPackageStatementContext) PROTO_GO_PACKAGE() antlr.TerminalNode {
+	return s.GetToken(kdsParserPROTO_GO_PACKAGE, 0)
+}
+
+func (s *ProtoGoPackageStatementContext) EQ() antlr.TerminalNode {
+	return s.GetToken(kdsParserEQ, 0)
+}
+
+func (s *ProtoGoPackageStatementContext) STR_LIT() antlr.TerminalNode {
+	return s.GetToken(kdsParserSTR_LIT, 0)
+}
+
+func (s *ProtoGoPackageStatementContext) SEMI() antlr.TerminalNode {
+	return s.GetToken(kdsParserSEMI, 0)
+}
+
+func (s *ProtoGoPackageStatementContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *ProtoGoPackageStatementContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *ProtoGoPackageStatementContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(kdsListener); ok {
+		listenerT.EnterProtoGoPackageStatement(s)
+	}
+}
+
+func (s *ProtoGoPackageStatementContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(kdsListener); ok {
+		listenerT.ExitProtoGoPackageStatement(s)
+	}
+}
+
+func (p *kdsParser) ProtoGoPackageStatement() (localctx IProtoGoPackageStatementContext) {
+	localctx = NewProtoGoPackageStatementContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 4, kdsParserRULE_protoGoPackageStatement)
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(88)
+		p.Match(kdsParserPROTO_GO_PACKAGE)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+	{
+		p.SetState(89)
+		p.Match(kdsParserEQ)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+	{
+		p.SetState(90)
+		p.Match(kdsParserSTR_LIT)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+	{
+		p.SetState(91)
 		p.Match(kdsParserSEMI)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -828,10 +991,10 @@ func (s *ImportStatementContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) ImportStatement() (localctx IImportStatementContext) {
 	localctx = NewImportStatementContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 4, kdsParserRULE_importStatement)
+	p.EnterRule(localctx, 6, kdsParserRULE_importStatement)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(85)
+		p.SetState(93)
 		p.Match(kdsParserIMPORT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -839,7 +1002,7 @@ func (p *kdsParser) ImportStatement() (localctx IImportStatementContext) {
 		}
 	}
 	{
-		p.SetState(86)
+		p.SetState(94)
 		p.Match(kdsParserSTR_LIT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -847,7 +1010,7 @@ func (p *kdsParser) ImportStatement() (localctx IImportStatementContext) {
 		}
 	}
 	{
-		p.SetState(87)
+		p.SetState(95)
 		p.Match(kdsParserSEMI)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -1040,16 +1203,16 @@ func (s *FieldContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) Field() (localctx IFieldContext) {
 	localctx = NewFieldContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 6, kdsParserRULE_field)
+	p.EnterRule(localctx, 8, kdsParserRULE_field)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(90)
+	p.SetState(98)
 	p.GetErrorHandler().Sync(p)
 
 	if p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 2, p.GetParserRuleContext()) == 1 {
 		{
-			p.SetState(89)
+			p.SetState(97)
 			p.FieldLabel()
 		}
 
@@ -1057,15 +1220,15 @@ func (p *kdsParser) Field() (localctx IFieldContext) {
 		goto errorExit
 	}
 	{
-		p.SetState(92)
+		p.SetState(100)
 		p.Type_()
 	}
 	{
-		p.SetState(93)
+		p.SetState(101)
 		p.FieldName()
 	}
 	{
-		p.SetState(94)
+		p.SetState(102)
 		p.Match(kdsParserEQ)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -1073,10 +1236,10 @@ func (p *kdsParser) Field() (localctx IFieldContext) {
 		}
 	}
 	{
-		p.SetState(95)
+		p.SetState(103)
 		p.FieldNumber()
 	}
-	p.SetState(100)
+	p.SetState(108)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -1085,7 +1248,7 @@ func (p *kdsParser) Field() (localctx IFieldContext) {
 
 	if _la == kdsParserLB {
 		{
-			p.SetState(96)
+			p.SetState(104)
 			p.Match(kdsParserLB)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -1093,11 +1256,11 @@ func (p *kdsParser) Field() (localctx IFieldContext) {
 			}
 		}
 		{
-			p.SetState(97)
+			p.SetState(105)
 			p.FieldOptions()
 		}
 		{
-			p.SetState(98)
+			p.SetState(106)
 			p.Match(kdsParserRB)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -1107,7 +1270,7 @@ func (p *kdsParser) Field() (localctx IFieldContext) {
 
 	}
 	{
-		p.SetState(102)
+		p.SetState(110)
 		p.Match(kdsParserSEMI)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -1200,10 +1363,10 @@ func (s *FieldLabelContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) FieldLabel() (localctx IFieldLabelContext) {
 	localctx = NewFieldLabelContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 8, kdsParserRULE_fieldLabel)
+	p.EnterRule(localctx, 10, kdsParserRULE_fieldLabel)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(104)
+		p.SetState(112)
 		p.Match(kdsParserREPEATED)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -1344,15 +1507,15 @@ func (s *FieldOptionsContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) FieldOptions() (localctx IFieldOptionsContext) {
 	localctx = NewFieldOptionsContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 10, kdsParserRULE_fieldOptions)
+	p.EnterRule(localctx, 12, kdsParserRULE_fieldOptions)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(106)
+		p.SetState(114)
 		p.FieldOption()
 	}
-	p.SetState(111)
+	p.SetState(119)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -1361,7 +1524,7 @@ func (p *kdsParser) FieldOptions() (localctx IFieldOptionsContext) {
 
 	for _la == kdsParserCOMMA {
 		{
-			p.SetState(107)
+			p.SetState(115)
 			p.Match(kdsParserCOMMA)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -1369,11 +1532,11 @@ func (p *kdsParser) FieldOptions() (localctx IFieldOptionsContext) {
 			}
 		}
 		{
-			p.SetState(108)
+			p.SetState(116)
 			p.FieldOption()
 		}
 
-		p.SetState(113)
+		p.SetState(121)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -1478,10 +1641,10 @@ func (s *FieldOptionContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) FieldOption() (localctx IFieldOptionContext) {
 	localctx = NewFieldOptionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 12, kdsParserRULE_fieldOption)
+	p.EnterRule(localctx, 14, kdsParserRULE_fieldOption)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(114)
+		p.SetState(122)
 		p.FullIdent()
 	}
 
@@ -1582,10 +1745,10 @@ func (s *FieldNumberContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) FieldNumber() (localctx IFieldNumberContext) {
 	localctx = NewFieldNumberContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 14, kdsParserRULE_fieldNumber)
+	p.EnterRule(localctx, 16, kdsParserRULE_fieldNumber)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(116)
+		p.SetState(124)
 		p.IntLit()
 	}
 
@@ -1794,12 +1957,12 @@ func (s *MapFieldContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) MapField() (localctx IMapFieldContext) {
 	localctx = NewMapFieldContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 16, kdsParserRULE_mapField)
+	p.EnterRule(localctx, 18, kdsParserRULE_mapField)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(118)
+		p.SetState(126)
 		p.Match(kdsParserMAP)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -1807,7 +1970,7 @@ func (p *kdsParser) MapField() (localctx IMapFieldContext) {
 		}
 	}
 	{
-		p.SetState(119)
+		p.SetState(127)
 		p.Match(kdsParserLT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -1815,11 +1978,11 @@ func (p *kdsParser) MapField() (localctx IMapFieldContext) {
 		}
 	}
 	{
-		p.SetState(120)
+		p.SetState(128)
 		p.KeyType()
 	}
 	{
-		p.SetState(121)
+		p.SetState(129)
 		p.Match(kdsParserCOMMA)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -1827,11 +1990,11 @@ func (p *kdsParser) MapField() (localctx IMapFieldContext) {
 		}
 	}
 	{
-		p.SetState(122)
+		p.SetState(130)
 		p.Type_()
 	}
 	{
-		p.SetState(123)
+		p.SetState(131)
 		p.Match(kdsParserGT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -1839,11 +2002,11 @@ func (p *kdsParser) MapField() (localctx IMapFieldContext) {
 		}
 	}
 	{
-		p.SetState(124)
+		p.SetState(132)
 		p.MapName()
 	}
 	{
-		p.SetState(125)
+		p.SetState(133)
 		p.Match(kdsParserEQ)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -1851,10 +2014,10 @@ func (p *kdsParser) MapField() (localctx IMapFieldContext) {
 		}
 	}
 	{
-		p.SetState(126)
+		p.SetState(134)
 		p.FieldNumber()
 	}
-	p.SetState(131)
+	p.SetState(139)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -1863,7 +2026,7 @@ func (p *kdsParser) MapField() (localctx IMapFieldContext) {
 
 	if _la == kdsParserLB {
 		{
-			p.SetState(127)
+			p.SetState(135)
 			p.Match(kdsParserLB)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -1871,11 +2034,11 @@ func (p *kdsParser) MapField() (localctx IMapFieldContext) {
 			}
 		}
 		{
-			p.SetState(128)
+			p.SetState(136)
 			p.FieldOptions()
 		}
 		{
-			p.SetState(129)
+			p.SetState(137)
 			p.Match(kdsParserRB)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -1885,7 +2048,7 @@ func (p *kdsParser) MapField() (localctx IMapFieldContext) {
 
 	}
 	{
-		p.SetState(133)
+		p.SetState(141)
 		p.Match(kdsParserSEMI)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -2033,15 +2196,15 @@ func (s *KeyTypeContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) KeyType() (localctx IKeyTypeContext) {
 	localctx = NewKeyTypeContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 18, kdsParserRULE_keyType)
+	p.EnterRule(localctx, 20, kdsParserRULE_keyType)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(135)
+		p.SetState(143)
 		_la = p.GetTokenStream().LA(1)
 
-		if !((int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&8386560) != 0) {
+		if !((int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&16773120) != 0) {
 			p.GetErrorHandler().RecoverInline(p)
 		} else {
 			p.GetErrorHandler().ReportMatch(p)
@@ -2253,8 +2416,8 @@ func (s *Type_Context) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) Type_() (localctx IType_Context) {
 	localctx = NewType_Context(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 20, kdsParserRULE_type_)
-	p.SetState(157)
+	p.EnterRule(localctx, 22, kdsParserRULE_type_)
+	p.SetState(165)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -2264,7 +2427,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 1:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(137)
+			p.SetState(145)
 			p.Match(kdsParserDOUBLE)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2275,7 +2438,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 2:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(138)
+			p.SetState(146)
 			p.Match(kdsParserFLOAT)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2286,7 +2449,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 3:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(139)
+			p.SetState(147)
 			p.Match(kdsParserINT32)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2297,7 +2460,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 4:
 		p.EnterOuterAlt(localctx, 4)
 		{
-			p.SetState(140)
+			p.SetState(148)
 			p.Match(kdsParserINT64)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2308,7 +2471,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 5:
 		p.EnterOuterAlt(localctx, 5)
 		{
-			p.SetState(141)
+			p.SetState(149)
 			p.Match(kdsParserUINT32)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2319,7 +2482,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 6:
 		p.EnterOuterAlt(localctx, 6)
 		{
-			p.SetState(142)
+			p.SetState(150)
 			p.Match(kdsParserUINT64)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2330,7 +2493,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 7:
 		p.EnterOuterAlt(localctx, 7)
 		{
-			p.SetState(143)
+			p.SetState(151)
 			p.Match(kdsParserSINT32)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2341,7 +2504,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 8:
 		p.EnterOuterAlt(localctx, 8)
 		{
-			p.SetState(144)
+			p.SetState(152)
 			p.Match(kdsParserSINT64)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2352,7 +2515,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 9:
 		p.EnterOuterAlt(localctx, 9)
 		{
-			p.SetState(145)
+			p.SetState(153)
 			p.Match(kdsParserFIXED32)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2363,7 +2526,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 10:
 		p.EnterOuterAlt(localctx, 10)
 		{
-			p.SetState(146)
+			p.SetState(154)
 			p.Match(kdsParserFIXED64)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2374,7 +2537,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 11:
 		p.EnterOuterAlt(localctx, 11)
 		{
-			p.SetState(147)
+			p.SetState(155)
 			p.Match(kdsParserSFIXED32)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2385,7 +2548,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 12:
 		p.EnterOuterAlt(localctx, 12)
 		{
-			p.SetState(148)
+			p.SetState(156)
 			p.Match(kdsParserSFIXED64)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2396,7 +2559,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 13:
 		p.EnterOuterAlt(localctx, 13)
 		{
-			p.SetState(149)
+			p.SetState(157)
 			p.Match(kdsParserBOOL)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2407,7 +2570,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 14:
 		p.EnterOuterAlt(localctx, 14)
 		{
-			p.SetState(150)
+			p.SetState(158)
 			p.Match(kdsParserSTRING)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2418,7 +2581,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 15:
 		p.EnterOuterAlt(localctx, 15)
 		{
-			p.SetState(151)
+			p.SetState(159)
 			p.Match(kdsParserBYTES)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2429,7 +2592,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 16:
 		p.EnterOuterAlt(localctx, 16)
 		{
-			p.SetState(152)
+			p.SetState(160)
 			p.Match(kdsParserTIMESTAMP)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2440,7 +2603,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 17:
 		p.EnterOuterAlt(localctx, 17)
 		{
-			p.SetState(153)
+			p.SetState(161)
 			p.Match(kdsParserDURATION)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2451,7 +2614,7 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 18:
 		p.EnterOuterAlt(localctx, 18)
 		{
-			p.SetState(154)
+			p.SetState(162)
 			p.Match(kdsParserEMPTY)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2462,14 +2625,14 @@ func (p *kdsParser) Type_() (localctx IType_Context) {
 	case 19:
 		p.EnterOuterAlt(localctx, 19)
 		{
-			p.SetState(155)
+			p.SetState(163)
 			p.MessageType()
 		}
 
 	case 20:
 		p.EnterOuterAlt(localctx, 20)
 		{
-			p.SetState(156)
+			p.SetState(164)
 			p.EnumType()
 		}
 
@@ -2608,8 +2771,8 @@ func (s *TopLevelDefContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) TopLevelDef() (localctx ITopLevelDefContext) {
 	localctx = NewTopLevelDefContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 22, kdsParserRULE_topLevelDef)
-	p.SetState(162)
+	p.EnterRule(localctx, 24, kdsParserRULE_topLevelDef)
+	p.SetState(170)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -2619,21 +2782,21 @@ func (p *kdsParser) TopLevelDef() (localctx ITopLevelDefContext) {
 	case kdsParserENUM:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(159)
+			p.SetState(167)
 			p.EnumDef()
 		}
 
 	case kdsParserENTITY:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(160)
+			p.SetState(168)
 			p.EntityDef()
 		}
 
 	case kdsParserCOMPONENT:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(161)
+			p.SetState(169)
 			p.ComponentDef()
 		}
 
@@ -2761,10 +2924,10 @@ func (s *EnumDefContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) EnumDef() (localctx IEnumDefContext) {
 	localctx = NewEnumDefContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 24, kdsParserRULE_enumDef)
+	p.EnterRule(localctx, 26, kdsParserRULE_enumDef)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(164)
+		p.SetState(172)
 		p.Match(kdsParserENUM)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -2772,11 +2935,11 @@ func (p *kdsParser) EnumDef() (localctx IEnumDefContext) {
 		}
 	}
 	{
-		p.SetState(165)
+		p.SetState(173)
 		p.EnumName()
 	}
 	{
-		p.SetState(166)
+		p.SetState(174)
 		p.EnumBody()
 	}
 
@@ -2913,32 +3076,32 @@ func (s *EnumBodyContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) EnumBody() (localctx IEnumBodyContext) {
 	localctx = NewEnumBodyContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 26, kdsParserRULE_enumBody)
+	p.EnterRule(localctx, 28, kdsParserRULE_enumBody)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(168)
+		p.SetState(176)
 		p.Match(kdsParserLC)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(172)
+	p.SetState(180)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&720578139402534910) != 0 {
+	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&1441156278805069822) != 0 {
 		{
-			p.SetState(169)
+			p.SetState(177)
 			p.EnumElement()
 		}
 
-		p.SetState(174)
+		p.SetState(182)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -2946,7 +3109,7 @@ func (p *kdsParser) EnumBody() (localctx IEnumBodyContext) {
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(175)
+		p.SetState(183)
 		p.Match(kdsParserRC)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3051,10 +3214,10 @@ func (s *EnumElementContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) EnumElement() (localctx IEnumElementContext) {
 	localctx = NewEnumElementContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 28, kdsParserRULE_enumElement)
+	p.EnterRule(localctx, 30, kdsParserRULE_enumElement)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(177)
+		p.SetState(185)
 		p.EnumField()
 	}
 
@@ -3187,23 +3350,23 @@ func (s *EnumFieldContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) EnumField() (localctx IEnumFieldContext) {
 	localctx = NewEnumFieldContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 30, kdsParserRULE_enumField)
+	p.EnterRule(localctx, 32, kdsParserRULE_enumField)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(179)
+		p.SetState(187)
 		p.Ident()
 	}
 	{
-		p.SetState(180)
+		p.SetState(188)
 		p.Match(kdsParserEQ)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(182)
+	p.SetState(190)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -3212,7 +3375,7 @@ func (p *kdsParser) EnumField() (localctx IEnumFieldContext) {
 
 	if _la == kdsParserMINUS {
 		{
-			p.SetState(181)
+			p.SetState(189)
 			p.Match(kdsParserMINUS)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -3222,11 +3385,11 @@ func (p *kdsParser) EnumField() (localctx IEnumFieldContext) {
 
 	}
 	{
-		p.SetState(184)
+		p.SetState(192)
 		p.IntLit()
 	}
 	{
-		p.SetState(185)
+		p.SetState(193)
 		p.Match(kdsParserSEMI)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3353,10 +3516,10 @@ func (s *EntityDefContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) EntityDef() (localctx IEntityDefContext) {
 	localctx = NewEntityDefContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 32, kdsParserRULE_entityDef)
+	p.EnterRule(localctx, 34, kdsParserRULE_entityDef)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(187)
+		p.SetState(195)
 		p.Match(kdsParserENTITY)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3364,11 +3527,11 @@ func (p *kdsParser) EntityDef() (localctx IEntityDefContext) {
 		}
 	}
 	{
-		p.SetState(188)
+		p.SetState(196)
 		p.EntityName()
 	}
 	{
-		p.SetState(189)
+		p.SetState(197)
 		p.EntityBody()
 	}
 
@@ -3469,10 +3632,10 @@ func (s *EntityNameContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) EntityName() (localctx IEntityNameContext) {
 	localctx = NewEntityNameContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 34, kdsParserRULE_entityName)
+	p.EnterRule(localctx, 36, kdsParserRULE_entityName)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(191)
+		p.SetState(199)
 		p.Ident()
 	}
 
@@ -3609,32 +3772,32 @@ func (s *EntityBodyContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) EntityBody() (localctx IEntityBodyContext) {
 	localctx = NewEntityBodyContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 36, kdsParserRULE_entityBody)
+	p.EnterRule(localctx, 38, kdsParserRULE_entityBody)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(193)
+		p.SetState(201)
 		p.Match(kdsParserLC)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(197)
+	p.SetState(205)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&722832138239475710) != 0 {
+	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&1445664276478951422) != 0 {
 		{
-			p.SetState(194)
+			p.SetState(202)
 			p.EntityElement()
 		}
 
-		p.SetState(199)
+		p.SetState(207)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -3642,7 +3805,7 @@ func (p *kdsParser) EntityBody() (localctx IEntityBodyContext) {
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(200)
+		p.SetState(208)
 		p.Match(kdsParserRC)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3781,8 +3944,8 @@ func (s *EntityElementContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) EntityElement() (localctx IEntityElementContext) {
 	localctx = NewEntityElementContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 38, kdsParserRULE_entityElement)
-	p.SetState(205)
+	p.EnterRule(localctx, 40, kdsParserRULE_entityElement)
+	p.SetState(213)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -3792,21 +3955,21 @@ func (p *kdsParser) EntityElement() (localctx IEntityElementContext) {
 	case 1:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(202)
+			p.SetState(210)
 			p.Field()
 		}
 
 	case 2:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(203)
+			p.SetState(211)
 			p.MapField()
 		}
 
 	case 3:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(204)
+			p.SetState(212)
 			p.EmptyStatement_()
 		}
 
@@ -3933,10 +4096,10 @@ func (s *ComponentDefContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) ComponentDef() (localctx IComponentDefContext) {
 	localctx = NewComponentDefContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 40, kdsParserRULE_componentDef)
+	p.EnterRule(localctx, 42, kdsParserRULE_componentDef)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(207)
+		p.SetState(215)
 		p.Match(kdsParserCOMPONENT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3944,11 +4107,11 @@ func (p *kdsParser) ComponentDef() (localctx IComponentDefContext) {
 		}
 	}
 	{
-		p.SetState(208)
+		p.SetState(216)
 		p.ComponentName()
 	}
 	{
-		p.SetState(209)
+		p.SetState(217)
 		p.ComponentBody()
 	}
 
@@ -4049,10 +4212,10 @@ func (s *ComponentNameContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) ComponentName() (localctx IComponentNameContext) {
 	localctx = NewComponentNameContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 42, kdsParserRULE_componentName)
+	p.EnterRule(localctx, 44, kdsParserRULE_componentName)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(211)
+		p.SetState(219)
 		p.Ident()
 	}
 
@@ -4189,32 +4352,32 @@ func (s *ComponentBodyContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) ComponentBody() (localctx IComponentBodyContext) {
 	localctx = NewComponentBodyContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 44, kdsParserRULE_componentBody)
+	p.EnterRule(localctx, 46, kdsParserRULE_componentBody)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(213)
+		p.SetState(221)
 		p.Match(kdsParserLC)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(217)
+	p.SetState(225)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&722832138239475710) != 0 {
+	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&1445664276478951422) != 0 {
 		{
-			p.SetState(214)
+			p.SetState(222)
 			p.ComponentElement()
 		}
 
-		p.SetState(219)
+		p.SetState(227)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -4222,7 +4385,7 @@ func (p *kdsParser) ComponentBody() (localctx IComponentBodyContext) {
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(220)
+		p.SetState(228)
 		p.Match(kdsParserRC)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -4361,8 +4524,8 @@ func (s *ComponentElementContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) ComponentElement() (localctx IComponentElementContext) {
 	localctx = NewComponentElementContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 46, kdsParserRULE_componentElement)
-	p.SetState(225)
+	p.EnterRule(localctx, 48, kdsParserRULE_componentElement)
+	p.SetState(233)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -4372,21 +4535,21 @@ func (p *kdsParser) ComponentElement() (localctx IComponentElementContext) {
 	case 1:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(222)
+			p.SetState(230)
 			p.Field()
 		}
 
 	case 2:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(223)
+			p.SetState(231)
 			p.MapField()
 		}
 
 	case 3:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(224)
+			p.SetState(232)
 			p.EmptyStatement_()
 		}
 
@@ -4479,10 +4642,10 @@ func (s *EmptyStatement_Context) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) EmptyStatement_() (localctx IEmptyStatement_Context) {
 	localctx = NewEmptyStatement_Context(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 48, kdsParserRULE_emptyStatement_)
+	p.EnterRule(localctx, 50, kdsParserRULE_emptyStatement_)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(227)
+		p.SetState(235)
 		p.Match(kdsParserSEMI)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -4592,8 +4755,8 @@ func (s *IdentContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) Ident() (localctx IIdentContext) {
 	localctx = NewIdentContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 50, kdsParserRULE_ident)
-	p.SetState(231)
+	p.EnterRule(localctx, 52, kdsParserRULE_ident)
+	p.SetState(239)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -4603,7 +4766,7 @@ func (p *kdsParser) Ident() (localctx IIdentContext) {
 	case kdsParserIDENTIFIER:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(229)
+			p.SetState(237)
 			p.Match(kdsParserIDENTIFIER)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -4611,10 +4774,10 @@ func (p *kdsParser) Ident() (localctx IIdentContext) {
 			}
 		}
 
-	case kdsParserSYNTAX, kdsParserIMPORT, kdsParserWEAK, kdsParserPUBLIC, kdsParserPACKAGE, kdsParserOPTION, kdsParserOPTIONAL, kdsParserREPEATED, kdsParserONEOF, kdsParserMAP, kdsParserINT32, kdsParserINT64, kdsParserUINT32, kdsParserUINT64, kdsParserSINT32, kdsParserSINT64, kdsParserFIXED32, kdsParserFIXED64, kdsParserSFIXED32, kdsParserSFIXED64, kdsParserBOOL, kdsParserSTRING, kdsParserDOUBLE, kdsParserFLOAT, kdsParserBYTES, kdsParserTIMESTAMP, kdsParserDURATION, kdsParserEMPTY, kdsParserRESERVED, kdsParserTO, kdsParserMAX, kdsParserENUM, kdsParserENTITY, kdsParserCOMPONENT, kdsParserMESSAGE, kdsParserSERVICE, kdsParserEXTEND, kdsParserRPC, kdsParserSTREAM, kdsParserRETURNS, kdsParserBOOL_LIT:
+	case kdsParserSYNTAX, kdsParserIMPORT, kdsParserPROTO_GO_PACKAGE, kdsParserWEAK, kdsParserPUBLIC, kdsParserPACKAGE, kdsParserOPTION, kdsParserOPTIONAL, kdsParserREPEATED, kdsParserONEOF, kdsParserMAP, kdsParserINT32, kdsParserINT64, kdsParserUINT32, kdsParserUINT64, kdsParserSINT32, kdsParserSINT64, kdsParserFIXED32, kdsParserFIXED64, kdsParserSFIXED32, kdsParserSFIXED64, kdsParserBOOL, kdsParserSTRING, kdsParserDOUBLE, kdsParserFLOAT, kdsParserBYTES, kdsParserTIMESTAMP, kdsParserDURATION, kdsParserEMPTY, kdsParserRESERVED, kdsParserTO, kdsParserMAX, kdsParserENUM, kdsParserENTITY, kdsParserCOMPONENT, kdsParserMESSAGE, kdsParserSERVICE, kdsParserEXTEND, kdsParserRPC, kdsParserSTREAM, kdsParserRETURNS, kdsParserBOOL_LIT:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(230)
+			p.SetState(238)
 			p.Keywords()
 		}
 
@@ -4756,15 +4919,15 @@ func (s *FullIdentContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) FullIdent() (localctx IFullIdentContext) {
 	localctx = NewFullIdentContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 52, kdsParserRULE_fullIdent)
+	p.EnterRule(localctx, 54, kdsParserRULE_fullIdent)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(233)
+		p.SetState(241)
 		p.Ident()
 	}
-	p.SetState(238)
+	p.SetState(246)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -4773,7 +4936,7 @@ func (p *kdsParser) FullIdent() (localctx IFullIdentContext) {
 
 	for _la == kdsParserDOT {
 		{
-			p.SetState(234)
+			p.SetState(242)
 			p.Match(kdsParserDOT)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -4781,11 +4944,11 @@ func (p *kdsParser) FullIdent() (localctx IFullIdentContext) {
 			}
 		}
 		{
-			p.SetState(235)
+			p.SetState(243)
 			p.Ident()
 		}
 
-		p.SetState(240)
+		p.SetState(248)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -4890,10 +5053,10 @@ func (s *FieldNameContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) FieldName() (localctx IFieldNameContext) {
 	localctx = NewFieldNameContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 54, kdsParserRULE_fieldName)
+	p.EnterRule(localctx, 56, kdsParserRULE_fieldName)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(241)
+		p.SetState(249)
 		p.Ident()
 	}
 
@@ -4994,10 +5157,10 @@ func (s *MessageNameContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) MessageName() (localctx IMessageNameContext) {
 	localctx = NewMessageNameContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 56, kdsParserRULE_messageName)
+	p.EnterRule(localctx, 58, kdsParserRULE_messageName)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(243)
+		p.SetState(251)
 		p.Ident()
 	}
 
@@ -5098,10 +5261,10 @@ func (s *EnumNameContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) EnumName() (localctx IEnumNameContext) {
 	localctx = NewEnumNameContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 58, kdsParserRULE_enumName)
+	p.EnterRule(localctx, 60, kdsParserRULE_enumName)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(245)
+		p.SetState(253)
 		p.Ident()
 	}
 
@@ -5202,10 +5365,10 @@ func (s *MapNameContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) MapName() (localctx IMapNameContext) {
 	localctx = NewMapNameContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 60, kdsParserRULE_mapName)
+	p.EnterRule(localctx, 62, kdsParserRULE_mapName)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(247)
+		p.SetState(255)
 		p.Ident()
 	}
 
@@ -5359,13 +5522,13 @@ func (s *MessageTypeContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) MessageType() (localctx IMessageTypeContext) {
 	localctx = NewMessageTypeContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 62, kdsParserRULE_messageType)
+	p.EnterRule(localctx, 64, kdsParserRULE_messageType)
 	var _la int
 
 	var _alt int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(250)
+	p.SetState(258)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -5374,7 +5537,7 @@ func (p *kdsParser) MessageType() (localctx IMessageTypeContext) {
 
 	if _la == kdsParserDOT {
 		{
-			p.SetState(249)
+			p.SetState(257)
 			p.Match(kdsParserDOT)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -5383,7 +5546,7 @@ func (p *kdsParser) MessageType() (localctx IMessageTypeContext) {
 		}
 
 	}
-	p.SetState(257)
+	p.SetState(265)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -5395,11 +5558,11 @@ func (p *kdsParser) MessageType() (localctx IMessageTypeContext) {
 	for _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
 		if _alt == 1 {
 			{
-				p.SetState(252)
+				p.SetState(260)
 				p.Ident()
 			}
 			{
-				p.SetState(253)
+				p.SetState(261)
 				p.Match(kdsParserDOT)
 				if p.HasError() {
 					// Recognition error - abort rule
@@ -5408,7 +5571,7 @@ func (p *kdsParser) MessageType() (localctx IMessageTypeContext) {
 			}
 
 		}
-		p.SetState(259)
+		p.SetState(267)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -5419,7 +5582,7 @@ func (p *kdsParser) MessageType() (localctx IMessageTypeContext) {
 		}
 	}
 	{
-		p.SetState(260)
+		p.SetState(268)
 		p.MessageName()
 	}
 
@@ -5573,13 +5736,13 @@ func (s *EnumTypeContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) EnumType() (localctx IEnumTypeContext) {
 	localctx = NewEnumTypeContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 64, kdsParserRULE_enumType)
+	p.EnterRule(localctx, 66, kdsParserRULE_enumType)
 	var _la int
 
 	var _alt int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(263)
+	p.SetState(271)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -5588,7 +5751,7 @@ func (p *kdsParser) EnumType() (localctx IEnumTypeContext) {
 
 	if _la == kdsParserDOT {
 		{
-			p.SetState(262)
+			p.SetState(270)
 			p.Match(kdsParserDOT)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -5597,7 +5760,7 @@ func (p *kdsParser) EnumType() (localctx IEnumTypeContext) {
 		}
 
 	}
-	p.SetState(270)
+	p.SetState(278)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -5609,11 +5772,11 @@ func (p *kdsParser) EnumType() (localctx IEnumTypeContext) {
 	for _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
 		if _alt == 1 {
 			{
-				p.SetState(265)
+				p.SetState(273)
 				p.Ident()
 			}
 			{
-				p.SetState(266)
+				p.SetState(274)
 				p.Match(kdsParserDOT)
 				if p.HasError() {
 					// Recognition error - abort rule
@@ -5622,7 +5785,7 @@ func (p *kdsParser) EnumType() (localctx IEnumTypeContext) {
 			}
 
 		}
-		p.SetState(272)
+		p.SetState(280)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -5633,7 +5796,7 @@ func (p *kdsParser) EnumType() (localctx IEnumTypeContext) {
 		}
 	}
 	{
-		p.SetState(273)
+		p.SetState(281)
 		p.EnumName()
 	}
 
@@ -5722,10 +5885,10 @@ func (s *IntLitContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) IntLit() (localctx IIntLitContext) {
 	localctx = NewIntLitContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 66, kdsParserRULE_intLit)
+	p.EnterRule(localctx, 68, kdsParserRULE_intLit)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(275)
+		p.SetState(283)
 		p.Match(kdsParserINT_LIT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -5756,6 +5919,7 @@ type IKeywordsContext interface {
 	// Getter signatures
 	SYNTAX() antlr.TerminalNode
 	IMPORT() antlr.TerminalNode
+	PROTO_GO_PACKAGE() antlr.TerminalNode
 	WEAK() antlr.TerminalNode
 	PUBLIC() antlr.TerminalNode
 	PACKAGE() antlr.TerminalNode
@@ -5838,6 +6002,10 @@ func (s *KeywordsContext) SYNTAX() antlr.TerminalNode {
 
 func (s *KeywordsContext) IMPORT() antlr.TerminalNode {
 	return s.GetToken(kdsParserIMPORT, 0)
+}
+
+func (s *KeywordsContext) PROTO_GO_PACKAGE() antlr.TerminalNode {
+	return s.GetToken(kdsParserPROTO_GO_PACKAGE, 0)
 }
 
 func (s *KeywordsContext) WEAK() antlr.TerminalNode {
@@ -6018,15 +6186,15 @@ func (s *KeywordsContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *kdsParser) Keywords() (localctx IKeywordsContext) {
 	localctx = NewKeywordsContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 68, kdsParserRULE_keywords)
+	p.EnterRule(localctx, 70, kdsParserRULE_keywords)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(277)
+		p.SetState(285)
 		_la = p.GetTokenStream().LA(1)
 
-		if !((int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&144117387099111422) != 0) {
+		if !((int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&288234774198222846) != 0) {
 			p.GetErrorHandler().RecoverInline(p)
 		} else {
 			p.GetErrorHandler().ReportMatch(p)
