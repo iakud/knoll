@@ -27,15 +27,9 @@ type FieldMask struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Number int32 `protobuf:"varint,1,opt,name=Number,proto3" json:"Number,omitempty"`
-	// Types that are assignable to Field:
-	//
-	//	*FieldMask_Int32Key
-	//	*FieldMask_StringKey
-	//	*FieldMask_DelInt32Key
-	//	*FieldMask_DelStringKey
-	Field      isFieldMask_Field `protobuf_oneof:"Field"`
-	FieldMasks []*FieldMask      `protobuf:"bytes,10,rep,name=FieldMasks,proto3" json:"FieldMasks,omitempty"`
+	Number     int32        `protobuf:"varint,1,opt,name=Number,proto3" json:"Number,omitempty"`
+	MapMask    *MapMask     `protobuf:"bytes,2,opt,name=MapMask,proto3" json:"MapMask,omitempty"`
+	FieldMasks []*FieldMask `protobuf:"bytes,10,rep,name=FieldMasks,proto3" json:"FieldMasks,omitempty"`
 }
 
 func (x *FieldMask) Reset() {
@@ -75,39 +69,11 @@ func (x *FieldMask) GetNumber() int32 {
 	return 0
 }
 
-func (m *FieldMask) GetField() isFieldMask_Field {
-	if m != nil {
-		return m.Field
+func (x *FieldMask) GetMapMask() *MapMask {
+	if x != nil {
+		return x.MapMask
 	}
 	return nil
-}
-
-func (x *FieldMask) GetInt32Key() int32 {
-	if x, ok := x.GetField().(*FieldMask_Int32Key); ok {
-		return x.Int32Key
-	}
-	return 0
-}
-
-func (x *FieldMask) GetStringKey() string {
-	if x, ok := x.GetField().(*FieldMask_StringKey); ok {
-		return x.StringKey
-	}
-	return ""
-}
-
-func (x *FieldMask) GetDelInt32Key() int32 {
-	if x, ok := x.GetField().(*FieldMask_DelInt32Key); ok {
-		return x.DelInt32Key
-	}
-	return 0
-}
-
-func (x *FieldMask) GetDelStringKey() string {
-	if x, ok := x.GetField().(*FieldMask_DelStringKey); ok {
-		return x.DelStringKey
-	}
-	return ""
 }
 
 func (x *FieldMask) GetFieldMasks() []*FieldMask {
@@ -117,56 +83,476 @@ func (x *FieldMask) GetFieldMasks() []*FieldMask {
 	return nil
 }
 
-type isFieldMask_Field interface {
-	isFieldMask_Field()
+type Int32Array struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Values []int32 `protobuf:"varint,1,rep,packed,name=Values,proto3" json:"Values,omitempty"`
 }
 
-type FieldMask_Int32Key struct {
-	Int32Key int32 `protobuf:"varint,2,opt,name=Int32Key,proto3,oneof"`
+func (x *Int32Array) Reset() {
+	*x = Int32Array{}
+	mi := &file_fieldmask_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
 }
 
-type FieldMask_StringKey struct {
-	StringKey string `protobuf:"bytes,3,opt,name=StringKey,proto3,oneof"`
+func (x *Int32Array) String() string {
+	return protoimpl.X.MessageStringOf(x)
 }
 
-type FieldMask_DelInt32Key struct {
-	DelInt32Key int32 `protobuf:"varint,4,opt,name=DelInt32Key,proto3,oneof"`
+func (*Int32Array) ProtoMessage() {}
+
+func (x *Int32Array) ProtoReflect() protoreflect.Message {
+	mi := &file_fieldmask_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
 }
 
-type FieldMask_DelStringKey struct {
-	DelStringKey string `protobuf:"bytes,5,opt,name=DelStringKey,proto3,oneof"`
+// Deprecated: Use Int32Array.ProtoReflect.Descriptor instead.
+func (*Int32Array) Descriptor() ([]byte, []int) {
+	return file_fieldmask_proto_rawDescGZIP(), []int{1}
 }
 
-func (*FieldMask_Int32Key) isFieldMask_Field() {}
+func (x *Int32Array) GetValues() []int32 {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
 
-func (*FieldMask_StringKey) isFieldMask_Field() {}
+type Int64Array struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 
-func (*FieldMask_DelInt32Key) isFieldMask_Field() {}
+	Values []int64 `protobuf:"varint,1,rep,packed,name=Values,proto3" json:"Values,omitempty"`
+}
 
-func (*FieldMask_DelStringKey) isFieldMask_Field() {}
+func (x *Int64Array) Reset() {
+	*x = Int64Array{}
+	mi := &file_fieldmask_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Int64Array) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Int64Array) ProtoMessage() {}
+
+func (x *Int64Array) ProtoReflect() protoreflect.Message {
+	mi := &file_fieldmask_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Int64Array.ProtoReflect.Descriptor instead.
+func (*Int64Array) Descriptor() ([]byte, []int) {
+	return file_fieldmask_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Int64Array) GetValues() []int64 {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
+
+type UInt32Array struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Values []uint32 `protobuf:"varint,1,rep,packed,name=Values,proto3" json:"Values,omitempty"`
+}
+
+func (x *UInt32Array) Reset() {
+	*x = UInt32Array{}
+	mi := &file_fieldmask_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UInt32Array) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UInt32Array) ProtoMessage() {}
+
+func (x *UInt32Array) ProtoReflect() protoreflect.Message {
+	mi := &file_fieldmask_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UInt32Array.ProtoReflect.Descriptor instead.
+func (*UInt32Array) Descriptor() ([]byte, []int) {
+	return file_fieldmask_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *UInt32Array) GetValues() []uint32 {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
+
+type Uint64Array struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Values []uint64 `protobuf:"varint,1,rep,packed,name=Values,proto3" json:"Values,omitempty"`
+}
+
+func (x *Uint64Array) Reset() {
+	*x = Uint64Array{}
+	mi := &file_fieldmask_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Uint64Array) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Uint64Array) ProtoMessage() {}
+
+func (x *Uint64Array) ProtoReflect() protoreflect.Message {
+	mi := &file_fieldmask_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Uint64Array.ProtoReflect.Descriptor instead.
+func (*Uint64Array) Descriptor() ([]byte, []int) {
+	return file_fieldmask_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *Uint64Array) GetValues() []uint64 {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
+
+type BoolArray struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Values []bool `protobuf:"varint,1,rep,packed,name=Values,proto3" json:"Values,omitempty"`
+}
+
+func (x *BoolArray) Reset() {
+	*x = BoolArray{}
+	mi := &file_fieldmask_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BoolArray) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BoolArray) ProtoMessage() {}
+
+func (x *BoolArray) ProtoReflect() protoreflect.Message {
+	mi := &file_fieldmask_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BoolArray.ProtoReflect.Descriptor instead.
+func (*BoolArray) Descriptor() ([]byte, []int) {
+	return file_fieldmask_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *BoolArray) GetValues() []bool {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
+
+type StringArray struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Values []string `protobuf:"bytes,1,rep,name=Values,proto3" json:"Values,omitempty"`
+}
+
+func (x *StringArray) Reset() {
+	*x = StringArray{}
+	mi := &file_fieldmask_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringArray) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringArray) ProtoMessage() {}
+
+func (x *StringArray) ProtoReflect() protoreflect.Message {
+	mi := &file_fieldmask_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringArray.ProtoReflect.Descriptor instead.
+func (*StringArray) Descriptor() ([]byte, []int) {
+	return file_fieldmask_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *StringArray) GetValues() []string {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
+
+type MapMask struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Clear bool `protobuf:"varint,1,opt,name=Clear,proto3" json:"Clear,omitempty"`
+	// Types that are assignable to DeleteKeys:
+	//
+	//	*MapMask_Int32DeleteKeys
+	//	*MapMask_Int64DeleteKeys
+	//	*MapMask_Uint32DeleteKeys
+	//	*MapMask_Uint64DeleteKeys
+	//	*MapMask_BoolDeleteKeys
+	//	*MapMask_StringDeleteKeys
+	DeleteKeys isMapMask_DeleteKeys `protobuf_oneof:"DeleteKeys"`
+}
+
+func (x *MapMask) Reset() {
+	*x = MapMask{}
+	mi := &file_fieldmask_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MapMask) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MapMask) ProtoMessage() {}
+
+func (x *MapMask) ProtoReflect() protoreflect.Message {
+	mi := &file_fieldmask_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MapMask.ProtoReflect.Descriptor instead.
+func (*MapMask) Descriptor() ([]byte, []int) {
+	return file_fieldmask_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *MapMask) GetClear() bool {
+	if x != nil {
+		return x.Clear
+	}
+	return false
+}
+
+func (m *MapMask) GetDeleteKeys() isMapMask_DeleteKeys {
+	if m != nil {
+		return m.DeleteKeys
+	}
+	return nil
+}
+
+func (x *MapMask) GetInt32DeleteKeys() *Int32Array {
+	if x, ok := x.GetDeleteKeys().(*MapMask_Int32DeleteKeys); ok {
+		return x.Int32DeleteKeys
+	}
+	return nil
+}
+
+func (x *MapMask) GetInt64DeleteKeys() *Int64Array {
+	if x, ok := x.GetDeleteKeys().(*MapMask_Int64DeleteKeys); ok {
+		return x.Int64DeleteKeys
+	}
+	return nil
+}
+
+func (x *MapMask) GetUint32DeleteKeys() *UInt32Array {
+	if x, ok := x.GetDeleteKeys().(*MapMask_Uint32DeleteKeys); ok {
+		return x.Uint32DeleteKeys
+	}
+	return nil
+}
+
+func (x *MapMask) GetUint64DeleteKeys() *Uint64Array {
+	if x, ok := x.GetDeleteKeys().(*MapMask_Uint64DeleteKeys); ok {
+		return x.Uint64DeleteKeys
+	}
+	return nil
+}
+
+func (x *MapMask) GetBoolDeleteKeys() *BoolArray {
+	if x, ok := x.GetDeleteKeys().(*MapMask_BoolDeleteKeys); ok {
+		return x.BoolDeleteKeys
+	}
+	return nil
+}
+
+func (x *MapMask) GetStringDeleteKeys() *StringArray {
+	if x, ok := x.GetDeleteKeys().(*MapMask_StringDeleteKeys); ok {
+		return x.StringDeleteKeys
+	}
+	return nil
+}
+
+type isMapMask_DeleteKeys interface {
+	isMapMask_DeleteKeys()
+}
+
+type MapMask_Int32DeleteKeys struct {
+	Int32DeleteKeys *Int32Array `protobuf:"bytes,2,opt,name=Int32DeleteKeys,proto3,oneof"`
+}
+
+type MapMask_Int64DeleteKeys struct {
+	Int64DeleteKeys *Int64Array `protobuf:"bytes,3,opt,name=Int64DeleteKeys,proto3,oneof"`
+}
+
+type MapMask_Uint32DeleteKeys struct {
+	Uint32DeleteKeys *UInt32Array `protobuf:"bytes,4,opt,name=Uint32DeleteKeys,proto3,oneof"`
+}
+
+type MapMask_Uint64DeleteKeys struct {
+	Uint64DeleteKeys *Uint64Array `protobuf:"bytes,5,opt,name=Uint64DeleteKeys,proto3,oneof"`
+}
+
+type MapMask_BoolDeleteKeys struct {
+	BoolDeleteKeys *BoolArray `protobuf:"bytes,6,opt,name=BoolDeleteKeys,proto3,oneof"`
+}
+
+type MapMask_StringDeleteKeys struct {
+	StringDeleteKeys *StringArray `protobuf:"bytes,7,opt,name=StringDeleteKeys,proto3,oneof"`
+}
+
+func (*MapMask_Int32DeleteKeys) isMapMask_DeleteKeys() {}
+
+func (*MapMask_Int64DeleteKeys) isMapMask_DeleteKeys() {}
+
+func (*MapMask_Uint32DeleteKeys) isMapMask_DeleteKeys() {}
+
+func (*MapMask_Uint64DeleteKeys) isMapMask_DeleteKeys() {}
+
+func (*MapMask_BoolDeleteKeys) isMapMask_DeleteKeys() {}
+
+func (*MapMask_StringDeleteKeys) isMapMask_DeleteKeys() {}
 
 var File_fieldmask_proto protoreflect.FileDescriptor
 
 var file_fieldmask_proto_rawDesc = []byte{
 	0x0a, 0x0f, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x6d, 0x61, 0x73, 0x6b, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x12, 0x05, 0x6b, 0x64, 0x73, 0x70, 0x62, 0x22, 0xe6, 0x01, 0x0a, 0x09, 0x46, 0x69, 0x65,
-	0x6c, 0x64, 0x4d, 0x61, 0x73, 0x6b, 0x12, 0x16, 0x0a, 0x06, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x12, 0x1c,
-	0x0a, 0x08, 0x49, 0x6e, 0x74, 0x33, 0x32, 0x4b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05,
-	0x48, 0x00, 0x52, 0x08, 0x49, 0x6e, 0x74, 0x33, 0x32, 0x4b, 0x65, 0x79, 0x12, 0x1e, 0x0a, 0x09,
-	0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x4b, 0x65, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x48,
-	0x00, 0x52, 0x09, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x4b, 0x65, 0x79, 0x12, 0x22, 0x0a, 0x0b,
-	0x44, 0x65, 0x6c, 0x49, 0x6e, 0x74, 0x33, 0x32, 0x4b, 0x65, 0x79, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x05, 0x48, 0x00, 0x52, 0x0b, 0x44, 0x65, 0x6c, 0x49, 0x6e, 0x74, 0x33, 0x32, 0x4b, 0x65, 0x79,
-	0x12, 0x24, 0x0a, 0x0c, 0x44, 0x65, 0x6c, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x4b, 0x65, 0x79,
-	0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x0c, 0x44, 0x65, 0x6c, 0x53, 0x74, 0x72,
-	0x69, 0x6e, 0x67, 0x4b, 0x65, 0x79, 0x12, 0x30, 0x0a, 0x0a, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4d,
-	0x61, 0x73, 0x6b, 0x73, 0x18, 0x0a, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x6b, 0x64, 0x73,
-	0x70, 0x62, 0x2e, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4d, 0x61, 0x73, 0x6b, 0x52, 0x0a, 0x46, 0x69,
-	0x65, 0x6c, 0x64, 0x4d, 0x61, 0x73, 0x6b, 0x73, 0x42, 0x07, 0x0a, 0x05, 0x46, 0x69, 0x65, 0x6c,
-	0x64, 0x42, 0x1c, 0x5a, 0x1a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x69, 0x61, 0x6b, 0x75, 0x64, 0x2f, 0x6b, 0x64, 0x73, 0x2f, 0x6b, 0x64, 0x73, 0x70, 0x62, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x12, 0x05, 0x6b, 0x64, 0x73, 0x70, 0x62, 0x22, 0x7f, 0x0a, 0x09, 0x46, 0x69, 0x65, 0x6c,
+	0x64, 0x4d, 0x61, 0x73, 0x6b, 0x12, 0x16, 0x0a, 0x06, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x12, 0x28, 0x0a,
+	0x07, 0x4d, 0x61, 0x70, 0x4d, 0x61, 0x73, 0x6b, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e,
+	0x2e, 0x6b, 0x64, 0x73, 0x70, 0x62, 0x2e, 0x4d, 0x61, 0x70, 0x4d, 0x61, 0x73, 0x6b, 0x52, 0x07,
+	0x4d, 0x61, 0x70, 0x4d, 0x61, 0x73, 0x6b, 0x12, 0x30, 0x0a, 0x0a, 0x46, 0x69, 0x65, 0x6c, 0x64,
+	0x4d, 0x61, 0x73, 0x6b, 0x73, 0x18, 0x0a, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x6b, 0x64,
+	0x73, 0x70, 0x62, 0x2e, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4d, 0x61, 0x73, 0x6b, 0x52, 0x0a, 0x46,
+	0x69, 0x65, 0x6c, 0x64, 0x4d, 0x61, 0x73, 0x6b, 0x73, 0x22, 0x24, 0x0a, 0x0a, 0x49, 0x6e, 0x74,
+	0x33, 0x32, 0x41, 0x72, 0x72, 0x61, 0x79, 0x12, 0x16, 0x0a, 0x06, 0x56, 0x61, 0x6c, 0x75, 0x65,
+	0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x05, 0x52, 0x06, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x22,
+	0x24, 0x0a, 0x0a, 0x49, 0x6e, 0x74, 0x36, 0x34, 0x41, 0x72, 0x72, 0x61, 0x79, 0x12, 0x16, 0x0a,
+	0x06, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x03, 0x52, 0x06, 0x56,
+	0x61, 0x6c, 0x75, 0x65, 0x73, 0x22, 0x25, 0x0a, 0x0b, 0x55, 0x49, 0x6e, 0x74, 0x33, 0x32, 0x41,
+	0x72, 0x72, 0x61, 0x79, 0x12, 0x16, 0x0a, 0x06, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x01,
+	0x20, 0x03, 0x28, 0x0d, 0x52, 0x06, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x22, 0x25, 0x0a, 0x0b,
+	0x55, 0x69, 0x6e, 0x74, 0x36, 0x34, 0x41, 0x72, 0x72, 0x61, 0x79, 0x12, 0x16, 0x0a, 0x06, 0x56,
+	0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x04, 0x52, 0x06, 0x56, 0x61, 0x6c,
+	0x75, 0x65, 0x73, 0x22, 0x23, 0x0a, 0x09, 0x42, 0x6f, 0x6f, 0x6c, 0x41, 0x72, 0x72, 0x61, 0x79,
+	0x12, 0x16, 0x0a, 0x06, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x08,
+	0x52, 0x06, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x22, 0x25, 0x0a, 0x0b, 0x53, 0x74, 0x72, 0x69,
+	0x6e, 0x67, 0x41, 0x72, 0x72, 0x61, 0x79, 0x12, 0x16, 0x0a, 0x06, 0x56, 0x61, 0x6c, 0x75, 0x65,
+	0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x06, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x22,
+	0xad, 0x03, 0x0a, 0x07, 0x4d, 0x61, 0x70, 0x4d, 0x61, 0x73, 0x6b, 0x12, 0x14, 0x0a, 0x05, 0x43,
+	0x6c, 0x65, 0x61, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x05, 0x43, 0x6c, 0x65, 0x61,
+	0x72, 0x12, 0x3d, 0x0a, 0x0f, 0x49, 0x6e, 0x74, 0x33, 0x32, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65,
+	0x4b, 0x65, 0x79, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x6b, 0x64, 0x73,
+	0x70, 0x62, 0x2e, 0x49, 0x6e, 0x74, 0x33, 0x32, 0x41, 0x72, 0x72, 0x61, 0x79, 0x48, 0x00, 0x52,
+	0x0f, 0x49, 0x6e, 0x74, 0x33, 0x32, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b, 0x65, 0x79, 0x73,
+	0x12, 0x3d, 0x0a, 0x0f, 0x49, 0x6e, 0x74, 0x36, 0x34, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b,
+	0x65, 0x79, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x6b, 0x64, 0x73, 0x70,
+	0x62, 0x2e, 0x49, 0x6e, 0x74, 0x36, 0x34, 0x41, 0x72, 0x72, 0x61, 0x79, 0x48, 0x00, 0x52, 0x0f,
+	0x49, 0x6e, 0x74, 0x36, 0x34, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b, 0x65, 0x79, 0x73, 0x12,
+	0x40, 0x0a, 0x10, 0x55, 0x69, 0x6e, 0x74, 0x33, 0x32, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b,
+	0x65, 0x79, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6b, 0x64, 0x73, 0x70,
+	0x62, 0x2e, 0x55, 0x49, 0x6e, 0x74, 0x33, 0x32, 0x41, 0x72, 0x72, 0x61, 0x79, 0x48, 0x00, 0x52,
+	0x10, 0x55, 0x69, 0x6e, 0x74, 0x33, 0x32, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b, 0x65, 0x79,
+	0x73, 0x12, 0x40, 0x0a, 0x10, 0x55, 0x69, 0x6e, 0x74, 0x36, 0x34, 0x44, 0x65, 0x6c, 0x65, 0x74,
+	0x65, 0x4b, 0x65, 0x79, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6b, 0x64,
+	0x73, 0x70, 0x62, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0x36, 0x34, 0x41, 0x72, 0x72, 0x61, 0x79, 0x48,
+	0x00, 0x52, 0x10, 0x55, 0x69, 0x6e, 0x74, 0x36, 0x34, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b,
+	0x65, 0x79, 0x73, 0x12, 0x3a, 0x0a, 0x0e, 0x42, 0x6f, 0x6f, 0x6c, 0x44, 0x65, 0x6c, 0x65, 0x74,
+	0x65, 0x4b, 0x65, 0x79, 0x73, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x6b, 0x64,
+	0x73, 0x70, 0x62, 0x2e, 0x42, 0x6f, 0x6f, 0x6c, 0x41, 0x72, 0x72, 0x61, 0x79, 0x48, 0x00, 0x52,
+	0x0e, 0x42, 0x6f, 0x6f, 0x6c, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b, 0x65, 0x79, 0x73, 0x12,
+	0x40, 0x0a, 0x10, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b,
+	0x65, 0x79, 0x73, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6b, 0x64, 0x73, 0x70,
+	0x62, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x41, 0x72, 0x72, 0x61, 0x79, 0x48, 0x00, 0x52,
+	0x10, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b, 0x65, 0x79,
+	0x73, 0x42, 0x0c, 0x0a, 0x0a, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b, 0x65, 0x79, 0x73, 0x42,
+	0x1c, 0x5a, 0x1a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x61,
+	0x6b, 0x75, 0x64, 0x2f, 0x6b, 0x64, 0x73, 0x2f, 0x6b, 0x64, 0x73, 0x70, 0x62, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -181,17 +567,31 @@ func file_fieldmask_proto_rawDescGZIP() []byte {
 	return file_fieldmask_proto_rawDescData
 }
 
-var file_fieldmask_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_fieldmask_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_fieldmask_proto_goTypes = []any{
-	(*FieldMask)(nil), // 0: kdspb.FieldMask
+	(*FieldMask)(nil),   // 0: kdspb.FieldMask
+	(*Int32Array)(nil),  // 1: kdspb.Int32Array
+	(*Int64Array)(nil),  // 2: kdspb.Int64Array
+	(*UInt32Array)(nil), // 3: kdspb.UInt32Array
+	(*Uint64Array)(nil), // 4: kdspb.Uint64Array
+	(*BoolArray)(nil),   // 5: kdspb.BoolArray
+	(*StringArray)(nil), // 6: kdspb.StringArray
+	(*MapMask)(nil),     // 7: kdspb.MapMask
 }
 var file_fieldmask_proto_depIdxs = []int32{
-	0, // 0: kdspb.FieldMask.FieldMasks:type_name -> kdspb.FieldMask
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	7, // 0: kdspb.FieldMask.MapMask:type_name -> kdspb.MapMask
+	0, // 1: kdspb.FieldMask.FieldMasks:type_name -> kdspb.FieldMask
+	1, // 2: kdspb.MapMask.Int32DeleteKeys:type_name -> kdspb.Int32Array
+	2, // 3: kdspb.MapMask.Int64DeleteKeys:type_name -> kdspb.Int64Array
+	3, // 4: kdspb.MapMask.Uint32DeleteKeys:type_name -> kdspb.UInt32Array
+	4, // 5: kdspb.MapMask.Uint64DeleteKeys:type_name -> kdspb.Uint64Array
+	5, // 6: kdspb.MapMask.BoolDeleteKeys:type_name -> kdspb.BoolArray
+	6, // 7: kdspb.MapMask.StringDeleteKeys:type_name -> kdspb.StringArray
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_fieldmask_proto_init() }
@@ -199,11 +599,13 @@ func file_fieldmask_proto_init() {
 	if File_fieldmask_proto != nil {
 		return
 	}
-	file_fieldmask_proto_msgTypes[0].OneofWrappers = []any{
-		(*FieldMask_Int32Key)(nil),
-		(*FieldMask_StringKey)(nil),
-		(*FieldMask_DelInt32Key)(nil),
-		(*FieldMask_DelStringKey)(nil),
+	file_fieldmask_proto_msgTypes[7].OneofWrappers = []any{
+		(*MapMask_Int32DeleteKeys)(nil),
+		(*MapMask_Int64DeleteKeys)(nil),
+		(*MapMask_Uint32DeleteKeys)(nil),
+		(*MapMask_Uint64DeleteKeys)(nil),
+		(*MapMask_BoolDeleteKeys)(nil),
+		(*MapMask_StringDeleteKeys)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -211,7 +613,7 @@ func file_fieldmask_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_fieldmask_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

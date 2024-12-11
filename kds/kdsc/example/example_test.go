@@ -38,37 +38,31 @@ func Unmashal(t *testing.T, buf []byte) error {
 	mask := new(kdspb.FieldMask)
 	proto.Unmarshal(buf, mask)
 	t.Log("buf:", string(buf), ",len:", len(buf))
-	/*
-	switch field := mask.GetField().(type) {
-	case *kdspb.FieldMask_Number:
-		t.Log("Number:", field.Number)
-	}*/
-	t.Log("Number:", mask.Number)
-	for _, fieldMask := range mask.FieldMasks {
-		switch field := fieldMask.GetField().(type) {
-		//case *kdspb.FieldMask_Number:
-		//	t.Log("Number:", field.Number)
-		case *kdspb.FieldMask_DelInt32Key:
-			t.Log("DelInt32Key:", field.DelInt32Key)
-		case *kdspb.FieldMask_StringKey:
-			t.Log("StringKey:", field.StringKey)
-		}	
-	}
+	t.Log("mask:", mask)
 	return nil
 }
 
 func Marshal(t *testing.T) ([]byte, error) {
-	mask := new(kdspb.FieldMask)
-	mask.Number = 1
+	mask1 := new(kdspb.FieldMask)
+	mask1.Number = 1
 	// mask.Field = &kdspb.FieldMask_Number{Number: 1}
 
-	mapMask1 := new(kdspb.FieldMask)
-	mapMask1.Field = &kdspb.FieldMask_DelInt32Key{DelInt32Key: 7}
-	mask.FieldMasks = append(mask.FieldMasks, mapMask1)
+	mapMask1 := new(kdspb.MapMask)
+	mapMask1.Clear = true
+	mask1.MapMask = mapMask1
 
-	mapMask2 := new(kdspb.FieldMask)
-	mapMask2.Field = &kdspb.FieldMask_StringKey{StringKey: "321"}
-	mask.FieldMasks = append(mask.FieldMasks, mapMask2)
+	mask2 := new(kdspb.FieldMask)
+	mask2.Number = 3
+
+	mapMask2 := new(kdspb.MapMask)
+	clearKeys := new(kdspb.Int32Array)
+	clearKeys.Values = append(clearKeys.Values, 3, 5, 9 ,111)
+
+	mapMask2.DeleteKeys = &kdspb.MapMask_Int32DeleteKeys{Int32DeleteKeys: clearKeys}
+	mask2.MapMask = mapMask2
+
+	mask := new(kdspb.FieldMask)
+	mask.FieldMasks = append(mask.FieldMasks, mask1, mask2)
 
 	return proto.Marshal(mask)
 }
