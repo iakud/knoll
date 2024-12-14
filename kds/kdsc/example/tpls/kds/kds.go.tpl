@@ -99,9 +99,15 @@ func (x *{{$MessageName}}) Get{{.Name}}() {{.GoType}} {
 }
 
 func (x *{{$MessageName}}) Set{{.Name}}(v {{.GoType}}) {
+{{- if eq .Type "bytes"}}
+	if v != nil || x.syncable.{{.Name}} != nil {
+		return
+	}
+{{- else}}
 	if v == x.syncable.{{.Name}} {
 		return
 	}
+{{- end}}
 	x.syncable.{{.Name}} = v
 	x.markDirty(uint64(0x01) << {{.Number}})
 }

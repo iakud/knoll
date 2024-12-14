@@ -18,6 +18,7 @@ message City {
 message CityBaseInfo {
 	repeated Vector Positions = 1;
 	map<int32, google.protobuf.Empty> Troops = 2;
+	bytes BuildInfo = 3;
 }
 
 message Vector {

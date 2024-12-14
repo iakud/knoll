@@ -13,6 +13,7 @@ entity City {
 component CityBaseInfo {
 	repeated Vector Positions = 1;
 	map<int32, empty> Troops = 2;
+	bytes BuildInfo = 3;
 }
 
 component Vector {

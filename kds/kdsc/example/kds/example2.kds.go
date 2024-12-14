@@ -142,6 +142,7 @@ func (x *City) checkDirty(n uint64) bool {
 type syncableCityBaseInfo struct {
 	Positions []*Vector
 	Troops map[int32]struct{}
+	BuildInfo []byte
 }
 
 type dirtyParentFunc_CityBaseInfo func()
@@ -167,6 +168,18 @@ func NewCityBaseInfo() *CityBaseInfo {
 	return x
 }
 
+func (x *CityBaseInfo) GetBuildInfo() []byte {
+	return x.syncable.BuildInfo
+}
+
+func (x *CityBaseInfo) SetBuildInfo(v []byte) {
+	if v != nil || x.syncable.BuildInfo != nil {
+		return
+	}
+	x.syncable.BuildInfo = v
+	x.markDirty(uint64(0x01) << 3)
+}
+
 func (x *CityBaseInfo) DumpChange() *kdspb.CityBaseInfo {
 	if x.checkDirty(uint64(0x01)) {
 		return x.DumpFull()
@@ -182,6 +195,9 @@ func (x *CityBaseInfo) DumpChange() *kdspb.CityBaseInfo {
 			m.Troops[k] = new(emptypb.Empty)
 		}
 	}
+	if x.checkDirty(uint64(0x01) << 3) {
+		m.BuildInfo = x.syncable.BuildInfo
+	}
 	return m
 }
 
@@ -193,6 +209,7 @@ func (x *CityBaseInfo) DumpFull() *kdspb.CityBaseInfo {
 	for k, _ := range x.syncable.Troops {
 		m.Troops[k] = new(emptypb.Empty)
 	}
+	m.BuildInfo = x.syncable.BuildInfo
 	return m
 }
 
