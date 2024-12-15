@@ -135,6 +135,10 @@ func (x *Player) DumpFull() *kdspb.Player {
 	return m
 }
 
+func (x *Player) markAll() {
+	x.dirty = uint64(0x01)
+}
+
 func (x *Player) markDirty(n uint64) {
 	if x.dirty & n == n {
 		return
@@ -142,14 +146,31 @@ func (x *Player) markDirty(n uint64) {
 	x.dirty |= n
 }
 
+func (x *Player) clearAll() {
+	x.syncable.Info.clearDirty()
+	x.syncable.Hero.clearDirty()
+	x.syncable.Bag.clearDirty()
+	x.dirty = 0
+}
+
 func (x *Player) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
+	if x.dirty & uint64(0x01) != 0 {
+		x.clearAll()
+		return
+	}
+	if x.dirty & uint64(0x01) << 1 != 0 {
+		x.syncable.Info.clearDirty()
+	}
+	if x.dirty & uint64(0x01) << 2 != 0 {
+		x.syncable.Hero.clearDirty()
+	}
+	if x.dirty & uint64(0x01) << 3 != 0 {
+		x.syncable.Bag.clearDirty()
+	}
 	x.dirty = 0
-	x.syncable.Info.clearDirty()
-	x.syncable.Hero.clearDirty()
-	x.syncable.Bag.clearDirty()
 }
 
 func (x *Player) checkDirty(n uint64) bool {
@@ -245,6 +266,10 @@ func (x *PlayerBasicInfo) DumpFull() *kdspb.PlayerBasicInfo {
 	return m
 }
 
+func (x *PlayerBasicInfo) markAll() {
+	x.dirty = uint64(0x01)
+}
+
 func (x *PlayerBasicInfo) markDirty(n uint64) {
 	if x.dirty & n == n {
 		return
@@ -253,8 +278,16 @@ func (x *PlayerBasicInfo) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
+func (x *PlayerBasicInfo) clearAll() {
+	x.dirty = 0
+}
+
 func (x *PlayerBasicInfo) clearDirty() {
 	if x.dirty == 0 {
+		return
+	}
+	if x.dirty & uint64(0x01) != 0 {
+		x.clearAll()
 		return
 	}
 	x.dirty = 0
@@ -312,6 +345,10 @@ func (x *PlayerHero) DumpFull() *kdspb.PlayerHero {
 	return m
 }
 
+func (x *PlayerHero) markAll() {
+	x.dirty = uint64(0x01)
+}
+
 func (x *PlayerHero) markDirty(n uint64) {
 	if x.dirty & n == n {
 		return
@@ -320,14 +357,27 @@ func (x *PlayerHero) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
+func (x *PlayerHero) clearAll() {
+	for _, v := range x.syncable.Heroes {
+		v.clearDirty()
+	}
+	x.dirty = 0
+}
+
 func (x *PlayerHero) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	x.dirty = 0
-	for _, v := range x.syncable.Heroes {
-		v.clearDirty()
+	if x.dirty & uint64(0x01) != 0 {
+		x.clearAll()
+		return
 	}
+	if x.dirty & uint64(0x01) << 1 != 0 {
+		for _, v := range x.syncable.Heroes {
+			v.clearDirty()
+		}
+	}
+	x.dirty = 0
 }
 
 func (x *PlayerHero) checkDirty(n uint64) bool {
@@ -382,6 +432,10 @@ func (x *PlayerBag) DumpFull() *kdspb.PlayerBag {
 	return m
 }
 
+func (x *PlayerBag) markAll() {
+	x.dirty = uint64(0x01)
+}
+
 func (x *PlayerBag) markDirty(n uint64) {
 	if x.dirty & n == n {
 		return
@@ -390,8 +444,16 @@ func (x *PlayerBag) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
+func (x *PlayerBag) clearAll() {
+	x.dirty = 0
+}
+
 func (x *PlayerBag) clearDirty() {
 	if x.dirty == 0 {
+		return
+	}
+	if x.dirty & uint64(0x01) != 0 {
+		x.clearAll()
 		return
 	}
 	x.dirty = 0
@@ -507,6 +569,10 @@ func (x *Hero) DumpFull() *kdspb.Hero {
 	return m
 }
 
+func (x *Hero) markAll() {
+	x.dirty = uint64(0x01)
+}
+
 func (x *Hero) markDirty(n uint64) {
 	if x.dirty & n == n {
 		return
@@ -515,8 +581,16 @@ func (x *Hero) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
+func (x *Hero) clearAll() {
+	x.dirty = 0
+}
+
 func (x *Hero) clearDirty() {
 	if x.dirty == 0 {
+		return
+	}
+	if x.dirty & uint64(0x01) != 0 {
+		x.clearAll()
 		return
 	}
 	x.dirty = 0

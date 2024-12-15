@@ -1,5 +1,10 @@
 {{- /* BEGIN DEFINE */ -}}
 
+{{- define "Common"}}
+
+
+{{- end}}
+
 {{- define "Enum"}}
 {{- $EnumType := .Name}}
 
@@ -136,8 +141,8 @@ func (x *{{$MessageName}}) DumpChange() *{{.ProtoPackage}}.{{.Name}} {
 		for _, v := range x.syncable.{{.Name}} {
 			m.{{.Name}} = append(m.{{.Name}}, durationpb.New(v))
 		}
-{{- else if isEmpty .Type}}
-		for _, _ = range x.syncable.{{.Name}} {
+{{- else if eq .Type "empty"}}
+		for range x.syncable.{{.Name}} {
 			m.{{.Name}} = append(m.{{.Name}}, new(emptypb.Empty))
 		}
 {{- else}}
@@ -158,8 +163,8 @@ func (x *{{$MessageName}}) DumpChange() *{{.ProtoPackage}}.{{.Name}} {
 		for k, v := range x.syncable.{{.Name}} {
 			m.{{.Name}}[k] = durationpb.New(v)
 		}
-{{- else if isEmpty .Type}}
-		for k, _ := range x.syncable.{{.Name}} {
+{{- else if eq .Type "empty"}}
+		for k := range x.syncable.{{.Name}} {
 			m.{{.Name}}[k] = new(emptypb.Empty)
 		}
 {{- else}}
@@ -174,7 +179,7 @@ func (x *{{$MessageName}}) DumpChange() *{{.ProtoPackage}}.{{.Name}} {
 		m.{{.Name}} = timestamppb.New(x.syncable.{{.Name}})
 {{- else if isDuration .Type}}
 		m.{{.Name}} = durationpb.New(x.syncable.{{.Name}})
-{{- else if isEmpty .Type}}
+{{- else if eq .Type "empty"}}
 		m.{{.Name}} = new(emptypb.Empty)
 {{- else}}
 		m.{{.Name}} = x.syncable.{{.Name}}
@@ -201,8 +206,8 @@ func (x *{{$MessageName}}) DumpFull() *{{.ProtoPackage}}.{{.Name}} {
 	for _, v := range x.syncable.{{.Name}} {
 		m.{{.Name}} = append(m.{{.Name}}, durationpb.New(v))
 	}
-{{- else if isEmpty .Type}}
-	for _, _ = range x.syncable.{{.Name}} {
+{{- else if eq .Type "empty"}}
+	for range x.syncable.{{.Name}} {
 		m.{{.Name}} = append(m.{{.Name}}, new(emptypb.Empty))
 	}
 {{- else}}
@@ -223,8 +228,8 @@ func (x *{{$MessageName}}) DumpFull() *{{.ProtoPackage}}.{{.Name}} {
 	for k, v := range x.syncable.{{.Name}} {
 		m.{{.Name}}[k] = durationpb.New(v)
 	}
-{{- else if isEmpty .Type}}
-	for k, _ := range x.syncable.{{.Name}} {
+{{- else if eq .Type "empty"}}
+	for k := range x.syncable.{{.Name}} {
 		m.{{.Name}}[k] = new(emptypb.Empty)
 	}
 {{- else}}
@@ -239,7 +244,7 @@ func (x *{{$MessageName}}) DumpFull() *{{.ProtoPackage}}.{{.Name}} {
 	m.{{.Name}} = timestamppb.New(x.syncable.{{.Name}})
 {{- else if isDuration .Type}}
 	m.{{.Name}} = durationpb.New(x.syncable.{{.Name}})
-{{- else if isEmpty .Type}}
+{{- else if eq .Type "empty"}}
 	m.{{.Name}} = new(emptypb.Empty)
 {{- else}}
 	m.{{.Name}} = x.syncable.{{.Name}}
@@ -289,6 +294,10 @@ func (x *{{.Name}}) Id() int64 {
 }
 {{- template "Message" .}}
 
+func (x *{{.Name}}) markAll() {
+	x.dirty = uint64(0x01)
+}
+
 func (x *{{.Name}}) markDirty(n uint64) {
 	if x.dirty & n == n {
 		return
@@ -296,30 +305,51 @@ func (x *{{.Name}}) markDirty(n uint64) {
 	x.dirty |= n
 }
 
-func (x *{{.Name}}) clearDirty() {
-	if x.dirty == 0 {
-		return
-	}
-	x.dirty = 0
+func (x *{{.Name}}) clearAll() {
 {{- range .Fields}}
-{{- if .Repeated}}
 {{- if findComponent .Type}}
+{{- if .Repeated}}
 	for i := 0; i < len(x.syncable.{{.Name}}); i++ {
 		x.syncable.{{.Name}}[i].clearDirty()
 	}
-{{- end}}
 {{- else if len .KeyType}}
-{{- if findComponent .Type}}
 	for _, v := range x.syncable.{{.Name}} {
 		v.clearDirty()
 	}
-{{- end}}
 {{- else}}
-{{- if findComponent .Type}}
 	x.syncable.{{.Name}}.clearDirty()
 {{- end}}
 {{- end}}
 {{- end}}
+	x.dirty = 0
+}
+
+func (x *{{.Name}}) clearDirty() {
+	if x.dirty == 0 {
+		return
+	}
+	if x.dirty & uint64(0x01) != 0 {
+		x.clearAll()
+		return
+	}
+{{- range .Fields}}
+{{- if findComponent .Type}}
+	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
+{{- if .Repeated}}
+		for i := 0; i < len(x.syncable.{{.Name}}); i++ {
+			x.syncable.{{.Name}}[i].clearDirty()
+		}
+{{- else if len .KeyType}}
+		for _, v := range x.syncable.{{.Name}} {
+			v.clearDirty()
+		}
+{{- else}}
+		x.syncable.{{.Name}}.clearDirty()
+{{- end}}
+	}
+{{- end}}
+{{- end}}
+	x.dirty = 0
 }
 
 func (x *{{.Name}}) checkDirty(n uint64) bool {
@@ -370,6 +400,10 @@ func New{{.Name}}() *{{.Name}} {
 }
 {{- template "Message" .}}
 
+func (x *{{.Name}}) markAll() {
+	x.dirty = uint64(0x01)
+}
+
 func (x *{{.Name}}) markDirty(n uint64) {
 	if x.dirty & n == n {
 		return
@@ -378,30 +412,51 @@ func (x *{{.Name}}) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
-func (x *{{.Name}}) clearDirty() {
-	if x.dirty == 0 {
-		return
-	}
-	x.dirty = 0
+func (x *{{.Name}}) clearAll() {
 {{- range .Fields}}
+{{- if findComponent .Type}}
 {{- if .Repeated}}
-{{- if findComponent .Type}}
-	for _, v := range x.syncable.{{.Name}} {
-		v.clearDirty()
+	for i := 0; i < len(x.syncable.{{.Name}}); i++ {
+		x.syncable.{{.Name}}[i].clearDirty()
 	}
-{{- end}}
 {{- else if len .KeyType}}
-{{- if findComponent .Type}}
 	for _, v := range x.syncable.{{.Name}} {
 		v.clearDirty()
 	}
-{{- end}}
 {{- else}}
-{{- if findComponent .Type}}
 	x.syncable.{{.Name}}.clearDirty()
 {{- end}}
 {{- end}}
 {{- end}}
+	x.dirty = 0
+}
+
+func (x *{{.Name}}) clearDirty() {
+	if x.dirty == 0 {
+		return
+	}
+	if x.dirty & uint64(0x01) != 0 {
+		x.clearAll()
+		return
+	}
+{{- range .Fields}}
+{{- if findComponent .Type}}
+	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
+{{- if .Repeated}}
+		for i := 0; i < len(x.syncable.{{.Name}}); i++ {
+			x.syncable.{{.Name}}[i].clearDirty()
+		}
+{{- else if len .KeyType}}
+		for _, v := range x.syncable.{{.Name}} {
+			v.clearDirty()
+		}
+{{- else}}
+		x.syncable.{{.Name}}.clearDirty()
+{{- end}}
+	}
+{{- end}}
+{{- end}}
+	x.dirty = 0
 }
 
 func (x *{{.Name}}) checkDirty(n uint64) bool {

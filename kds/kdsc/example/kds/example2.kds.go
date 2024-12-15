@@ -119,6 +119,10 @@ func (x *City) DumpFull() *kdspb.City {
 	return m
 }
 
+func (x *City) markAll() {
+	x.dirty = uint64(0x01)
+}
+
 func (x *City) markDirty(n uint64) {
 	if x.dirty & n == n {
 		return
@@ -126,13 +130,27 @@ func (x *City) markDirty(n uint64) {
 	x.dirty |= n
 }
 
+func (x *City) clearAll() {
+	x.syncable.PlayerBasicInfo.clearDirty()
+	x.syncable.CityInfo.clearDirty()
+	x.dirty = 0
+}
+
 func (x *City) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
+	if x.dirty & uint64(0x01) != 0 {
+		x.clearAll()
+		return
+	}
+	if x.dirty & uint64(0x01) << 2 != 0 {
+		x.syncable.PlayerBasicInfo.clearDirty()
+	}
+	if x.dirty & uint64(0x01) << 3 != 0 {
+		x.syncable.CityInfo.clearDirty()
+	}
 	x.dirty = 0
-	x.syncable.PlayerBasicInfo.clearDirty()
-	x.syncable.CityInfo.clearDirty()
 }
 
 func (x *City) checkDirty(n uint64) bool {
@@ -191,7 +209,7 @@ func (x *CityBaseInfo) DumpChange() *kdspb.CityBaseInfo {
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		for k, _ := range x.syncable.Troops {
+		for k := range x.syncable.Troops {
 			m.Troops[k] = new(emptypb.Empty)
 		}
 	}
@@ -206,11 +224,15 @@ func (x *CityBaseInfo) DumpFull() *kdspb.CityBaseInfo {
 	for _, v := range x.syncable.Positions {
 		m.Positions = append(m.Positions, v.DumpFull())
 	}
-	for k, _ := range x.syncable.Troops {
+	for k := range x.syncable.Troops {
 		m.Troops[k] = new(emptypb.Empty)
 	}
 	m.BuildInfo = x.syncable.BuildInfo
 	return m
+}
+
+func (x *CityBaseInfo) markAll() {
+	x.dirty = uint64(0x01)
 }
 
 func (x *CityBaseInfo) markDirty(n uint64) {
@@ -221,14 +243,27 @@ func (x *CityBaseInfo) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
+func (x *CityBaseInfo) clearAll() {
+	for i := 0; i < len(x.syncable.Positions); i++ {
+		x.syncable.Positions[i].clearDirty()
+	}
+	x.dirty = 0
+}
+
 func (x *CityBaseInfo) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	x.dirty = 0
-	for _, v := range x.syncable.Positions {
-		v.clearDirty()
+	if x.dirty & uint64(0x01) != 0 {
+		x.clearAll()
+		return
 	}
+	if x.dirty & uint64(0x01) << 1 != 0 {
+		for i := 0; i < len(x.syncable.Positions); i++ {
+			x.syncable.Positions[i].clearDirty()
+		}
+	}
+	x.dirty = 0
 }
 
 func (x *CityBaseInfo) checkDirty(n uint64) bool {
@@ -307,6 +342,10 @@ func (x *Vector) DumpFull() *kdspb.Vector {
 	return m
 }
 
+func (x *Vector) markAll() {
+	x.dirty = uint64(0x01)
+}
+
 func (x *Vector) markDirty(n uint64) {
 	if x.dirty & n == n {
 		return
@@ -315,8 +354,16 @@ func (x *Vector) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
+func (x *Vector) clearAll() {
+	x.dirty = 0
+}
+
 func (x *Vector) clearDirty() {
 	if x.dirty == 0 {
+		return
+	}
+	if x.dirty & uint64(0x01) != 0 {
+		x.clearAll()
 		return
 	}
 	x.dirty = 0
