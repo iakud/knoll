@@ -4,5 +4,5 @@
 package kds;
 
 import (
-	_ "github.com/iakud/keeper/kds/kdsc/example/kdspb"
+	_ "github.com/iakud/krocher/kds/kdsc/example/kdspb"
 )

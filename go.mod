@@ -1,4 +1,4 @@
-module github.com/iakud/keeper
+module github.com/iakud/krocher
 
 go 1.23.3
 

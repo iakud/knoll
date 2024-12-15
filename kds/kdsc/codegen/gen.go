@@ -10,7 +10,7 @@ import (
 	"text/template"
 
 	"github.com/antlr4-go/antlr/v4"
-	"github.com/iakud/keeper/kds/kdsc/parser"
+	"github.com/iakud/krocher/kds/kdsc/parser"
 )
 
 func Parse(kdsFiles []string, tplPath string, out string) error {

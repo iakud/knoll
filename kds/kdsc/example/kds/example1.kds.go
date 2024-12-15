@@ -6,7 +6,7 @@ package kds;
 import (
 	"time"
 
-	"github.com/iakud/keeper/kds/kdsc/example/kdspb"
+	"github.com/iakud/krocher/kds/kdsc/example/kdspb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
