@@ -20,7 +20,8 @@ func Funcs(ctx *Context) template.FuncMap {
 		"findEntity": ctx.FindEntity,
 		"findComponent": ctx.FindComponent,
 
-		"findArray": ctx.FindArray,
+		"commonTypes": ctx.GetCommonTypes,
+		"findSlice": ctx.FindSlice,
 		"findMap": ctx.FindMap,
 	}
 }

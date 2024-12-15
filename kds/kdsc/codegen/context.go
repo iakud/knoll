@@ -1,10 +1,13 @@
 package codegen
 
+import "slices"
+
 type Context struct {
 	KdsContexts []*Kds
 
+	CommonTypes []string
 	// type
-	TypeArray map[string]struct{}
+	TypeSlice map[string]struct{}
 	// type -> keys
 	TypeMap map[string][]string
 
@@ -15,29 +18,50 @@ type Context struct {
 
 func newContext() *Context {
 	return &Context{
-		TypeArray: make(map[string]struct{}),
+		TypeSlice: make(map[string]struct{}),
 		TypeMap: make(map[string][]string),
 		Imports: make(map[string]*Kds),
 		Defs: make(map[string]interface{}),
 	}
 }
 
-func (ctx *Context) AddArray(name string) {
-	ctx.TypeArray[name] = struct{}{}
+func (ctx *Context) GetCommonTypes() []string {
+	return ctx.CommonTypes
 }
 
-func (ctx *Context) AddMap(name string, key string) {
-	existKeys, ok := ctx.TypeMap[name]
-	if !ok {
-		ctx.TypeMap[name] = append([]string(nil), key)
+func (ctx *Context) AddSlice(name string, common bool) {
+	if _, ok := ctx.TypeSlice[name]; ok {
 		return
 	}
-	for _, existKey := range existKeys {
-		if existKey == key {
-			return
-		}
+	ctx.TypeSlice[name] = struct{}{}
+	// common
+	if !common {
+		return
 	}
-	ctx.TypeMap[name] = append(existKeys, key)
+	if slices.Contains(ctx.CommonTypes, name) {
+		return
+	}
+	ctx.CommonTypes = append(ctx.CommonTypes, name)
+	slices.Sort(ctx.CommonTypes)
+}
+
+func (ctx *Context) AddMap(name string, key string, common bool) {
+	keys, _ := ctx.TypeMap[name]
+	if slices.Contains(keys, key) {
+		return
+	}
+	keys = append(keys, key)
+	ctx.TypeMap[name] = keys
+	slices.Sort(keys)
+	// common
+	if !common {
+		return
+	}
+	if slices.Contains(ctx.CommonTypes, name) {
+		return
+	}
+	ctx.CommonTypes = append(ctx.CommonTypes, name)
+	slices.Sort(ctx.CommonTypes)
 }
 
 func (ctx *Context) FindEnum(name string) *Enum {
@@ -76,8 +100,8 @@ func (ctx *Context) FindComponent(name string) *Component {
 	return component
 }
 
-func (ctx *Context) FindArray(name string) bool {
-	if _, ok := ctx.TypeArray[name]; ok {
+func (ctx *Context) FindSlice(name string) bool {
+	if _, ok := ctx.TypeSlice[name]; ok {
 		return true
 	}
 	return false

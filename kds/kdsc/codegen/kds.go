@@ -52,9 +52,8 @@ const (
 
 type Field struct {
 	Repeated bool
-	Type string
 	KeyType string
-	ValueType string
+	Type string
 	Name string
 	Number int
 

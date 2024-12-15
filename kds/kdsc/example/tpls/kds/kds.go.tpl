@@ -492,6 +492,24 @@ import (
 {{- end}}
 )
 
+{{- if eq .Filename "common.kds"}}
+{{- range commonTypes}}
+{{- $Type := .}}
+{{- if findSlice .}}
+
+type slice_{{.}} struct {
+	
+}
+{{- end}}
+{{- range findMap .}}
+
+type map_{{.}}_{{$Type}} struct {
+	
+}
+{{- end}}
+{{- end}}
+{{- end}}
+
 {{- range .Defs}}
 {{- if findEnum .Name}}
 {{- template "Enum" .}}

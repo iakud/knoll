@@ -6,3 +6,11 @@ package kds;
 import (
 	_ "github.com/iakud/krocher/kds/kdsc/example/kdspb"
 )
+
+type map_int32_empty struct {
+	
+}
+
+type map_int32_int32 struct {
+	
+}

@@ -90,13 +90,9 @@ func visitEntity(ctx *Context, kds *Kds, entityCtx parser.IEntityDefContext) *En
 		case element.Field() != nil:
 			field := visitField(ctx, kds, element.Field())
 			entity.Fields = append(entity.Fields, field)
-			if field.Repeated {
-				ctx.AddArray(field.Type)
-			}
 		case element.MapField() != nil:
 			field := visitMapField(ctx, kds, element.MapField())
 			entity.Fields = append(entity.Fields, field)
-			ctx.AddMap(field.Type, field.KeyType)
 		}
 	}
 	entity.ProtoPackage = kds.ProtoPackage
@@ -111,13 +107,9 @@ func visitComponent(ctx *Context, kds *Kds, componentCtx parser.IComponentDefCon
 		case element.Field() != nil:
 			field := visitField(ctx, kds, element.Field())
 			component.Fields = append(component.Fields, field)
-			if field.Repeated {
-				ctx.AddArray(field.Type)
-			}
 		case element.MapField() != nil:
 			field := visitMapField(ctx, kds, element.MapField())
 			component.Fields = append(component.Fields, field)
-			ctx.AddMap(field.Type, field.KeyType)
 		}
 	}
 	component.ProtoPackage = kds.ProtoPackage
@@ -141,6 +133,11 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	kds.ImportTimestamp = kds.ImportTimestamp || fieldCtx.Type_().TIMESTAMP() != nil
 	kds.ImportDuration = kds.ImportDuration || fieldCtx.Type_().DURATION() != nil
 	kds.ImportEmpty = kds.ImportEmpty || fieldCtx.Type_().EMPTY() != nil
+
+	if field.Repeated {
+		common := fieldCtx.Type_().MessageType() == nil && fieldCtx.Type_().EnumType() == nil
+		ctx.AddSlice(field.Type, common)
+	}
 	return field
 }
 
@@ -161,5 +158,8 @@ func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) 
 	kds.ImportTimestamp = kds.ImportTimestamp || mapFieldCtx.Type_().TIMESTAMP() != nil
 	kds.ImportDuration = kds.ImportDuration || mapFieldCtx.Type_().DURATION() != nil
 	kds.ImportEmpty = kds.ImportEmpty || mapFieldCtx.Type_().EMPTY() != nil
+
+	common := mapFieldCtx.Type_().MessageType() == nil && mapFieldCtx.Type_().EnumType() == nil
+	ctx.AddMap(field.Type, field.KeyType, common)
 	return field
 }
