@@ -38,3 +38,16 @@ func GoType(type_ string) string {
 		return type_
 	}
 }
+
+func ProtoType(type_ string) string {
+	switch type_ {
+	case "timestamp":
+		return "google.protobuf.Timestamp"
+	case "duration":
+		return "google.protobuf.Duration"
+	case "empty":
+		return "google.protobuf.Empty"
+	default:
+		return type_
+	}
+}

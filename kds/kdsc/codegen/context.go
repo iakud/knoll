@@ -1,25 +1,39 @@
 package codegen
 
-import "slices"
+import (
+	"slices"
+	"strings"
+)
 
 type Context struct {
 	KdsContexts []*Kds
 
 	CommonTypes []string
 	// type
-	TypeList map[string]struct{}
+	TypeList map[string]*CommonType
 	// type -> keys
-	TypeMap map[string][]string
+	TypeMap map[string][]*CommonMapType
 
-	Common *Kds
 	Imports map[string]*Kds
 	Defs map[string]interface{}
 }
 
+type CommonType struct {
+	Type string
+	GoType string
+}
+
+type CommonMapType struct {
+	Type string
+	KeyType string
+	GoType string
+	GoKeyType string
+}
+
 func newContext() *Context {
 	return &Context{
-		TypeList: make(map[string]struct{}),
-		TypeMap: make(map[string][]string),
+		TypeList: make(map[string]*CommonType),
+		TypeMap: make(map[string][]*CommonMapType),
 		Imports: make(map[string]*Kds),
 		Defs: make(map[string]interface{}),
 	}
@@ -33,7 +47,10 @@ func (ctx *Context) AddListType(name string, customType bool) {
 	if _, ok := ctx.TypeList[name]; ok {
 		return
 	}
-	ctx.TypeList[name] = struct{}{}
+	commonType := new(CommonType)
+	commonType.Type = name
+	commonType.GoType = GoType(name)
+	ctx.TypeList[name] = commonType
 
 	if customType {
 		return
@@ -44,16 +61,30 @@ func (ctx *Context) AddListType(name string, customType bool) {
 	}
 	ctx.CommonTypes = append(ctx.CommonTypes, name)
 	slices.Sort(ctx.CommonTypes)
+	slices.SortFunc(ctx.CommonTypes, func(a, b string) int {
+		return strings.Compare(a, b)
+	})
 }
 
-func (ctx *Context) AddMapType(name string, key string, customType bool) {
-	keys, _ := ctx.TypeMap[name]
-	if slices.Contains(keys, key) {
+func (ctx *Context) AddMapType(name string, keyType string, customType bool) {
+	mapTypes, _ := ctx.TypeMap[name]
+	if slices.ContainsFunc(mapTypes, func(mapType *CommonMapType) bool {
+		return mapType.KeyType == keyType
+	}) {
 		return
 	}
-	keys = append(keys, key)
-	ctx.TypeMap[name] = keys
-	slices.Sort(keys)
+	
+	mapType := new(CommonMapType)
+	mapType.Type = name
+	mapType.KeyType = keyType
+	mapType.GoType = GoType(name)
+	mapType.GoKeyType = GoType(keyType)
+
+	mapTypes = append(mapTypes, mapType)
+	slices.SortFunc(mapTypes, func(a, b *CommonMapType) int {
+		return strings.Compare(a.KeyType, b.KeyType)
+	})
+	ctx.TypeMap[name] = mapTypes
 	
 	if customType {
 		return
@@ -102,17 +133,16 @@ func (ctx *Context) FindComponent(name string) *Component {
 	return component
 }
 
-func (ctx *Context) FindList(name string) bool {
-	if _, ok := ctx.TypeList[name]; ok {
-		return true
+func (ctx *Context) FindList(name string) *CommonType {
+	if commonType, ok := ctx.TypeList[name]; ok {
+		return commonType
 	}
-	return false
+	return nil
 }
 
-func (ctx *Context) FindMap(name string) []string {
-	if keys, ok := ctx.TypeMap[name]; ok {
-		slices.Sort(keys)
-		return keys
+func (ctx *Context) FindMap(name string) []*CommonMapType {
+	if mapTypes, ok := ctx.TypeMap[name]; ok {
+		return mapTypes
 	}
 	return nil
 }

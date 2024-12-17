@@ -40,7 +40,7 @@ func visitKds(ctx *Context, kdsCtx parser.IKdsContext) *Kds {
 	if len(kds.Defs) > 0 {
 		kds.addGoImport(kds.ProtoGoPackage)
 	}
-	
+
 	slices.Sort(kds.ProtoImports)
 	slices.Sort(kds.GoStandardImports)
 	slices.Sort(kds.GoImports)
@@ -130,6 +130,7 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	field.Name = GoCamelCase(fieldCtx.FieldName().GetText())
 	field.Number, _ = strconv.Atoi(fieldCtx.FieldNumber().GetText())
 
+	field.ProtoType = ProtoType(field.Type)
 	field.GoVarName = GoSanitized(ToLowerFirst(field.Name))
 	field.GoType = GoType(field.Type)
 
@@ -147,6 +148,7 @@ func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) 
 	field.Name = GoCamelCase(mapFieldCtx.MapName().GetText())
 	field.Number, _ = strconv.Atoi(mapFieldCtx.FieldNumber().GetText())
 
+	field.ProtoType = ProtoType(field.Type)
 	field.GoVarName = GoSanitized(ToLowerFirst(field.Name))
 	field.GoType = GoType(field.Type)
 

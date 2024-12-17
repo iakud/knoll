@@ -2,14 +2,27 @@
 
 {{- define "CommonList"}}
 
+type {{.Type}}_List struct {
+	syncable []{{.GoType}}
+}
 {{- end}}
 
 {{- define "CommonMap"}}
 
+type {{.KeyType}}_{{.Type}}_Map struct {
+	syncable map[{{.GoKeyType}}]{{.GoType}}
+}
 {{- end}}
 
 {{- define "Common"}}
-
+{{- range $Type := commonTypes}}
+{{- if findList $Type}}
+{{- template "CommonList" findList $Type}}
+{{- end}}
+{{- range findMap $Type}}
+{{- template "CommonMap" .}}
+{{- end}}
+{{- end}}
 
 {{- end}}
 
@@ -491,20 +504,7 @@ import (
 {{- end}}
 
 {{- if eq .Filename "common.kds"}}
-{{- range $Type := commonTypes}}
-{{- if findList $Type}}
-
-type {{.}}_List struct {
-	syncable []{{$Type}}
-}
-{{- end}}
-{{- range $Key := findMap $Type}}
-
-type {{$Key}}_{{$Type}}_Map struct {
-	syncable map[{{$Key}}]{{$Type}}
-}
-{{- end}}
-{{- end}}
+{{- template "Common" .}}
 {{- end}}
 
 {{- range .Defs}}

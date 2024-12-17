@@ -82,6 +82,8 @@ type Field struct {
 	Name string
 	Number int
 
+	ProtoType string
+
 	GoVarName string
 	GoType string
 

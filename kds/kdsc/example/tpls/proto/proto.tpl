@@ -1,6 +1,7 @@
 {{- /* BEGIN DEFINE */ -}}
 
 {{- define "Enum"}}
+
 enum {{.Name}} {
 {{- range .EnumFields}}
 	{{.Name}} = {{.Value}};
@@ -8,80 +9,27 @@ enum {{.Name}} {
 }
 {{- end}}
 
-{{- define "Entity"}}
+{{- define "Message"}}
+
 message {{.Name}} {
 {{- range .Fields}}
 {{- if .Repeated}}
-{{- if eq .Type "timestamp"}}
-	repeated google.protobuf.Timestamp {{.Name}} = {{.Number}};
-{{- else if eq .Type "duration"}}
-	repeated google.protobuf.Duration {{.Name}} = {{.Number}};
-{{- else if eq .Type "empty"}}
-	repeated google.protobuf.Empty {{.Name}} = {{.Number}};
-{{- else}}
-	repeated {{.Type}} {{.Name}} = {{.Number}};
-{{- end}}
+	repeated {{.ProtoType}} {{.Name}} = {{.Number}};
 {{- else if len .KeyType}}
-{{- if eq .Type "timestamp"}}
-	map<{{.KeyType}}, google.protobuf.Timestamp> {{.Name}} = {{.Number}};
-{{- else if eq .Type "duration"}}
-	map<{{.KeyType}}, google.protobuf.Duration> {{.Name}} = {{.Number}};
-{{- else if eq .Type "empty"}}
-	map<{{.KeyType}}, google.protobuf.Empty> {{.Name}} = {{.Number}};
+	map<{{.KeyType}}, {{.ProtoType}}> {{.Name}} = {{.Number}};
 {{- else}}
-	map<{{.KeyType}}, {{.Type}}> {{.Name}} = {{.Number}};
-{{- end}}
-{{- else}}
-{{- if eq .Type "timestamp"}}
-	google.protobuf.Timestamp {{.Name}} = {{.Number}};
-{{- else if eq .Type "duration"}}
-	google.protobuf.Duration {{.Name}} = {{.Number}};
-{{- else if eq .Type "empty"}}
-	google.protobuf.Empty {{.Name}} = {{.Number}};
-{{- else}}
-	{{.Type}} {{.Name}} = {{.Number}};
-{{- end}}
+	{{.ProtoType}} {{.Name}} = {{.Number}};
 {{- end}}
 {{- end}}
 }
 {{- end}}
 
+{{- define "Entity"}}
+{{- template "Message" .}}
+{{- end}}
+
 {{- define "Component"}}
-message {{.Name}} {
-{{- range .Fields}}
-{{- if .Repeated}}
-{{- if eq .Type "timestamp"}}
-	repeated google.protobuf.Timestamp {{.Name}} = {{.Number}};
-{{- else if eq .Type "duration"}}
-	repeated google.protobuf.Duration {{.Name}} = {{.Number}};
-{{- else if eq .Type "empty"}}
-	repeated google.protobuf.Empty {{.Name}} = {{.Number}};
-{{- else}}
-	repeated {{.Type}} {{.Name}} = {{.Number}};
-{{- end}}
-{{- else if len .KeyType}}
-{{- if eq .Type "timestamp"}}
-	map<{{.KeyType}}, google.protobuf.Timestamp> {{.Name}} = {{.Number}};
-{{- else if eq .Type "duration"}}
-	map<{{.KeyType}}, google.protobuf.Duration> {{.Name}} = {{.Number}};
-{{- else if eq .Type "empty"}}
-	map<{{.KeyType}}, google.protobuf.Empty> {{.Name}} = {{.Number}};
-{{- else}}
-	map<{{.KeyType}}, {{.Type}}> {{.Name}} = {{.Number}};
-{{- end}}
-{{- else}}
-{{- if eq .Type "timestamp"}}
-	google.protobuf.Timestamp {{.Name}} = {{.Number}};
-{{- else if eq .Type "duration"}}
-	google.protobuf.Duration {{.Name}} = {{.Number}};
-{{- else if eq .Type "empty"}}
-	google.protobuf.Empty {{.Name}} = {{.Number}};
-{{- else}}
-	{{.Type}} {{.Name}} = {{.Number}};
-{{- end}}
-{{- end}}
-{{- end}}
-}
+{{- template "Message" .}}
 {{- end}}
 
 {{- /* END DEFINE */ -}}
@@ -110,10 +58,10 @@ option go_package="{{.ProtoGoPackage}}";
 
 {{- range .Defs}}
 {{- if findEnum .Name}}
-{{template "Enum" .}}
+{{- template "Enum" .}}
 {{- else if findEntity .Name}}
-{{template "Entity" .}}
+{{- template "Entity" .}}
 {{- else if findComponent .Name}}
-{{template "Component" .}}
+{{- template "Component" .}}
 {{- end}}
 {{- end}}

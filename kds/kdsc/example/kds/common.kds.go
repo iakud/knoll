@@ -4,7 +4,7 @@
 package kds;
 
 type int32_empty_Map struct {
-	syncable map[int32]empty
+	syncable map[int32]struct{}
 }
 
 type int32_int32_Map struct {
