@@ -12,31 +12,31 @@ enum {{.Name}} {
 message {{.Name}} {
 {{- range .Fields}}
 {{- if .Repeated}}
-{{- if isTimestamp .Type}}
+{{- if eq .Type "timestamp"}}
 	repeated google.protobuf.Timestamp {{.Name}} = {{.Number}};
-{{- else if isDuration .Type}}
+{{- else if eq .Type "duration"}}
 	repeated google.protobuf.Duration {{.Name}} = {{.Number}};
-{{- else if isEmpty .Type}}
+{{- else if eq .Type "empty"}}
 	repeated google.protobuf.Empty {{.Name}} = {{.Number}};
 {{- else}}
 	repeated {{.Type}} {{.Name}} = {{.Number}};
 {{- end}}
 {{- else if len .KeyType}}
-{{- if isTimestamp .Type}}
+{{- if eq .Type "timestamp"}}
 	map<{{.KeyType}}, google.protobuf.Timestamp> {{.Name}} = {{.Number}};
-{{- else if isDuration .Type}}
+{{- else if eq .Type "duration"}}
 	map<{{.KeyType}}, google.protobuf.Duration> {{.Name}} = {{.Number}};
-{{- else if isEmpty .Type}}
+{{- else if eq .Type "empty"}}
 	map<{{.KeyType}}, google.protobuf.Empty> {{.Name}} = {{.Number}};
 {{- else}}
 	map<{{.KeyType}}, {{.Type}}> {{.Name}} = {{.Number}};
 {{- end}}
 {{- else}}
-{{- if isTimestamp .Type}}
+{{- if eq .Type "timestamp"}}
 	google.protobuf.Timestamp {{.Name}} = {{.Number}};
-{{- else if isDuration .Type}}
+{{- else if eq .Type "duration"}}
 	google.protobuf.Duration {{.Name}} = {{.Number}};
-{{- else if isEmpty .Type}}
+{{- else if eq .Type "empty"}}
 	google.protobuf.Empty {{.Name}} = {{.Number}};
 {{- else}}
 	{{.Type}} {{.Name}} = {{.Number}};
@@ -50,31 +50,31 @@ message {{.Name}} {
 message {{.Name}} {
 {{- range .Fields}}
 {{- if .Repeated}}
-{{- if isTimestamp .Type}}
+{{- if eq .Type "timestamp"}}
 	repeated google.protobuf.Timestamp {{.Name}} = {{.Number}};
-{{- else if isDuration .Type}}
+{{- else if eq .Type "duration"}}
 	repeated google.protobuf.Duration {{.Name}} = {{.Number}};
-{{- else if isEmpty .Type}}
+{{- else if eq .Type "empty"}}
 	repeated google.protobuf.Empty {{.Name}} = {{.Number}};
 {{- else}}
 	repeated {{.Type}} {{.Name}} = {{.Number}};
 {{- end}}
 {{- else if len .KeyType}}
-{{- if isTimestamp .Type}}
+{{- if eq .Type "timestamp"}}
 	map<{{.KeyType}}, google.protobuf.Timestamp> {{.Name}} = {{.Number}};
-{{- else if isDuration .Type}}
+{{- else if eq .Type "duration"}}
 	map<{{.KeyType}}, google.protobuf.Duration> {{.Name}} = {{.Number}};
-{{- else if isEmpty .Type}}
+{{- else if eq .Type "empty"}}
 	map<{{.KeyType}}, google.protobuf.Empty> {{.Name}} = {{.Number}};
 {{- else}}
 	map<{{.KeyType}}, {{.Type}}> {{.Name}} = {{.Number}};
 {{- end}}
 {{- else}}
-{{- if isTimestamp .Type}}
+{{- if eq .Type "timestamp"}}
 	google.protobuf.Timestamp {{.Name}} = {{.Number}};
-{{- else if isDuration .Type}}
+{{- else if eq .Type "duration"}}
 	google.protobuf.Duration {{.Name}} = {{.Number}};
-{{- else if isEmpty .Type}}
+{{- else if eq .Type "empty"}}
 	google.protobuf.Empty {{.Name}} = {{.Number}};
 {{- else}}
 	{{.Type}} {{.Name}} = {{.Number}};
@@ -93,23 +93,17 @@ syntax = "proto3";
 package {{.Package}};
 
 {{- if len .Imports}}
-{{/* 空一行 */}}
+{{/* empty line */}}
 {{- end}}
 {{- range .Imports}}
 import "{{.}}.proto";
 {{- end}}
 
-{{- if or .ImportTimestamp .ImportDuration}}
-{{/* 空一行 */}}
+{{- if len .ProtoImports}}
+{{/* empty line */}}
+{{- range .ProtoImports}}
+import "{{.}}";
 {{- end}}
-{{- if .ImportTimestamp}}
-import "google/protobuf/timestamp.proto";
-{{- end}}
-{{- if .ImportDuration}}
-import "google/protobuf/duration.proto";
-{{- end}}
-{{- if .ImportEmpty}}
-import "google/protobuf/empty.proto";
 {{- end}}
 
 option go_package="{{.ProtoGoPackage}}";

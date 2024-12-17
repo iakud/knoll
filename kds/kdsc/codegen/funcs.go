@@ -10,18 +10,12 @@ func Funcs(ctx *Context) template.FuncMap {
 	return template.FuncMap{
 		"lcFirst": lcFirst,
 		"ucFirst": ucFirst,
-		"isTimestamp": isTimestamp,
-		"isDuration": isDuration,
-		"isEmpty": isEmpty,
-		"isEnum": IsEnum,
-		"isEntity": IsEntity,
-		"isComponent": IsComponent,
 		"findEnum": ctx.FindEnum,
 		"findEntity": ctx.FindEntity,
 		"findComponent": ctx.FindComponent,
 
 		"commonTypes": ctx.GetCommonTypes,
-		"findSlice": ctx.FindSlice,
+		"findList": ctx.FindList,
 		"findMap": ctx.FindMap,
 	}
 }

@@ -7,7 +7,7 @@ type Context struct {
 
 	CommonTypes []string
 	// type
-	TypeSlice map[string]struct{}
+	TypeList map[string]struct{}
 	// type -> keys
 	TypeMap map[string][]string
 
@@ -18,7 +18,7 @@ type Context struct {
 
 func newContext() *Context {
 	return &Context{
-		TypeSlice: make(map[string]struct{}),
+		TypeList: make(map[string]struct{}),
 		TypeMap: make(map[string][]string),
 		Imports: make(map[string]*Kds),
 		Defs: make(map[string]interface{}),
@@ -29,15 +29,16 @@ func (ctx *Context) GetCommonTypes() []string {
 	return ctx.CommonTypes
 }
 
-func (ctx *Context) AddSlice(name string, common bool) {
-	if _, ok := ctx.TypeSlice[name]; ok {
+func (ctx *Context) AddListType(name string, customType bool) {
+	if _, ok := ctx.TypeList[name]; ok {
 		return
 	}
-	ctx.TypeSlice[name] = struct{}{}
+	ctx.TypeList[name] = struct{}{}
+
+	if customType {
+		return
+	}
 	// common
-	if !common {
-		return
-	}
 	if slices.Contains(ctx.CommonTypes, name) {
 		return
 	}
@@ -45,7 +46,7 @@ func (ctx *Context) AddSlice(name string, common bool) {
 	slices.Sort(ctx.CommonTypes)
 }
 
-func (ctx *Context) AddMap(name string, key string, common bool) {
+func (ctx *Context) AddMapType(name string, key string, customType bool) {
 	keys, _ := ctx.TypeMap[name]
 	if slices.Contains(keys, key) {
 		return
@@ -53,10 +54,11 @@ func (ctx *Context) AddMap(name string, key string, common bool) {
 	keys = append(keys, key)
 	ctx.TypeMap[name] = keys
 	slices.Sort(keys)
-	// common
-	if !common {
+	
+	if customType {
 		return
 	}
+	// common
 	if slices.Contains(ctx.CommonTypes, name) {
 		return
 	}
@@ -100,8 +102,8 @@ func (ctx *Context) FindComponent(name string) *Component {
 	return component
 }
 
-func (ctx *Context) FindSlice(name string) bool {
-	if _, ok := ctx.TypeSlice[name]; ok {
+func (ctx *Context) FindList(name string) bool {
+	if _, ok := ctx.TypeList[name]; ok {
 		return true
 	}
 	return false
@@ -109,6 +111,7 @@ func (ctx *Context) FindSlice(name string) bool {
 
 func (ctx *Context) FindMap(name string) []string {
 	if keys, ok := ctx.TypeMap[name]; ok {
+		slices.Sort(keys)
 		return keys
 	}
 	return nil

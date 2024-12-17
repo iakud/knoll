@@ -1,5 +1,13 @@
 {{- /* BEGIN DEFINE */ -}}
 
+{{- define "CommonList"}}
+
+{{- end}}
+
+{{- define "CommonMap"}}
+
+{{- end}}
+
 {{- define "Common"}}
 
 
@@ -133,11 +141,11 @@ func (x *{{$MessageName}}) DumpChange() *{{.ProtoPackage}}.{{.Name}} {
 		for _, v := range x.syncable.{{.Name}} {
 			m.{{.Name}} = append(m.{{.Name}}, v.DumpChange())
 		}
-{{- else if isTimestamp .Type}}
+{{- else if eq .Type "timestamp"}}
 		for _, v := range x.syncable.{{.Name}} {
 			m.{{.Name}} = append(m.{{.Name}}, timestamppb.New(v))
 		}
-{{- else if isDuration .Type}}
+{{- else if eq .Type "duration"}}
 		for _, v := range x.syncable.{{.Name}} {
 			m.{{.Name}} = append(m.{{.Name}}, durationpb.New(v))
 		}
@@ -155,11 +163,11 @@ func (x *{{$MessageName}}) DumpChange() *{{.ProtoPackage}}.{{.Name}} {
 		for k, v := range x.syncable.{{.Name}} {
 			m.{{.Name}}[k] = v.DumpChange()
 		}
-{{- else if isTimestamp .Type}}
+{{- else if eq .Type "timestamp"}}
 		for k, v := range x.syncable.{{.Name}} {
 			m.{{.Name}}[k] = timestamppb.New(v)
 		}
-{{- else if isDuration .Type}}
+{{- else if eq .Type "duration"}}
 		for k, v := range x.syncable.{{.Name}} {
 			m.{{.Name}}[k] = durationpb.New(v)
 		}
@@ -175,9 +183,9 @@ func (x *{{$MessageName}}) DumpChange() *{{.ProtoPackage}}.{{.Name}} {
 {{- else}}
 {{- if findComponent .Type}}
 		m.{{.Name}} = x.syncable.{{.Name}}.DumpChange()
-{{- else if isTimestamp .Type}}
+{{- else if eq .Type "timestamp"}}
 		m.{{.Name}} = timestamppb.New(x.syncable.{{.Name}})
-{{- else if isDuration .Type}}
+{{- else if eq .Type "duration"}}
 		m.{{.Name}} = durationpb.New(x.syncable.{{.Name}})
 {{- else if eq .Type "empty"}}
 		m.{{.Name}} = new(emptypb.Empty)
@@ -198,11 +206,11 @@ func (x *{{$MessageName}}) DumpFull() *{{.ProtoPackage}}.{{.Name}} {
 	for _, v := range x.syncable.{{.Name}} {
 		m.{{.Name}} = append(m.{{.Name}}, v.DumpFull())
 	}
-{{- else if isTimestamp .Type}}
+{{- else if eq .Type "timestamp"}}
 	for _, v := range x.syncable.{{.Name}} {
 		m.{{.Name}} = append(m.{{.Name}}, timestamppb.New(v))
 	}
-{{- else if isDuration .Type}}
+{{- else if eq .Type "duration"}}
 	for _, v := range x.syncable.{{.Name}} {
 		m.{{.Name}} = append(m.{{.Name}}, durationpb.New(v))
 	}
@@ -220,11 +228,11 @@ func (x *{{$MessageName}}) DumpFull() *{{.ProtoPackage}}.{{.Name}} {
 	for k, v := range x.syncable.{{.Name}} {
 		m.{{.Name}}[k] = v.DumpFull()
 	}
-{{- else if isTimestamp .Type}}
+{{- else if eq .Type "timestamp"}}
 	for k, v := range x.syncable.{{.Name}} {
 		m.{{.Name}}[k] = timestamppb.New(v)
 	}
-{{- else if isDuration .Type}}
+{{- else if eq .Type "duration"}}
 	for k, v := range x.syncable.{{.Name}} {
 		m.{{.Name}}[k] = durationpb.New(v)
 	}
@@ -240,9 +248,9 @@ func (x *{{$MessageName}}) DumpFull() *{{.ProtoPackage}}.{{.Name}} {
 {{- else}}
 {{- if findComponent .Type}}
 	m.{{.Name}} = x.syncable.{{.Name}}.DumpFull()
-{{- else if isTimestamp .Type}}
+{{- else if eq .Type "timestamp"}}
 	m.{{.Name}} = timestamppb.New(x.syncable.{{.Name}})
-{{- else if isDuration .Type}}
+{{- else if eq .Type "duration"}}
 	m.{{.Name}} = durationpb.New(x.syncable.{{.Name}})
 {{- else if eq .Type "empty"}}
 	m.{{.Name}} = new(emptypb.Empty)
@@ -471,40 +479,29 @@ func (x *{{.Name}}) checkDirty(n uint64) bool {
 
 package {{.Package}};
 
+{{- if or (len .GoImports) (len .GoStandardImports)}}
 import (
-{{- if or .ImportTimestamp .ImportDuration}}
-	"time"
-{{""}}
+{{- range .GoImports}}
+	"{{.}}"
 {{- end}}
-{{- if len .Defs}}
-	"{{.ProtoGoPackage}}"
-{{- else}}
-	_ "{{.ProtoGoPackage}}"
-{{- end}}
-{{- if .ImportTimestamp}}
-	"google.golang.org/protobuf/types/known/timestamppb"
-{{- end}}
-{{- if .ImportDuration}}
-	"google.golang.org/protobuf/types/known/durationpb"
-{{- end}}
-{{- if .ImportEmpty}}
-	"google.golang.org/protobuf/types/known/emptypb"
+{{- range .GoStandardImports}}
+	"{{.}}"
 {{- end}}
 )
+{{- end}}
 
 {{- if eq .Filename "common.kds"}}
-{{- range commonTypes}}
-{{- $Type := .}}
-{{- if findSlice .}}
+{{- range $Type := commonTypes}}
+{{- if findList $Type}}
 
-type slice_{{.}} struct {
-	
+type {{.}}_List struct {
+	syncable []{{$Type}}
 }
 {{- end}}
-{{- range findMap .}}
+{{- range $Key := findMap $Type}}
 
-type map_{{.}}_{{$Type}} struct {
-	
+type {{$Key}}_{{$Type}}_Map struct {
+	syncable map[{{$Key}}]{{$Type}}
 }
 {{- end}}
 {{- end}}

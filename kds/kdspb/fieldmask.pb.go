@@ -496,6 +496,123 @@ func (*MapMask_BoolDeleteKeys) isMapMask_DeleteKeys() {}
 
 func (*MapMask_StringDeleteKeys) isMapMask_DeleteKeys() {}
 
+type MapMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *MapMessage) Reset() {
+	*x = MapMessage{}
+	mi := &file_fieldmask_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MapMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MapMessage) ProtoMessage() {}
+
+func (x *MapMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_fieldmask_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MapMessage.ProtoReflect.Descriptor instead.
+func (*MapMessage) Descriptor() ([]byte, []int) {
+	return file_fieldmask_proto_rawDescGZIP(), []int{8}
+}
+
+type MapMessage___Field struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *MapMessage___Field) Reset() {
+	*x = MapMessage___Field{}
+	mi := &file_fieldmask_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MapMessage___Field) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MapMessage___Field) ProtoMessage() {}
+
+func (x *MapMessage___Field) ProtoReflect() protoreflect.Message {
+	mi := &file_fieldmask_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MapMessage___Field.ProtoReflect.Descriptor instead.
+func (*MapMessage___Field) Descriptor() ([]byte, []int) {
+	return file_fieldmask_proto_rawDescGZIP(), []int{9}
+}
+
+type MapMessage_X struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Update uint64 `protobuf:"varint,1,opt,name=update,proto3" json:"update,omitempty"`
+}
+
+func (x *MapMessage_X) Reset() {
+	*x = MapMessage_X{}
+	mi := &file_fieldmask_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MapMessage_X) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MapMessage_X) ProtoMessage() {}
+
+func (x *MapMessage_X) ProtoReflect() protoreflect.Message {
+	mi := &file_fieldmask_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MapMessage_X.ProtoReflect.Descriptor instead.
+func (*MapMessage_X) Descriptor() ([]byte, []int) {
+	return file_fieldmask_proto_rawDescGZIP(), []int{8, 0}
+}
+
+func (x *MapMessage_X) GetUpdate() uint64 {
+	if x != nil {
+		return x.Update
+	}
+	return 0
+}
+
 var File_fieldmask_proto protoreflect.FileDescriptor
 
 var file_fieldmask_proto_rawDesc = []byte{
@@ -549,10 +666,14 @@ var file_fieldmask_proto_rawDesc = []byte{
 	0x65, 0x79, 0x73, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6b, 0x64, 0x73, 0x70,
 	0x62, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x41, 0x72, 0x72, 0x61, 0x79, 0x48, 0x00, 0x52,
 	0x10, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b, 0x65, 0x79,
-	0x73, 0x42, 0x0c, 0x0a, 0x0a, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b, 0x65, 0x79, 0x73, 0x42,
-	0x1c, 0x5a, 0x1a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x61,
-	0x6b, 0x75, 0x64, 0x2f, 0x6b, 0x64, 0x73, 0x2f, 0x6b, 0x64, 0x73, 0x70, 0x62, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x73, 0x42, 0x0c, 0x0a, 0x0a, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4b, 0x65, 0x79, 0x73, 0x22,
+	0x29, 0x0a, 0x0a, 0x4d, 0x61, 0x70, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x1a, 0x1b, 0x0a,
+	0x01, 0x5f, 0x12, 0x16, 0x0a, 0x06, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x06, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x22, 0x14, 0x0a, 0x12, 0x4d, 0x61,
+	0x70, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x5f, 0x5f, 0x5f, 0x46, 0x69, 0x65, 0x6c, 0x64,
+	0x42, 0x1c, 0x5a, 0x1a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69,
+	0x61, 0x6b, 0x75, 0x64, 0x2f, 0x6b, 0x64, 0x73, 0x2f, 0x6b, 0x64, 0x73, 0x70, 0x62, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -567,16 +688,19 @@ func file_fieldmask_proto_rawDescGZIP() []byte {
 	return file_fieldmask_proto_rawDescData
 }
 
-var file_fieldmask_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_fieldmask_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_fieldmask_proto_goTypes = []any{
-	(*FieldMask)(nil),   // 0: kdspb.FieldMask
-	(*Int32Array)(nil),  // 1: kdspb.Int32Array
-	(*Int64Array)(nil),  // 2: kdspb.Int64Array
-	(*UInt32Array)(nil), // 3: kdspb.UInt32Array
-	(*Uint64Array)(nil), // 4: kdspb.Uint64Array
-	(*BoolArray)(nil),   // 5: kdspb.BoolArray
-	(*StringArray)(nil), // 6: kdspb.StringArray
-	(*MapMask)(nil),     // 7: kdspb.MapMask
+	(*FieldMask)(nil),          // 0: kdspb.FieldMask
+	(*Int32Array)(nil),         // 1: kdspb.Int32Array
+	(*Int64Array)(nil),         // 2: kdspb.Int64Array
+	(*UInt32Array)(nil),        // 3: kdspb.UInt32Array
+	(*Uint64Array)(nil),        // 4: kdspb.Uint64Array
+	(*BoolArray)(nil),          // 5: kdspb.BoolArray
+	(*StringArray)(nil),        // 6: kdspb.StringArray
+	(*MapMask)(nil),            // 7: kdspb.MapMask
+	(*MapMessage)(nil),         // 8: kdspb.MapMessage
+	(*MapMessage___Field)(nil), // 9: kdspb.MapMessage___Field
+	(*MapMessage_X)(nil),       // 10: kdspb.MapMessage._
 }
 var file_fieldmask_proto_depIdxs = []int32{
 	7, // 0: kdspb.FieldMask.MapMask:type_name -> kdspb.MapMask
@@ -613,7 +737,7 @@ func file_fieldmask_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_fieldmask_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

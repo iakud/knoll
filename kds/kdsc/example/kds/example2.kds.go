@@ -2,7 +2,6 @@
 // source: TODO: Source File
 
 package kds;
-
 import (
 	"github.com/iakud/krocher/kds/kdsc/example/kdspb"
 	"google.golang.org/protobuf/types/known/emptypb"

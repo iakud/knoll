@@ -3,14 +3,10 @@
 
 package kds;
 
-import (
-	_ "github.com/iakud/krocher/kds/kdsc/example/kdspb"
-)
-
-type map_int32_empty struct {
-	
+type int32_empty_Map struct {
+	syncable map[int32]empty
 }
 
-type map_int32_int32 struct {
-	
+type int32_int32_Map struct {
+	syncable map[int32]int32
 }
