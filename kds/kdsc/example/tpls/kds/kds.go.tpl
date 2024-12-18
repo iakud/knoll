@@ -29,18 +29,41 @@ func (x *{{.Type}}_List) Set(i int, v {{toGoType .Type}}) {
 	x.syncable[i] = v
 }
 
-func (x *{{.Type}}_List) Append(v {{toGoType .Type}}) {
-	x.syncable = append(x.syncable, v)
+func (x *{{.Type}}_List) Index(v {{toGoType .Type}}) int {
+	for i := range x.syncable {
+		if v == x.syncable[i] {
+			return i
+		}
+	}
+	return -1
 }
 
-func (x *{{.Type}}_List) Truncate(i int) {
-	x.syncable = x.syncable[0: i]
+func (x *{{.Type}}_List) Contains(v {{toGoType .Type}}) bool {
+	return x.Index(v) >= 0
 }
 
-func (x *{{.Type}}_List) Range(f func(i int, v {{toGoType .Type}}) bool) {
-	for i, v := range x.syncable {
-		if !f(i, v) {
-			break
+func (x *{{.Type}}_List) Append(v ...{{toGoType .Type}}) {
+	x.syncable = append(x.syncable, v...)
+}
+
+func (x *{{.Type}}_List) Insert(i int, v ...{{toGoType .Type}}) {
+	// x.syncable = slices.Insert(x.syncable, i, v...)
+}
+
+func (x *{{.Type}}_List) Delete(i, j int) {
+	// x.syncable = slices.Delete(x.syncable, i, j)
+}
+
+func (x *{{.Type}}_List) Replace(i, j int, v ...{{toGoType .Type}}) {
+	// x.syncable = slices.Replace(x.syncable, i, j, v...)
+}
+
+func (x *{{.Type}}_List) All() func(yield func(int, {{toGoType .Type}}) bool) {
+	return func(yield func(int, {{toGoType .Type}}) bool) {
+		for i, v := range x.syncable {
+			if !yield(i, v) {
+				return
+			}
 		}
 	}
 }
@@ -90,10 +113,12 @@ func (x *{{.KeyType}}_{{.Type}}_Map) Delete(k {{toGoType .KeyType}}) {
 	delete(x.syncable, k)
 }
 
-func (x *{{.KeyType}}_{{.Type}}_Map) Range(f func(k {{toGoType .KeyType}}, v {{toGoType .Type}}) bool) {
-	for k, v := range x.syncable {
-		if !f(k, v) {
-			break
+func (x *{{.KeyType}}_{{.Type}}_Map) All() func(yield func({{toGoType .KeyType}}, {{toGoType .Type}}) bool) {
+	return func(yield func({{toGoType .KeyType}}, {{toGoType .Type}}) bool) {
+		for k, v := range x.syncable {
+			if !yield(k, v) {
+				return
+			}
 		}
 	}
 }

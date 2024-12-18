@@ -408,18 +408,41 @@ func (x *Vector_List) Set(i int, v Vector) {
 	x.syncable[i] = v
 }
 
-func (x *Vector_List) Append(v Vector) {
-	x.syncable = append(x.syncable, v)
+func (x *Vector_List) Index(v Vector) int {
+	for i := range x.syncable {
+		if v == x.syncable[i] {
+			return i
+		}
+	}
+	return -1
 }
 
-func (x *Vector_List) Truncate(i int) {
-	x.syncable = x.syncable[0: i]
+func (x *Vector_List) Contains(v Vector) bool {
+	return x.Index(v) >= 0
 }
 
-func (x *Vector_List) Range(f func(i int, v Vector) bool) {
-	for i, v := range x.syncable {
-		if !f(i, v) {
-			break
+func (x *Vector_List) Append(v ...Vector) {
+	x.syncable = append(x.syncable, v...)
+}
+
+func (x *Vector_List) Insert(i int, v ...Vector) {
+	// x.syncable = slices.Insert(x.syncable, i, v...)
+}
+
+func (x *Vector_List) Delete(i, j int) {
+	// x.syncable = slices.Delete(x.syncable, i, j)
+}
+
+func (x *Vector_List) Replace(i, j int, v ...Vector) {
+	// x.syncable = slices.Replace(x.syncable, i, j, v...)
+}
+
+func (x *Vector_List) All() func(yield func(int, Vector) bool) {
+	return func(yield func(int, Vector) bool) {
+		for i, v := range x.syncable {
+			if !yield(i, v) {
+				return
+			}
 		}
 	}
 }

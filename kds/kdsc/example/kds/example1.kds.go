@@ -637,10 +637,12 @@ func (x *int64_Hero_Map) Delete(k int64) {
 	delete(x.syncable, k)
 }
 
-func (x *int64_Hero_Map) Range(f func(k int64, v Hero) bool) {
-	for k, v := range x.syncable {
-		if !f(k, v) {
-			break
+func (x *int64_Hero_Map) All() func(yield func(int64, Hero) bool) {
+	return func(yield func(int64, Hero) bool) {
+		for k, v := range x.syncable {
+			if !yield(k, v) {
+				return
+			}
 		}
 	}
 }

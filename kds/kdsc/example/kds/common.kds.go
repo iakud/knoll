@@ -44,10 +44,12 @@ func (x *int32_empty_Map) Delete(k int32) {
 	delete(x.syncable, k)
 }
 
-func (x *int32_empty_Map) Range(f func(k int32, v struct{}) bool) {
-	for k, v := range x.syncable {
-		if !f(k, v) {
-			break
+func (x *int32_empty_Map) All() func(yield func(int32, struct{}) bool) {
+	return func(yield func(int32, struct{}) bool) {
+		for k, v := range x.syncable {
+			if !yield(k, v) {
+				return
+			}
 		}
 	}
 }
@@ -106,10 +108,12 @@ func (x *int32_int32_Map) Delete(k int32) {
 	delete(x.syncable, k)
 }
 
-func (x *int32_int32_Map) Range(f func(k int32, v int32) bool) {
-	for k, v := range x.syncable {
-		if !f(k, v) {
-			break
+func (x *int32_int32_Map) All() func(yield func(int32, int32) bool) {
+	return func(yield func(int32, int32) bool) {
+		for k, v := range x.syncable {
+			if !yield(k, v) {
+				return
+			}
 		}
 	}
 }
@@ -157,18 +161,41 @@ func (x *int64_List) Set(i int, v int64) {
 	x.syncable[i] = v
 }
 
-func (x *int64_List) Append(v int64) {
-	x.syncable = append(x.syncable, v)
+func (x *int64_List) Index(v int64) int {
+	for i := range x.syncable {
+		if v == x.syncable[i] {
+			return i
+		}
+	}
+	return -1
 }
 
-func (x *int64_List) Truncate(i int) {
-	x.syncable = x.syncable[0: i]
+func (x *int64_List) Contains(v int64) bool {
+	return x.Index(v) >= 0
 }
 
-func (x *int64_List) Range(f func(i int, v int64) bool) {
-	for i, v := range x.syncable {
-		if !f(i, v) {
-			break
+func (x *int64_List) Append(v ...int64) {
+	x.syncable = append(x.syncable, v...)
+}
+
+func (x *int64_List) Insert(i int, v ...int64) {
+	// x.syncable = slices.Insert(x.syncable, i, v...)
+}
+
+func (x *int64_List) Delete(i, j int) {
+	// x.syncable = slices.Delete(x.syncable, i, j)
+}
+
+func (x *int64_List) Replace(i, j int, v ...int64) {
+	// x.syncable = slices.Replace(x.syncable, i, j, v...)
+}
+
+func (x *int64_List) All() func(yield func(int, int64) bool) {
+	return func(yield func(int, int64) bool) {
+		for i, v := range x.syncable {
+			if !yield(i, v) {
+				return
+			}
 		}
 	}
 }
