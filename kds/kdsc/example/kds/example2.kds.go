@@ -11,6 +11,7 @@ type syncableCity struct {
 	PlayerId int64
 	PlayerBasicInfo *PlayerBasicInfo
 	CityInfo *CityBaseInfo
+	Troops []int64
 }
 
 type City struct {
@@ -107,6 +108,11 @@ func (x *City) DumpChange() *kdspb.City {
 	if x.checkDirty(uint64(0x01) << 3) {
 		m.CityInfo = x.syncable.CityInfo.DumpChange()
 	}
+	if x.checkDirty(uint64(0x01) << 4) {
+		for _, v := range x.syncable.Troops {
+			m.Troops = append(m.Troops, v)
+		}
+	}
 	return m
 }
 
@@ -115,6 +121,9 @@ func (x *City) DumpFull() *kdspb.City {
 	m.PlayerId = x.syncable.PlayerId
 	m.PlayerBasicInfo = x.syncable.PlayerBasicInfo.DumpFull()
 	m.CityInfo = x.syncable.CityInfo.DumpFull()
+	for _, v := range x.syncable.Troops {
+		m.Troops = append(m.Troops, v)
+	}
 	return m
 }
 
@@ -370,4 +379,51 @@ func (x *Vector) clearDirty() {
 
 func (x *Vector) checkDirty(n uint64) bool {
 	return x.dirty & n != 0
+}
+
+type dirtyParentFunc_Vector_List func()
+
+func (f dirtyParentFunc_Vector_List) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
+type Vector_List struct {
+	syncable []Vector
+
+	dirtyParent dirtyParentFunc_Vector_List
+}
+
+func (x *Vector_List) Len() int {
+	return len(x.syncable)
+}
+
+func (x *Vector_List) Get(i int) Vector {
+	return x.syncable[i]
+}
+
+func (x *Vector_List) Set(i int, v Vector) {
+	x.syncable[i] = v
+}
+
+func (x *Vector_List) Append(v Vector) {
+	x.syncable = append(x.syncable, v)
+}
+
+func (x *Vector_List) Truncate(i int) {
+	x.syncable = x.syncable[0: i]
+}
+
+func (x *Vector_List) Range(f func(i int, v Vector) bool) {
+	for i, v := range x.syncable {
+		if !f(i, v) {
+			break
+		}
+	}
+}
+
+func (x *Vector_List) Values() []Vector {
+	return append(x.syncable[:0:0], x.syncable...)
 }

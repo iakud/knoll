@@ -2,15 +2,116 @@
 
 {{- define "CommonList"}}
 
+type dirtyParentFunc_{{.Type}}_List func()
+
+func (f dirtyParentFunc_{{.Type}}_List) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
 type {{.Type}}_List struct {
 	syncable []{{toGoType .Type}}
+
+	dirtyParent dirtyParentFunc_{{.Type}}_List
+}
+
+func (x *{{.Type}}_List) Len() int {
+	return len(x.syncable)
+}
+
+func (x *{{.Type}}_List) Get(i int) {{toGoType .Type}} {
+	return x.syncable[i]
+}
+
+func (x *{{.Type}}_List) Set(i int, v {{toGoType .Type}}) {
+	x.syncable[i] = v
+}
+
+func (x *{{.Type}}_List) Append(v {{toGoType .Type}}) {
+	x.syncable = append(x.syncable, v)
+}
+
+func (x *{{.Type}}_List) Truncate(i int) {
+	x.syncable = x.syncable[0: i]
+}
+
+func (x *{{.Type}}_List) Range(f func(i int, v {{toGoType .Type}}) bool) {
+	for i, v := range x.syncable {
+		if !f(i, v) {
+			break
+		}
+	}
+}
+
+func (x *{{.Type}}_List) Values() []{{toGoType .Type}} {
+	return append(x.syncable[:0:0], x.syncable...)
 }
 {{- end}}
 
 {{- define "CommonMap"}}
 
+type dirtyParentFunc_{{.KeyType}}_{{.Type}}_Map func()
+
+func (f dirtyParentFunc_{{.KeyType}}_{{.Type}}_Map) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
 type {{.KeyType}}_{{.Type}}_Map struct {
 	syncable map[{{toGoType .KeyType}}]{{toGoType .Type}}
+
+	dirtyParent dirtyParentFunc_{{.KeyType}}_{{.Type}}_Map
+}
+
+func (x *{{.KeyType}}_{{.Type}}_Map) Len() int {
+	return len(x.syncable)
+}
+
+func (x *{{.KeyType}}_{{.Type}}_Map) Clear() {
+	for k := range x.syncable {
+		delete(x.syncable, k)
+	}
+}
+
+func (x *{{.KeyType}}_{{.Type}}_Map) Get(k {{toGoType .KeyType}}) ({{toGoType .Type}}, bool) {
+	v, ok := x.syncable[k]
+	return v, ok
+}
+
+func (x *{{.KeyType}}_{{.Type}}_Map) Set(k {{toGoType .KeyType}}, v {{toGoType .Type}}) {
+	x.syncable[k] = v
+}
+
+func (x *{{.KeyType}}_{{.Type}}_Map) Delete(k {{toGoType .KeyType}}) {
+	delete(x.syncable, k)
+}
+
+func (x *{{.KeyType}}_{{.Type}}_Map) Range(f func(k {{toGoType .KeyType}}, v {{toGoType .Type}}) bool) {
+	for k, v := range x.syncable {
+		if !f(k, v) {
+			break
+		}
+	}
+}
+
+func (x *{{.KeyType}}_{{.Type}}_Map) Keys() []{{toGoType .KeyType}} {
+	r := make([]{{toGoType .KeyType}}, 0, len(x.syncable))
+	for k := range x.syncable {
+		r = append(r, k)
+	}
+	return r
+}
+
+func (x *{{.KeyType}}_{{.Type}}_Map) Values() []{{toGoType .Type}} {
+	r := make([]{{toGoType .Type}}, 0, len(x.syncable))
+	for _, v := range x.syncable {
+		r = append(r, v)
+	}
+	return r
 }
 {{- end}}
 
@@ -512,5 +613,16 @@ import (
 {{- template "Entity" .}}
 {{- else if findComponent .Name}}
 {{- template "Component" .}}
+
+{{- with findList .Name}}
+{{- if .}}
+{{- template "CommonList" .}}
+{{- end}}
+{{- end}}
+
+{{- range findMap .Name}}
+{{- template "CommonMap" .}}
+{{- end}}
+
 {{- end}}
 {{- end}}

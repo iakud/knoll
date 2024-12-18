@@ -599,6 +599,68 @@ func (x *Hero) checkDirty(n uint64) bool {
 	return x.dirty & n != 0
 }
 
+type dirtyParentFunc_int64_Hero_Map func()
+
+func (f dirtyParentFunc_int64_Hero_Map) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
+type int64_Hero_Map struct {
+	syncable map[int64]Hero
+
+	dirtyParent dirtyParentFunc_int64_Hero_Map
+}
+
+func (x *int64_Hero_Map) Len() int {
+	return len(x.syncable)
+}
+
+func (x *int64_Hero_Map) Clear() {
+	for k := range x.syncable {
+		delete(x.syncable, k)
+	}
+}
+
+func (x *int64_Hero_Map) Get(k int64) (Hero, bool) {
+	v, ok := x.syncable[k]
+	return v, ok
+}
+
+func (x *int64_Hero_Map) Set(k int64, v Hero) {
+	x.syncable[k] = v
+}
+
+func (x *int64_Hero_Map) Delete(k int64) {
+	delete(x.syncable, k)
+}
+
+func (x *int64_Hero_Map) Range(f func(k int64, v Hero) bool) {
+	for k, v := range x.syncable {
+		if !f(k, v) {
+			break
+		}
+	}
+}
+
+func (x *int64_Hero_Map) Keys() []int64 {
+	r := make([]int64, 0, len(x.syncable))
+	for k := range x.syncable {
+		r = append(r, k)
+	}
+	return r
+}
+
+func (x *int64_Hero_Map) Values() []Hero {
+	r := make([]Hero, 0, len(x.syncable))
+	for _, v := range x.syncable {
+		r = append(r, v)
+	}
+	return r
+}
+
 type HeroType = kdspb.HeroType
 
 const (
