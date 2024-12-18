@@ -40,12 +40,15 @@ func Parse(kdsFiles []string, tplPath string, out string) error {
 		}
 		tpls = append(tpls, tpl)
 	}
+	// format
+	ctx.format()
 
 	for _, kds := range kdsList {
+		kds.format()
 		for _, tpl := range tpls {
 			buf := bytes.NewBuffer(nil)
 			tpl.Execute(buf, kds)
-			outFile := filepath.Join(out, strings.TrimSuffix(filepath.Base(kds.Filename), filepath.Ext(kds.Filename)) + "." + strings.TrimSuffix(filepath.Base(tpl.Name()), filepath.Ext(tpl.Name())))
+			outFile := filepath.Join(out, kds.Name + "." + strings.TrimSuffix(filepath.Base(tpl.Name()), filepath.Ext(tpl.Name())))
 			os.WriteFile(outFile, buf.Bytes(), os.ModePerm)
 		}
 	}
@@ -67,7 +70,7 @@ func parseKds(ctx *Context, kdsFile string) *Kds {
 	lexer := parser.NewkdsLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	kdsParser := parser.NewkdsParser(stream)
-	kds := visitKds(ctx, kdsParser.Kds())
-	kds.Filename = kdsFile
+	kdsName := strings.TrimSuffix(filepath.Base(kdsFile), filepath.Ext(kdsFile))
+	kds := visitKds(ctx, kdsName, kdsParser.Kds())
 	return kds
 }

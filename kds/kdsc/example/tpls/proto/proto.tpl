@@ -14,11 +14,11 @@ enum {{.Name}} {
 message {{.Name}} {
 {{- range .Fields}}
 {{- if .Repeated}}
-	repeated {{.ProtoType}} {{.Name}} = {{.Number}};
+	repeated {{toProtoType .Type}} {{.Name}} = {{.Number}};
 {{- else if len .KeyType}}
-	map<{{.KeyType}}, {{.ProtoType}}> {{.Name}} = {{.Number}};
+	map<{{toProtoType .KeyType}}, {{toProtoType .Type}}> {{.Name}} = {{.Number}};
 {{- else}}
-	{{.ProtoType}} {{.Name}} = {{.Number}};
+	{{toProtoType .Type}} {{.Name}} = {{.Number}};
 {{- end}}
 {{- end}}
 }

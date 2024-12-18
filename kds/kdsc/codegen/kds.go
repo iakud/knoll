@@ -3,41 +3,71 @@ package codegen
 import "slices"
 
 type Kds struct {
+	Name string
 	Filename string
 	Package string
 	ProtoGoPackage string
 	ProtoPackage string
 	Imports []string
 	ProtoImports []string
-
-	GoStandardImports []string
-	GoImports []string
+	GoImportSpecs []*ImportSpec
 
 	Defs []interface{}
+
+	Types []string
 }
 
-func (k *Kds) addProtoImport(protoImport string) {
-	if slices.Contains(k.ProtoImports, protoImport) {
+func (k *Kds) addProtoImport(path string) {
+	if slices.Contains(k.ProtoImports, path) {
 		return
 	}
-	k.ProtoImports = append(k.ProtoImports, protoImport)
+	k.ProtoImports = append(k.ProtoImports, path)
 }
 
-func (k *Kds) addGoStandardImport(goStandardImport string) {
-	if slices.Contains(k.GoStandardImports, goStandardImport) {
+func (k *Kds) addGoImport(path, name string) {
+	if slices.ContainsFunc(k.GoImportSpecs, func(spec *ImportSpec) bool {
+		return spec.Path == path && spec.Name == name
+	}) {
 		return
 	}
-	k.GoStandardImports = append(k.GoStandardImports, goStandardImport)
+	spec := &ImportSpec{Path: path, Name: name}
+	k.GoImportSpecs = append(k.GoImportSpecs, spec)
 }
 
-func (k *Kds) addGoImport(goImport string) {
-	if slices.Contains(k.GoImports, goImport) {
+func (k *Kds) addType(name string) {
+	if slices.Contains(k.Types, name) {
 		return
 	}
-	k.GoImports = append(k.GoImports, goImport)
+	k.Types = append(k.Types, name)
 }
 
+func (k *Kds) format() {
+	k.sortImports()
+	slices.Sort(k.Types)
+}
 
+func (k *Kds) sortImports() {
+	// sort proto imports
+	slices.Sort(k.ProtoImports)
+	// sort go imports
+	localPrefix := ""
+	sortImports(localPrefix, k.GoImportSpecs)
+
+	lastGroup := -1
+	for _, importSpec := range k.GoImportSpecs {
+		groupNum := importGroup(localPrefix, importSpec.Path)
+		if groupNum != lastGroup && lastGroup != -1 {
+			importSpec.SpacesBefore = true
+		}
+		lastGroup = groupNum
+	}
+}
+
+type ImportSpec struct {
+	Path string
+	Name string
+	SpacesBefore bool
+}
 
 type Enum struct {
 	Name string
@@ -82,10 +112,7 @@ type Field struct {
 	Name string
 	Number int
 
-	ProtoType string
-
 	GoVarName string
-	GoType string
 
 	Kind string
 }

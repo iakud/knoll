@@ -3,27 +3,15 @@
 {{- define "CommonList"}}
 
 type {{.Type}}_List struct {
-	syncable []{{.GoType}}
+	syncable []{{toGoType .Type}}
 }
 {{- end}}
 
 {{- define "CommonMap"}}
 
 type {{.KeyType}}_{{.Type}}_Map struct {
-	syncable map[{{.GoKeyType}}]{{.GoType}}
+	syncable map[{{toGoType .KeyType}}]{{toGoType .Type}}
 }
-{{- end}}
-
-{{- define "Common"}}
-{{- range $Type := commonTypes}}
-{{- if findList $Type}}
-{{- template "CommonList" findList $Type}}
-{{- end}}
-{{- range findMap $Type}}
-{{- template "CommonMap" .}}
-{{- end}}
-{{- end}}
-
 {{- end}}
 
 {{- define "Enum"}}
@@ -48,15 +36,15 @@ type syncable{{.Name}} struct {
 {{- else if findEnum .Type}}
 	{{.Name}} []{{.Type}}
 {{- else}}
-	{{.Name}} []{{.GoType}}
+	{{.Name}} []{{toGoType .Type}}
 {{- end}}
 {{- else if len .KeyType}}{{/* Map */}}
 {{- if findComponent .Type}}
-	{{.Name}} map[{{.KeyType}}]*{{.Type}}
+	{{.Name}} map[{{toGoType .KeyType}}]*{{.Type}}
 {{- else if findEnum .Type}}
-	{{.Name}} map[{{.KeyType}}]{{.Type}}
+	{{.Name}} map[{{toGoType .KeyType}}]{{.Type}}
 {{- else}}
-	{{.Name}} map[{{.KeyType}}]{{.GoType}}
+	{{.Name}} map[{{toGoType .KeyType}}]{{toGoType .Type}}
 {{- end}}
 {{- else}}{{/* Field */}}
 {{- if findComponent .Type}}
@@ -64,7 +52,7 @@ type syncable{{.Name}} struct {
 {{- else if findEnum .Type}}
 	{{.Name}} {{.Type}}
 {{- else}}
-	{{.Name}} {{.GoType}}
+	{{.Name}} {{toGoType .Type}}
 {{- end}}
 {{- end}}
 {{- end}}
@@ -120,11 +108,11 @@ func (x *{{$MessageName}}) Set{{.Name}}(v {{.Type}}) {
 }
 {{- else}}
 
-func (x *{{$MessageName}}) Get{{.Name}}() {{.GoType}} {
+func (x *{{$MessageName}}) Get{{.Name}}() {{toGoType .Type}} {
 	return x.syncable.{{.Name}}
 }
 
-func (x *{{$MessageName}}) Set{{.Name}}(v {{.GoType}}) {
+func (x *{{$MessageName}}) Set{{.Name}}(v {{toGoType .Type}}) {
 {{- if eq .Type "bytes"}}
 	if v != nil || x.syncable.{{.Name}} != nil {
 		return
@@ -295,11 +283,11 @@ func New{{.Name}}() *{{.Name}} {
 {{- if .Repeated}}{{/* nothing to do*/}}
 {{- else if len .KeyType}}
 {{- if findComponent .Type}}
-	x.syncable.{{.Name}} = make(map[{{.KeyType}}]*{{.Type}})
+	x.syncable.{{.Name}} = make(map[{{toGoType .KeyType}}]*{{.Type}})
 {{- else if findEnum .Type}}
-	x.syncable.{{.Name}} = make(map[{{.KeyType}}]{{.Type}})
+	x.syncable.{{.Name}} = make(map[{{toGoType .KeyType}}]{{.Type}})
 {{- else}}
-	x.syncable.{{.Name}} = make(map[{{.KeyType}}]{{.GoType}})
+	x.syncable.{{.Name}} = make(map[{{toGoType .KeyType}}]{{toGoType .Type}})
 {{- end}}
 {{- else}}
 {{- if findComponent .Type}}
@@ -405,11 +393,11 @@ func New{{.Name}}() *{{.Name}} {
 {{- if .Repeated}}{{/* nothing to do*/}}
 {{- else if len .KeyType}}
 {{- if findComponent .Type}}
-	x.syncable.{{.Name}} = make(map[{{.KeyType}}]*{{.Type}})
+	x.syncable.{{.Name}} = make(map[{{toGoType .KeyType}}]*{{.Type}})
 {{- else if findEnum .Type}}
-	x.syncable.{{.Name}} = make(map[{{.KeyType}}]{{.Type}})
+	x.syncable.{{.Name}} = make(map[{{toGoType .KeyType}}]{{.Type}})
 {{- else}}
-	x.syncable.{{.Name}} = make(map[{{.KeyType}}]{{.GoType}})
+	x.syncable.{{.Name}} = make(map[{{toGoType .KeyType}}]{{toGoType .Type}})
 {{- end}}
 {{- else}}
 {{- if findComponent .Type}}
@@ -492,19 +480,29 @@ func (x *{{.Name}}) checkDirty(n uint64) bool {
 
 package {{.Package}};
 
-{{- if or (len .GoImports) (len .GoStandardImports)}}
+{{- if len .GoImportSpecs}}
 import (
-{{- range .GoImports}}
-	"{{.}}"
+{{- range .GoImportSpecs}}
+{{- if .SpacesBefore}}
+{{""}}
 {{- end}}
-{{- range .GoStandardImports}}
-	"{{.}}"
+	"{{.Path}}"
 {{- end}}
 )
 {{- end}}
 
-{{- if eq .Filename "common.kds"}}
-{{- template "Common" .}}
+{{- range .Types}}
+
+{{- with findList .}}
+{{- if .}}
+{{- template "CommonList" .}}
+{{- end}}
+{{- end}}
+
+{{- range findMap .}}
+{{- template "CommonMap" .}}
+{{- end}}
+
 {{- end}}
 
 {{- range .Defs}}

@@ -8,93 +8,64 @@ import (
 type Context struct {
 	KdsContexts []*Kds
 
-	CommonTypes []string
+	Common Kds
+
 	// type
-	TypeList map[string]*CommonType
+	TypeList map[string]*ListType
 	// type -> keys
-	TypeMap map[string][]*CommonMapType
+	TypeMap map[string][]*MapType
 
 	Imports map[string]*Kds
 	Defs map[string]interface{}
 }
 
-type CommonType struct {
+type ListType struct {
 	Type string
-	GoType string
 }
 
-type CommonMapType struct {
+type MapType struct {
 	Type string
 	KeyType string
-	GoType string
-	GoKeyType string
 }
 
 func newContext() *Context {
 	return &Context{
-		TypeList: make(map[string]*CommonType),
-		TypeMap: make(map[string][]*CommonMapType),
+		TypeList: make(map[string]*ListType),
+		TypeMap: make(map[string][]*MapType),
 		Imports: make(map[string]*Kds),
 		Defs: make(map[string]interface{}),
 	}
 }
 
-func (ctx *Context) GetCommonTypes() []string {
-	return ctx.CommonTypes
+func (ctx *Context) format() {
+	for _, mapTypes := range ctx.TypeMap {
+		slices.SortFunc(mapTypes, func(a, b *MapType) int {
+			return strings.Compare(a.KeyType, b.KeyType)
+		})
+	}
 }
 
-func (ctx *Context) AddListType(name string, customType bool) {
+func (ctx *Context) addListType(name string) {
 	if _, ok := ctx.TypeList[name]; ok {
 		return
 	}
-	commonType := new(CommonType)
-	commonType.Type = name
-	commonType.GoType = GoType(name)
-	ctx.TypeList[name] = commonType
-
-	if customType {
-		return
-	}
-	// common
-	if slices.Contains(ctx.CommonTypes, name) {
-		return
-	}
-	ctx.CommonTypes = append(ctx.CommonTypes, name)
-	slices.Sort(ctx.CommonTypes)
-	slices.SortFunc(ctx.CommonTypes, func(a, b string) int {
-		return strings.Compare(a, b)
-	})
+	listType := new(ListType)
+	listType.Type = name
+	ctx.TypeList[name] = listType
 }
 
-func (ctx *Context) AddMapType(name string, keyType string, customType bool) {
+func (ctx *Context) addMapType(name string, keyType string) {
 	mapTypes, _ := ctx.TypeMap[name]
-	if slices.ContainsFunc(mapTypes, func(mapType *CommonMapType) bool {
+	if slices.ContainsFunc(mapTypes, func(mapType *MapType) bool {
 		return mapType.KeyType == keyType
 	}) {
 		return
 	}
-	
-	mapType := new(CommonMapType)
+
+	mapType := new(MapType)
 	mapType.Type = name
 	mapType.KeyType = keyType
-	mapType.GoType = GoType(name)
-	mapType.GoKeyType = GoType(keyType)
-
-	mapTypes = append(mapTypes, mapType)
-	slices.SortFunc(mapTypes, func(a, b *CommonMapType) int {
-		return strings.Compare(a.KeyType, b.KeyType)
-	})
-	ctx.TypeMap[name] = mapTypes
-	
-	if customType {
-		return
-	}
-	// common
-	if slices.Contains(ctx.CommonTypes, name) {
-		return
-	}
-	ctx.CommonTypes = append(ctx.CommonTypes, name)
-	slices.Sort(ctx.CommonTypes)
+	ctx.TypeMap[name] = append(mapTypes, mapType)
 }
 
 func (ctx *Context) FindEnum(name string) *Enum {
@@ -133,14 +104,14 @@ func (ctx *Context) FindComponent(name string) *Component {
 	return component
 }
 
-func (ctx *Context) FindList(name string) *CommonType {
-	if commonType, ok := ctx.TypeList[name]; ok {
-		return commonType
+func (ctx *Context) FindList(name string) *ListType {
+	if listType, ok := ctx.TypeList[name]; ok {
+		return listType
 	}
 	return nil
 }
 
-func (ctx *Context) FindMap(name string) []*CommonMapType {
+func (ctx *Context) FindMap(name string) []*MapType {
 	if mapTypes, ok := ctx.TypeMap[name]; ok {
 		return mapTypes
 	}

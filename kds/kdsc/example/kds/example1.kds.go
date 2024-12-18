@@ -3,10 +3,11 @@
 
 package kds;
 import (
+	"time"
+
 	"github.com/iakud/krocher/kds/kdsc/example/kdspb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"time"
 )
 
 type syncablePlayer struct {
