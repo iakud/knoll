@@ -15,14 +15,22 @@ type Kds struct {
 	Defs []TopLevelDef
 	Types []string
 
-	ImportTypes []string
+	GoTypes []string
+	ProtoTypes []string
 }
 
-func (k *Kds) addImportTypes(type_ string) {
-	if slices.Contains(k.ImportTypes, type_) {
+func (k *Kds) addGoTypes(type_ string) {
+	if slices.Contains(k.GoTypes, type_) {
 		return
 	}
-	k.ImportTypes = append(k.ImportTypes, type_)
+	k.GoTypes = append(k.GoTypes, type_)
+}
+
+func (k *Kds) addProtoTypes(type_ string) {
+	if slices.Contains(k.ProtoTypes, type_) {
+		return
+	}
+	k.ProtoTypes = append(k.ProtoTypes, type_)
 }
 
 func (k *Kds) addProtoImport(path string) {
@@ -42,18 +50,26 @@ func (k *Kds) addGoImport(path, name string) {
 	k.GoImportSpecs = append(k.GoImportSpecs, spec)
 }
 
-func (k *Kds) addImportByType(type_ string) {
+func (k *Kds) addGoImportByType(type_ string) {
 	switch type_ {
 	case "timestamp":
 		k.addGoImport("time", "")
 		k.addGoImport("google.golang.org/protobuf/types/known/timestamppb", "")
-		k.addProtoImport("google/protobuf/timestamp.proto")
 	case "duration":
 		k.addGoImport("time", "")
 		k.addGoImport("google.golang.org/protobuf/types/known/durationpb", "")
-		k.addProtoImport("google/protobuf/duration.proto")
 	case "empty":
 		k.addGoImport("google.golang.org/protobuf/types/known/emptypb", "")
+	}
+}
+
+func (k *Kds) addProtoImportByType(type_ string) {
+	switch type_ {
+	case "timestamp":
+		k.addProtoImport("google/protobuf/timestamp.proto")
+	case "duration":
+		k.addProtoImport("google/protobuf/duration.proto")
+	case "empty":
 		k.addProtoImport("google/protobuf/empty.proto")
 	}
 }
@@ -66,12 +82,16 @@ func (k *Kds) addType(name string) {
 }
 
 func (k *Kds) format() {
-	for _, type_ := range k.ImportTypes {
-		k.addImportByType(type_)
+	for _, type_ := range k.GoTypes {
+		k.addGoImportByType(type_)
+	}
+	for _, type_ := range k.ProtoTypes {
+		k.addProtoImportByType(type_)
 	}
 
 	for _, type_ := range k.Types {
-		k.addImportByType(type_)
+		k.addGoImportByType(type_)
+		k.addProtoImportByType(type_)
 	}
 
 	k.sortImports()
@@ -103,7 +123,8 @@ type ImportSpec struct {
 
 type TopLevelDef interface {
 	GetName() string
-	GetProtoPackage() string
+	ProtoGoType() string
+	GoType() string
 }
 
 type Enum struct {
@@ -116,8 +137,12 @@ func (e *Enum) GetName() string {
 	return e.Name
 }
 
-func (e *Enum) GetProtoPackage() string {
-	return e.ProtoPackage
+func (e *Enum) ProtoGoType() string {
+	return e.ProtoPackage + "." + e.Name
+}
+
+func (e *Enum) GoType() string {
+	return e.Name
 }
 
 type EnumField struct {
@@ -135,10 +160,13 @@ func (m *Message) GetName() string {
 	return m.Name
 }
 
-func (m *Message) GetProtoPackage() string {
-	return m.ProtoPackage
+func (m *Message) ProtoGoType() string {
+	return "*" + m.ProtoPackage + "." + m.Name
 }
 
+func (m *Message) GoType() string {
+	return "*" + m.Name
+}
 
 type Entity struct {
 	Message

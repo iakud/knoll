@@ -132,6 +132,15 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	if fieldCtx.FieldLabel() != nil && fieldCtx.FieldLabel().REPEATED() != nil {
 		field.Repeated = true
 		field.ListType = ctx.addListType(field.Type)
+	} else {
+		switch {
+		case fieldCtx.Type_().TIMESTAMP() != nil:
+			kds.addGoTypes(fieldCtx.Type_().TIMESTAMP().GetText())
+		case fieldCtx.Type_().DURATION() != nil:
+			kds.addGoTypes(fieldCtx.Type_().DURATION().GetText())
+		case fieldCtx.Type_().EMPTY() != nil:
+			kds.addGoTypes(fieldCtx.Type_().EMPTY().GetText())
+		}
 	}
 	return field
 }
@@ -160,11 +169,11 @@ func visitType(ctx *Context, kds *Kds, typeCtx parser.IType_Context) string {
 	}
 	switch {
 	case typeCtx.TIMESTAMP() != nil:
-		kds.addImportTypes(typeCtx.TIMESTAMP().GetText())
+		kds.addProtoTypes(typeCtx.TIMESTAMP().GetText())
 	case typeCtx.DURATION() != nil:
-		kds.addImportTypes(typeCtx.DURATION().GetText())
+		kds.addProtoTypes(typeCtx.DURATION().GetText())
 	case typeCtx.EMPTY() != nil:
-		kds.addImportTypes(typeCtx.EMPTY().GetText())
+		kds.addProtoTypes(typeCtx.EMPTY().GetText())
 	}
 
 	return type_

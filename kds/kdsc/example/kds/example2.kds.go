@@ -7,7 +7,6 @@ import (
 	"slices"
 
 	"github.com/iakud/krocher/kds/kdsc/example/kdspb"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type syncableCity struct {
@@ -30,6 +29,7 @@ func NewCity() *City {
 	x.id = 0 // FIXME: gen nextId()
 	x.setPlayerBasicInfo(NewPlayerBasicInfo())
 	x.setCityInfo(NewCityBaseInfo())
+	// x.syncable.Troops = Int64_List{}
 	return x
 }
 
@@ -193,7 +193,8 @@ type CityBaseInfo struct {
 func NewCityBaseInfo() *CityBaseInfo {
 	x := new(CityBaseInfo)
 	x.dirty = 1
-	x.syncable.Troops = make(map[int32]struct{})
+	// x.syncable.Positions = Vector_List{}
+	// x.syncable.Troops = Int32_Empty_Map{}
 	return x
 }
 

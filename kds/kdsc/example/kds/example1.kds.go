@@ -321,7 +321,7 @@ type PlayerHero struct {
 func NewPlayerHero() *PlayerHero {
 	x := new(PlayerHero)
 	x.dirty = 1
-	x.syncable.Heroes = make(map[int64]*Hero)
+	// x.syncable.Heroes = Int64_Hero_Map{}
 	return x
 }
 
@@ -404,7 +404,7 @@ type PlayerBag struct {
 func NewPlayerBag() *PlayerBag {
 	x := new(PlayerBag)
 	x.dirty = 1
-	x.syncable.Resources = make(map[int32]int32)
+	// x.syncable.Resources = Int32_Int32_Map{}
 	return x
 }
 
@@ -648,7 +648,7 @@ func (x *Int64_Hero_Map) Values() iter.Seq[*Hero] {
 func (x *Int64_Hero_Map) DumpChange() map[int64]*kdspb.Hero {
 	m := make(map[int64]*kdspb.Hero)
 	for k, v := range x.syncable {
-		m[k] = v.DumpChange()
+		m[k] = v.DumpFull()
 	}
 	return m
 }

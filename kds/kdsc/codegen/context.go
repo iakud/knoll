@@ -74,14 +74,6 @@ func (ctx *Context) addMapType(name string, keyType string) string {
 	return mapType.Name
 }
 
-func (ctx *Context) FindProtoPackage(name string) string {
-	if topLevelDef, ok := ctx.Defs[name]; ok {
-		return topLevelDef.GetProtoPackage()
-	}
-	return ""
-}
-
-
 func (ctx *Context) FindEnum(name string) *Enum {
 	topLevelDef, ok := ctx.Defs[name]
 	if !ok {
@@ -130,4 +122,18 @@ func (ctx *Context) FindMap(name string) []*MapType {
 		return mapTypes
 	}
 	return nil
+}
+
+func (ctx *Context) toGoType(type_ string) string {
+	if def, ok := ctx.Defs[type_]; ok {
+		return def.GoType()
+	}
+	return GoType(type_)
+}
+
+func (ctx *Context) toProtoGoType(type_ string) string {
+	if def, ok := ctx.Defs[type_]; ok {
+		return def.ProtoGoType()
+	}
+	return ProtoGoType(type_)
 }

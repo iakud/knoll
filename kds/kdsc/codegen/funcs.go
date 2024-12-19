@@ -12,13 +12,12 @@ func Funcs(ctx *Context) template.FuncMap {
 		"ucFirst": ucFirst,
 
 		"toGoType": ctx.toGoType,
-		"toProtoType": toProtoType,
 		"toProtoGoType": ctx.toProtoGoType,
+		"toProtoType": toProtoType,
 
 		"findEnum": ctx.FindEnum,
 		"findEntity": ctx.FindEntity,
 		"findComponent": ctx.FindComponent,
-		"findProtoPackage": ctx.FindProtoPackage,
 
 		"findList": ctx.FindList,
 		"findMap": ctx.FindMap,
@@ -43,87 +42,6 @@ func ucFirst(s string) string {
 	r := []rune(s)
 	r[0] = unicode.ToUpper(r[0])
 	return string(r)
-}
-
-func (ctx *Context) toGoType(type_ string) string {
-	switch type_ {
-	case "double":
-		return "float64"
-	case "float":
-		return "float32"
-	case "int32":
-		return "int32"
-	case "int64":
-		return "int64"
-	case "sint32":
-		return "int32"
-	case "sint64":
-		return "int64"
-	case "fixed32":
-		return "uint32"
-	case "fixed64":
-		return "uint64"
-	case "sfixed32":
-		return "int32"
-	case "sfixed64":
-		return "int64"
-	case "bool":
-		return "bool"
-	case "string":
-		return "string"
-	case "bytes":
-		return "[]byte"
-	case "timestamp":
-		return "time.Time"
-	case "duration":
-		return "time.Duration"
-	case "empty":
-		return "struct{}"
-	default:
-		return type_
-	}
-}
-
-func (ctx *Context) toProtoGoType(type_ string) string {
-	switch type_ {
-	case "double":
-		return "float64"
-	case "float":
-		return "float32"
-	case "int32":
-		return "int32"
-	case "int64":
-		return "int64"
-	case "sint32":
-		return "int32"
-	case "sint64":
-		return "int64"
-	case "fixed32":
-		return "uint32"
-	case "fixed64":
-		return "uint64"
-	case "sfixed32":
-		return "int32"
-	case "sfixed64":
-		return "int64"
-	case "bool":
-		return "bool"
-	case "string":
-		return "string"
-	case "bytes":
-		return "[]byte"
-	case "timestamp":
-		return "timestamppb.Timestamp"
-	case "duration":
-		return "durationpb.Duration"
-	case "empty":
-		return "emptypb.Empty"
-	default:
-		if def, ok := ctx.Defs[type_]; ok {
-			return def.GetProtoPackage() + "." + type_
-		}
-		return type_
-	}
 }
 
 func toProtoType(type_ string) string {
