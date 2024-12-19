@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -44,7 +45,7 @@ func Parse(kdsFiles []string, tplPath string, out string) error {
 	ctx.format()
 
 	for _, kds := range kdsList {
-		kds.format()
+		formatKds(ctx, kds)
 		for _, tpl := range tpls {
 			buf := bytes.NewBuffer(nil)
 			tpl.Execute(buf, kds)
@@ -73,4 +74,47 @@ func parseKds(ctx *Context, kdsFile string) *Kds {
 	kdsName := strings.TrimSuffix(filepath.Base(kdsFile), filepath.Ext(kdsFile))
 	kds := visitKds(ctx, kdsName, kdsParser.Kds())
 	return kds
+}
+
+func formatKds(ctx *Context, kds *Kds) {
+	var importSlices, importMaps bool
+	if kds.Name == "common" {
+		for type_ := range ctx.TypeList {
+			if _, ok := ctx.Defs[type_]; ok {
+				continue
+			}
+			kds.addType(type_)
+			importSlices = true
+		}
+		for type_ := range ctx.TypeMap {
+			if _, ok := ctx.Defs[type_]; ok {
+				continue
+			}
+			kds.addType(type_)
+			importMaps = true
+		}
+	}
+	importSlices = importSlices || slices.ContainsFunc(kds.Defs, func(def TopLevelDef) bool {
+		if _, ok := ctx.TypeList[def.GetName()]; ok {
+			return true
+		}
+		return false
+	})
+	importMaps = importMaps || slices.ContainsFunc(kds.Defs, func(def TopLevelDef) bool {
+		if _, ok := ctx.TypeMap[def.GetName()]; ok {
+			return true
+		}
+		return false
+	})
+
+	if importSlices {
+		kds.addGoImport("slices", "")
+		kds.addGoImport("iter", "")
+	}
+	if importMaps {
+		kds.addGoImport("maps", "")
+		kds.addGoImport("iter", "")
+	}
+
+	kds.format()
 }

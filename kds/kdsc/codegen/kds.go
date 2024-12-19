@@ -12,12 +12,10 @@ type Kds struct {
 	ProtoImports []string
 	GoImportSpecs []*ImportSpec
 
-	Defs []interface{}
+	Defs []TopLevelDef
 	Types []string
 
 	ImportTypes []string
-	ImportSlices bool
-	ImportMaps bool
 }
 
 func (k *Kds) addImportTypes(type_ string) {
@@ -68,15 +66,6 @@ func (k *Kds) addType(name string) {
 }
 
 func (k *Kds) format() {
-	if k.ImportSlices {
-		k.addGoImport("slices", "")
-		k.addGoImport("iter", "")
-	}
-	if k.ImportMaps {
-		k.addGoImport("maps", "")
-		k.addGoImport("iter", "")
-	}
-
 	for _, type_ := range k.ImportTypes {
 		k.addImportByType(type_)
 	}
@@ -112,10 +101,18 @@ type ImportSpec struct {
 	SpacesBefore bool
 }
 
+type TopLevelDef interface {
+	GetName() string
+}
+
 type Enum struct {
 	Name string
 	EnumFields []*EnumField
 	ProtoPackage string
+}
+
+func (e *Enum) GetName() string {
+	return e.Name
 }
 
 type EnumField struct {
@@ -127,6 +124,10 @@ type Message struct {
 	Name string
 	Fields []*Field
 	ProtoPackage string
+}
+
+func (e *Message) GetName() string {
+	return e.Name
 }
 
 type Entity struct {

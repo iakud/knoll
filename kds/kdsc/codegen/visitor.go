@@ -122,8 +122,7 @@ func visitComponent(ctx *Context, kds *Kds, componentCtx parser.IComponentDefCon
 
 func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	field := new(Field)
-	var customType bool
-	field.Type, customType = visitType(ctx, kds, fieldCtx.Type_())
+	field.Type = visitType(ctx, kds, fieldCtx.Type_())
 
 	field.Name = GoCamelCase(fieldCtx.FieldName().GetText())
 	field.Number, _ = strconv.Atoi(fieldCtx.FieldNumber().GetText())
@@ -133,21 +132,13 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	if fieldCtx.FieldLabel() != nil && fieldCtx.FieldLabel().REPEATED() != nil {
 		field.Repeated = true
 		field.ListType = ctx.addListType(field.Type)
-		
-		if customType {
-			kds.ImportSlices = true
-		} else {
-			ctx.Common.addType(field.Type)
-			ctx.Common.ImportSlices = true
-		}
 	}
 	return field
 }
 
 func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) *Field {
 	field := new(Field)
-	var customType bool
-	field.Type, customType = visitType(ctx, kds, mapFieldCtx.Type_())
+	field.Type = visitType(ctx, kds, mapFieldCtx.Type_())
 
 	field.KeyType = mapFieldCtx.KeyType().GetText()
 	field.Name = GoCamelCase(mapFieldCtx.MapName().GetText())
@@ -156,17 +147,10 @@ func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) 
 	field.GoVarName = GoSanitized(ToLowerFirst(field.Name))
 
 	field.MapType = ctx.addMapType(field.Type, field.KeyType)
-
-	if customType {
-		kds.ImportMaps = true
-	} else {
-		ctx.Common.addType(field.Type)
-		ctx.Common.ImportMaps = true
-	}
 	return field
 }
 
-func visitType(ctx *Context, kds *Kds, typeCtx parser.IType_Context) (string, bool) {
+func visitType(ctx *Context, kds *Kds, typeCtx parser.IType_Context) string {
 	var type_ string
 	customType := typeCtx.MessageType() != nil || typeCtx.EnumType() != nil
 	if customType {
@@ -183,5 +167,5 @@ func visitType(ctx *Context, kds *Kds, typeCtx parser.IType_Context) (string, bo
 		kds.addImportTypes(typeCtx.EMPTY().GetText())
 	}
 
-	return type_, customType
+	return type_
 }
