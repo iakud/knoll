@@ -1,5 +1,173 @@
 {{- /* BEGIN DEFINE */ -}}
 
+{{- define "EnumList"}}
+
+type dirtyParentFunc_{{.Name}} func()
+
+func (f dirtyParentFunc_{{.Name}}) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
+type {{.Name}} struct {
+	syncable []{{.Type}}
+
+	dirtyParent dirtyParentFunc_{{.Name}}
+}
+
+func (x *{{.Name}}) Len() int {
+	return len(x.syncable)
+}
+
+func (x *{{.Name}}) Get(i int) {{.Type}} {
+	return x.syncable[i]
+}
+
+func (x *{{.Name}}) Set(i int, v {{.Type}}) {
+	x.syncable[i] = v
+	x.markDirty()
+}
+
+func (x *{{.Name}}) Append(v ...{{.Type}}) {
+	x.syncable = append(x.syncable, v...)
+	x.markDirty()
+}
+
+func (x *{{.Name}}) Insert(i int, v ...{{.Type}}) {
+	x.syncable = slices.Insert(x.syncable, i, v...)
+	x.markDirty()
+}
+
+func (x *{{.Name}}) Delete(i, j int) {
+	x.syncable = slices.Delete(x.syncable, i, j)
+	x.markDirty()
+}
+
+func (x *{{.Name}}) Replace(i, j int, v ...{{.Type}}) {
+	x.syncable = slices.Replace(x.syncable, i, j, v...)
+	x.markDirty()
+}
+
+func (x *{{.Name}}) Reverse() {
+	slices.Reverse(x.syncable)
+	x.markDirty()
+}
+
+func (x *{{.Name}}) All() iter.Seq2[int, {{.Type}}] {
+	return slices.All(x.syncable)
+}
+
+func (x *{{.Name}}) Backward() iter.Seq2[int, {{.Type}}] {
+	return slices.Backward(x.syncable)
+}
+
+func (x *{{.Name}}) Values() iter.Seq[{{.Type}}] {
+	return slices.Values(x.syncable)
+}
+
+func (x *{{.Name}}) DumpChange() []{{findProtoPackage .Type}}.{{.Type}} {
+	return x.DumpFull()
+}
+
+func (x *{{.Name}}) DumpFull() []{{findProtoPackage .Type}}.{{.Type}} {
+	var m []{{findProtoPackage .Type}}.{{.Type}}
+	for _, v := range x.syncable {
+		m = append(m, v.)
+	}
+	return m
+}
+
+func (x *{{.Name}}) markDirty() {
+	x.dirtyParent.invoke()
+}
+
+func (x *{{.Name}}) clearDirty() {
+}
+{{- end}}
+
+{{- define "ComponentList"}}
+
+type dirtyParentFunc_{{.Name}} func()
+
+func (f dirtyParentFunc_{{.Name}}) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
+type {{.Name}} struct {
+	syncable []*{{.Type}}
+
+	dirtyParent dirtyParentFunc_{{.Name}}
+}
+
+func (x *{{.Name}}) Len() int {
+	return len(x.syncable)
+}
+
+func (x *{{.Name}}) Get(i int) *{{.Type}} {
+	return x.syncable[i]
+}
+
+func (x *{{.Name}}) Set(i int, v *{{.Type}}) {
+	x.syncable[i] = v
+}
+
+func (x *{{.Name}}) Append(v ...*{{.Type}}) {
+	x.syncable = append(x.syncable, v...)
+}
+
+func (x *{{.Name}}) Insert(i int, v ...*{{.Type}}) {
+	x.syncable = slices.Insert(x.syncable, i, v...)
+}
+
+func (x *{{.Name}}) Delete(i, j int) {
+	x.syncable = slices.Delete(x.syncable, i, j)
+}
+
+func (x *{{.Name}}) Replace(i, j int, v ...*{{.Type}}) {
+	x.syncable = slices.Replace(x.syncable, i, j, v...)
+}
+
+func (x *{{.Name}}) Reverse() {
+	slices.Reverse(x.syncable)
+}
+
+func (x *{{.Name}}) All() iter.Seq2[int, *{{.Type}}] {
+	return slices.All(x.syncable)
+}
+
+func (x *{{.Name}}) Backward() iter.Seq2[int, *{{.Type}}] {
+	return slices.Backward(x.syncable)
+}
+
+func (x *{{.Name}}) Values() iter.Seq[*{{.Type}}] {
+	return slices.Values(x.syncable)
+}
+
+func (x *{{.Name}}) DumpChange() []*{{findProtoPackage .Type}}.{{.Type}} {
+	return x.DumpFull()
+}
+
+func (x *{{.Name}}) DumpFull() []*{{findProtoPackage .Type}}.{{.Type}} {
+	var m []*{{findProtoPackage .Type}}.{{.Type}}
+	for _, v := range x.syncable {
+		m = append(m, v.DumpChange())
+	}
+	return m
+}
+
+func (x *{{.Name}}) markDirty() {
+	x.dirtyParent.invoke()
+}
+
+func (x *{{.Name}}) clearDirty() {
+}
+{{- end}}
+
 {{- define "CommonList"}}
 
 type dirtyParentFunc_{{.Name}} func()
@@ -60,6 +228,217 @@ func (x *{{.Name}}) Backward() iter.Seq2[int, {{toGoType .Type}}] {
 func (x *{{.Name}}) Values() iter.Seq[{{toGoType .Type}}] {
 	return slices.Values(x.syncable)
 }
+
+{{- if eq .Type "timestamp"}}
+
+func (x *{{.Name}}) DumpChange() []*timestamppb.Timestamp {
+	return x.DumpFull()
+}
+
+func (x *{{.Name}}) DumpFull() []*timestamppb.Timestamp {
+	var m []*timestamppb.Timestamp
+	for _, v := range x.syncable {
+		m = append(m, timestamppb.New(v))
+	}
+	return m
+}
+{{- else if eq .Type "duration"}}
+
+func (x *{{.Name}}) DumpChange() []*durationpb.Duration {
+	return x.DumpFull()
+}
+
+func (x *{{.Name}}) DumpFull() []*durationpb.Duration {
+	var m []*durationpb.Duration
+	for _, v := range x.syncable {
+		m = append(m, durationpb.New(v))
+	}
+	return m
+}
+{{- else if eq .Type "empty"}}
+
+func (x *{{.Name}}) DumpChange() []*emptypb.Empty {
+	return x.DumpFull()
+}
+
+func (x *{{.Name}}) DumpFull() []*emptypb.Empty {
+	var m []*emptypb.Empty
+	for range x.syncable {
+		m = append(m, new(emptypb.Empty))
+	}
+	return m
+}
+{{- else}}
+
+func (x *{{.Name}}) DumpChange() []{{toGoType .Type}} {
+	return x.DumpFull()
+}
+
+func (x *{{.Name}}) DumpFull() []{{toGoType .Type}} {
+	var m []{{toGoType .Type}}
+	for _, v := range x.syncable {
+		m = append(m, v)
+	}
+	return m
+}
+{{- end}}
+
+func (x *{{.Name}}) markDirty() {
+	x.dirtyParent.invoke()
+}
+
+func (x *{{.Name}}) clearDirty() {
+}
+{{- end}}
+
+{{- define "EnumMap"}}
+
+type dirtyParentFunc_{{.Name}} func()
+
+func (f dirtyParentFunc_{{.Name}}) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
+type {{.Name}} struct {
+	syncable map[{{toGoType .KeyType}}]{{.Type}}
+
+	dirtyParent dirtyParentFunc_{{.Name}}
+}
+
+func (x *{{.Name}}) Len() int {
+	return len(x.syncable)
+}
+
+func (x *{{.Name}}) Clear() {
+	clear(x.syncable)
+}
+
+func (x *{{.Name}}) Get(k {{toGoType .KeyType}}) ({{.Type}}, bool) {
+	v, ok := x.syncable[k]
+	return v, ok
+}
+
+func (x *{{.Name}}) Set(k {{toGoType .KeyType}}, v {{.Type}}) {
+	x.syncable[k] = v
+}
+
+func (x *{{.Name}}) Delete(k {{toGoType .KeyType}}) {
+	delete(x.syncable, k)
+}
+
+func (x *{{.Name}}) All() iter.Seq2[{{toGoType .KeyType}}, {{.Type}}] {
+	return maps.All(x.syncable)
+}
+
+func (x *{{.Name}}) Keys() iter.Seq[{{toGoType .KeyType}}] {
+	return maps.Keys(x.syncable)
+}
+
+func (x *{{.Name}}) Values() iter.Seq[{{toGoType .Type}}] {
+	return maps.Values(x.syncable)
+}
+
+func (x *{{.Name}}) DumpChange() map[{{toGoType .KeyType}}]{{findProtoPackage .Type}}.{{.Type}} {
+	m := make(map[{{toGoType .KeyType}}]{{findProtoPackage .Type}}.{{.Type}})
+	for k, v := range x.syncable {
+		m[k] = v
+	}
+	return m
+}
+
+func (x *{{.Name}}) DumpFull() map[{{toGoType .KeyType}}]{{findProtoPackage .Type}}.{{.Type}} {
+	m := make(map[{{toGoType .KeyType}}]{{findProtoPackage .Type}}.{{.Type}})
+	for k, v := range x.syncable {
+		m[k] = v
+	}
+	return m
+}
+
+func (x *{{.Name}}) markDirty(k {{toGoType .KeyType}}) {
+	_ = k
+	x.dirtyParent.invoke()
+}
+
+func (x *{{.Name}}) clearDirty() {
+}
+{{- end}}
+
+{{- define "ComponentMap"}}
+
+type dirtyParentFunc_{{.Name}} func()
+
+func (f dirtyParentFunc_{{.Name}}) invoke() {
+	if f == nil {
+		return
+	}
+	f()
+}
+
+type {{.Name}} struct {
+	syncable map[{{toGoType .KeyType}}]*{{.Type}}
+
+	dirtyParent dirtyParentFunc_{{.Name}}
+}
+
+func (x *{{.Name}}) Len() int {
+	return len(x.syncable)
+}
+
+func (x *{{.Name}}) Clear() {
+	clear(x.syncable)
+}
+
+func (x *{{.Name}}) Get(k {{toGoType .KeyType}}) (*{{.Type}}, bool) {
+	v, ok := x.syncable[k]
+	return v, ok
+}
+
+func (x *{{.Name}}) Set(k {{toGoType .KeyType}}, v *{{.Type}}) {
+	x.syncable[k] = v
+}
+
+func (x *{{.Name}}) Delete(k {{toGoType .KeyType}}) {
+	delete(x.syncable, k)
+}
+
+func (x *{{.Name}}) All() iter.Seq2[{{toGoType .KeyType}}, *{{.Type}}] {
+	return maps.All(x.syncable)
+}
+
+func (x *{{.Name}}) Keys() iter.Seq[{{toGoType .KeyType}}] {
+	return maps.Keys(x.syncable)
+}
+
+func (x *{{.Name}}) Values() iter.Seq[*{{toGoType .Type}}] {
+	return maps.Values(x.syncable)
+}
+
+func (x *{{.Name}}) DumpChange() map[{{toGoType .KeyType}}]*{{findProtoPackage .Type}}.{{.Type}} {
+	m := make(map[{{toGoType .KeyType}}]*{{findProtoPackage .Type}}.{{.Type}})
+	for k, v := range x.syncable {
+		m[k] = v.DumpChange()
+	}
+	return m
+}
+
+func (x *{{.Name}}) DumpFull() map[{{toGoType .KeyType}}]*{{findProtoPackage .Type}}.{{.Type}} {
+	m := make(map[{{toGoType .KeyType}}]*{{findProtoPackage .Type}}.{{.Type}})
+	for k, v := range x.syncable {
+		m[k] = v.DumpFull()
+	}
+	return m
+}
+
+func (x *{{.Name}}) markDirty(k {{toGoType .KeyType}}) {
+	_ = k
+	x.dirtyParent.invoke()
+}
+
+func (x *{{.Name}}) clearDirty() {
+}
 {{- end}}
 
 {{- define "CommonMap"}}
@@ -111,6 +490,84 @@ func (x *{{.Name}}) Keys() iter.Seq[{{toGoType .KeyType}}] {
 func (x *{{.Name}}) Values() iter.Seq[{{toGoType .Type}}] {
 	return maps.Values(x.syncable)
 }
+
+{{- if eq .Type "timestamp"}}
+
+func (x *{{.Name}}) DumpChange() map[{{toGoType .KeyType}}]*timestamppb.Timestamp {
+	m := make(map[{{toGoType .KeyType}}]*timestamppb.Timestamp)
+	for k, v := range x.syncable {
+		m[k] = timestamppb.New(v)
+	}
+	return m
+}
+
+func (x *{{.Name}}) DumpFull() map[{{toGoType .KeyType}}]*timestamppb.Timestamp {
+	m := make(map[{{toGoType .KeyType}}]*timestamppb.Timestamp)
+	for k, v := range x.syncable {
+		m[k] = timestamppb.New(v)
+	}
+	return m
+}
+{{- else if eq .Type "duration"}}
+
+func (x *{{.Name}}) DumpChange() map[{{toGoType .KeyType}}]*durationpb.Duration {
+	m := make(map[{{toGoType .KeyType}}]*durationpb.Duration)
+	for k, v := range x.syncable {
+		m[k] = durationpb.New(v)
+	}
+	return m
+}
+
+func (x *{{.Name}}) DumpFull() map[{{toGoType .KeyType}}]*durationpb.Duration {
+	m := make(map[{{toGoType .KeyType}}]*durationpb.Duration)
+	for k, v := range x.syncable {
+		m[k] = durationpb.New(v)
+	}
+	return m
+}
+{{- else if eq .Type "empty"}}
+
+func (x *{{.Name}}) DumpChange() map[{{toGoType .KeyType}}]*emptypb.Empty {
+	m := make(map[{{toGoType .KeyType}}]*emptypb.Empty)
+	for k := range x.syncable {
+		m[k] = new(emptypb.Empty)
+	}
+	return m
+}
+
+func (x *{{.Name}}) DumpFull() map[{{toGoType .KeyType}}]*emptypb.Empty {
+	m := make(map[{{toGoType .KeyType}}]*emptypb.Empty)
+	for k := range x.syncable {
+		m[k] = new(emptypb.Empty)
+	}
+	return m
+}
+{{- else}}
+
+func (x *{{.Name}}) DumpChange() map[{{toGoType .KeyType}}]{{toGoType .Type}} {
+	m := make(map[{{toGoType .KeyType}}]{{toGoType .Type}})
+	for k, v := range x.syncable {
+		m[k] = v
+	}
+	return m
+}
+
+func (x *{{.Name}}) DumpFull() map[{{toGoType .KeyType}}]{{toGoType .Type}} {
+	m := make(map[{{toGoType .KeyType}}]{{toGoType .Type}})
+	for k, v := range x.syncable {
+		m[k] = v
+	}
+	return m
+}
+{{- end}}
+
+func (x *{{.Name}}) markDirty(k {{toGoType .KeyType}}) {
+	_ = k
+	x.dirtyParent.invoke()
+}
+
+func (x *{{.Name}}) clearDirty() {
+}
 {{- end}}
 
 {{- define "Enum"}}
@@ -130,21 +587,9 @@ const (
 type syncable{{.Name}} struct {
 {{- range .Fields}}
 {{- if .Repeated}}{{/* Array */}}
-{{- if findComponent .Type}}
-	{{.Name}} []*{{.Type}}
-{{- else if findEnum .Type}}
-	{{.Name}} []{{.Type}}
-{{- else}}
-	{{.Name}} []{{toGoType .Type}}
-{{- end}}
+	{{.Name}} {{.ListType}}
 {{- else if len .KeyType}}{{/* Map */}}
-{{- if findComponent .Type}}
-	{{.Name}} map[{{toGoType .KeyType}}]*{{.Type}}
-{{- else if findEnum .Type}}
-	{{.Name}} map[{{toGoType .KeyType}}]{{.Type}}
-{{- else}}
-	{{.Name}} map[{{toGoType .KeyType}}]{{toGoType .Type}}
-{{- end}}
+	{{.Name}} {{.MapType}}
 {{- else}}{{/* Field */}}
 {{- if findComponent .Type}}
 	{{.Name}} *{{.Type}}
@@ -164,10 +609,15 @@ type syncable{{.Name}} struct {
 {{- range .Fields}}
 {{- if .Repeated}}
 
+func (x *{{$MessageName}}) Get{{.Name}}() *{{.ListType}} {
+	return &x.syncable.{{.Name}}
+}
 {{- else if len .KeyType}}
 
-{{- else}}
-{{- if findComponent .Type}}
+func (x *{{$MessageName}}) Get{{.Name}}() *{{.MapType}} {
+	return &x.syncable.{{.Name}}
+}
+{{- else if findComponent .Type}}
 
 func (x *{{$MessageName}}) Get{{.Name}}() *{{.Type}} {
 	return x.syncable.{{.Name}}
@@ -226,7 +676,6 @@ func (x *{{$MessageName}}) Set{{.Name}}(v {{toGoType .Type}}) {
 }
 {{- end}}
 {{- end}}
-{{- end}}
 
 func (x *{{$MessageName}}) DumpChange() *{{.ProtoPackage}}.{{.Name}} {
 	if x.checkDirty(uint64(0x01)) {
@@ -236,50 +685,9 @@ func (x *{{$MessageName}}) DumpChange() *{{.ProtoPackage}}.{{.Name}} {
 {{- range .Fields}}
 	if x.checkDirty(uint64(0x01) << {{.Number}}) {
 {{- if .Repeated}}
-		
-{{- if findComponent .Type}}
-		for _, v := range x.syncable.{{.Name}} {
-			m.{{.Name}} = append(m.{{.Name}}, v.DumpChange())
-		}
-{{- else if eq .Type "timestamp"}}
-		for _, v := range x.syncable.{{.Name}} {
-			m.{{.Name}} = append(m.{{.Name}}, timestamppb.New(v))
-		}
-{{- else if eq .Type "duration"}}
-		for _, v := range x.syncable.{{.Name}} {
-			m.{{.Name}} = append(m.{{.Name}}, durationpb.New(v))
-		}
-{{- else if eq .Type "empty"}}
-		for range x.syncable.{{.Name}} {
-			m.{{.Name}} = append(m.{{.Name}}, new(emptypb.Empty))
-		}
-{{- else}}
-		for _, v := range x.syncable.{{.Name}} {
-			m.{{.Name}} = append(m.{{.Name}}, v)
-		}
-{{- end}}
+		m.{{.Name}} = x.syncable.{{.Name}}.DumpChange()
 {{- else if len .KeyType}}
-{{- if findComponent .Type}}
-		for k, v := range x.syncable.{{.Name}} {
-			m.{{.Name}}[k] = v.DumpChange()
-		}
-{{- else if eq .Type "timestamp"}}
-		for k, v := range x.syncable.{{.Name}} {
-			m.{{.Name}}[k] = timestamppb.New(v)
-		}
-{{- else if eq .Type "duration"}}
-		for k, v := range x.syncable.{{.Name}} {
-			m.{{.Name}}[k] = durationpb.New(v)
-		}
-{{- else if eq .Type "empty"}}
-		for k := range x.syncable.{{.Name}} {
-			m.{{.Name}}[k] = new(emptypb.Empty)
-		}
-{{- else}}
-		for k, v := range x.syncable.{{.Name}} {
-			m.{{.Name}}[k] = v
-		}
-{{- end}}
+		m.{{.Name}} = x.syncable.{{.Name}}.DumpChange()
 {{- else}}
 {{- if findComponent .Type}}
 		m.{{.Name}} = x.syncable.{{.Name}}.DumpChange()
@@ -302,49 +710,9 @@ func (x *{{$MessageName}}) DumpFull() *{{.ProtoPackage}}.{{.Name}} {
 	m := new({{.ProtoPackage}}.{{.Name}})
 {{- range .Fields}}
 {{- if .Repeated}}
-{{- if findComponent .Type}}
-	for _, v := range x.syncable.{{.Name}} {
-		m.{{.Name}} = append(m.{{.Name}}, v.DumpFull())
-	}
-{{- else if eq .Type "timestamp"}}
-	for _, v := range x.syncable.{{.Name}} {
-		m.{{.Name}} = append(m.{{.Name}}, timestamppb.New(v))
-	}
-{{- else if eq .Type "duration"}}
-	for _, v := range x.syncable.{{.Name}} {
-		m.{{.Name}} = append(m.{{.Name}}, durationpb.New(v))
-	}
-{{- else if eq .Type "empty"}}
-	for range x.syncable.{{.Name}} {
-		m.{{.Name}} = append(m.{{.Name}}, new(emptypb.Empty))
-	}
-{{- else}}
-	for _, v := range x.syncable.{{.Name}} {
-		m.{{.Name}} = append(m.{{.Name}}, v)
-	}
-{{- end}}
+	m.{{.Name}} = x.syncable.{{.Name}}.DumpFull()
 {{- else if len .KeyType}}
-{{- if findComponent .Type}}
-	for k, v := range x.syncable.{{.Name}} {
-		m.{{.Name}}[k] = v.DumpFull()
-	}
-{{- else if eq .Type "timestamp"}}
-	for k, v := range x.syncable.{{.Name}} {
-		m.{{.Name}}[k] = timestamppb.New(v)
-	}
-{{- else if eq .Type "duration"}}
-	for k, v := range x.syncable.{{.Name}} {
-		m.{{.Name}}[k] = durationpb.New(v)
-	}
-{{- else if eq .Type "empty"}}
-	for k := range x.syncable.{{.Name}} {
-		m.{{.Name}}[k] = new(emptypb.Empty)
-	}
-{{- else}}
-	for k, v := range x.syncable.{{.Name}} {
-		m.{{.Name}}[k] = v
-	}
-{{- end}}
+	m.{{.Name}} = x.syncable.{{.Name}}.DumpFull()
 {{- else}}
 {{- if findComponent .Type}}
 	m.{{.Name}} = x.syncable.{{.Name}}.DumpFull()
@@ -417,13 +785,9 @@ func (x *{{.Name}}) clearAll() {
 {{- range .Fields}}
 {{- if findComponent .Type}}
 {{- if .Repeated}}
-	for i := 0; i < len(x.syncable.{{.Name}}); i++ {
-		x.syncable.{{.Name}}[i].clearDirty()
-	}
+	x.syncable.{{.Name}}.clearDirty()
 {{- else if len .KeyType}}
-	for _, v := range x.syncable.{{.Name}} {
-		v.clearDirty()
-	}
+	x.syncable.{{.Name}}.clearDirty()
 {{- else}}
 	x.syncable.{{.Name}}.clearDirty()
 {{- end}}
@@ -444,13 +808,9 @@ func (x *{{.Name}}) clearDirty() {
 {{- if findComponent .Type}}
 	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 {{- if .Repeated}}
-		for i := 0; i < len(x.syncable.{{.Name}}); i++ {
-			x.syncable.{{.Name}}[i].clearDirty()
-		}
+		x.syncable.{{.Name}}.clearDirty()
 {{- else if len .KeyType}}
-		for _, v := range x.syncable.{{.Name}} {
-			v.clearDirty()
-		}
+		x.syncable.{{.Name}}.clearDirty()
 {{- else}}
 		x.syncable.{{.Name}}.clearDirty()
 {{- end}}
@@ -524,13 +884,9 @@ func (x *{{.Name}}) clearAll() {
 {{- range .Fields}}
 {{- if findComponent .Type}}
 {{- if .Repeated}}
-	for i := 0; i < len(x.syncable.{{.Name}}); i++ {
-		x.syncable.{{.Name}}[i].clearDirty()
-	}
+	x.syncable.{{.Name}}.clearDirty()
 {{- else if len .KeyType}}
-	for _, v := range x.syncable.{{.Name}} {
-		v.clearDirty()
-	}
+	x.syncable.{{.Name}}.clearDirty()
 {{- else}}
 	x.syncable.{{.Name}}.clearDirty()
 {{- end}}
@@ -551,13 +907,9 @@ func (x *{{.Name}}) clearDirty() {
 {{- if findComponent .Type}}
 	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 {{- if .Repeated}}
-		for i := 0; i < len(x.syncable.{{.Name}}); i++ {
-			x.syncable.{{.Name}}[i].clearDirty()
-		}
+		x.syncable.{{.Name}}.clearDirty()
 {{- else if len .KeyType}}
-		for _, v := range x.syncable.{{.Name}} {
-			v.clearDirty()
-		}
+		x.syncable.{{.Name}}.clearDirty()
 {{- else}}
 		x.syncable.{{.Name}}.clearDirty()
 {{- end}}
@@ -606,20 +958,31 @@ import (
 
 {{- range .Defs}}
 {{- if findEnum .Name}}
-{{- template "Enum" .}}
-{{- else if findEntity .Name}}
-{{- template "Entity" .}}
-{{- else if findComponent .Name}}
-{{- template "Component" .}}
 
+{{- template "Enum" .}}
 {{- with findList .Name}}
 {{- if .}}
-{{- template "CommonList" .}}
+{{- template "EnumList" .}}
 {{- end}}
+{{- end}}
+{{- range findMap .Name}}
+{{- template "EnumMap" .}}
 {{- end}}
 
+{{- else if findEntity .Name}}
+
+{{- template "Entity" .}}
+
+{{- else if findComponent .Name}}
+
+{{- template "Component" .}}
+{{- with findList .Name}}
+{{- if .}}
+{{- template "ComponentList" .}}
+{{- end}}
+{{- end}}
 {{- range findMap .Name}}
-{{- template "CommonMap" .}}
+{{- template "ComponentMap" .}}
 {{- end}}
 
 {{- end}}

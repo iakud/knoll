@@ -14,7 +14,7 @@ type syncableCity struct {
 	PlayerId int64
 	PlayerBasicInfo *PlayerBasicInfo
 	CityInfo *CityBaseInfo
-	Troops []int64
+	Troops Int64_List
 }
 
 type City struct {
@@ -97,6 +97,10 @@ func (x *City) setCityInfo(v *CityBaseInfo) {
 	}
 }
 
+func (x *City) GetTroops() *Int64_List {
+	return &x.syncable.Troops
+}
+
 func (x *City) DumpChange() *kdspb.City {
 	if x.checkDirty(uint64(0x01)) {
 		return x.DumpFull()
@@ -112,9 +116,7 @@ func (x *City) DumpChange() *kdspb.City {
 		m.CityInfo = x.syncable.CityInfo.DumpChange()
 	}
 	if x.checkDirty(uint64(0x01) << 4) {
-		for _, v := range x.syncable.Troops {
-			m.Troops = append(m.Troops, v)
-		}
+		m.Troops = x.syncable.Troops.DumpChange()
 	}
 	return m
 }
@@ -124,9 +126,7 @@ func (x *City) DumpFull() *kdspb.City {
 	m.PlayerId = x.syncable.PlayerId
 	m.PlayerBasicInfo = x.syncable.PlayerBasicInfo.DumpFull()
 	m.CityInfo = x.syncable.CityInfo.DumpFull()
-	for _, v := range x.syncable.Troops {
-		m.Troops = append(m.Troops, v)
-	}
+	m.Troops = x.syncable.Troops.DumpFull()
 	return m
 }
 
@@ -169,8 +169,8 @@ func (x *City) checkDirty(n uint64) bool {
 }
 
 type syncableCityBaseInfo struct {
-	Positions []*Vector
-	Troops map[int32]struct{}
+	Positions Vector_List
+	Troops Int32_Empty_Map
 	BuildInfo []byte
 }
 
@@ -197,6 +197,14 @@ func NewCityBaseInfo() *CityBaseInfo {
 	return x
 }
 
+func (x *CityBaseInfo) GetPositions() *Vector_List {
+	return &x.syncable.Positions
+}
+
+func (x *CityBaseInfo) GetTroops() *Int32_Empty_Map {
+	return &x.syncable.Troops
+}
+
 func (x *CityBaseInfo) GetBuildInfo() []byte {
 	return x.syncable.BuildInfo
 }
@@ -215,14 +223,10 @@ func (x *CityBaseInfo) DumpChange() *kdspb.CityBaseInfo {
 	}
 	m := new(kdspb.CityBaseInfo)
 	if x.checkDirty(uint64(0x01) << 1) {
-		for _, v := range x.syncable.Positions {
-			m.Positions = append(m.Positions, v.DumpChange())
-		}
+		m.Positions = x.syncable.Positions.DumpChange()
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		for k := range x.syncable.Troops {
-			m.Troops[k] = new(emptypb.Empty)
-		}
+		m.Troops = x.syncable.Troops.DumpChange()
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
 		m.BuildInfo = x.syncable.BuildInfo
@@ -232,12 +236,8 @@ func (x *CityBaseInfo) DumpChange() *kdspb.CityBaseInfo {
 
 func (x *CityBaseInfo) DumpFull() *kdspb.CityBaseInfo {
 	m := new(kdspb.CityBaseInfo)
-	for _, v := range x.syncable.Positions {
-		m.Positions = append(m.Positions, v.DumpFull())
-	}
-	for k := range x.syncable.Troops {
-		m.Troops[k] = new(emptypb.Empty)
-	}
+	m.Positions = x.syncable.Positions.DumpFull()
+	m.Troops = x.syncable.Troops.DumpFull()
 	m.BuildInfo = x.syncable.BuildInfo
 	return m
 }
@@ -255,9 +255,7 @@ func (x *CityBaseInfo) markDirty(n uint64) {
 }
 
 func (x *CityBaseInfo) clearAll() {
-	for i := 0; i < len(x.syncable.Positions); i++ {
-		x.syncable.Positions[i].clearDirty()
-	}
+	x.syncable.Positions.clearDirty()
 	x.dirty = 0
 }
 
@@ -270,9 +268,7 @@ func (x *CityBaseInfo) clearDirty() {
 		return
 	}
 	if x.dirty & uint64(0x01) << 1 != 0 {
-		for i := 0; i < len(x.syncable.Positions); i++ {
-			x.syncable.Positions[i].clearDirty()
-		}
+		x.syncable.Positions.clearDirty()
 	}
 	x.dirty = 0
 }
@@ -394,7 +390,7 @@ func (f dirtyParentFunc_Vector_List) invoke() {
 }
 
 type Vector_List struct {
-	syncable []Vector
+	syncable []*Vector
 
 	dirtyParent dirtyParentFunc_Vector_List
 }
@@ -403,19 +399,19 @@ func (x *Vector_List) Len() int {
 	return len(x.syncable)
 }
 
-func (x *Vector_List) Get(i int) Vector {
+func (x *Vector_List) Get(i int) *Vector {
 	return x.syncable[i]
 }
 
-func (x *Vector_List) Set(i int, v Vector) {
+func (x *Vector_List) Set(i int, v *Vector) {
 	x.syncable[i] = v
 }
 
-func (x *Vector_List) Append(v ...Vector) {
+func (x *Vector_List) Append(v ...*Vector) {
 	x.syncable = append(x.syncable, v...)
 }
 
-func (x *Vector_List) Insert(i int, v ...Vector) {
+func (x *Vector_List) Insert(i int, v ...*Vector) {
 	x.syncable = slices.Insert(x.syncable, i, v...)
 }
 
@@ -423,7 +419,7 @@ func (x *Vector_List) Delete(i, j int) {
 	x.syncable = slices.Delete(x.syncable, i, j)
 }
 
-func (x *Vector_List) Replace(i, j int, v ...Vector) {
+func (x *Vector_List) Replace(i, j int, v ...*Vector) {
 	x.syncable = slices.Replace(x.syncable, i, j, v...)
 }
 
@@ -431,14 +427,33 @@ func (x *Vector_List) Reverse() {
 	slices.Reverse(x.syncable)
 }
 
-func (x *Vector_List) All() iter.Seq2[int, Vector] {
+func (x *Vector_List) All() iter.Seq2[int, *Vector] {
 	return slices.All(x.syncable)
 }
 
-func (x *Vector_List) Backward() iter.Seq2[int, Vector] {
+func (x *Vector_List) Backward() iter.Seq2[int, *Vector] {
 	return slices.Backward(x.syncable)
 }
 
-func (x *Vector_List) Values() iter.Seq[Vector] {
+func (x *Vector_List) Values() iter.Seq[*Vector] {
 	return slices.Values(x.syncable)
+}
+
+func (x *Vector_List) DumpChange() []*kdspb.Vector {
+	return x.DumpFull()
+}
+
+func (x *Vector_List) DumpFull() []*kdspb.Vector {
+	var m []*kdspb.Vector
+	for _, v := range x.syncable {
+		m = append(m, v.DumpChange())
+	}
+	return m
+}
+
+func (x *Vector_List) markDirty() {
+	x.dirtyParent.invoke()
+}
+
+func (x *Vector_List) clearDirty() {
 }

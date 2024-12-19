@@ -16,7 +16,7 @@ type Context struct {
 	TypeMap map[string][]*MapType
 
 	Imports map[string]*Kds
-	Defs map[string]interface{}
+	Defs map[string]TopLevelDef
 }
 
 type ListType struct {
@@ -35,7 +35,7 @@ func newContext() *Context {
 		TypeList: make(map[string]*ListType),
 		TypeMap: make(map[string][]*MapType),
 		Imports: make(map[string]*Kds),
-		Defs: make(map[string]interface{}),
+		Defs: make(map[string]TopLevelDef),
 	}
 }
 
@@ -73,6 +73,14 @@ func (ctx *Context) addMapType(name string, keyType string) string {
 	ctx.TypeMap[name] = append(mapTypes, mapType)
 	return mapType.Name
 }
+
+func (ctx *Context) FindProtoPackage(name string) string {
+	if topLevelDef, ok := ctx.Defs[name]; ok {
+		return topLevelDef.GetProtoPackage()
+	}
+	return ""
+}
+
 
 func (ctx *Context) FindEnum(name string) *Enum {
 	topLevelDef, ok := ctx.Defs[name]

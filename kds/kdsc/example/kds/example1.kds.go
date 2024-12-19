@@ -299,7 +299,7 @@ func (x *PlayerBasicInfo) checkDirty(n uint64) bool {
 }
 
 type syncablePlayerHero struct {
-	Heroes map[int64]*Hero
+	Heroes Int64_Hero_Map
 }
 
 type dirtyParentFunc_PlayerHero func()
@@ -325,24 +325,24 @@ func NewPlayerHero() *PlayerHero {
 	return x
 }
 
+func (x *PlayerHero) GetHeroes() *Int64_Hero_Map {
+	return &x.syncable.Heroes
+}
+
 func (x *PlayerHero) DumpChange() *kdspb.PlayerHero {
 	if x.checkDirty(uint64(0x01)) {
 		return x.DumpFull()
 	}
 	m := new(kdspb.PlayerHero)
 	if x.checkDirty(uint64(0x01) << 1) {
-		for k, v := range x.syncable.Heroes {
-			m.Heroes[k] = v.DumpChange()
-		}
+		m.Heroes = x.syncable.Heroes.DumpChange()
 	}
 	return m
 }
 
 func (x *PlayerHero) DumpFull() *kdspb.PlayerHero {
 	m := new(kdspb.PlayerHero)
-	for k, v := range x.syncable.Heroes {
-		m.Heroes[k] = v.DumpFull()
-	}
+	m.Heroes = x.syncable.Heroes.DumpFull()
 	return m
 }
 
@@ -359,9 +359,7 @@ func (x *PlayerHero) markDirty(n uint64) {
 }
 
 func (x *PlayerHero) clearAll() {
-	for _, v := range x.syncable.Heroes {
-		v.clearDirty()
-	}
+	x.syncable.Heroes.clearDirty()
 	x.dirty = 0
 }
 
@@ -374,9 +372,7 @@ func (x *PlayerHero) clearDirty() {
 		return
 	}
 	if x.dirty & uint64(0x01) << 1 != 0 {
-		for _, v := range x.syncable.Heroes {
-			v.clearDirty()
-		}
+		x.syncable.Heroes.clearDirty()
 	}
 	x.dirty = 0
 }
@@ -386,7 +382,7 @@ func (x *PlayerHero) checkDirty(n uint64) bool {
 }
 
 type syncablePlayerBag struct {
-	Resources map[int32]int32
+	Resources Int32_Int32_Map
 }
 
 type dirtyParentFunc_PlayerBag func()
@@ -412,24 +408,24 @@ func NewPlayerBag() *PlayerBag {
 	return x
 }
 
+func (x *PlayerBag) GetResources() *Int32_Int32_Map {
+	return &x.syncable.Resources
+}
+
 func (x *PlayerBag) DumpChange() *kdspb.PlayerBag {
 	if x.checkDirty(uint64(0x01)) {
 		return x.DumpFull()
 	}
 	m := new(kdspb.PlayerBag)
 	if x.checkDirty(uint64(0x01) << 1) {
-		for k, v := range x.syncable.Resources {
-			m.Resources[k] = v
-		}
+		m.Resources = x.syncable.Resources.DumpChange()
 	}
 	return m
 }
 
 func (x *PlayerBag) DumpFull() *kdspb.PlayerBag {
 	m := new(kdspb.PlayerBag)
-	for k, v := range x.syncable.Resources {
-		m.Resources[k] = v
-	}
+	m.Resources = x.syncable.Resources.DumpFull()
 	return m
 }
 
@@ -611,7 +607,7 @@ func (f dirtyParentFunc_Int64_Hero_Map) invoke() {
 }
 
 type Int64_Hero_Map struct {
-	syncable map[int64]Hero
+	syncable map[int64]*Hero
 
 	dirtyParent dirtyParentFunc_Int64_Hero_Map
 }
@@ -624,12 +620,12 @@ func (x *Int64_Hero_Map) Clear() {
 	clear(x.syncable)
 }
 
-func (x *Int64_Hero_Map) Get(k int64) (Hero, bool) {
+func (x *Int64_Hero_Map) Get(k int64) (*Hero, bool) {
 	v, ok := x.syncable[k]
 	return v, ok
 }
 
-func (x *Int64_Hero_Map) Set(k int64, v Hero) {
+func (x *Int64_Hero_Map) Set(k int64, v *Hero) {
 	x.syncable[k] = v
 }
 
@@ -637,7 +633,7 @@ func (x *Int64_Hero_Map) Delete(k int64) {
 	delete(x.syncable, k)
 }
 
-func (x *Int64_Hero_Map) All() iter.Seq2[int64, Hero] {
+func (x *Int64_Hero_Map) All() iter.Seq2[int64, *Hero] {
 	return maps.All(x.syncable)
 }
 
@@ -645,8 +641,32 @@ func (x *Int64_Hero_Map) Keys() iter.Seq[int64] {
 	return maps.Keys(x.syncable)
 }
 
-func (x *Int64_Hero_Map) Values() iter.Seq[Hero] {
+func (x *Int64_Hero_Map) Values() iter.Seq[*Hero] {
 	return maps.Values(x.syncable)
+}
+
+func (x *Int64_Hero_Map) DumpChange() map[int64]*kdspb.Hero {
+	m := make(map[int64]*kdspb.Hero)
+	for k, v := range x.syncable {
+		m[k] = v.DumpChange()
+	}
+	return m
+}
+
+func (x *Int64_Hero_Map) DumpFull() map[int64]*kdspb.Hero {
+	m := make(map[int64]*kdspb.Hero)
+	for k, v := range x.syncable {
+		m[k] = v.DumpFull()
+	}
+	return m
+}
+
+func (x *Int64_Hero_Map) markDirty(k int64) {
+	_ = k
+	x.dirtyParent.invoke()
+}
+
+func (x *Int64_Hero_Map) clearDirty() {
 }
 
 type HeroType = kdspb.HeroType

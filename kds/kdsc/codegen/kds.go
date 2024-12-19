@@ -103,6 +103,7 @@ type ImportSpec struct {
 
 type TopLevelDef interface {
 	GetName() string
+	GetProtoPackage() string
 }
 
 type Enum struct {
@@ -113,6 +114,10 @@ type Enum struct {
 
 func (e *Enum) GetName() string {
 	return e.Name
+}
+
+func (e *Enum) GetProtoPackage() string {
+	return e.ProtoPackage
 }
 
 type EnumField struct {
@@ -126,9 +131,14 @@ type Message struct {
 	ProtoPackage string
 }
 
-func (e *Message) GetName() string {
-	return e.Name
+func (m *Message) GetName() string {
+	return m.Name
 }
+
+func (m *Message) GetProtoPackage() string {
+	return m.ProtoPackage
+}
+
 
 type Entity struct {
 	Message

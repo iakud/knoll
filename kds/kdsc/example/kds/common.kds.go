@@ -58,6 +58,30 @@ func (x *Int32_Empty_Map) Values() iter.Seq[struct{}] {
 	return maps.Values(x.syncable)
 }
 
+func (x *Int32_Empty_Map) DumpChange() map[int32]*emptypb.Empty {
+	m := make(map[int32]*emptypb.Empty)
+	for k := range x.syncable {
+		m[k] = new(emptypb.Empty)
+	}
+	return m
+}
+
+func (x *Int32_Empty_Map) DumpFull() map[int32]*emptypb.Empty {
+	m := make(map[int32]*emptypb.Empty)
+	for k := range x.syncable {
+		m[k] = new(emptypb.Empty)
+	}
+	return m
+}
+
+func (x *Int32_Empty_Map) markDirty(k int32) {
+	_ = k
+	x.dirtyParent.invoke()
+}
+
+func (x *Int32_Empty_Map) clearDirty() {
+}
+
 type dirtyParentFunc_Int32_Int32_Map func()
 
 func (f dirtyParentFunc_Int32_Int32_Map) invoke() {
@@ -104,6 +128,30 @@ func (x *Int32_Int32_Map) Keys() iter.Seq[int32] {
 
 func (x *Int32_Int32_Map) Values() iter.Seq[int32] {
 	return maps.Values(x.syncable)
+}
+
+func (x *Int32_Int32_Map) DumpChange() map[int32]int32 {
+	m := make(map[int32]int32)
+	for k, v := range x.syncable {
+		m[k] = v
+	}
+	return m
+}
+
+func (x *Int32_Int32_Map) DumpFull() map[int32]int32 {
+	m := make(map[int32]int32)
+	for k, v := range x.syncable {
+		m[k] = v
+	}
+	return m
+}
+
+func (x *Int32_Int32_Map) markDirty(k int32) {
+	_ = k
+	x.dirtyParent.invoke()
+}
+
+func (x *Int32_Int32_Map) clearDirty() {
 }
 
 type dirtyParentFunc_Int64_List func()
@@ -163,4 +211,23 @@ func (x *Int64_List) Backward() iter.Seq2[int, int64] {
 
 func (x *Int64_List) Values() iter.Seq[int64] {
 	return slices.Values(x.syncable)
+}
+
+func (x *Int64_List) DumpChange() []int64 {
+	return x.DumpFull()
+}
+
+func (x *Int64_List) DumpFull() []int64 {
+	var m []int64
+	for _, v := range x.syncable {
+		m = append(m, v)
+	}
+	return m
+}
+
+func (x *Int64_List) markDirty() {
+	x.dirtyParent.invoke()
+}
+
+func (x *Int64_List) clearDirty() {
 }
