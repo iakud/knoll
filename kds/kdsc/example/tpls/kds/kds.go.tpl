@@ -29,47 +29,36 @@ func (x *{{.Type}}_List) Set(i int, v {{toGoType .Type}}) {
 	x.syncable[i] = v
 }
 
-func (x *{{.Type}}_List) Index(v {{toGoType .Type}}) int {
-	for i := range x.syncable {
-		if v == x.syncable[i] {
-			return i
-		}
-	}
-	return -1
-}
-
-func (x *{{.Type}}_List) Contains(v {{toGoType .Type}}) bool {
-	return x.Index(v) >= 0
-}
-
 func (x *{{.Type}}_List) Append(v ...{{toGoType .Type}}) {
 	x.syncable = append(x.syncable, v...)
 }
 
 func (x *{{.Type}}_List) Insert(i int, v ...{{toGoType .Type}}) {
-	// x.syncable = slices.Insert(x.syncable, i, v...)
+	x.syncable = slices.Insert(x.syncable, i, v...)
 }
 
 func (x *{{.Type}}_List) Delete(i, j int) {
-	// x.syncable = slices.Delete(x.syncable, i, j)
+	x.syncable = slices.Delete(x.syncable, i, j)
 }
 
 func (x *{{.Type}}_List) Replace(i, j int, v ...{{toGoType .Type}}) {
-	// x.syncable = slices.Replace(x.syncable, i, j, v...)
+	x.syncable = slices.Replace(x.syncable, i, j, v...)
 }
 
-func (x *{{.Type}}_List) All() func(yield func(int, {{toGoType .Type}}) bool) {
-	return func(yield func(int, {{toGoType .Type}}) bool) {
-		for i, v := range x.syncable {
-			if !yield(i, v) {
-				return
-			}
-		}
-	}
+func (x *{{.Type}}_List) Reverse() {
+	slices.Reverse(x.syncable)
 }
 
-func (x *{{.Type}}_List) Values() []{{toGoType .Type}} {
-	return append(x.syncable[:0:0], x.syncable...)
+func (x *{{.Type}}_List) All() iter.Seq2[int, {{toGoType .Type}}] {
+	return slices.All(x.syncable)
+}
+
+func (x *{{.Type}}_List) Backward() iter.Seq2[int, {{toGoType .Type}}] {
+	return slices.Backward(x.syncable)
+}
+
+func (x *{{.Type}}_List) Values() iter.Seq[{{toGoType .Type}}] {
+	return slices.Values(x.syncable)
 }
 {{- end}}
 
@@ -95,9 +84,7 @@ func (x *{{.KeyType}}_{{.Type}}_Map) Len() int {
 }
 
 func (x *{{.KeyType}}_{{.Type}}_Map) Clear() {
-	for k := range x.syncable {
-		delete(x.syncable, k)
-	}
+	clear(x.syncable)
 }
 
 func (x *{{.KeyType}}_{{.Type}}_Map) Get(k {{toGoType .KeyType}}) ({{toGoType .Type}}, bool) {
@@ -113,30 +100,16 @@ func (x *{{.KeyType}}_{{.Type}}_Map) Delete(k {{toGoType .KeyType}}) {
 	delete(x.syncable, k)
 }
 
-func (x *{{.KeyType}}_{{.Type}}_Map) All() func(yield func({{toGoType .KeyType}}, {{toGoType .Type}}) bool) {
-	return func(yield func({{toGoType .KeyType}}, {{toGoType .Type}}) bool) {
-		for k, v := range x.syncable {
-			if !yield(k, v) {
-				return
-			}
-		}
-	}
+func (x *{{.KeyType}}_{{.Type}}_Map) All() iter.Seq2[{{toGoType .KeyType}}, {{toGoType .Type}}] {
+	return maps.All(x.syncable)
 }
 
-func (x *{{.KeyType}}_{{.Type}}_Map) Keys() []{{toGoType .KeyType}} {
-	r := make([]{{toGoType .KeyType}}, 0, len(x.syncable))
-	for k := range x.syncable {
-		r = append(r, k)
-	}
-	return r
+func (x *{{.KeyType}}_{{.Type}}_Map) Keys() iter.Seq[{{toGoType .KeyType}}] {
+	return maps.Keys(x.syncable)
 }
 
-func (x *{{.KeyType}}_{{.Type}}_Map) Values() []{{toGoType .Type}} {
-	r := make([]{{toGoType .Type}}, 0, len(x.syncable))
-	for _, v := range x.syncable {
-		r = append(r, v)
-	}
-	return r
+func (x *{{.KeyType}}_{{.Type}}_Map) Values() iter.Seq[{{toGoType .Type}}] {
+	return maps.Values(x.syncable)
 }
 {{- end}}
 

@@ -3,6 +3,10 @@
 
 package kds;
 import (
+	"iter"
+	"maps"
+	"slices"
+
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -26,9 +30,7 @@ func (x *int32_empty_Map) Len() int {
 }
 
 func (x *int32_empty_Map) Clear() {
-	for k := range x.syncable {
-		delete(x.syncable, k)
-	}
+	clear(x.syncable)
 }
 
 func (x *int32_empty_Map) Get(k int32) (struct{}, bool) {
@@ -44,30 +46,16 @@ func (x *int32_empty_Map) Delete(k int32) {
 	delete(x.syncable, k)
 }
 
-func (x *int32_empty_Map) All() func(yield func(int32, struct{}) bool) {
-	return func(yield func(int32, struct{}) bool) {
-		for k, v := range x.syncable {
-			if !yield(k, v) {
-				return
-			}
-		}
-	}
+func (x *int32_empty_Map) All() iter.Seq2[int32, struct{}] {
+	return maps.All(x.syncable)
 }
 
-func (x *int32_empty_Map) Keys() []int32 {
-	r := make([]int32, 0, len(x.syncable))
-	for k := range x.syncable {
-		r = append(r, k)
-	}
-	return r
+func (x *int32_empty_Map) Keys() iter.Seq[int32] {
+	return maps.Keys(x.syncable)
 }
 
-func (x *int32_empty_Map) Values() []struct{} {
-	r := make([]struct{}, 0, len(x.syncable))
-	for _, v := range x.syncable {
-		r = append(r, v)
-	}
-	return r
+func (x *int32_empty_Map) Values() iter.Seq[struct{}] {
+	return maps.Values(x.syncable)
 }
 
 type dirtyParentFunc_int32_int32_Map func()
@@ -90,9 +78,7 @@ func (x *int32_int32_Map) Len() int {
 }
 
 func (x *int32_int32_Map) Clear() {
-	for k := range x.syncable {
-		delete(x.syncable, k)
-	}
+	clear(x.syncable)
 }
 
 func (x *int32_int32_Map) Get(k int32) (int32, bool) {
@@ -108,30 +94,16 @@ func (x *int32_int32_Map) Delete(k int32) {
 	delete(x.syncable, k)
 }
 
-func (x *int32_int32_Map) All() func(yield func(int32, int32) bool) {
-	return func(yield func(int32, int32) bool) {
-		for k, v := range x.syncable {
-			if !yield(k, v) {
-				return
-			}
-		}
-	}
+func (x *int32_int32_Map) All() iter.Seq2[int32, int32] {
+	return maps.All(x.syncable)
 }
 
-func (x *int32_int32_Map) Keys() []int32 {
-	r := make([]int32, 0, len(x.syncable))
-	for k := range x.syncable {
-		r = append(r, k)
-	}
-	return r
+func (x *int32_int32_Map) Keys() iter.Seq[int32] {
+	return maps.Keys(x.syncable)
 }
 
-func (x *int32_int32_Map) Values() []int32 {
-	r := make([]int32, 0, len(x.syncable))
-	for _, v := range x.syncable {
-		r = append(r, v)
-	}
-	return r
+func (x *int32_int32_Map) Values() iter.Seq[int32] {
+	return maps.Values(x.syncable)
 }
 
 type dirtyParentFunc_int64_List func()
@@ -161,45 +133,34 @@ func (x *int64_List) Set(i int, v int64) {
 	x.syncable[i] = v
 }
 
-func (x *int64_List) Index(v int64) int {
-	for i := range x.syncable {
-		if v == x.syncable[i] {
-			return i
-		}
-	}
-	return -1
-}
-
-func (x *int64_List) Contains(v int64) bool {
-	return x.Index(v) >= 0
-}
-
 func (x *int64_List) Append(v ...int64) {
 	x.syncable = append(x.syncable, v...)
 }
 
 func (x *int64_List) Insert(i int, v ...int64) {
-	// x.syncable = slices.Insert(x.syncable, i, v...)
+	x.syncable = slices.Insert(x.syncable, i, v...)
 }
 
 func (x *int64_List) Delete(i, j int) {
-	// x.syncable = slices.Delete(x.syncable, i, j)
+	x.syncable = slices.Delete(x.syncable, i, j)
 }
 
 func (x *int64_List) Replace(i, j int, v ...int64) {
-	// x.syncable = slices.Replace(x.syncable, i, j, v...)
+	x.syncable = slices.Replace(x.syncable, i, j, v...)
 }
 
-func (x *int64_List) All() func(yield func(int, int64) bool) {
-	return func(yield func(int, int64) bool) {
-		for i, v := range x.syncable {
-			if !yield(i, v) {
-				return
-			}
-		}
-	}
+func (x *int64_List) Reverse() {
+	slices.Reverse(x.syncable)
 }
 
-func (x *int64_List) Values() []int64 {
-	return append(x.syncable[:0:0], x.syncable...)
+func (x *int64_List) All() iter.Seq2[int, int64] {
+	return slices.All(x.syncable)
+}
+
+func (x *int64_List) Backward() iter.Seq2[int, int64] {
+	return slices.Backward(x.syncable)
+}
+
+func (x *int64_List) Values() iter.Seq[int64] {
+	return slices.Values(x.syncable)
 }

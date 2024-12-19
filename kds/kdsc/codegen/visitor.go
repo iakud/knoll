@@ -150,8 +150,15 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	if fieldCtx.FieldLabel() != nil && fieldCtx.FieldLabel().REPEATED() != nil {
 		field.Repeated = true
 		ctx.addListType(field.Type)
-		if !customType {
+		
+		if customType {
+			kds.addGoImport("slices", "")
+			kds.addGoImport("iter", "")
+		} else {
 			ctx.Common.addType(field.Type)
+			ctx.Common.addGoImport("slices", "")
+			ctx.Common.addGoImport("iter", "")
+
 			switch {
 			case fieldCtx.Type_().TIMESTAMP() != nil:
 				ctx.Common.addGoImport("time", "")
@@ -199,8 +206,15 @@ func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) 
 	field.GoVarName = GoSanitized(ToLowerFirst(field.Name))
 
 	ctx.addMapType(field.Type, field.KeyType)
-	if !customType {
+
+	if customType {
+		kds.addGoImport("maps", "")
+		kds.addGoImport("iter", "")
+	} else {
 		ctx.Common.addType(field.Type)
+		ctx.Common.addGoImport("maps", "")
+		ctx.Common.addGoImport("iter", "")
+
 		switch {
 		case mapFieldCtx.Type_().TIMESTAMP() != nil:
 			ctx.Common.addGoImport("time", "")

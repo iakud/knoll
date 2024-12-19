@@ -3,6 +3,9 @@
 
 package kds;
 import (
+	"iter"
+	"slices"
+
 	"github.com/iakud/krocher/kds/kdsc/example/kdspb"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -408,45 +411,34 @@ func (x *Vector_List) Set(i int, v Vector) {
 	x.syncable[i] = v
 }
 
-func (x *Vector_List) Index(v Vector) int {
-	for i := range x.syncable {
-		if v == x.syncable[i] {
-			return i
-		}
-	}
-	return -1
-}
-
-func (x *Vector_List) Contains(v Vector) bool {
-	return x.Index(v) >= 0
-}
-
 func (x *Vector_List) Append(v ...Vector) {
 	x.syncable = append(x.syncable, v...)
 }
 
 func (x *Vector_List) Insert(i int, v ...Vector) {
-	// x.syncable = slices.Insert(x.syncable, i, v...)
+	x.syncable = slices.Insert(x.syncable, i, v...)
 }
 
 func (x *Vector_List) Delete(i, j int) {
-	// x.syncable = slices.Delete(x.syncable, i, j)
+	x.syncable = slices.Delete(x.syncable, i, j)
 }
 
 func (x *Vector_List) Replace(i, j int, v ...Vector) {
-	// x.syncable = slices.Replace(x.syncable, i, j, v...)
+	x.syncable = slices.Replace(x.syncable, i, j, v...)
 }
 
-func (x *Vector_List) All() func(yield func(int, Vector) bool) {
-	return func(yield func(int, Vector) bool) {
-		for i, v := range x.syncable {
-			if !yield(i, v) {
-				return
-			}
-		}
-	}
+func (x *Vector_List) Reverse() {
+	slices.Reverse(x.syncable)
 }
 
-func (x *Vector_List) Values() []Vector {
-	return append(x.syncable[:0:0], x.syncable...)
+func (x *Vector_List) All() iter.Seq2[int, Vector] {
+	return slices.All(x.syncable)
+}
+
+func (x *Vector_List) Backward() iter.Seq2[int, Vector] {
+	return slices.Backward(x.syncable)
+}
+
+func (x *Vector_List) Values() iter.Seq[Vector] {
+	return slices.Values(x.syncable)
 }

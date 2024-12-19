@@ -3,6 +3,8 @@
 
 package kds;
 import (
+	"iter"
+	"maps"
 	"time"
 
 	"github.com/iakud/krocher/kds/kdsc/example/kdspb"
@@ -619,9 +621,7 @@ func (x *int64_Hero_Map) Len() int {
 }
 
 func (x *int64_Hero_Map) Clear() {
-	for k := range x.syncable {
-		delete(x.syncable, k)
-	}
+	clear(x.syncable)
 }
 
 func (x *int64_Hero_Map) Get(k int64) (Hero, bool) {
@@ -637,30 +637,16 @@ func (x *int64_Hero_Map) Delete(k int64) {
 	delete(x.syncable, k)
 }
 
-func (x *int64_Hero_Map) All() func(yield func(int64, Hero) bool) {
-	return func(yield func(int64, Hero) bool) {
-		for k, v := range x.syncable {
-			if !yield(k, v) {
-				return
-			}
-		}
-	}
+func (x *int64_Hero_Map) All() iter.Seq2[int64, Hero] {
+	return maps.All(x.syncable)
 }
 
-func (x *int64_Hero_Map) Keys() []int64 {
-	r := make([]int64, 0, len(x.syncable))
-	for k := range x.syncable {
-		r = append(r, k)
-	}
-	return r
+func (x *int64_Hero_Map) Keys() iter.Seq[int64] {
+	return maps.Keys(x.syncable)
 }
 
-func (x *int64_Hero_Map) Values() []Hero {
-	r := make([]Hero, 0, len(x.syncable))
-	for _, v := range x.syncable {
-		r = append(r, v)
-	}
-	return r
+func (x *int64_Hero_Map) Values() iter.Seq[Hero] {
+	return maps.Values(x.syncable)
 }
 
 type HeroType = kdspb.HeroType
