@@ -10,157 +10,157 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type dirtyParentFunc_int32_empty_Map func()
+type dirtyParentFunc_Int32_Empty_Map func()
 
-func (f dirtyParentFunc_int32_empty_Map) invoke() {
+func (f dirtyParentFunc_Int32_Empty_Map) invoke() {
 	if f == nil {
 		return
 	}
 	f()
 }
 
-type int32_empty_Map struct {
+type Int32_Empty_Map struct {
 	syncable map[int32]struct{}
 
-	dirtyParent dirtyParentFunc_int32_empty_Map
+	dirtyParent dirtyParentFunc_Int32_Empty_Map
 }
 
-func (x *int32_empty_Map) Len() int {
+func (x *Int32_Empty_Map) Len() int {
 	return len(x.syncable)
 }
 
-func (x *int32_empty_Map) Clear() {
+func (x *Int32_Empty_Map) Clear() {
 	clear(x.syncable)
 }
 
-func (x *int32_empty_Map) Get(k int32) (struct{}, bool) {
+func (x *Int32_Empty_Map) Get(k int32) (struct{}, bool) {
 	v, ok := x.syncable[k]
 	return v, ok
 }
 
-func (x *int32_empty_Map) Set(k int32, v struct{}) {
+func (x *Int32_Empty_Map) Set(k int32, v struct{}) {
 	x.syncable[k] = v
 }
 
-func (x *int32_empty_Map) Delete(k int32) {
+func (x *Int32_Empty_Map) Delete(k int32) {
 	delete(x.syncable, k)
 }
 
-func (x *int32_empty_Map) All() iter.Seq2[int32, struct{}] {
+func (x *Int32_Empty_Map) All() iter.Seq2[int32, struct{}] {
 	return maps.All(x.syncable)
 }
 
-func (x *int32_empty_Map) Keys() iter.Seq[int32] {
+func (x *Int32_Empty_Map) Keys() iter.Seq[int32] {
 	return maps.Keys(x.syncable)
 }
 
-func (x *int32_empty_Map) Values() iter.Seq[struct{}] {
+func (x *Int32_Empty_Map) Values() iter.Seq[struct{}] {
 	return maps.Values(x.syncable)
 }
 
-type dirtyParentFunc_int32_int32_Map func()
+type dirtyParentFunc_Int32_Int32_Map func()
 
-func (f dirtyParentFunc_int32_int32_Map) invoke() {
+func (f dirtyParentFunc_Int32_Int32_Map) invoke() {
 	if f == nil {
 		return
 	}
 	f()
 }
 
-type int32_int32_Map struct {
+type Int32_Int32_Map struct {
 	syncable map[int32]int32
 
-	dirtyParent dirtyParentFunc_int32_int32_Map
+	dirtyParent dirtyParentFunc_Int32_Int32_Map
 }
 
-func (x *int32_int32_Map) Len() int {
+func (x *Int32_Int32_Map) Len() int {
 	return len(x.syncable)
 }
 
-func (x *int32_int32_Map) Clear() {
+func (x *Int32_Int32_Map) Clear() {
 	clear(x.syncable)
 }
 
-func (x *int32_int32_Map) Get(k int32) (int32, bool) {
+func (x *Int32_Int32_Map) Get(k int32) (int32, bool) {
 	v, ok := x.syncable[k]
 	return v, ok
 }
 
-func (x *int32_int32_Map) Set(k int32, v int32) {
+func (x *Int32_Int32_Map) Set(k int32, v int32) {
 	x.syncable[k] = v
 }
 
-func (x *int32_int32_Map) Delete(k int32) {
+func (x *Int32_Int32_Map) Delete(k int32) {
 	delete(x.syncable, k)
 }
 
-func (x *int32_int32_Map) All() iter.Seq2[int32, int32] {
+func (x *Int32_Int32_Map) All() iter.Seq2[int32, int32] {
 	return maps.All(x.syncable)
 }
 
-func (x *int32_int32_Map) Keys() iter.Seq[int32] {
+func (x *Int32_Int32_Map) Keys() iter.Seq[int32] {
 	return maps.Keys(x.syncable)
 }
 
-func (x *int32_int32_Map) Values() iter.Seq[int32] {
+func (x *Int32_Int32_Map) Values() iter.Seq[int32] {
 	return maps.Values(x.syncable)
 }
 
-type dirtyParentFunc_int64_List func()
+type dirtyParentFunc_Int64_List func()
 
-func (f dirtyParentFunc_int64_List) invoke() {
+func (f dirtyParentFunc_Int64_List) invoke() {
 	if f == nil {
 		return
 	}
 	f()
 }
 
-type int64_List struct {
+type Int64_List struct {
 	syncable []int64
 
-	dirtyParent dirtyParentFunc_int64_List
+	dirtyParent dirtyParentFunc_Int64_List
 }
 
-func (x *int64_List) Len() int {
+func (x *Int64_List) Len() int {
 	return len(x.syncable)
 }
 
-func (x *int64_List) Get(i int) int64 {
+func (x *Int64_List) Get(i int) int64 {
 	return x.syncable[i]
 }
 
-func (x *int64_List) Set(i int, v int64) {
+func (x *Int64_List) Set(i int, v int64) {
 	x.syncable[i] = v
 }
 
-func (x *int64_List) Append(v ...int64) {
+func (x *Int64_List) Append(v ...int64) {
 	x.syncable = append(x.syncable, v...)
 }
 
-func (x *int64_List) Insert(i int, v ...int64) {
+func (x *Int64_List) Insert(i int, v ...int64) {
 	x.syncable = slices.Insert(x.syncable, i, v...)
 }
 
-func (x *int64_List) Delete(i, j int) {
+func (x *Int64_List) Delete(i, j int) {
 	x.syncable = slices.Delete(x.syncable, i, j)
 }
 
-func (x *int64_List) Replace(i, j int, v ...int64) {
+func (x *Int64_List) Replace(i, j int, v ...int64) {
 	x.syncable = slices.Replace(x.syncable, i, j, v...)
 }
 
-func (x *int64_List) Reverse() {
+func (x *Int64_List) Reverse() {
 	slices.Reverse(x.syncable)
 }
 
-func (x *int64_List) All() iter.Seq2[int, int64] {
+func (x *Int64_List) All() iter.Seq2[int, int64] {
 	return slices.All(x.syncable)
 }
 
-func (x *int64_List) Backward() iter.Seq2[int, int64] {
+func (x *Int64_List) Backward() iter.Seq2[int, int64] {
 	return slices.Backward(x.syncable)
 }
 
-func (x *int64_List) Values() iter.Seq[int64] {
+func (x *Int64_List) Values() iter.Seq[int64] {
 	return slices.Values(x.syncable)
 }

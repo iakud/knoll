@@ -122,25 +122,8 @@ func visitComponent(ctx *Context, kds *Kds, componentCtx parser.IComponentDefCon
 
 func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	field := new(Field)
-	customType := fieldCtx.Type_().MessageType() != nil || fieldCtx.Type_().EnumType() != nil
-	if customType {
-		field.Type = GoCamelCase(fieldCtx.Type_().GetText())
-	} else {
-		field.Type = fieldCtx.Type_().GetText()	
-	}
-	switch {
-	case fieldCtx.Type_().TIMESTAMP() != nil:
-		kds.addGoImport("time", "")
-		kds.addGoImport("google.golang.org/protobuf/types/known/timestamppb", "")
-		kds.addProtoImport("google/protobuf/timestamp.proto")
-	case fieldCtx.Type_().DURATION() != nil:
-		kds.addGoImport("time", "")
-		kds.addGoImport("google.golang.org/protobuf/types/known/durationpb", "")
-		kds.addProtoImport("google/protobuf/duration.proto")
-	case fieldCtx.Type_().EMPTY() != nil:
-		kds.addGoImport("google.golang.org/protobuf/types/known/emptypb", "")
-		kds.addProtoImport("google/protobuf/empty.proto")
-	}
+	var customType bool
+	field.Type, customType = visitType(ctx, kds, fieldCtx.Type_())
 
 	field.Name = GoCamelCase(fieldCtx.FieldName().GetText())
 	field.Number, _ = strconv.Atoi(fieldCtx.FieldNumber().GetText())
@@ -149,29 +132,13 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 
 	if fieldCtx.FieldLabel() != nil && fieldCtx.FieldLabel().REPEATED() != nil {
 		field.Repeated = true
-		ctx.addListType(field.Type)
+		field.ListType = ctx.addListType(field.Type)
 		
 		if customType {
-			kds.addGoImport("slices", "")
-			kds.addGoImport("iter", "")
+			kds.ImportSlices = true
 		} else {
 			ctx.Common.addType(field.Type)
-			ctx.Common.addGoImport("slices", "")
-			ctx.Common.addGoImport("iter", "")
-
-			switch {
-			case fieldCtx.Type_().TIMESTAMP() != nil:
-				ctx.Common.addGoImport("time", "")
-				ctx.Common.addGoImport("google.golang.org/protobuf/types/known/timestamppb", "")
-				// ctx.Common.addProtoImport("google/protobuf/timestamp.proto")
-			case fieldCtx.Type_().DURATION() != nil:
-				ctx.Common.addGoImport("time", "")
-				ctx.Common.addGoImport("google.golang.org/protobuf/types/known/durationpb", "")
-				// ctx.Common.addProtoImport("google/protobuf/duration.proto")
-			case fieldCtx.Type_().EMPTY() != nil:
-				ctx.Common.addGoImport("google.golang.org/protobuf/types/known/emptypb", "")
-				// ctx.Common.addProtoImport("google/protobuf/empty.proto")
-			}
+			ctx.Common.ImportSlices = true
 		}
 	}
 	return field
@@ -179,25 +146,8 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 
 func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) *Field {
 	field := new(Field)
-	customType := mapFieldCtx.Type_().MessageType() != nil || mapFieldCtx.Type_().EnumType() != nil
-	if customType {
-		field.Type = GoCamelCase(mapFieldCtx.Type_().GetText())
-	} else {
-		field.Type = mapFieldCtx.Type_().GetText()	
-	}
-	switch {
-	case mapFieldCtx.Type_().TIMESTAMP() != nil:
-		kds.addGoImport("time", "")
-		kds.addGoImport("google.golang.org/protobuf/types/known/timestamppb", "")
-		kds.addProtoImport("google/protobuf/timestamp.proto")
-	case mapFieldCtx.Type_().DURATION() != nil:
-		kds.addGoImport("time", "")
-		kds.addGoImport("google.golang.org/protobuf/types/known/durationpb", "")
-		kds.addProtoImport("google/protobuf/duration.proto")
-	case mapFieldCtx.Type_().EMPTY() != nil:
-		kds.addGoImport("google.golang.org/protobuf/types/known/emptypb", "")
-		kds.addProtoImport("google/protobuf/empty.proto")
-	}
+	var customType bool
+	field.Type, customType = visitType(ctx, kds, mapFieldCtx.Type_())
 
 	field.KeyType = mapFieldCtx.KeyType().GetText()
 	field.Name = GoCamelCase(mapFieldCtx.MapName().GetText())
@@ -205,30 +155,33 @@ func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) 
 
 	field.GoVarName = GoSanitized(ToLowerFirst(field.Name))
 
-	ctx.addMapType(field.Type, field.KeyType)
+	field.MapType = ctx.addMapType(field.Type, field.KeyType)
 
 	if customType {
-		kds.addGoImport("maps", "")
-		kds.addGoImport("iter", "")
+		kds.ImportMaps = true
 	} else {
 		ctx.Common.addType(field.Type)
-		ctx.Common.addGoImport("maps", "")
-		ctx.Common.addGoImport("iter", "")
-
-		switch {
-		case mapFieldCtx.Type_().TIMESTAMP() != nil:
-			ctx.Common.addGoImport("time", "")
-			ctx.Common.addGoImport("google.golang.org/protobuf/types/known/timestamppb", "")
-			// ctx.Common.addProtoImport("google/protobuf/timestamp.proto")
-		case mapFieldCtx.Type_().DURATION() != nil:
-			ctx.Common.addGoImport("time", "")
-			ctx.Common.addGoImport("google.golang.org/protobuf/types/known/durationpb", "")
-			// ctx.Common.addProtoImport("google/protobuf/duration.proto")
-		case mapFieldCtx.Type_().EMPTY() != nil:
-			ctx.Common.addGoImport("google.golang.org/protobuf/types/known/emptypb", "")
-			// ctx.Common.addProtoImport("google/protobuf/empty.proto")
-		}
-
+		ctx.Common.ImportMaps = true
 	}
 	return field
+}
+
+func visitType(ctx *Context, kds *Kds, typeCtx parser.IType_Context) (string, bool) {
+	var type_ string
+	customType := typeCtx.MessageType() != nil || typeCtx.EnumType() != nil
+	if customType {
+		type_ = GoCamelCase(typeCtx.GetText())
+	} else {
+		type_ = typeCtx.GetText()	
+	}
+	switch {
+	case typeCtx.TIMESTAMP() != nil:
+		kds.addImportTypes(typeCtx.TIMESTAMP().GetText())
+	case typeCtx.DURATION() != nil:
+		kds.addImportTypes(typeCtx.DURATION().GetText())
+	case typeCtx.EMPTY() != nil:
+		kds.addImportTypes(typeCtx.EMPTY().GetText())
+	}
+
+	return type_, customType
 }

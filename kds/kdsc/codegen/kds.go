@@ -13,8 +13,18 @@ type Kds struct {
 	GoImportSpecs []*ImportSpec
 
 	Defs []interface{}
-
 	Types []string
+
+	ImportTypes []string
+	ImportSlices bool
+	ImportMaps bool
+}
+
+func (k *Kds) addImportTypes(type_ string) {
+	if slices.Contains(k.ImportTypes, type_) {
+		return
+	}
+	k.ImportTypes = append(k.ImportTypes, type_)
 }
 
 func (k *Kds) addProtoImport(path string) {
@@ -34,6 +44,22 @@ func (k *Kds) addGoImport(path, name string) {
 	k.GoImportSpecs = append(k.GoImportSpecs, spec)
 }
 
+func (k *Kds) addImportByType(type_ string) {
+	switch type_ {
+	case "timestamp":
+		k.addGoImport("time", "")
+		k.addGoImport("google.golang.org/protobuf/types/known/timestamppb", "")
+		k.addProtoImport("google/protobuf/timestamp.proto")
+	case "duration":
+		k.addGoImport("time", "")
+		k.addGoImport("google.golang.org/protobuf/types/known/durationpb", "")
+		k.addProtoImport("google/protobuf/duration.proto")
+	case "empty":
+		k.addGoImport("google.golang.org/protobuf/types/known/emptypb", "")
+		k.addProtoImport("google/protobuf/empty.proto")
+	}
+}
+
 func (k *Kds) addType(name string) {
 	if slices.Contains(k.Types, name) {
 		return
@@ -42,6 +68,23 @@ func (k *Kds) addType(name string) {
 }
 
 func (k *Kds) format() {
+	if k.ImportSlices {
+		k.addGoImport("slices", "")
+		k.addGoImport("iter", "")
+	}
+	if k.ImportMaps {
+		k.addGoImport("maps", "")
+		k.addGoImport("iter", "")
+	}
+
+	for _, type_ := range k.ImportTypes {
+		k.addImportByType(type_)
+	}
+
+	for _, type_ := range k.Types {
+		k.addImportByType(type_)
+	}
+
 	k.sortImports()
 	slices.Sort(k.Types)
 }
@@ -113,6 +156,8 @@ type Field struct {
 	Number int
 
 	GoVarName string
+	ListType string
+	MapType string
 
 	Kind string
 }

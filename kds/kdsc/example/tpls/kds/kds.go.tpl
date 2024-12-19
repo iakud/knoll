@@ -2,113 +2,113 @@
 
 {{- define "CommonList"}}
 
-type dirtyParentFunc_{{.Type}}_List func()
+type dirtyParentFunc_{{.Name}} func()
 
-func (f dirtyParentFunc_{{.Type}}_List) invoke() {
+func (f dirtyParentFunc_{{.Name}}) invoke() {
 	if f == nil {
 		return
 	}
 	f()
 }
 
-type {{.Type}}_List struct {
+type {{.Name}} struct {
 	syncable []{{toGoType .Type}}
 
-	dirtyParent dirtyParentFunc_{{.Type}}_List
+	dirtyParent dirtyParentFunc_{{.Name}}
 }
 
-func (x *{{.Type}}_List) Len() int {
+func (x *{{.Name}}) Len() int {
 	return len(x.syncable)
 }
 
-func (x *{{.Type}}_List) Get(i int) {{toGoType .Type}} {
+func (x *{{.Name}}) Get(i int) {{toGoType .Type}} {
 	return x.syncable[i]
 }
 
-func (x *{{.Type}}_List) Set(i int, v {{toGoType .Type}}) {
+func (x *{{.Name}}) Set(i int, v {{toGoType .Type}}) {
 	x.syncable[i] = v
 }
 
-func (x *{{.Type}}_List) Append(v ...{{toGoType .Type}}) {
+func (x *{{.Name}}) Append(v ...{{toGoType .Type}}) {
 	x.syncable = append(x.syncable, v...)
 }
 
-func (x *{{.Type}}_List) Insert(i int, v ...{{toGoType .Type}}) {
+func (x *{{.Name}}) Insert(i int, v ...{{toGoType .Type}}) {
 	x.syncable = slices.Insert(x.syncable, i, v...)
 }
 
-func (x *{{.Type}}_List) Delete(i, j int) {
+func (x *{{.Name}}) Delete(i, j int) {
 	x.syncable = slices.Delete(x.syncable, i, j)
 }
 
-func (x *{{.Type}}_List) Replace(i, j int, v ...{{toGoType .Type}}) {
+func (x *{{.Name}}) Replace(i, j int, v ...{{toGoType .Type}}) {
 	x.syncable = slices.Replace(x.syncable, i, j, v...)
 }
 
-func (x *{{.Type}}_List) Reverse() {
+func (x *{{.Name}}) Reverse() {
 	slices.Reverse(x.syncable)
 }
 
-func (x *{{.Type}}_List) All() iter.Seq2[int, {{toGoType .Type}}] {
+func (x *{{.Name}}) All() iter.Seq2[int, {{toGoType .Type}}] {
 	return slices.All(x.syncable)
 }
 
-func (x *{{.Type}}_List) Backward() iter.Seq2[int, {{toGoType .Type}}] {
+func (x *{{.Name}}) Backward() iter.Seq2[int, {{toGoType .Type}}] {
 	return slices.Backward(x.syncable)
 }
 
-func (x *{{.Type}}_List) Values() iter.Seq[{{toGoType .Type}}] {
+func (x *{{.Name}}) Values() iter.Seq[{{toGoType .Type}}] {
 	return slices.Values(x.syncable)
 }
 {{- end}}
 
 {{- define "CommonMap"}}
 
-type dirtyParentFunc_{{.KeyType}}_{{.Type}}_Map func()
+type dirtyParentFunc_{{.Name}} func()
 
-func (f dirtyParentFunc_{{.KeyType}}_{{.Type}}_Map) invoke() {
+func (f dirtyParentFunc_{{.Name}}) invoke() {
 	if f == nil {
 		return
 	}
 	f()
 }
 
-type {{.KeyType}}_{{.Type}}_Map struct {
+type {{.Name}} struct {
 	syncable map[{{toGoType .KeyType}}]{{toGoType .Type}}
 
-	dirtyParent dirtyParentFunc_{{.KeyType}}_{{.Type}}_Map
+	dirtyParent dirtyParentFunc_{{.Name}}
 }
 
-func (x *{{.KeyType}}_{{.Type}}_Map) Len() int {
+func (x *{{.Name}}) Len() int {
 	return len(x.syncable)
 }
 
-func (x *{{.KeyType}}_{{.Type}}_Map) Clear() {
+func (x *{{.Name}}) Clear() {
 	clear(x.syncable)
 }
 
-func (x *{{.KeyType}}_{{.Type}}_Map) Get(k {{toGoType .KeyType}}) ({{toGoType .Type}}, bool) {
+func (x *{{.Name}}) Get(k {{toGoType .KeyType}}) ({{toGoType .Type}}, bool) {
 	v, ok := x.syncable[k]
 	return v, ok
 }
 
-func (x *{{.KeyType}}_{{.Type}}_Map) Set(k {{toGoType .KeyType}}, v {{toGoType .Type}}) {
+func (x *{{.Name}}) Set(k {{toGoType .KeyType}}, v {{toGoType .Type}}) {
 	x.syncable[k] = v
 }
 
-func (x *{{.KeyType}}_{{.Type}}_Map) Delete(k {{toGoType .KeyType}}) {
+func (x *{{.Name}}) Delete(k {{toGoType .KeyType}}) {
 	delete(x.syncable, k)
 }
 
-func (x *{{.KeyType}}_{{.Type}}_Map) All() iter.Seq2[{{toGoType .KeyType}}, {{toGoType .Type}}] {
+func (x *{{.Name}}) All() iter.Seq2[{{toGoType .KeyType}}, {{toGoType .Type}}] {
 	return maps.All(x.syncable)
 }
 
-func (x *{{.KeyType}}_{{.Type}}_Map) Keys() iter.Seq[{{toGoType .KeyType}}] {
+func (x *{{.Name}}) Keys() iter.Seq[{{toGoType .KeyType}}] {
 	return maps.Keys(x.syncable)
 }
 
-func (x *{{.KeyType}}_{{.Type}}_Map) Values() iter.Seq[{{toGoType .Type}}] {
+func (x *{{.Name}}) Values() iter.Seq[{{toGoType .Type}}] {
 	return maps.Values(x.syncable)
 }
 {{- end}}

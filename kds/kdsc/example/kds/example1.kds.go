@@ -601,51 +601,51 @@ func (x *Hero) checkDirty(n uint64) bool {
 	return x.dirty & n != 0
 }
 
-type dirtyParentFunc_int64_Hero_Map func()
+type dirtyParentFunc_Int64_Hero_Map func()
 
-func (f dirtyParentFunc_int64_Hero_Map) invoke() {
+func (f dirtyParentFunc_Int64_Hero_Map) invoke() {
 	if f == nil {
 		return
 	}
 	f()
 }
 
-type int64_Hero_Map struct {
+type Int64_Hero_Map struct {
 	syncable map[int64]Hero
 
-	dirtyParent dirtyParentFunc_int64_Hero_Map
+	dirtyParent dirtyParentFunc_Int64_Hero_Map
 }
 
-func (x *int64_Hero_Map) Len() int {
+func (x *Int64_Hero_Map) Len() int {
 	return len(x.syncable)
 }
 
-func (x *int64_Hero_Map) Clear() {
+func (x *Int64_Hero_Map) Clear() {
 	clear(x.syncable)
 }
 
-func (x *int64_Hero_Map) Get(k int64) (Hero, bool) {
+func (x *Int64_Hero_Map) Get(k int64) (Hero, bool) {
 	v, ok := x.syncable[k]
 	return v, ok
 }
 
-func (x *int64_Hero_Map) Set(k int64, v Hero) {
+func (x *Int64_Hero_Map) Set(k int64, v Hero) {
 	x.syncable[k] = v
 }
 
-func (x *int64_Hero_Map) Delete(k int64) {
+func (x *Int64_Hero_Map) Delete(k int64) {
 	delete(x.syncable, k)
 }
 
-func (x *int64_Hero_Map) All() iter.Seq2[int64, Hero] {
+func (x *Int64_Hero_Map) All() iter.Seq2[int64, Hero] {
 	return maps.All(x.syncable)
 }
 
-func (x *int64_Hero_Map) Keys() iter.Seq[int64] {
+func (x *Int64_Hero_Map) Keys() iter.Seq[int64] {
 	return maps.Keys(x.syncable)
 }
 
-func (x *int64_Hero_Map) Values() iter.Seq[Hero] {
+func (x *Int64_Hero_Map) Values() iter.Seq[Hero] {
 	return maps.Values(x.syncable)
 }
 

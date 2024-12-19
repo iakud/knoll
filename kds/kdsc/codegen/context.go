@@ -20,10 +20,12 @@ type Context struct {
 }
 
 type ListType struct {
+	Name string
 	Type string
 }
 
 type MapType struct {
+	Name string
 	Type string
 	KeyType string
 }
@@ -45,27 +47,31 @@ func (ctx *Context) format() {
 	}
 }
 
-func (ctx *Context) addListType(name string) {
-	if _, ok := ctx.TypeList[name]; ok {
-		return
+func (ctx *Context) addListType(name string) string {
+	if listType, ok := ctx.TypeList[name]; ok {
+		return listType.Name
 	}
 	listType := new(ListType)
+	listType.Name = GoCamelCase(name) + "_List"
 	listType.Type = name
 	ctx.TypeList[name] = listType
+	return listType.Name
 }
 
-func (ctx *Context) addMapType(name string, keyType string) {
+func (ctx *Context) addMapType(name string, keyType string) string {
 	mapTypes, _ := ctx.TypeMap[name]
-	if slices.ContainsFunc(mapTypes, func(mapType *MapType) bool {
+	if index := slices.IndexFunc(mapTypes, func(mapType *MapType) bool {
 		return mapType.KeyType == keyType
-	}) {
-		return
+	}); index >= 0 {
+		return mapTypes[index].Name
 	}
 
 	mapType := new(MapType)
+	mapType.Name = GoCamelCase(keyType) + "_" + GoCamelCase(name) + "_Map"
 	mapType.Type = name
 	mapType.KeyType = keyType
 	ctx.TypeMap[name] = append(mapTypes, mapType)
+	return mapType.Name
 }
 
 func (ctx *Context) FindEnum(name string) *Enum {
