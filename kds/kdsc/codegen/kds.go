@@ -3,19 +3,19 @@ package codegen
 import "slices"
 
 type Kds struct {
-	Name string
-	Filename string
-	Package string
+	Name           string
+	SourceFile     string
+	Package        string
 	ProtoGoPackage string
-	ProtoPackage string
-	Imports []string
-	ProtoImports []string
-	GoImportSpecs []*ImportSpec
+	ProtoPackage   string
+	Imports        []string
+	ProtoImports   []string
+	GoImportSpecs  []*ImportSpec
 
-	Defs []TopLevelDef
+	Defs  []TopLevelDef
 	Types []string
 
-	GoTypes []string
+	GoTypes    []string
 	ProtoTypes []string
 }
 
@@ -116,8 +116,8 @@ func (k *Kds) sortImports() {
 }
 
 type ImportSpec struct {
-	Path string
-	Name string
+	Path         string
+	Name         string
 	SpacesBefore bool
 }
 
@@ -128,8 +128,8 @@ type TopLevelDef interface {
 }
 
 type Enum struct {
-	Name string
-	EnumFields []*EnumField
+	Name         string
+	EnumFields   []*EnumField
 	ProtoPackage string
 }
 
@@ -146,13 +146,13 @@ func (e *Enum) GoType() string {
 }
 
 type EnumField struct {
-	Name string
+	Name  string
 	Value int
 }
 
 type Message struct {
-	Name string
-	Fields []*Field
+	Name         string
+	Fields       []*Field
 	ProtoPackage string
 }
 
@@ -189,14 +189,14 @@ const (
 
 type Field struct {
 	Repeated bool
-	KeyType string
-	Type string
-	Name string
-	Number int
+	KeyType  string
+	Type     string
+	Name     string
+	Number   int
 
 	GoVarName string
-	ListType string
-	MapType string
+	ListType  string
+	MapType   string
 
 	Kind string
 }

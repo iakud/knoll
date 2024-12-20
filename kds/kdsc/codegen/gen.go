@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"slices"
-	"strings"
 	"text/template"
 
 	"github.com/antlr4-go/antlr/v4"
@@ -16,9 +15,9 @@ import (
 
 func Parse(kdsFiles []string) *Context {
 	ctx := newContext()
-	for _, kdsFile := range kdsFiles {
-		kds := parseKds(ctx, kdsFile)
-		
+	for _, filePath := range kdsFiles {
+		kds := parseKds(ctx, filePath)
+
 		ctx.AllKds = append(ctx.AllKds, kds)
 	}
 	// format
@@ -37,7 +36,7 @@ func WriteProtobuf(ctx *Context, out string) {
 	for _, kds := range ctx.AllKds {
 		buf := bytes.NewBuffer(nil)
 		tpl.Execute(buf, kds)
-		outFile := filepath.Join(out, kds.Name + ".proto")
+		outFile := filepath.Join(out, kds.Name+".proto")
 		os.WriteFile(outFile, buf.Bytes(), os.ModePerm)
 	}
 }
@@ -50,19 +49,19 @@ func WriteKdsGo(ctx *Context, out string) {
 	for _, kds := range ctx.AllKds {
 		buf := bytes.NewBuffer(nil)
 		tpl.Execute(buf, kds)
-		outFile := filepath.Join(out, kds.Name + ".kds.go")
+		outFile := filepath.Join(out, kds.Name+".kds.go")
 		os.WriteFile(outFile, buf.Bytes(), os.ModePerm)
 	}
 }
 
-func parseKds(ctx *Context, kdsFile string) *Kds {
+func parseKds(ctx *Context, filePath string) *Kds {
 	defer func() {
 		if err := recover(); err != nil {
-			panic(fmt.Errorf("kds parse file %s error: %v\n%s", kdsFile, err, debug.Stack()))
+			panic(fmt.Errorf("kds parse file %s error: %v\n%s", filePath, err, debug.Stack()))
 		}
 	}()
 
-	input, err := antlr.NewFileStream(kdsFile)
+	input, err := antlr.NewFileStream(filePath)
 	if err != nil {
 		panic(err)
 	}
@@ -70,8 +69,7 @@ func parseKds(ctx *Context, kdsFile string) *Kds {
 	lexer := parser.NewkdsLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	kdsParser := parser.NewkdsParser(stream)
-	kdsName := strings.TrimSuffix(filepath.Base(kdsFile), filepath.Ext(kdsFile))
-	kds := visitKds(ctx, kdsName, kdsParser.Kds())
+	kds := visitKds(ctx, filePath, kdsParser.Kds())
 	return kds
 }
 

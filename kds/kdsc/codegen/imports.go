@@ -49,7 +49,7 @@ func sortImports(localPrefix string, importSpecs []*ImportSpec) {
 
 type byImportSpec struct {
 	localPrefix string
-	specs []*ImportSpec
+	specs       []*ImportSpec
 }
 
 func (x byImportSpec) Len() int      { return len(x.specs) }

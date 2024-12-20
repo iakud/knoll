@@ -8,15 +8,13 @@ import (
 type Context struct {
 	AllKds []*Kds
 
-	Common Kds
-
 	// type
 	TypeList map[string]*ListType
 	// type -> keys
 	TypeMap map[string][]*MapType
 
 	Imports map[string]*Kds
-	Defs map[string]TopLevelDef
+	Defs    map[string]TopLevelDef
 }
 
 type ListType struct {
@@ -25,17 +23,17 @@ type ListType struct {
 }
 
 type MapType struct {
-	Name string
-	Type string
+	Name    string
+	Type    string
 	KeyType string
 }
 
 func newContext() *Context {
 	return &Context{
 		TypeList: make(map[string]*ListType),
-		TypeMap: make(map[string][]*MapType),
-		Imports: make(map[string]*Kds),
-		Defs: make(map[string]TopLevelDef),
+		TypeMap:  make(map[string][]*MapType),
+		Imports:  make(map[string]*Kds),
+		Defs:     make(map[string]TopLevelDef),
 	}
 }
 

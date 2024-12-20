@@ -1,6 +1,5 @@
 package codegen
 
-
 import (
 	"go/token"
 	"strings"
@@ -69,7 +68,6 @@ func GoSanitized(s string) string {
 	}
 	return s
 }
-
 
 func isASCIILower(c byte) bool {
 	return 'a' <= c && c <= 'z'

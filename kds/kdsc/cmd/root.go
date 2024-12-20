@@ -33,8 +33,7 @@ var kdsCommand KdsCommand
 
 type KdsCommand struct {
 	kdsPaths []string
-	tplPath string
-	goOut string
+	goOut    string
 	protoOut string
 }
 
@@ -51,7 +50,7 @@ func execute(cmd *cobra.Command, args []string) {
 	}
 	// 生成kds
 	ctx := codegen.Parse(kdsFiles)
-	
+
 	// 输出protobuf
 	if len(kdsCommand.protoOut) > 0 {
 		codegen.WriteProtobuf(ctx, kdsCommand.protoOut)
@@ -112,7 +111,6 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.Flags().StringArrayVarP(&kdsCommand.kdsPaths, "kds_path", "I", []string{""}, "Specify the directory in which to search for imports. May be specified multiple times; directories will be searched in order. If not given, the current working directory is used.")
-	rootCmd.Flags().StringVar(&kdsCommand.tplPath, "tpl_path", "", "Template file.")
 	rootCmd.Flags().StringVar(&kdsCommand.protoOut, "proto_out", "", "Generate protobuf file.")
 	rootCmd.Flags().StringVar(&kdsCommand.goOut, "go_out", "", "Generate go file.")
 }

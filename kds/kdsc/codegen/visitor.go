@@ -8,15 +8,10 @@ import (
 	"github.com/iakud/krocher/kds/kdsc/parser"
 )
 
-func visitKds(ctx *Context, name string, kdsCtx parser.IKdsContext) *Kds {
-	var kds *Kds
-	if name == "common" {
-		kds = &ctx.Common
-	} else {
-		kds = new(Kds)
-	}
-
-	kds.Name = name
+func visitKds(ctx *Context, filePath string, kdsCtx parser.IKdsContext) *Kds {
+	kds := new(Kds)
+	kds.Name = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
+	kds.SourceFile = filePath
 	kds.Package = kdsCtx.PackageStatement().FullIdent().GetText()
 	for _, importStatement := range kdsCtx.AllImportStatement() {
 		kds.Imports = append(kds.Imports, visitImport(importStatement))
@@ -165,7 +160,7 @@ func visitType(ctx *Context, kds *Kds, typeCtx parser.IType_Context) string {
 	if customType {
 		type_ = GoCamelCase(typeCtx.GetText())
 	} else {
-		type_ = typeCtx.GetText()	
+		type_ = typeCtx.GetText()
 	}
 	switch {
 	case typeCtx.TIMESTAMP() != nil:
