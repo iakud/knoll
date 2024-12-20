@@ -35,13 +35,10 @@ PATH="$NEW_PATH"
 rm -rf kds
 mkdir -p kds
 
-kdsc --tpl_path=tpls/kds --out=kds *.kds
-[[ $? -ne 0 ]] && exit 1
-
 rm -rf proto
 mkdir -p proto
 
-kdsc --tpl_path=tpls/proto --out=proto *.kds
+kdsc --go_out=kds --proto_out=proto *.kds
 [[ $? -ne 0 ]] && exit 1
 
 rm -rf kdspb

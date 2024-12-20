@@ -321,12 +321,19 @@ type PlayerHero struct {
 func NewPlayerHero() *PlayerHero {
 	x := new(PlayerHero)
 	x.dirty = 1
-	// x.syncable.Heroes = Int64_Hero_Map{}
+	x.initHeroes()
 	return x
 }
 
 func (x *PlayerHero) GetHeroes() *Int64_Hero_Map {
 	return &x.syncable.Heroes
+}
+
+func (x *PlayerHero) initHeroes() {
+	x.syncable.Heroes.syncable = make(map[int64]*Hero)
+	x.syncable.Heroes.dirtyParent = func() {
+		x.markDirty(uint64(0x01) << 1)
+	}
 }
 
 func (x *PlayerHero) DumpChange() *kdspb.PlayerHero {
@@ -404,12 +411,19 @@ type PlayerBag struct {
 func NewPlayerBag() *PlayerBag {
 	x := new(PlayerBag)
 	x.dirty = 1
-	// x.syncable.Resources = Int32_Int32_Map{}
+	x.initResources()
 	return x
 }
 
 func (x *PlayerBag) GetResources() *Int32_Int32_Map {
 	return &x.syncable.Resources
+}
+
+func (x *PlayerBag) initResources() {
+	x.syncable.Resources.syncable = make(map[int32]int32)
+	x.syncable.Resources.dirtyParent = func() {
+		x.markDirty(uint64(0x01) << 1)
+	}
 }
 
 func (x *PlayerBag) DumpChange() *kdspb.PlayerBag {

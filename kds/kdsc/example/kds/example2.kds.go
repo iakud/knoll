@@ -29,7 +29,7 @@ func NewCity() *City {
 	x.id = 0 // FIXME: gen nextId()
 	x.setPlayerBasicInfo(NewPlayerBasicInfo())
 	x.setCityInfo(NewCityBaseInfo())
-	// x.syncable.Troops = Int64_List{}
+	x.initTroops()
 	return x
 }
 
@@ -99,6 +99,12 @@ func (x *City) setCityInfo(v *CityBaseInfo) {
 
 func (x *City) GetTroops() *Int64_List {
 	return &x.syncable.Troops
+}
+
+func (x *City) initTroops() {
+	x.syncable.Troops.dirtyParent = func() {
+		x.markDirty(uint64(0x01) << 4)
+	}
 }
 
 func (x *City) DumpChange() *kdspb.City {
@@ -197,8 +203,8 @@ type CityBaseInfo struct {
 func NewCityBaseInfo() *CityBaseInfo {
 	x := new(CityBaseInfo)
 	x.dirty = 1
-	// x.syncable.Positions = Vector_List{}
-	// x.syncable.Troops = Int32_Empty_Map{}
+	x.initPositions()
+	x.initTroops()
 	return x
 }
 
@@ -206,8 +212,21 @@ func (x *CityBaseInfo) GetPositions() *Vector_List {
 	return &x.syncable.Positions
 }
 
+func (x *CityBaseInfo) initPositions() {
+	x.syncable.Positions.dirtyParent = func() {
+		x.markDirty(uint64(0x01) << 1)
+	}
+}
+
 func (x *CityBaseInfo) GetTroops() *Int32_Empty_Map {
 	return &x.syncable.Troops
+}
+
+func (x *CityBaseInfo) initTroops() {
+	x.syncable.Troops.syncable = make(map[int32]struct{})
+	x.syncable.Troops.dirtyParent = func() {
+		x.markDirty(uint64(0x01) << 2)
+	}
 }
 
 func (x *CityBaseInfo) GetBuildInfo() []byte {

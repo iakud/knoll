@@ -14,46 +14,45 @@ import (
 	"github.com/iakud/krocher/kds/kdsc/parser"
 )
 
-func Parse(kdsFiles []string, tplPath string, out string) error {
+func Parse(kdsFiles []string) *Context {
 	ctx := newContext()
-	var kdsList []*Kds
 	for _, kdsFile := range kdsFiles {
 		kds := parseKds(ctx, kdsFile)
 		
-		kdsList = append(kdsList, kds)
-	}
-	var tpls []*template.Template
-
-	// templates
-	tplFiles, err := filepath.Glob(filepath.Join(tplPath, "*.tpl"))
-	if err != nil {
-		return err
-	}
-	for _, tplFile := range tplFiles {
-		b, err := os.ReadFile(tplFile)
-		if err != nil {
-			return err
-		}
-		name := filepath.Base(tplFile)
-		tpl, err := template.New(name).Funcs(Funcs(ctx)).Parse(string(b))
-		if err != nil {
-			return err
-		}
-		tpls = append(tpls, tpl)
+		ctx.AllKds = append(ctx.AllKds, kds)
 	}
 	// format
 	ctx.format()
-
-	for _, kds := range kdsList {
+	for _, kds := range ctx.AllKds {
 		formatKds(ctx, kds)
-		for _, tpl := range tpls {
-			buf := bytes.NewBuffer(nil)
-			tpl.Execute(buf, kds)
-			outFile := filepath.Join(out, kds.Name + "." + strings.TrimSuffix(filepath.Base(tpl.Name()), filepath.Ext(tpl.Name())))
-			os.WriteFile(outFile, buf.Bytes(), os.ModePerm)
-		}
 	}
-	return nil
+	return ctx
+}
+
+func WriteProtobuf(ctx *Context, out string) {
+	tpl, err := template.New("protobuf").Funcs(Funcs(ctx)).Parse(TemplateProtobuf)
+	if err != nil {
+		panic(err)
+	}
+	for _, kds := range ctx.AllKds {
+		buf := bytes.NewBuffer(nil)
+		tpl.Execute(buf, kds)
+		outFile := filepath.Join(out, kds.Name + ".proto")
+		os.WriteFile(outFile, buf.Bytes(), os.ModePerm)
+	}
+}
+
+func WriteKdsGo(ctx *Context, out string) {
+	tpl, err := template.New("kds").Funcs(Funcs(ctx)).Parse(TemplateKdsGo)
+	if err != nil {
+		panic(err)
+	}
+	for _, kds := range ctx.AllKds {
+		buf := bytes.NewBuffer(nil)
+		tpl.Execute(buf, kds)
+		outFile := filepath.Join(out, kds.Name + ".kds.go")
+		os.WriteFile(outFile, buf.Bytes(), os.ModePerm)
+	}
 }
 
 func parseKds(ctx *Context, kdsFile string) *Kds {

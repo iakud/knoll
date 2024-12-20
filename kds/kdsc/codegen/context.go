@@ -6,7 +6,7 @@ import (
 )
 
 type Context struct {
-	KdsContexts []*Kds
+	AllKds []*Kds
 
 	Common Kds
 
