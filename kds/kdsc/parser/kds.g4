@@ -121,6 +121,7 @@ enumFieldOptions
 
 enumFieldOption
 	: LP fullIdent RP EQ STR_LIT
+	| LP fullIdent RP EQ BOOL_LIT
 	;
 
 // entity
