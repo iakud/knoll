@@ -156,11 +156,11 @@ func kdsParserInit() {
 		5, 49, 0, 0, 188, 29, 1, 0, 0, 0, 189, 190, 3, 32, 16, 0, 190, 31, 1, 0,
 		0, 0, 191, 192, 3, 56, 28, 0, 192, 194, 5, 43, 0, 0, 193, 195, 5, 56, 0,
 		0, 194, 193, 1, 0, 0, 0, 194, 195, 1, 0, 0, 0, 195, 196, 1, 0, 0, 0, 196,
-		201, 3, 72, 36, 0, 197, 198, 5, 46, 0, 0, 198, 199, 3, 12, 6, 0, 199, 200,
-		5, 47, 0, 0, 200, 202, 1, 0, 0, 0, 201, 197, 1, 0, 0, 0, 201, 202, 1, 0,
-		0, 0, 202, 203, 1, 0, 0, 0, 203, 204, 5, 42, 0, 0, 204, 33, 1, 0, 0, 0,
-		205, 210, 3, 36, 18, 0, 206, 207, 5, 53, 0, 0, 207, 209, 3, 36, 18, 0,
-		208, 206, 1, 0, 0, 0, 209, 212, 1, 0, 0, 0, 210, 208, 1, 0, 0, 0, 210,
+		201, 3, 72, 36, 0, 197, 198, 5, 46, 0, 0, 198, 199, 3, 34, 17, 0, 199,
+		200, 5, 47, 0, 0, 200, 202, 1, 0, 0, 0, 201, 197, 1, 0, 0, 0, 201, 202,
+		1, 0, 0, 0, 202, 203, 1, 0, 0, 0, 203, 204, 5, 42, 0, 0, 204, 33, 1, 0,
+		0, 0, 205, 210, 3, 36, 18, 0, 206, 207, 5, 53, 0, 0, 207, 209, 3, 36, 18,
+		0, 208, 206, 1, 0, 0, 0, 209, 212, 1, 0, 0, 0, 210, 208, 1, 0, 0, 0, 210,
 		211, 1, 0, 0, 0, 211, 35, 1, 0, 0, 0, 212, 210, 1, 0, 0, 0, 213, 214, 5,
 		44, 0, 0, 214, 215, 3, 58, 29, 0, 215, 216, 5, 45, 0, 0, 216, 217, 5, 43,
 		0, 0, 217, 218, 5, 57, 0, 0, 218, 37, 1, 0, 0, 0, 219, 220, 5, 34, 0, 0,
@@ -3261,7 +3261,7 @@ type IEnumFieldContext interface {
 	SEMI() antlr.TerminalNode
 	MINUS() antlr.TerminalNode
 	LB() antlr.TerminalNode
-	FieldOptions() IFieldOptionsContext
+	EnumFieldOptions() IEnumFieldOptionsContext
 	RB() antlr.TerminalNode
 
 	// IsEnumFieldContext differentiates from other interfaces.
@@ -3348,10 +3348,10 @@ func (s *EnumFieldContext) LB() antlr.TerminalNode {
 	return s.GetToken(kdsParserLB, 0)
 }
 
-func (s *EnumFieldContext) FieldOptions() IFieldOptionsContext {
+func (s *EnumFieldContext) EnumFieldOptions() IEnumFieldOptionsContext {
 	var t antlr.RuleContext
 	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IFieldOptionsContext); ok {
+		if _, ok := ctx.(IEnumFieldOptionsContext); ok {
 			t = ctx.(antlr.RuleContext)
 			break
 		}
@@ -3361,7 +3361,7 @@ func (s *EnumFieldContext) FieldOptions() IFieldOptionsContext {
 		return nil
 	}
 
-	return t.(IFieldOptionsContext)
+	return t.(IEnumFieldOptionsContext)
 }
 
 func (s *EnumFieldContext) RB() antlr.TerminalNode {
@@ -3446,7 +3446,7 @@ func (p *kdsParser) EnumField() (localctx IEnumFieldContext) {
 		}
 		{
 			p.SetState(198)
-			p.FieldOptions()
+			p.EnumFieldOptions()
 		}
 		{
 			p.SetState(199)

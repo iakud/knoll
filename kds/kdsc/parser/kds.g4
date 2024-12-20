@@ -112,7 +112,7 @@ enumElement
 	;
 
 enumField
-	: ident EQ (MINUS)? intLit (LB fieldOptions RB)? SEMI
+	: ident EQ (MINUS)? intLit (LB enumFieldOptions RB)? SEMI
 	;
 
 enumFieldOptions
