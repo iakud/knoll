@@ -58,6 +58,12 @@ type kdsListener interface {
 	// EnterEnumField is called when entering the enumField production.
 	EnterEnumField(c *EnumFieldContext)
 
+	// EnterEnumFieldOptions is called when entering the enumFieldOptions production.
+	EnterEnumFieldOptions(c *EnumFieldOptionsContext)
+
+	// EnterEnumFieldOption is called when entering the enumFieldOption production.
+	EnterEnumFieldOption(c *EnumFieldOptionContext)
+
 	// EnterEntityDef is called when entering the entityDef production.
 	EnterEntityDef(c *EntityDefContext)
 
@@ -165,6 +171,12 @@ type kdsListener interface {
 
 	// ExitEnumField is called when exiting the enumField production.
 	ExitEnumField(c *EnumFieldContext)
+
+	// ExitEnumFieldOptions is called when exiting the enumFieldOptions production.
+	ExitEnumFieldOptions(c *EnumFieldOptionsContext)
+
+	// ExitEnumFieldOption is called when exiting the enumFieldOption production.
+	ExitEnumFieldOption(c *EnumFieldOptionContext)
 
 	// ExitEntityDef is called when exiting the entityDef production.
 	ExitEntityDef(c *EntityDefContext)

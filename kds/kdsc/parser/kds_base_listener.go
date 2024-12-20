@@ -122,6 +122,18 @@ func (s *BasekdsListener) EnterEnumField(ctx *EnumFieldContext) {}
 // ExitEnumField is called when production enumField is exited.
 func (s *BasekdsListener) ExitEnumField(ctx *EnumFieldContext) {}
 
+// EnterEnumFieldOptions is called when production enumFieldOptions is entered.
+func (s *BasekdsListener) EnterEnumFieldOptions(ctx *EnumFieldOptionsContext) {}
+
+// ExitEnumFieldOptions is called when production enumFieldOptions is exited.
+func (s *BasekdsListener) ExitEnumFieldOptions(ctx *EnumFieldOptionsContext) {}
+
+// EnterEnumFieldOption is called when production enumFieldOption is entered.
+func (s *BasekdsListener) EnterEnumFieldOption(ctx *EnumFieldOptionContext) {}
+
+// ExitEnumFieldOption is called when production enumFieldOption is exited.
+func (s *BasekdsListener) ExitEnumFieldOption(ctx *EnumFieldOptionContext) {}
+
 // EnterEntityDef is called when production entityDef is entered.
 func (s *BasekdsListener) EnterEntityDef(ctx *EntityDefContext) {}
 

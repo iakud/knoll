@@ -112,7 +112,15 @@ enumElement
 	;
 
 enumField
-	: ident EQ (MINUS)? intLit SEMI
+	: ident EQ (MINUS)? intLit (LB fieldOptions RB)? SEMI
+	;
+
+enumFieldOptions
+	: enumFieldOption (COMMA enumFieldOption)*
+	;
+
+enumFieldOption
+	: LP fullIdent RP EQ STR_LIT
 	;
 
 // entity

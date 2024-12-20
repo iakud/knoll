@@ -18,3 +18,6 @@ kdspb:
 
 kdscexample:
 	TRACE=1 kds/kdsc/example/conv.sh
+
+generate:
+	go generate ./...
