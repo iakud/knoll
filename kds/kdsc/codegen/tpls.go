@@ -103,11 +103,52 @@ func (x *{{.Name}}) Get(i int) {{toGoType .Type}} {
 }
 
 func (x *{{.Name}}) Set(i int, v {{toGoType .Type}}) {
+{{- if findComponent .Type}}
+	if v != nil && v.dirtyParent != nil {
+		panic("the component should be removed or evicted from its original place first")
+	}
+{{- end}}
+	if v == x.syncable[i] {
+		return
+	}
+{{- if findComponent .Type}}
+	if x.syncable[i] != nil {
+		x.syncable[i].dirtyParent = nil
+	}
+{{- end}}
 	x.syncable[i] = v
+{{- if findComponent .Type}}
+	if v != nil {
+		v.dirtyParent = func() {
+			x.markDirty()
+		}
+	}
+{{- end}}
+	x.markDirty()
 }
 
 func (x *{{.Name}}) Append(v ...{{toGoType .Type}}) {
+	if len(v) == 0 {
+		return
+	}
+{{- if findComponent .Type}}
+	for i := range v {
+		if v[i] != nil && v[i].dirtyParent != nil {
+			panic("the component should be removed or evicted from its original place first")
+		}
+	}
+{{- end}}
 	x.syncable = append(x.syncable, v...)
+{{- if findComponent .Type}}
+	for i := range v {
+		if v[i] != nil {
+			v[i].dirtyParent = func() {
+				x.markDirty()
+			}
+		}
+	}
+{{- end}}
+	x.markDirty()
 }
 
 func (x *{{.Name}}) Insert(i int, v ...{{toGoType .Type}}) {
@@ -115,7 +156,22 @@ func (x *{{.Name}}) Insert(i int, v ...{{toGoType .Type}}) {
 }
 
 func (x *{{.Name}}) Delete(i, j int) {
-	x.syncable = slices.Delete(x.syncable, i, j)
+{{- if findComponent .Type}}
+	for _, v := range x.syncable[i:j:len(x.syncable)] {
+		if v != nil {
+			v.dirtyParent = nil
+		}
+	}
+{{- else}}
+	_ = x.syncable[i:j:len(x.syncable)] // bounds check
+{{- end}}
+	if i == j {
+		return
+	}
+	oldlen := len(x.syncable)
+	x.syncable = append(x.syncable[:i], x.syncable[j:]...)
+	clear(x.syncable[len(x.syncable):oldlen]) // zero/nil out the obsolete elements, for GC
+	x.markDirty()
 }
 
 func (x *{{.Name}}) Replace(i, j int, v ...{{toGoType .Type}}) {
@@ -123,7 +179,11 @@ func (x *{{.Name}}) Replace(i, j int, v ...{{toGoType .Type}}) {
 }
 
 func (x *{{.Name}}) Reverse() {
+	if len(x.syncable) < 2 {
+		return
+	}
 	slices.Reverse(x.syncable)
+	x.markDirty()
 }
 
 func (x *{{.Name}}) All() iter.Seq2[int, {{toGoType .Type}}] {
