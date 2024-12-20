@@ -117,6 +117,7 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 type {{.Name}} struct {
 	syncable map[{{toGoType .KeyType}}]{{toGoType .Type}}
 
+	dirty map[{{toGoType .KeyType}}]{{toGoType .Type}}
 	dirtyParent dirtyParentFunc_{{.Name}}
 }
 
@@ -288,19 +289,6 @@ func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
 		v.markDirty(uint64(0x01))
 	}
 }
-{{- else if findEnum .Type}}
-
-func (x *{{$MessageName}}) Get{{.Name}}() {{.Type}} {
-	return x.syncable.{{.Name}}
-}
-
-func (x *{{$MessageName}}) Set{{.Name}}(v {{.Type}}) {
-	if v == x.syncable.{{.Name}} {
-		return
-	}
-	x.syncable.{{.Name}} = v
-	x.markDirty(uint64(0x01) << {{.Number}})
-}
 {{- else}}
 
 func (x *{{$MessageName}}) Get{{.Name}}() {{toGoType .Type}} {
@@ -323,7 +311,7 @@ func (x *{{$MessageName}}) Set{{.Name}}(v {{toGoType .Type}}) {
 {{- end}}
 {{- end}}
 
-func (x *{{$MessageName}}) DumpChange() *{{.ProtoPackage}}.{{.Name}} {
+func (x *{{$MessageName}}) DumpChange() {{.ProtoGoType}} {
 	if x.checkDirty(uint64(0x01)) {
 		return x.DumpFull()
 	}
@@ -350,7 +338,7 @@ func (x *{{$MessageName}}) DumpChange() *{{.ProtoPackage}}.{{.Name}} {
 	return m
 }
 
-func (x *{{$MessageName}}) DumpFull() *{{.ProtoPackage}}.{{.Name}} {
+func (x *{{$MessageName}}) DumpFull() {{.ProtoGoType}} {
 	m := new({{.ProtoPackage}}.{{.Name}})
 {{- range .Fields}}
 {{- if .Repeated}}
@@ -393,10 +381,8 @@ func New{{.Name}}() *{{.Name}} {
 	// x.syncable.{{.Name}} = {{.ListType}}{}
 {{- else if len .KeyType}}
 	// x.syncable.{{.Name}} = {{.MapType}}{}
-{{- else}}
-{{- if findComponent .Type}}
+{{- else if findComponent .Type}}
 	x.set{{.Name}}(New{{.Type}}())
-{{- end}}
 {{- end}}
 {{- end}}
 	return x
@@ -420,14 +406,12 @@ func (x *{{.Name}}) markDirty(n uint64) {
 
 func (x *{{.Name}}) clearAll() {
 {{- range .Fields}}
-{{- if findComponent .Type}}
 {{- if .Repeated}}
 	x.syncable.{{.Name}}.clearDirty()
 {{- else if len .KeyType}}
 	x.syncable.{{.Name}}.clearDirty()
-{{- else}}
+{{- else if findComponent .Type}}
 	x.syncable.{{.Name}}.clearDirty()
-{{- end}}
 {{- end}}
 {{- end}}
 	x.dirty = 0
@@ -442,15 +426,17 @@ func (x *{{.Name}}) clearDirty() {
 		return
 	}
 {{- range .Fields}}
-{{- if findComponent .Type}}
-	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 {{- if .Repeated}}
+	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 		x.syncable.{{.Name}}.clearDirty()
+	}
 {{- else if len .KeyType}}
+	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 		x.syncable.{{.Name}}.clearDirty()
-{{- else}}
+	}
+{{- else if findComponent .Type}}
+	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 		x.syncable.{{.Name}}.clearDirty()
-{{- end}}
 	}
 {{- end}}
 {{- end}}
@@ -490,10 +476,8 @@ func New{{.Name}}() *{{.Name}} {
 	// x.syncable.{{.Name}} = {{.ListType}}{}
 {{- else if len .KeyType}}
 	// x.syncable.{{.Name}} = {{.MapType}}{}
-{{- else}}
-{{- if findComponent .Type}}
+{{- else if findComponent .Type}}
 	x.set{{.Name}}(New{{.Type}}())
-{{- end}}
 {{- end}}
 {{- end}}
 	return x
@@ -514,14 +498,12 @@ func (x *{{.Name}}) markDirty(n uint64) {
 
 func (x *{{.Name}}) clearAll() {
 {{- range .Fields}}
-{{- if findComponent .Type}}
 {{- if .Repeated}}
 	x.syncable.{{.Name}}.clearDirty()
 {{- else if len .KeyType}}
 	x.syncable.{{.Name}}.clearDirty()
-{{- else}}
+{{- else if findComponent .Type}}
 	x.syncable.{{.Name}}.clearDirty()
-{{- end}}
 {{- end}}
 {{- end}}
 	x.dirty = 0
@@ -536,15 +518,17 @@ func (x *{{.Name}}) clearDirty() {
 		return
 	}
 {{- range .Fields}}
-{{- if findComponent .Type}}
-	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 {{- if .Repeated}}
+	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 		x.syncable.{{.Name}}.clearDirty()
+	}
 {{- else if len .KeyType}}
+	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 		x.syncable.{{.Name}}.clearDirty()
-{{- else}}
+	}
+{{- else if findComponent .Type}}
+	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 		x.syncable.{{.Name}}.clearDirty()
-{{- end}}
 	}
 {{- end}}
 {{- end}}

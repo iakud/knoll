@@ -22,6 +22,7 @@ func (f dirtyParentFunc_Int32_Empty_Map) invoke() {
 type Int32_Empty_Map struct {
 	syncable map[int32]struct{}
 
+	dirty map[int32]struct{}
 	dirtyParent dirtyParentFunc_Int32_Empty_Map
 }
 
@@ -94,6 +95,7 @@ func (f dirtyParentFunc_Int32_Int32_Map) invoke() {
 type Int32_Int32_Map struct {
 	syncable map[int32]int32
 
+	dirty map[int32]int32
 	dirtyParent dirtyParentFunc_Int32_Int32_Map
 }
 

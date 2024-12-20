@@ -144,6 +144,7 @@ func (x *City) markDirty(n uint64) {
 func (x *City) clearAll() {
 	x.syncable.PlayerBasicInfo.clearDirty()
 	x.syncable.CityInfo.clearDirty()
+	x.syncable.Troops.clearDirty()
 	x.dirty = 0
 }
 
@@ -160,6 +161,9 @@ func (x *City) clearDirty() {
 	}
 	if x.dirty & uint64(0x01) << 3 != 0 {
 		x.syncable.CityInfo.clearDirty()
+	}
+	if x.dirty & uint64(0x01) << 4 != 0 {
+		x.syncable.Troops.clearDirty()
 	}
 	x.dirty = 0
 }
@@ -257,6 +261,7 @@ func (x *CityBaseInfo) markDirty(n uint64) {
 
 func (x *CityBaseInfo) clearAll() {
 	x.syncable.Positions.clearDirty()
+	x.syncable.Troops.clearDirty()
 	x.dirty = 0
 }
 
@@ -270,6 +275,9 @@ func (x *CityBaseInfo) clearDirty() {
 	}
 	if x.dirty & uint64(0x01) << 1 != 0 {
 		x.syncable.Positions.clearDirty()
+	}
+	if x.dirty & uint64(0x01) << 2 != 0 {
+		x.syncable.Troops.clearDirty()
 	}
 	x.dirty = 0
 }

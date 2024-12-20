@@ -442,6 +442,7 @@ func (x *PlayerBag) markDirty(n uint64) {
 }
 
 func (x *PlayerBag) clearAll() {
+	x.syncable.Resources.clearDirty()
 	x.dirty = 0
 }
 
@@ -452,6 +453,9 @@ func (x *PlayerBag) clearDirty() {
 	if x.dirty & uint64(0x01) != 0 {
 		x.clearAll()
 		return
+	}
+	if x.dirty & uint64(0x01) << 1 != 0 {
+		x.syncable.Resources.clearDirty()
 	}
 	x.dirty = 0
 }
@@ -609,6 +613,7 @@ func (f dirtyParentFunc_Int64_Hero_Map) invoke() {
 type Int64_Hero_Map struct {
 	syncable map[int64]*Hero
 
+	dirty map[int64]*Hero
 	dirtyParent dirtyParentFunc_Int64_Hero_Map
 }
 
