@@ -628,7 +628,10 @@ func (f dirtyParentFunc_Int64_Hero_Map) invoke() {
 type Int64_Hero_Map struct {
 	syncable map[int64]*Hero
 
-	dirty map[int64]*Hero
+	new map[int64]*Hero
+	deleteKey map[int64]struct{}
+	clear bool
+	dirty bool
 	dirtyParent dirtyParentFunc_Int64_Hero_Map
 }
 
@@ -637,7 +640,19 @@ func (x *Int64_Hero_Map) Len() int {
 }
 
 func (x *Int64_Hero_Map) Clear() {
+	if len(x.syncable) == 0 && len(x.deleteKey) == 0 {
+		return
+	}
+	for _, v := range x.syncable {
+		if v != nil {
+			v.dirtyParent = nil
+		}
+	}
 	clear(x.syncable)
+	clear(x.new)
+	clear(x.deleteKey)
+	x.clear = true
+	x.markDirty()
 }
 
 func (x *Int64_Hero_Map) Get(k int64) (*Hero, bool) {
@@ -646,11 +661,41 @@ func (x *Int64_Hero_Map) Get(k int64) (*Hero, bool) {
 }
 
 func (x *Int64_Hero_Map) Set(k int64, v *Hero) {
+	if v != nil && v.dirtyParent != nil {
+		panic("the component should be removed or evicted from its original place first")
+	}
+	if e, ok := x.syncable[k]; ok {
+		if e == v {
+			return
+		}
+		if e != nil {
+			e.dirtyParent = nil
+		}
+	}
 	x.syncable[k] = v
+	if v != nil {
+		v.dirtyParent = func() {
+			if _, ok := x.new[k]; ok {
+				return
+			}
+			x.new[k] = v
+			x.markDirty()
+		}
+		v.dirty |= uint64(0x01)
+	}
+	x.new[k] = v
+	delete(x.deleteKey, k)
+	x.markDirty()
 }
 
 func (x *Int64_Hero_Map) Delete(k int64) {
+	if v, ok := x.syncable[k]; ok && v != nil {
+		v.dirtyParent = nil
+	}
 	delete(x.syncable, k)
+	x.deleteKey[k] = struct{}{}
+	delete(x.new, k)
+	x.markDirty()
 }
 
 func (x *Int64_Hero_Map) All() iter.Seq2[int64, *Hero] {
@@ -681,12 +726,24 @@ func (x *Int64_Hero_Map) DumpFull() map[int64]*kdspb.Hero {
 	return m
 }
 
-func (x *Int64_Hero_Map) markDirty(k int64) {
-	_ = k
+func (x *Int64_Hero_Map) markDirty() {
+	if x.dirty {
+		return
+	}
+	x.dirty = true
 	x.dirtyParent.invoke()
 }
 
 func (x *Int64_Hero_Map) clearDirty() {
+	for _, v := range x.new {
+		if v != nil {
+			v.clearDirty()
+		}
+	}
+	clear(x.new)
+	clear(x.deleteKey)
+	x.clear = false
+	x.dirty = false
 }
 
 type HeroType = kdspb.HeroType

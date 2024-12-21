@@ -421,6 +421,7 @@ func (f dirtyParentFunc_Vector_List) invoke() {
 type Vector_List struct {
 	syncable []*Vector
 
+	dirty bool
 	dirtyParent dirtyParentFunc_Vector_List
 }
 
@@ -447,6 +448,7 @@ func (x *Vector_List) Set(i int, v *Vector) {
 		v.dirtyParent = func() {
 			x.markDirty()
 		}
+		v.dirty |= uint64(0x01)
 	}
 	x.markDirty()
 }
@@ -466,6 +468,7 @@ func (x *Vector_List) Append(v ...*Vector) {
 			v[i].dirtyParent = func() {
 				x.markDirty()
 			}
+			v[i].dirty |= uint64(0x01)
 		}
 	}
 	x.markDirty()
@@ -486,6 +489,7 @@ func (x *Vector_List) Insert(i int, v ...*Vector) {
 			v[j].dirtyParent = func() {
 				x.markDirty()
 			}
+			v[j].dirty |= uint64(0x01)
 		}
 	}
 	x.markDirty()
@@ -526,6 +530,7 @@ func (x *Vector_List) Replace(i, j int, v ...*Vector) {
 			v[k].dirtyParent = func() {
 				x.markDirty()
 			}
+			v[k].dirty |= uint64(0x01)
 		}
 	}
 	x.markDirty()
@@ -564,11 +569,18 @@ func (x *Vector_List) DumpFull() []*kdspb.Vector {
 }
 
 func (x *Vector_List) markDirty() {
+	if x.dirty {
+		return
+	}
+	x.dirty = true
 	x.dirtyParent.invoke()
 }
 
 func (x *Vector_List) clearDirty() {
 	for k := range x.syncable {
-		x.syncable[k].clearDirty()
+		if x.syncable[k] != nil {
+			x.syncable[k].clearDirty()
+		}
 	}
+	x.dirty = false
 }

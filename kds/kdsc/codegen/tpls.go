@@ -91,6 +91,7 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 type {{.Name}} struct {
 	syncable []{{toGoType .Type}}
 
+	dirty bool
 	dirtyParent dirtyParentFunc_{{.Name}}
 }
 
@@ -122,6 +123,7 @@ func (x *{{.Name}}) Set(i int, v {{toGoType .Type}}) {
 		v.dirtyParent = func() {
 			x.markDirty()
 		}
+		v.dirty |= uint64(0x01)
 	}
 {{- end}}
 	x.markDirty()
@@ -145,6 +147,7 @@ func (x *{{.Name}}) Append(v ...{{toGoType .Type}}) {
 			v[i].dirtyParent = func() {
 				x.markDirty()
 			}
+			v[i].dirty |= uint64(0x01)
 		}
 	}
 {{- end}}
@@ -169,6 +172,7 @@ func (x *{{.Name}}) Insert(i int, v ...{{toGoType .Type}}) {
 			v[j].dirtyParent = func() {
 				x.markDirty()
 			}
+			v[j].dirty |= uint64(0x01)
 		}
 	}
 {{- end}}
@@ -215,6 +219,7 @@ func (x *{{.Name}}) Replace(i, j int, v ...{{toGoType .Type}}) {
 			v[k].dirtyParent = func() {
 				x.markDirty()
 			}
+			v[k].dirty |= uint64(0x01)
 		}
 	}
 {{- end}}
@@ -276,15 +281,22 @@ func (x *{{.Name}}) DumpFull() []{{toProtoGoType .Type}} {
 }
 
 func (x *{{.Name}}) markDirty() {
+	if x.dirty {
+		return
+	}
+	x.dirty = true
 	x.dirtyParent.invoke()
 }
 
 func (x *{{.Name}}) clearDirty() {
 {{- if findComponent .Type}}
 	for k := range x.syncable {
-		x.syncable[k].clearDirty()
+		if x.syncable[k] != nil {
+			x.syncable[k].clearDirty()
+		}
 	}
 {{- end}}
+	x.dirty = false
 }
 {{- end}}
 {{- /* map */ -}}
@@ -302,7 +314,10 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 type {{.Name}} struct {
 	syncable map[{{toGoType .KeyType}}]{{toGoType .Type}}
 
-	dirty map[{{toGoType .KeyType}}]{{toGoType .Type}}
+	new map[{{toGoType .KeyType}}]{{toGoType .Type}}
+	deleteKey map[{{toGoType .KeyType}}]struct{}
+	clear bool
+	dirty bool
 	dirtyParent dirtyParentFunc_{{.Name}}
 }
 
@@ -311,7 +326,21 @@ func (x *{{.Name}}) Len() int {
 }
 
 func (x *{{.Name}}) Clear() {
+	if len(x.syncable) == 0 && len(x.deleteKey) == 0 {
+		return
+	}
+{{- if findComponent .Type}}
+	for _, v := range x.syncable {
+		if v != nil {
+			v.dirtyParent = nil
+		}
+	}
+{{- end}}
 	clear(x.syncable)
+	clear(x.new)
+	clear(x.deleteKey)
+	x.clear = true
+	x.markDirty()
 }
 
 func (x *{{.Name}}) Get(k {{toGoType .KeyType}}) ({{toGoType .Type}}, bool) {
@@ -320,11 +349,49 @@ func (x *{{.Name}}) Get(k {{toGoType .KeyType}}) ({{toGoType .Type}}, bool) {
 }
 
 func (x *{{.Name}}) Set(k {{toGoType .KeyType}}, v {{toGoType .Type}}) {
+{{- if findComponent .Type}}
+	if v != nil && v.dirtyParent != nil {
+		panic("the component should be removed or evicted from its original place first")
+	}
+{{- end}}
+	if e, ok := x.syncable[k]; ok {
+		if e == v {
+			return
+		}
+{{- if findComponent .Type}}
+		if e != nil {
+			e.dirtyParent = nil
+		}
+{{- end}}
+	}
 	x.syncable[k] = v
+{{- if findComponent .Type}}
+	if v != nil {
+		v.dirtyParent = func() {
+			if _, ok := x.new[k]; ok {
+				return
+			}
+			x.new[k] = v
+			x.markDirty()
+		}
+		v.dirty |= uint64(0x01)
+	}
+{{- end}}
+	x.new[k] = v
+	delete(x.deleteKey, k)
+	x.markDirty()
 }
 
 func (x *{{.Name}}) Delete(k {{toGoType .KeyType}}) {
+{{- if findComponent .Type}}
+	if v, ok := x.syncable[k]; ok && v != nil {
+		v.dirtyParent = nil
+	}
+{{- end}}
 	delete(x.syncable, k)
+	x.deleteKey[k] = struct{}{}
+	delete(x.new, k)
+	x.markDirty()
 }
 
 func (x *{{.Name}}) All() iter.Seq2[{{toGoType .KeyType}}, {{toGoType .Type}}] {
@@ -399,12 +466,26 @@ func (x *{{.Name}}) DumpFull() map[{{toGoType .KeyType}}]{{toProtoGoType .Type}}
 	return m
 }
 
-func (x *{{.Name}}) markDirty(k {{toGoType .KeyType}}) {
-	_ = k
+func (x *{{.Name}}) markDirty() {
+	if x.dirty {
+		return
+	}
+	x.dirty = true
 	x.dirtyParent.invoke()
 }
 
 func (x *{{.Name}}) clearDirty() {
+{{- if findComponent .Type}}
+	for _, v := range x.new {
+		if v != nil {
+			v.clearDirty()
+		}
+	}
+{{- end}}
+	clear(x.new)
+	clear(x.deleteKey)
+	x.clear = false
+	x.dirty = false
 }
 {{- end}}
 {{- /* enum */ -}}
