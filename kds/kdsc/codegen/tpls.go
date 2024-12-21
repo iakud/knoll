@@ -128,9 +128,6 @@ func (x *{{.Name}}) Set(i int, v {{toGoType .Type}}) {
 }
 
 func (x *{{.Name}}) Append(v ...{{toGoType .Type}}) {
-	if len(v) == 0 {
-		return
-	}
 {{- if findComponent .Type}}
 	for i := range v {
 		if v[i] != nil && v[i].dirtyParent != nil {
@@ -138,6 +135,9 @@ func (x *{{.Name}}) Append(v ...{{toGoType .Type}}) {
 		}
 	}
 {{- end}}
+	if len(v) == 0 {
+		return
+	}
 	x.syncable = append(x.syncable, v...)
 {{- if findComponent .Type}}
 	for i := range v {
@@ -152,21 +152,21 @@ func (x *{{.Name}}) Append(v ...{{toGoType .Type}}) {
 }
 
 func (x *{{.Name}}) Insert(i int, v ...{{toGoType .Type}}) {
-	if len(v) == 0 {
-		return
-	}
 {{- if findComponent .Type}}
-	for i := range v {
-		if v[i] != nil && v[i].dirtyParent != nil {
+	for j := range v {
+		if v[j] != nil && v[j].dirtyParent != nil {
 			panic("the component should be removed or evicted from its original place first")
 		}
 	}
 {{- end}}
+	if len(v) == 0 {
+		return
+	}
 	x.syncable = slices.Insert(x.syncable, i, v...)
 {{- if findComponent .Type}}
-	for i := range v {
-		if v[i] != nil {
-			v[i].dirtyParent = func() {
+	for j := range v {
+		if v[j] != nil {
+			v[j].dirtyParent = func() {
 				x.markDirty()
 			}
 		}
@@ -177,37 +177,42 @@ func (x *{{.Name}}) Insert(i int, v ...{{toGoType .Type}}) {
 
 func (x *{{.Name}}) Delete(i, j int) {
 {{- if findComponent .Type}}
-	for _, v := range x.syncable[i:j:len(x.syncable)] {
-		if v != nil {
-			v.dirtyParent = nil
+	r := x.syncable[i:j:len(x.syncable)]
+	for k := range r {
+		if r[k] != nil {
+			r[k].dirtyParent = nil
 		}
 	}
 {{- end}}
+	if i == j {
+		return
+	}
 	x.syncable = slices.Delete(x.syncable, i, j)
 	x.markDirty()
 }
 
 func (x *{{.Name}}) Replace(i, j int, v ...{{toGoType .Type}}) {
-	if i == j && len(v) == 0 {
-		return
-	}
 {{- if findComponent .Type}}
-	for i := range v {
-		if v[i] != nil && v[i].dirtyParent != nil {
+	for k := range v {
+		if v[k] != nil && v[k].dirtyParent != nil {
 			panic("the component should be removed or evicted from its original place first")
 		}
 	}
-	for _, v := range x.syncable[i:j:len(x.syncable)] {
-		if v != nil {
-			v.dirtyParent = nil
+	r := x.syncable[i:j:len(x.syncable)]
+	for k := range r {
+		if r[k] != nil {
+			r[k].dirtyParent = nil
 		}
 	}
 {{- end}}
+	if i == j && len(v) == 0 {
+		return
+	}
 	x.syncable = slices.Replace(x.syncable, i, j, v...)
 {{- if findComponent .Type}}
-	for i := range v {
-		if v[i] != nil {
-			v[i].dirtyParent = func() {
+	for k := range v {
+		if v[k] != nil {
+			v[k].dirtyParent = func() {
 				x.markDirty()
 			}
 		}
@@ -275,6 +280,11 @@ func (x *{{.Name}}) markDirty() {
 }
 
 func (x *{{.Name}}) clearDirty() {
+{{- if findComponent .Type}}
+	for k := range x.syncable {
+		x.syncable[k].clearDirty()
+	}
+{{- end}}
 }
 {{- end}}
 {{- /* map */ -}}
