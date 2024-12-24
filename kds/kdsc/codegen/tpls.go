@@ -78,7 +78,6 @@ const TemplateKdsGo = `
 {{- /* BEGIN DEFINE */ -}}
 {{- /* list */ -}}
 {{- define "List"}}
-
 type dirtyParentFunc_{{.Name}} func()
 
 func (f dirtyParentFunc_{{.Name}}) invoke() {
@@ -301,7 +300,6 @@ func (x *{{.Name}}) clearDirty() {
 {{- end}}
 {{- /* map */ -}}
 {{- define "Map"}}
-
 type dirtyParentFunc_{{.Name}} func()
 
 func (f dirtyParentFunc_{{.Name}}) invoke() {
@@ -314,7 +312,7 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 type {{.Name}} struct {
 	syncable map[{{toGoType .KeyType}}]{{toGoType .Type}}
 
-	new map[{{toGoType .KeyType}}]{{toGoType .Type}}
+	update map[{{toGoType .KeyType}}]{{toGoType .Type}}
 	deleteKey map[{{toGoType .KeyType}}]struct{}
 	clear bool
 	dirty bool
@@ -337,7 +335,7 @@ func (x *{{.Name}}) Clear() {
 	}
 {{- end}}
 	clear(x.syncable)
-	clear(x.new)
+	clear(x.update)
 	clear(x.deleteKey)
 	x.clear = true
 	x.markDirty()
@@ -368,29 +366,35 @@ func (x *{{.Name}}) Set(k {{toGoType .KeyType}}, v {{toGoType .Type}}) {
 {{- if findComponent .Type}}
 	if v != nil {
 		v.dirtyParent = func() {
-			if _, ok := x.new[k]; ok {
+			if _, ok := x.update[k]; ok {
 				return
 			}
-			x.new[k] = v
+			x.update[k] = v
 			x.markDirty()
 		}
 		v.dirty |= uint64(0x01)
 	}
 {{- end}}
-	x.new[k] = v
+	x.update[k] = v
 	delete(x.deleteKey, k)
 	x.markDirty()
 }
 
 func (x *{{.Name}}) Delete(k {{toGoType .KeyType}}) {
 {{- if findComponent .Type}}
-	if v, ok := x.syncable[k]; ok && v != nil {
+	if v, ok := x.syncable[k]; !ok {
+		return
+	} else if v != nil {
 		v.dirtyParent = nil
+	}
+{{- else}}
+	if _, ok := x.syncable[k]; !ok {
+		return
 	}
 {{- end}}
 	delete(x.syncable, k)
 	x.deleteKey[k] = struct{}{}
-	delete(x.new, k)
+	delete(x.update, k)
 	x.markDirty()
 }
 
@@ -407,32 +411,38 @@ func (x *{{.Name}}) Values() iter.Seq[{{toGoType .Type}}] {
 }
 
 func (x *{{.Name}}) DumpChange() map[{{toGoType .KeyType}}]{{toProtoGoType .Type}} {
+	if x.clear {
+		return x.DumpFull()
+	}
 	m := make(map[{{toGoType .KeyType}}]{{toProtoGoType .Type}})
 {{- if findComponent .Type}}
-	for k, v := range x.syncable {
+	for k, v := range x.update {
 		m[k] = v.DumpFull()
 	}
 {{- else if findEnum .Type}}
-	for k, v := range x.syncable {
+	for k, v := range x.update {
 		m[k] = v
 	}
 {{- else if eq .Type "timestamp"}}
-	for k, v := range x.syncable {
+	for k, v := range x.update {
 		m[k] = timestamppb.New(v)
 	}
 {{- else if eq .Type "duration"}}
-	for k, v := range x.syncable {
+	for k, v := range x.update {
 		m[k] = durationpb.New(v)
 	}
 {{- else if eq .Type "empty"}}
-	for k := range x.syncable {
+	for k := range x.update {
 		m[k] = new(emptypb.Empty)
 	}
 {{- else}}
-	for k, v := range x.syncable {
+	for k, v := range x.update {
 		m[k] = v
 	}
 {{- end}}
+	for k, _ := range x.deleteKey {
+		_ = k // deleteKeys
+	}
 	return m
 }
 
@@ -475,14 +485,17 @@ func (x *{{.Name}}) markDirty() {
 }
 
 func (x *{{.Name}}) clearDirty() {
+	if !x.dirty {
+		return
+	}
 {{- if findComponent .Type}}
-	for _, v := range x.new {
+	for _, v := range x.update {
 		if v != nil {
 			v.clearDirty()
 		}
 	}
 {{- end}}
-	clear(x.new)
+	clear(x.update)
 	clear(x.deleteKey)
 	x.clear = false
 	x.dirty = false
@@ -841,11 +854,11 @@ import (
 
 {{- with findList .}}
 {{- if .}}
-{{- template "List" .}}
+{{template "List" .}}
 {{- end}}
 {{- end}}
 {{- range findMap .}}
-{{- template "Map" .}}
+{{template "Map" .}}
 {{- end}}
 
 {{- end}}
@@ -856,11 +869,11 @@ import (
 {{- template "Enum" .}}
 {{- with findList .Name}}
 {{- if .}}
-{{- template "List" .}}
+{{template "List" .}}
 {{- end}}
 {{- end}}
 {{- range findMap .Name}}
-{{- template "Map" .}}
+{{template "Map" .}}
 {{- end}}
 
 {{- else if findEntity .Name}}
@@ -872,11 +885,11 @@ import (
 {{- template "Component" .}}
 {{- with findList .Name}}
 {{- if .}}
-{{- template "List" .}}
+{{template "List" .}}
 {{- end}}
 {{- end}}
 {{- range findMap .Name}}
-{{- template "Map" .}}
+{{template "Map" .}}
 {{- end}}
 
 {{- end}}
