@@ -18,11 +18,11 @@ enum {{.Name}} {
 message {{.Name}} {
 {{- range .Fields}}
 {{- if .Repeated}}
-	repeated {{toProtoType .Type}} {{.Name}} = {{.Number}};
-{{- else if len .KeyType}}
-	map<{{toProtoType .KeyType}}, {{toProtoType .Type}}> {{.Name}} = {{.Number}};
+	repeated {{protoType .Type}} {{.Name}} = {{.Number}};
+{{- else if .Map}}
+	map<{{protoType .KeyType}}, {{protoType .Type}}> {{.Name}} = {{.Number}};
 {{- else}}
-	{{toProtoType .Type}} {{.Name}} = {{.Number}};
+	{{protoType .Type}} {{.Name}} = {{.Number}};
 {{- end}}
 {{- end}}
 }
@@ -62,11 +62,11 @@ import "{{.}}";
 option go_package="{{.ProtoGoPackage}}";
 
 {{- range .Defs}}
-{{- if findEnum .Name}}
+{{- if eq .Kind "enum"}}
 {{- template "Enum" .}}
-{{- else if findEntity .Name}}
+{{- else if eq .Kind "entity"}}
 {{- template "Entity" .}}
-{{- else if findComponent .Name}}
+{{- else if eq .Kind "component"}}
 {{- template "Component" .}}
 {{- end}}
 {{- end}}
@@ -76,6 +76,46 @@ option go_package="{{.ProtoGoPackage}}";
 // Kds Go File
 const TemplateKdsGo = `
 {{- /* BEGIN DEFINE */ -}}
+{{- define "FieldType"}}
+{{- if eq .TypeKind "enum"}}{{.Type}}
+{{- else if eq .TypeKind "component"}}*{{.Type}}
+{{- else}}{{goType .Type}}
+{{- end}}
+{{- end}}
+
+{{- define "ListValueType"}}
+{{- if eq .TypeKind "enum"}}{{.Type}}
+{{- else if eq .TypeKind "component"}}*{{.Type}}
+{{- else}}{{goType .Type}}
+{{- end}}
+{{- end}}
+
+{{- define "MapValueType"}}
+{{- if eq .TypeKind "enum"}}{{.Type}}
+{{- else if eq .TypeKind "component"}}*{{.Type}}
+{{- else}}{{goType .Type}}
+{{- end}}
+{{- end}}
+
+{{- define "ListValueProtoType"}}
+{{- if eq .TypeKind "enum"}}{{goProtoPackage .Type}}.{{.Type}}
+{{- else if eq .TypeKind "component"}}*{{goProtoPackage .Type}}.{{.Type}}
+{{- else if eq .Type "timestamp"}}*{{goProtoType .Type}}
+{{- else if eq .Type "duration"}}*{{goProtoType .Type}}
+{{- else if eq .Type "empty"}}*{{goProtoType .Type}}
+{{- else}}{{goProtoType .Type}}
+{{- end}}
+{{- end}}
+
+{{- define "MapValueProtoType"}}
+{{- if eq .TypeKind "enum"}}{{goProtoPackage .Type}}.{{.Type}}
+{{- else if eq .TypeKind "component"}}*{{goProtoPackage .Type}}.{{.Type}}
+{{- else if eq .Type "timestamp"}}*{{goProtoType .Type}}
+{{- else if eq .Type "duration"}}*{{goProtoType .Type}}
+{{- else if eq .Type "empty"}}*{{goProtoType .Type}}
+{{- else}}{{goProtoType .Type}}
+{{- end}}
+{{- end}}
 {{- /* list */ -}}
 {{- define "List"}}
 type dirtyParentFunc_{{.Name}} func()
@@ -88,7 +128,7 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 }
 
 type {{.Name}} struct {
-	syncable []{{toGoType .Type}}
+	syncable []{{template "ListValueType" .}}
 
 	dirty bool
 	dirtyParent dirtyParentFunc_{{.Name}}
@@ -98,12 +138,12 @@ func (x *{{.Name}}) Len() int {
 	return len(x.syncable)
 }
 
-func (x *{{.Name}}) Get(i int) {{toGoType .Type}} {
+func (x *{{.Name}}) Get(i int) {{template "ListValueType" .}} {
 	return x.syncable[i]
 }
 
-func (x *{{.Name}}) Set(i int, v {{toGoType .Type}}) {
-{{- if findComponent .Type}}
+func (x *{{.Name}}) Set(i int, v {{template "ListValueType" .}}) {
+{{- if eq .TypeKind "component"}}
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed or evicted from its original place first")
 	}
@@ -111,13 +151,13 @@ func (x *{{.Name}}) Set(i int, v {{toGoType .Type}}) {
 	if v == x.syncable[i] {
 		return
 	}
-{{- if findComponent .Type}}
+{{- if eq .TypeKind "component"}}
 	if x.syncable[i] != nil {
 		x.syncable[i].dirtyParent = nil
 	}
 {{- end}}
 	x.syncable[i] = v
-{{- if findComponent .Type}}
+{{- if eq .TypeKind "component"}}
 	if v != nil {
 		v.dirtyParent = func() {
 			x.markDirty()
@@ -128,8 +168,8 @@ func (x *{{.Name}}) Set(i int, v {{toGoType .Type}}) {
 	x.markDirty()
 }
 
-func (x *{{.Name}}) Append(v ...{{toGoType .Type}}) {
-{{- if findComponent .Type}}
+func (x *{{.Name}}) Append(v ...{{template "ListValueType" .}}) {
+{{- if eq .TypeKind "component"}}
 	for i := range v {
 		if v[i] != nil && v[i].dirtyParent != nil {
 			panic("the component should be removed or evicted from its original place first")
@@ -140,7 +180,7 @@ func (x *{{.Name}}) Append(v ...{{toGoType .Type}}) {
 		return
 	}
 	x.syncable = append(x.syncable, v...)
-{{- if findComponent .Type}}
+{{- if eq .TypeKind "component"}}
 	for i := range v {
 		if v[i] != nil {
 			v[i].dirtyParent = func() {
@@ -153,8 +193,8 @@ func (x *{{.Name}}) Append(v ...{{toGoType .Type}}) {
 	x.markDirty()
 }
 
-func (x *{{.Name}}) Insert(i int, v ...{{toGoType .Type}}) {
-{{- if findComponent .Type}}
+func (x *{{.Name}}) Insert(i int, v ...{{template "ListValueType" .}}) {
+{{- if eq .TypeKind "component"}}
 	for j := range v {
 		if v[j] != nil && v[j].dirtyParent != nil {
 			panic("the component should be removed or evicted from its original place first")
@@ -165,7 +205,7 @@ func (x *{{.Name}}) Insert(i int, v ...{{toGoType .Type}}) {
 		return
 	}
 	x.syncable = slices.Insert(x.syncable, i, v...)
-{{- if findComponent .Type}}
+{{- if eq .TypeKind "component"}}
 	for j := range v {
 		if v[j] != nil {
 			v[j].dirtyParent = func() {
@@ -179,7 +219,7 @@ func (x *{{.Name}}) Insert(i int, v ...{{toGoType .Type}}) {
 }
 
 func (x *{{.Name}}) Delete(i, j int) {
-{{- if findComponent .Type}}
+{{- if eq .TypeKind "component"}}
 	r := x.syncable[i:j:len(x.syncable)]
 	for k := range r {
 		if r[k] != nil {
@@ -194,8 +234,8 @@ func (x *{{.Name}}) Delete(i, j int) {
 	x.markDirty()
 }
 
-func (x *{{.Name}}) Replace(i, j int, v ...{{toGoType .Type}}) {
-{{- if findComponent .Type}}
+func (x *{{.Name}}) Replace(i, j int, v ...{{template "ListValueType" .}}) {
+{{- if eq .TypeKind "component"}}
 	for k := range v {
 		if v[k] != nil && v[k].dirtyParent != nil {
 			panic("the component should be removed or evicted from its original place first")
@@ -212,7 +252,7 @@ func (x *{{.Name}}) Replace(i, j int, v ...{{toGoType .Type}}) {
 		return
 	}
 	x.syncable = slices.Replace(x.syncable, i, j, v...)
-{{- if findComponent .Type}}
+{{- if eq .TypeKind "component"}}
 	for k := range v {
 		if v[k] != nil {
 			v[k].dirtyParent = func() {
@@ -233,29 +273,29 @@ func (x *{{.Name}}) Reverse() {
 	x.markDirty()
 }
 
-func (x *{{.Name}}) All() iter.Seq2[int, {{toGoType .Type}}] {
+func (x *{{.Name}}) All() iter.Seq2[int, {{template "ListValueType" .}}] {
 	return slices.All(x.syncable)
 }
 
-func (x *{{.Name}}) Backward() iter.Seq2[int, {{toGoType .Type}}] {
+func (x *{{.Name}}) Backward() iter.Seq2[int, {{template "ListValueType" .}}] {
 	return slices.Backward(x.syncable)
 }
 
-func (x *{{.Name}}) Values() iter.Seq[{{toGoType .Type}}] {
+func (x *{{.Name}}) Values() iter.Seq[{{template "ListValueType" .}}] {
 	return slices.Values(x.syncable)
 }
 
-func (x *{{.Name}}) DumpChange() []{{toProtoGoType .Type}} {
+func (x *{{.Name}}) DumpChange() []{{template "ListValueProtoType" .}} {
 	return x.DumpFull()
 }
 
-func (x *{{.Name}}) DumpFull() []{{toProtoGoType .Type}} {
-	var m []{{toProtoGoType .Type}}
-{{- if findComponent .Type}}
+func (x *{{.Name}}) DumpFull() []{{template "ListValueProtoType" .}} {
+	var m []{{template "ListValueProtoType" .}}
+{{- if eq .TypeKind "component"}}
 	for _, v := range x.syncable {
 		m = append(m, v.DumpChange())
 	}
-{{- else if findEnum .Type}}
+{{- else if eq .TypeKind "enum"}}
 	for _, v := range x.syncable {
 		m = append(m, v)
 	}
@@ -288,7 +328,7 @@ func (x *{{.Name}}) markDirty() {
 }
 
 func (x *{{.Name}}) clearDirty() {
-{{- if findComponent .Type}}
+{{- if eq .TypeKind "component"}}
 	for k := range x.syncable {
 		if x.syncable[k] != nil {
 			x.syncable[k].clearDirty()
@@ -310,10 +350,10 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 }
 
 type {{.Name}} struct {
-	syncable map[{{toGoType .KeyType}}]{{toGoType .Type}}
+	syncable map[{{goType .KeyType}}]{{template "MapValueType" .}}
 
-	update map[{{toGoType .KeyType}}]{{toGoType .Type}}
-	deleteKey map[{{toGoType .KeyType}}]struct{}
+	update map[{{goType .KeyType}}]{{template "MapValueType" .}}
+	deleteKey map[{{goType .KeyType}}]struct{}
 	clear bool
 	dirty bool
 	dirtyParent dirtyParentFunc_{{.Name}}
@@ -327,7 +367,7 @@ func (x *{{.Name}}) Clear() {
 	if len(x.syncable) == 0 && len(x.deleteKey) == 0 {
 		return
 	}
-{{- if findComponent .Type}}
+{{- if eq .TypeKind "component"}}
 	for _, v := range x.syncable {
 		if v != nil {
 			v.dirtyParent = nil
@@ -341,13 +381,13 @@ func (x *{{.Name}}) Clear() {
 	x.markDirty()
 }
 
-func (x *{{.Name}}) Get(k {{toGoType .KeyType}}) ({{toGoType .Type}}, bool) {
+func (x *{{.Name}}) Get(k {{goType .KeyType}}) ({{template "MapValueType" .}}, bool) {
 	v, ok := x.syncable[k]
 	return v, ok
 }
 
-func (x *{{.Name}}) Set(k {{toGoType .KeyType}}, v {{toGoType .Type}}) {
-{{- if findComponent .Type}}
+func (x *{{.Name}}) Set(k {{goType .KeyType}}, v {{template "MapValueType" .}}) {
+{{- if eq .TypeKind "component"}}
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed or evicted from its original place first")
 	}
@@ -356,14 +396,14 @@ func (x *{{.Name}}) Set(k {{toGoType .KeyType}}, v {{toGoType .Type}}) {
 		if e == v {
 			return
 		}
-{{- if findComponent .Type}}
+{{- if eq .TypeKind "component"}}
 		if e != nil {
 			e.dirtyParent = nil
 		}
 {{- end}}
 	}
 	x.syncable[k] = v
-{{- if findComponent .Type}}
+{{- if eq .TypeKind "component"}}
 	if v != nil {
 		v.dirtyParent = func() {
 			if _, ok := x.update[k]; ok {
@@ -380,8 +420,8 @@ func (x *{{.Name}}) Set(k {{toGoType .KeyType}}, v {{toGoType .Type}}) {
 	x.markDirty()
 }
 
-func (x *{{.Name}}) Delete(k {{toGoType .KeyType}}) {
-{{- if findComponent .Type}}
+func (x *{{.Name}}) Delete(k {{goType .KeyType}}) {
+{{- if eq .TypeKind "component"}}
 	if v, ok := x.syncable[k]; !ok {
 		return
 	} else if v != nil {
@@ -398,28 +438,28 @@ func (x *{{.Name}}) Delete(k {{toGoType .KeyType}}) {
 	x.markDirty()
 }
 
-func (x *{{.Name}}) All() iter.Seq2[{{toGoType .KeyType}}, {{toGoType .Type}}] {
+func (x *{{.Name}}) All() iter.Seq2[{{goType .KeyType}}, {{template "MapValueType" .}}] {
 	return maps.All(x.syncable)
 }
 
-func (x *{{.Name}}) Keys() iter.Seq[{{toGoType .KeyType}}] {
+func (x *{{.Name}}) Keys() iter.Seq[{{goType .KeyType}}] {
 	return maps.Keys(x.syncable)
 }
 
-func (x *{{.Name}}) Values() iter.Seq[{{toGoType .Type}}] {
+func (x *{{.Name}}) Values() iter.Seq[{{template "MapValueType" .}}] {
 	return maps.Values(x.syncable)
 }
 
-func (x *{{.Name}}) DumpChange() map[{{toGoType .KeyType}}]{{toProtoGoType .Type}} {
+func (x *{{.Name}}) DumpChange() map[{{goType .KeyType}}]{{template "MapValueProtoType" .}} {
 	if x.clear {
 		return x.DumpFull()
 	}
-	m := make(map[{{toGoType .KeyType}}]{{toProtoGoType .Type}})
-{{- if findComponent .Type}}
+	m := make(map[{{goType .KeyType}}]{{template "MapValueProtoType" .}})
+{{- if eq .TypeKind "component"}}
 	for k, v := range x.update {
 		m[k] = v.DumpFull()
 	}
-{{- else if findEnum .Type}}
+{{- else if eq .TypeKind "enum"}}
 	for k, v := range x.update {
 		m[k] = v
 	}
@@ -446,13 +486,13 @@ func (x *{{.Name}}) DumpChange() map[{{toGoType .KeyType}}]{{toProtoGoType .Type
 	return m
 }
 
-func (x *{{.Name}}) DumpFull() map[{{toGoType .KeyType}}]{{toProtoGoType .Type}} {
-	m := make(map[{{toGoType .KeyType}}]{{toProtoGoType .Type}})
-{{- if findComponent .Type}}
+func (x *{{.Name}}) DumpFull() map[{{goType .KeyType}}]{{template "MapValueProtoType" .}} {
+	m := make(map[{{goType .KeyType}}]{{template "MapValueProtoType" .}})
+{{- if eq .TypeKind "component"}}
 	for k, v := range x.syncable {
 		m[k] = v.DumpFull()
 	}
-{{- else if findEnum .Type}}
+{{- else if eq .TypeKind "enum"}}
 	for k, v := range x.syncable {
 		m[k] = v
 	}
@@ -488,7 +528,7 @@ func (x *{{.Name}}) clearDirty() {
 	if !x.dirty {
 		return
 	}
-{{- if findComponent .Type}}
+{{- if eq .TypeKind "component"}}
 	for _, v := range x.update {
 		if v != nil {
 			v.clearDirty()
@@ -505,7 +545,7 @@ func (x *{{.Name}}) clearDirty() {
 {{- define "Enum"}}
 {{- $EnumType := .Name}}
 
-type {{.Name}} = {{.ProtoGoType}}
+type {{.Name}} = {{.GoProtoPackage}}.{{.Name}}
 
 const (
 {{- range .EnumFields}}
@@ -520,10 +560,10 @@ type syncable{{.Name}} struct {
 {{- range .Fields}}
 {{- if .Repeated}}{{/* Array */}}
 	{{.Name}} {{.ListType}}
-{{- else if len .KeyType}}{{/* Map */}}
+{{- else if .Map}}{{/* Map */}}
 	{{.Name}} {{.MapType}}
 {{- else}}{{/* Field */}}
-	{{.Name}} {{toGoType .Type}}
+	{{.Name}} {{template "FieldType" .}}
 {{- end}}
 {{- end}}
 }
@@ -533,8 +573,8 @@ type syncable{{.Name}} struct {
 {{- $MessageName := .Name}}
 
 {{- range .Fields}}
+{{""}}
 {{- if .Repeated}}
-
 func (x *{{$MessageName}}) Get{{.Name}}() *{{.ListType}} {
 	return &x.syncable.{{.Name}}
 }
@@ -544,23 +584,21 @@ func (x *{{$MessageName}}) init{{.Name}}() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
-{{- else if len .KeyType}}
-
+{{- else if .Map}}
 func (x *{{$MessageName}}) Get{{.Name}}() *{{.MapType}} {
 	return &x.syncable.{{.Name}}
 }
 
 func (x *{{$MessageName}}) init{{.Name}}() {
-	x.syncable.{{.Name}}.syncable = make(map[{{toGoType .KeyType}}]{{toGoType .Type}})
-	x.syncable.{{.Name}}.update = make(map[{{toGoType .KeyType}}]{{toGoType .Type}})
-	x.syncable.{{.Name}}.deleteKey = make(map[{{toGoType .KeyType}}]struct{})
+	x.syncable.{{.Name}}.syncable = make(map[{{goType .KeyType}}]{{template "FieldType" .}})
+	x.syncable.{{.Name}}.update = make(map[{{goType .KeyType}}]{{template "FieldType" .}})
+	x.syncable.{{.Name}}.deleteKey = make(map[{{goType .KeyType}}]struct{})
 	x.syncable.{{.Name}}.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
-{{- else if findComponent .Type}}
-
-func (x *{{$MessageName}}) Get{{.Name}}() {{toGoType .Type}} {
+{{- else if eq .TypeKind "component"}}
+func (x *{{$MessageName}}) Get{{.Name}}() {{template "FieldType" .}} {
 	return x.syncable.{{.Name}}
 }
 
@@ -584,12 +622,11 @@ func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
 	}
 }
 {{- else}}
-
-func (x *{{$MessageName}}) Get{{.Name}}() {{toGoType .Type}} {
+func (x *{{$MessageName}}) Get{{.Name}}() {{template "FieldType" .}} {
 	return x.syncable.{{.Name}}
 }
 
-func (x *{{$MessageName}}) Set{{.Name}}(v {{toGoType .Type}}) {
+func (x *{{$MessageName}}) Set{{.Name}}(v {{template "FieldType" .}}) {
 {{- if eq .Type "bytes"}}
 	if v != nil || x.syncable.{{.Name}} != nil {
 		return
@@ -605,18 +642,18 @@ func (x *{{$MessageName}}) Set{{.Name}}(v {{toGoType .Type}}) {
 {{- end}}
 {{- end}}
 
-func (x *{{$MessageName}}) DumpChange() {{.ProtoGoType}} {
+func (x *{{$MessageName}}) DumpChange() *{{.GoProtoPackage}}.{{.Name}} {
 	if x.checkDirty(uint64(0x01)) {
 		return x.DumpFull()
 	}
-	m := new({{.ProtoPackage}}.{{.Name}})
+	m := new({{.GoProtoPackage}}.{{.Name}})
 {{- range .Fields}}
 	if x.checkDirty(uint64(0x01) << {{.Number}}) {
 {{- if .Repeated}}
 		m.{{.Name}} = x.syncable.{{.Name}}.DumpChange()
-{{- else if len .KeyType}}
+{{- else if .Map}}
 		m.{{.Name}} = x.syncable.{{.Name}}.DumpChange()
-{{- else if findComponent .Type}}
+{{- else if eq .TypeKind "component"}}
 		m.{{.Name}} = x.syncable.{{.Name}}.DumpChange()
 {{- else if eq .Type "timestamp"}}
 		m.{{.Name}} = timestamppb.New(x.syncable.{{.Name}})
@@ -632,14 +669,14 @@ func (x *{{$MessageName}}) DumpChange() {{.ProtoGoType}} {
 	return m
 }
 
-func (x *{{$MessageName}}) DumpFull() {{.ProtoGoType}} {
-	m := new({{.ProtoPackage}}.{{.Name}})
+func (x *{{$MessageName}}) DumpFull() *{{.GoProtoPackage}}.{{.Name}} {
+	m := new({{.GoProtoPackage}}.{{.Name}})
 {{- range .Fields}}
 {{- if .Repeated}}
 	m.{{.Name}} = x.syncable.{{.Name}}.DumpFull()
-{{- else if len .KeyType}}
+{{- else if .Map}}
 	m.{{.Name}} = x.syncable.{{.Name}}.DumpFull()
-{{- else if findComponent .Type}}
+{{- else if eq .TypeKind "component"}}
 	m.{{.Name}} = x.syncable.{{.Name}}.DumpFull()
 {{- else if eq .Type "timestamp"}}
 	m.{{.Name}} = timestamppb.New(x.syncable.{{.Name}})
@@ -673,9 +710,9 @@ func New{{.Name}}() *{{.Name}} {
 {{- range .Fields}}
 {{- if .Repeated}}
 	x.init{{.Name}}()
-{{- else if len .KeyType}}
+{{- else if .Map}}
 	x.init{{.Name}}()
-{{- else if findComponent .Type}}
+{{- else if eq .Type "component"}}
 	x.set{{.Name}}(New{{.Type}}())
 {{- end}}
 {{- end}}
@@ -702,9 +739,9 @@ func (x *{{.Name}}) clearAll() {
 {{- range .Fields}}
 {{- if .Repeated}}
 	x.syncable.{{.Name}}.clearDirty()
-{{- else if len .KeyType}}
+{{- else if .Map}}
 	x.syncable.{{.Name}}.clearDirty()
-{{- else if findComponent .Type}}
+{{- else if eq .TypeKind "component"}}
 	x.syncable.{{.Name}}.clearDirty()
 {{- end}}
 {{- end}}
@@ -724,11 +761,11 @@ func (x *{{.Name}}) clearDirty() {
 	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 		x.syncable.{{.Name}}.clearDirty()
 	}
-{{- else if len .KeyType}}
+{{- else if .Map}}
 	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 		x.syncable.{{.Name}}.clearDirty()
 	}
-{{- else if findComponent .Type}}
+{{- else if eq .TypeKind "component"}}
 	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 		x.syncable.{{.Name}}.clearDirty()
 	}
@@ -768,9 +805,9 @@ func New{{.Name}}() *{{.Name}} {
 {{- range .Fields}}
 {{- if .Repeated}}
 	x.init{{.Name}}()
-{{- else if len .KeyType}}
+{{- else if .Map}}
 	x.init{{.Name}}()
-{{- else if findComponent .Type}}
+{{- else if eq .TypeKind "component"}}
 	x.set{{.Name}}(New{{.Type}}())
 {{- end}}
 {{- end}}
@@ -794,9 +831,9 @@ func (x *{{.Name}}) clearAll() {
 {{- range .Fields}}
 {{- if .Repeated}}
 	x.syncable.{{.Name}}.clearDirty()
-{{- else if len .KeyType}}
+{{- else if .Map}}
 	x.syncable.{{.Name}}.clearDirty()
-{{- else if findComponent .Type}}
+{{- else if eq .Type "component"}}
 	x.syncable.{{.Name}}.clearDirty()
 {{- end}}
 {{- end}}
@@ -816,11 +853,11 @@ func (x *{{.Name}}) clearDirty() {
 	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 		x.syncable.{{.Name}}.clearDirty()
 	}
-{{- else if len .KeyType}}
+{{- else if .Map}}
 	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 		x.syncable.{{.Name}}.clearDirty()
 	}
-{{- else if findComponent .Type}}
+{{- else if eq .TypeKind "component"}}
 	if x.dirty & uint64(0x01) << {{.Number}} != 0 {
 		x.syncable.{{.Name}}.clearDirty()
 	}
@@ -866,7 +903,7 @@ import (
 {{- end}}
 {{- /* defs */ -}}
 {{- range .Defs}}
-{{- if findEnum .Name}}
+{{- if eq .Kind "enum"}}
 
 {{- template "Enum" .}}
 {{- with findList .Name}}
@@ -878,11 +915,11 @@ import (
 {{template "Map" .}}
 {{- end}}
 
-{{- else if findEntity .Name}}
+{{- else if eq .Kind "entity"}}
 
 {{- template "Entity" .}}
 
-{{- else if findComponent .Name}}
+{{- else if eq .Kind "component"}}
 
 {{- template "Component" .}}
 {{- with findList .Name}}

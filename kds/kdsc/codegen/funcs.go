@@ -11,9 +11,10 @@ func Funcs(ctx *Context) template.FuncMap {
 		"lcFirst": lcFirst,
 		"ucFirst": ucFirst,
 
-		"toGoType":      ctx.toGoType,
-		"toProtoGoType": ctx.toProtoGoType,
-		"toProtoType":   toProtoType,
+		"protoType":      ProtoType,
+		"goType":         GoType,
+		"goProtoType":    GoProtoType,
+		"goProtoPackage": ctx.goProtoPackage,
 
 		"findEnum":      ctx.FindEnum,
 		"findEntity":    ctx.FindEntity,

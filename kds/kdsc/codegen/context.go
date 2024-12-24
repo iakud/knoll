@@ -17,17 +17,6 @@ type Context struct {
 	Defs    map[string]TopLevelDef
 }
 
-type ListType struct {
-	Name string
-	Type string
-}
-
-type MapType struct {
-	Name    string
-	Type    string
-	KeyType string
-}
-
 func newContext() *Context {
 	return &Context{
 		TypeList: make(map[string]*ListType),
@@ -50,6 +39,7 @@ func (ctx *Context) addListType(name string) string {
 		return listType.Name
 	}
 	listType := new(ListType)
+	listType.ctx = ctx
 	listType.Name = GoCamelCase(name) + "_List"
 	listType.Type = name
 	ctx.TypeList[name] = listType
@@ -65,6 +55,7 @@ func (ctx *Context) addMapType(name string, keyType string) string {
 	}
 
 	mapType := new(MapType)
+	mapType.ctx = ctx
 	mapType.Name = GoCamelCase(keyType) + "_" + GoCamelCase(name) + "_Map"
 	mapType.Type = name
 	mapType.KeyType = keyType
@@ -122,16 +113,9 @@ func (ctx *Context) FindMap(name string) []*MapType {
 	return nil
 }
 
-func (ctx *Context) toGoType(type_ string) string {
-	if def, ok := ctx.Defs[type_]; ok {
-		return def.GoType()
+func (ctx *Context) goProtoPackage(name string) string {
+	if def, ok := ctx.Defs[name]; ok {
+		return def.GoProtoPackage()
 	}
-	return GoType(type_)
-}
-
-func (ctx *Context) toProtoGoType(type_ string) string {
-	if def, ok := ctx.Defs[type_]; ok {
-		return def.ProtoGoType()
-	}
-	return ProtoGoType(type_)
+	return ""
 }

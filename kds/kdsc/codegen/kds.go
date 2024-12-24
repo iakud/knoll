@@ -3,6 +3,7 @@ package codegen
 import "slices"
 
 type Kds struct {
+	ctx            *Context
 	Name           string
 	SourceFile     string
 	Package        string
@@ -123,45 +124,63 @@ type ImportSpec struct {
 
 type TopLevelDef interface {
 	GetName() string
-	ProtoGoType() string
-	GoType() string
+	GoProtoPackage() string
+	Kind() string
 }
 
 type Enum struct {
-	Name         string
-	EnumFields   []*EnumField
-	ProtoPackage string
+	ctx        *Context
+	kds        *Kds
+	Name       string
+	EnumFields []*EnumField
+}
+
+func (m *Enum) format(ctx *Context) {
+	for _, field := range m.EnumFields {
+		field.format(ctx)
+	}
 }
 
 func (e *Enum) GetName() string {
 	return e.Name
 }
 
-func (e *Enum) ProtoGoType() string {
-	return e.ProtoPackage + "." + e.Name
+func (e *Enum) GoProtoPackage() string {
+	return e.kds.ProtoPackage
 }
 
 func (e *Enum) GoType() string {
 	return e.Name
 }
 
+func (e *Enum) Kind() string {
+	return "enum"
+}
+
 type EnumField struct {
+	ctx   *Context
+	kds   *Kds
 	Name  string
 	Value int
 }
 
+func (f *EnumField) format(ctx *Context) {
+
+}
+
 type Message struct {
-	Name         string
-	Fields       []*Field
-	ProtoPackage string
+	ctx    *Context
+	kds    *Kds
+	Name   string
+	Fields []*Field
 }
 
 func (m *Message) GetName() string {
 	return m.Name
 }
 
-func (m *Message) ProtoGoType() string {
-	return "*" + m.ProtoPackage + "." + m.Name
+func (m *Message) GoProtoPackage() string {
+	return m.kds.ProtoPackage
 }
 
 func (m *Message) GoType() string {
@@ -172,23 +191,23 @@ type Entity struct {
 	Message
 }
 
+func (e *Entity) Kind() string {
+	return "entity"
+}
+
 type Component struct {
 	Message
 }
 
-type FieldKind int32
-
-const (
-	FieldKind_Primitive FieldKind = iota
-	FieldKind_Enum
-	FieldKind_Entity
-	FieldKind_Component
-	FieldKind_Timestamp
-	FieldKind_Duration
-)
+func (c *Component) Kind() string {
+	return "component"
+}
 
 type Field struct {
+	ctx      *Context
+	kds      *Kds
 	Repeated bool
+	Map      bool
 	KeyType  string
 	Type     string
 	Name     string
@@ -197,6 +216,52 @@ type Field struct {
 	GoVarName string
 	ListType  string
 	MapType   string
+}
 
-	Kind string
+func (f *Field) GoType() string {
+	if _, ok := f.ctx.Defs[f.Type]; ok {
+		return f.Type
+	}
+	return GoType(f.Type)
+}
+
+func (f *Field) GoProtoType() string {
+	if _, ok := f.ctx.Defs[f.Type]; ok {
+		return f.kds.ProtoPackage + "." + f.Type
+	}
+	return GoProtoType(f.Type)
+}
+
+func (f *Field) TypeKind() string {
+	if def, ok := f.ctx.Defs[f.Type]; ok {
+		return def.Kind()
+	}
+	return Kind(f.Type)
+}
+
+type ListType struct {
+	ctx  *Context
+	Name string
+	Type string
+}
+
+func (l *ListType) TypeKind() string {
+	if def, ok := l.ctx.Defs[l.Type]; ok {
+		return def.Kind()
+	}
+	return Kind(l.Type)
+}
+
+type MapType struct {
+	ctx     *Context
+	Name    string
+	Type    string
+	KeyType string
+}
+
+func (m *MapType) TypeKind() string {
+	if def, ok := m.ctx.Defs[m.Type]; ok {
+		return def.Kind()
+	}
+	return Kind(m.Type)
 }

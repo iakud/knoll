@@ -10,6 +10,7 @@ import (
 
 func visitKds(ctx *Context, filePath string, kdsCtx parser.IKdsContext) *Kds {
 	kds := new(Kds)
+	kds.ctx = ctx
 	kds.Name = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
 	kds.SourceFile = filePath
 	kds.Package = kdsCtx.PackageStatement().FullIdent().GetText()
@@ -25,7 +26,7 @@ func visitKds(ctx *Context, filePath string, kdsCtx parser.IKdsContext) *Kds {
 	for _, topLevel := range kdsCtx.AllTopLevelDef() {
 		switch {
 		case topLevel.EnumDef() != nil:
-			enum := visitEnum(kds, topLevel.EnumDef())
+			enum := visitEnum(ctx, kds, topLevel.EnumDef())
 			ctx.Defs[enum.Name] = enum
 			kds.Defs = append(kds.Defs, enum)
 		case topLevel.EntityDef() != nil:
@@ -60,18 +61,21 @@ func visitImport(importCtx parser.IImportStatementContext) string {
 	return importCtx.STR_LIT().GetText()
 }
 
-func visitEnum(kds *Kds, enumCtx parser.IEnumDefContext) *Enum {
+func visitEnum(ctx *Context, kds *Kds, enumCtx parser.IEnumDefContext) *Enum {
 	enum := new(Enum)
+	enum.ctx = ctx
+	enum.kds = kds
 	enum.Name = GoCamelCase(enumCtx.EnumName().GetText())
 	for _, element := range enumCtx.EnumBody().AllEnumElement() {
-		enum.EnumFields = append(enum.EnumFields, visitEnumField(element.EnumField()))
+		enum.EnumFields = append(enum.EnumFields, visitEnumField(ctx, kds, element.EnumField()))
 	}
-	enum.ProtoPackage = kds.ProtoPackage
 	return enum
 }
 
-func visitEnumField(enumFieldCtx parser.IEnumFieldContext) *EnumField {
+func visitEnumField(ctx *Context, kds *Kds, enumFieldCtx parser.IEnumFieldContext) *EnumField {
 	enumField := new(EnumField)
+	enumField.ctx = ctx
+	enumField.kds = kds
 	enumField.Name = GoCamelCase(enumFieldCtx.Ident().GetText())
 	if enumFieldCtx.MINUS() != nil {
 		enumField.Value, _ = strconv.Atoi(enumFieldCtx.MINUS().GetText() + enumFieldCtx.IntLit().GetText())
@@ -83,6 +87,8 @@ func visitEnumField(enumFieldCtx parser.IEnumFieldContext) *EnumField {
 
 func visitEntity(ctx *Context, kds *Kds, entityCtx parser.IEntityDefContext) *Entity {
 	entity := new(Entity)
+	entity.ctx = ctx
+	entity.kds = kds
 	entity.Name = GoCamelCase(entityCtx.EntityName().GetText())
 	for _, element := range entityCtx.EntityBody().AllEntityElement() {
 		switch {
@@ -94,12 +100,13 @@ func visitEntity(ctx *Context, kds *Kds, entityCtx parser.IEntityDefContext) *En
 			entity.Fields = append(entity.Fields, field)
 		}
 	}
-	entity.ProtoPackage = kds.ProtoPackage
 	return entity
 }
 
 func visitComponent(ctx *Context, kds *Kds, componentCtx parser.IComponentDefContext) *Component {
 	component := new(Component)
+	component.ctx = ctx
+	component.kds = kds
 	component.Name = componentCtx.ComponentName().GetText()
 	for _, element := range componentCtx.ComponentBody().AllComponentElement() {
 		switch {
@@ -111,13 +118,14 @@ func visitComponent(ctx *Context, kds *Kds, componentCtx parser.IComponentDefCon
 			component.Fields = append(component.Fields, field)
 		}
 	}
-	component.ProtoPackage = kds.ProtoPackage
 	return component
 }
 
 func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	field := new(Field)
-	field.Type = visitType(ctx, kds, fieldCtx.Type_())
+	field.ctx = ctx
+	field.kds = kds
+	field.Type = visitType(kds, fieldCtx.Type_())
 
 	field.Name = GoCamelCase(fieldCtx.FieldName().GetText())
 	field.Number, _ = strconv.Atoi(fieldCtx.FieldNumber().GetText())
@@ -142,7 +150,10 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 
 func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) *Field {
 	field := new(Field)
-	field.Type = visitType(ctx, kds, mapFieldCtx.Type_())
+	field.ctx = ctx
+	field.kds = kds
+	field.Map = true
+	field.Type = visitType(kds, mapFieldCtx.Type_())
 
 	field.KeyType = mapFieldCtx.KeyType().GetText()
 	field.Name = GoCamelCase(mapFieldCtx.MapName().GetText())
@@ -154,7 +165,7 @@ func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) 
 	return field
 }
 
-func visitType(ctx *Context, kds *Kds, typeCtx parser.IType_Context) string {
+func visitType(kds *Kds, typeCtx parser.IType_Context) string {
 	var type_ string
 	customType := typeCtx.MessageType() != nil || typeCtx.EnumType() != nil
 	if customType {

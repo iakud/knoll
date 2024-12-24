@@ -1,5 +1,16 @@
 package codegen
 
+func Kind(type_ string) string {
+	switch type_ {
+	case "double", "float", "int32", "int64", "sint32", "sint64", "fixed32", "fixed64", "sfixed32", "sfixed64", "bool", "string", "bytes":
+		return "primitive"
+	case "timestamp", "duration", "empty":
+		return "proto"
+	default:
+		return "unknow"
+	}
+}
+
 func GoType(type_ string) string {
 	switch type_ {
 	case "double":
@@ -39,7 +50,7 @@ func GoType(type_ string) string {
 	}
 }
 
-func ProtoGoType(type_ string) string {
+func GoProtoType(type_ string) string {
 	switch type_ {
 	case "double":
 		return "float64"
@@ -68,11 +79,11 @@ func ProtoGoType(type_ string) string {
 	case "bytes":
 		return "[]byte"
 	case "timestamp":
-		return "*timestamppb.Timestamp"
+		return "timestamppb.Timestamp"
 	case "duration":
-		return "*durationpb.Duration"
+		return "durationpb.Duration"
 	case "empty":
-		return "*emptypb.Empty"
+		return "emptypb.Empty"
 	default:
 		return type_
 	}
