@@ -552,6 +552,8 @@ func (x *{{$MessageName}}) Get{{.Name}}() *{{.MapType}} {
 
 func (x *{{$MessageName}}) init{{.Name}}() {
 	x.syncable.{{.Name}}.syncable = make(map[{{toGoType .KeyType}}]{{toGoType .Type}})
+	x.syncable.{{.Name}}.update = make(map[{{toGoType .KeyType}}]{{toGoType .Type}})
+	x.syncable.{{.Name}}.deleteKey = make(map[{{toGoType .KeyType}}]struct{})
 	x.syncable.{{.Name}}.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
