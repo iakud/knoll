@@ -103,7 +103,6 @@ func formatKds(ctx *Context, kds *Kds) {
 		}
 		return false
 	})
-
 	if importSlices {
 		kds.addGoImport("slices", "")
 		kds.addGoImport("iter", "")
@@ -111,6 +110,48 @@ func formatKds(ctx *Context, kds *Kds) {
 	if importMaps {
 		kds.addGoImport("maps", "")
 		kds.addGoImport("iter", "")
+	}
+
+	var importProtoTypes []string
+	var importGoTypes []string
+	for _, entity := range kds.Entities {
+		for _, field := range entity.Fields {
+			if field.TypeKind() != "proto" {
+				continue
+			}
+			if !slices.Contains(importProtoTypes, field.Type) {
+				importProtoTypes = append(importProtoTypes, field.Type)
+			}
+			if field.Repeated || field.Map {
+				continue
+			}
+			if !slices.Contains(importGoTypes, field.Type) {
+				importGoTypes = append(importGoTypes, field.Type)
+			}
+		}
+	}
+	for _, component := range kds.Components {
+		for _, field := range component.Fields {
+			if field.TypeKind() != "proto" {
+				continue
+			}
+			if !slices.Contains(importProtoTypes, field.Type) {
+				importProtoTypes = append(importProtoTypes, field.Type)
+			}
+			if field.Repeated || field.Map {
+				continue
+			}
+			if !slices.Contains(importGoTypes, field.Type) {
+				importGoTypes = append(importGoTypes, field.Type)
+			}
+		}
+	}
+
+	for _, protoType := range importProtoTypes {
+		kds.addProtoImportByType(protoType)
+	}
+	for _, goType := range importGoTypes {
+		kds.addGoImportByType(goType)
 	}
 
 	kds.format()

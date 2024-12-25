@@ -16,22 +16,9 @@ type Kds struct {
 	Defs  []TopLevelDef
 	Types []string
 
-	GoTypes    []string
-	ProtoTypes []string
-}
-
-func (k *Kds) addGoTypes(type_ string) {
-	if slices.Contains(k.GoTypes, type_) {
-		return
-	}
-	k.GoTypes = append(k.GoTypes, type_)
-}
-
-func (k *Kds) addProtoTypes(type_ string) {
-	if slices.Contains(k.ProtoTypes, type_) {
-		return
-	}
-	k.ProtoTypes = append(k.ProtoTypes, type_)
+	Enums      []*Enum
+	Entities   []*Entity
+	Components []*Component
 }
 
 func (k *Kds) addProtoImport(path string) {
@@ -51,6 +38,17 @@ func (k *Kds) addGoImport(path, name string) {
 	k.GoImportSpecs = append(k.GoImportSpecs, spec)
 }
 
+func (k *Kds) addProtoImportByType(type_ string) {
+	switch type_ {
+	case "timestamp":
+		k.addProtoImport("google/protobuf/timestamp.proto")
+	case "duration":
+		k.addProtoImport("google/protobuf/duration.proto")
+	case "empty":
+		k.addProtoImport("google/protobuf/empty.proto")
+	}
+}
+
 func (k *Kds) addGoImportByType(type_ string) {
 	switch type_ {
 	case "timestamp":
@@ -64,17 +62,6 @@ func (k *Kds) addGoImportByType(type_ string) {
 	}
 }
 
-func (k *Kds) addProtoImportByType(type_ string) {
-	switch type_ {
-	case "timestamp":
-		k.addProtoImport("google/protobuf/timestamp.proto")
-	case "duration":
-		k.addProtoImport("google/protobuf/duration.proto")
-	case "empty":
-		k.addProtoImport("google/protobuf/empty.proto")
-	}
-}
-
 func (k *Kds) addType(name string) {
 	if slices.Contains(k.Types, name) {
 		return
@@ -83,13 +70,6 @@ func (k *Kds) addType(name string) {
 }
 
 func (k *Kds) format() {
-	for _, type_ := range k.GoTypes {
-		k.addGoImportByType(type_)
-	}
-	for _, type_ := range k.ProtoTypes {
-		k.addProtoImportByType(type_)
-	}
-
 	for _, type_ := range k.Types {
 		k.addGoImportByType(type_)
 		k.addProtoImportByType(type_)
@@ -135,22 +115,12 @@ type Enum struct {
 	EnumFields []*EnumField
 }
 
-func (m *Enum) format(ctx *Context) {
-	for _, field := range m.EnumFields {
-		field.format(ctx)
-	}
-}
-
 func (e *Enum) GetName() string {
 	return e.Name
 }
 
 func (e *Enum) GoProtoPackage() string {
 	return e.kds.ProtoPackage
-}
-
-func (e *Enum) GoType() string {
-	return e.Name
 }
 
 func (e *Enum) Kind() string {
@@ -162,10 +132,6 @@ type EnumField struct {
 	kds   *Kds
 	Name  string
 	Value int
-}
-
-func (f *EnumField) format(ctx *Context) {
-
 }
 
 type Message struct {
@@ -181,10 +147,6 @@ func (m *Message) GetName() string {
 
 func (m *Message) GoProtoPackage() string {
 	return m.kds.ProtoPackage
-}
-
-func (m *Message) GoType() string {
-	return "*" + m.Name
 }
 
 type Entity struct {

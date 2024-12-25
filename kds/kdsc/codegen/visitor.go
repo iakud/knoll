@@ -28,14 +28,17 @@ func visitKds(ctx *Context, filePath string, kdsCtx parser.IKdsContext) *Kds {
 		case topLevel.EnumDef() != nil:
 			enum := visitEnum(ctx, kds, topLevel.EnumDef())
 			ctx.Defs[enum.Name] = enum
+			kds.Enums = append(kds.Enums, enum)
 			kds.Defs = append(kds.Defs, enum)
 		case topLevel.EntityDef() != nil:
 			entity := visitEntity(ctx, kds, topLevel.EntityDef())
 			ctx.Defs[entity.Name] = entity
+			kds.Entities = append(kds.Entities, entity)
 			kds.Defs = append(kds.Defs, entity)
 		case topLevel.ComponentDef() != nil:
 			component := visitComponent(ctx, kds, topLevel.ComponentDef())
 			ctx.Defs[component.Name] = component
+			kds.Components = append(kds.Components, component)
 			kds.Defs = append(kds.Defs, component)
 		}
 	}
@@ -125,6 +128,7 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	field := new(Field)
 	field.ctx = ctx
 	field.kds = kds
+	field.Repeated = fieldCtx.FieldLabel() != nil && fieldCtx.FieldLabel().REPEATED() != nil
 	field.Type = visitType(kds, fieldCtx.Type_())
 
 	field.Name = GoCamelCase(fieldCtx.FieldName().GetText())
@@ -132,18 +136,8 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 
 	field.GoVarName = GoSanitized(ToLowerFirst(field.Name))
 
-	if fieldCtx.FieldLabel() != nil && fieldCtx.FieldLabel().REPEATED() != nil {
-		field.Repeated = true
+	if field.Repeated {
 		field.ListType = ctx.addListType(field.Type)
-	} else {
-		switch {
-		case fieldCtx.Type_().TIMESTAMP() != nil:
-			kds.addGoTypes(fieldCtx.Type_().TIMESTAMP().GetText())
-		case fieldCtx.Type_().DURATION() != nil:
-			kds.addGoTypes(fieldCtx.Type_().DURATION().GetText())
-		case fieldCtx.Type_().EMPTY() != nil:
-			kds.addGoTypes(fieldCtx.Type_().EMPTY().GetText())
-		}
 	}
 	return field
 }
@@ -166,21 +160,8 @@ func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) 
 }
 
 func visitType(kds *Kds, typeCtx parser.IType_Context) string {
-	var type_ string
-	customType := typeCtx.MessageType() != nil || typeCtx.EnumType() != nil
-	if customType {
-		type_ = GoCamelCase(typeCtx.GetText())
-	} else {
-		type_ = typeCtx.GetText()
+	if typeCtx.MessageType() != nil || typeCtx.EnumType() != nil {
+		return GoCamelCase(typeCtx.GetText())
 	}
-	switch {
-	case typeCtx.TIMESTAMP() != nil:
-		kds.addProtoTypes(typeCtx.TIMESTAMP().GetText())
-	case typeCtx.DURATION() != nil:
-		kds.addProtoTypes(typeCtx.DURATION().GetText())
-	case typeCtx.EMPTY() != nil:
-		kds.addProtoTypes(typeCtx.EMPTY().GetText())
-	}
-
-	return type_
+	return typeCtx.GetText()
 }

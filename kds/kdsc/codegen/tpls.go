@@ -145,7 +145,7 @@ func (x *{{.Name}}) Get(i int) {{template "ListValueType" .}} {
 func (x *{{.Name}}) Set(i int, v {{template "ListValueType" .}}) {
 {{- if eq .TypeKind "component"}}
 	if v != nil && v.dirtyParent != nil {
-		panic("the component should be removed or evicted from its original place first")
+		panic("the component should be removed from its original place first")
 	}
 {{- end}}
 	if v == x.syncable[i] {
@@ -172,7 +172,7 @@ func (x *{{.Name}}) Append(v ...{{template "ListValueType" .}}) {
 {{- if eq .TypeKind "component"}}
 	for i := range v {
 		if v[i] != nil && v[i].dirtyParent != nil {
-			panic("the component should be removed or evicted from its original place first")
+			panic("the component should be removed from its original place first")
 		}
 	}
 {{- end}}
@@ -197,7 +197,7 @@ func (x *{{.Name}}) Insert(i int, v ...{{template "ListValueType" .}}) {
 {{- if eq .TypeKind "component"}}
 	for j := range v {
 		if v[j] != nil && v[j].dirtyParent != nil {
-			panic("the component should be removed or evicted from its original place first")
+			panic("the component should be removed from its original place first")
 		}
 	}
 {{- end}}
@@ -238,7 +238,7 @@ func (x *{{.Name}}) Replace(i, j int, v ...{{template "ListValueType" .}}) {
 {{- if eq .TypeKind "component"}}
 	for k := range v {
 		if v[k] != nil && v[k].dirtyParent != nil {
-			panic("the component should be removed or evicted from its original place first")
+			panic("the component should be removed from its original place first")
 		}
 	}
 	r := x.syncable[i:j:len(x.syncable)]
@@ -389,7 +389,7 @@ func (x *{{.Name}}) Get(k {{goType .KeyType}}) ({{template "MapValueType" .}}, b
 func (x *{{.Name}}) Set(k {{goType .KeyType}}, v {{template "MapValueType" .}}) {
 {{- if eq .TypeKind "component"}}
 	if v != nil && v.dirtyParent != nil {
-		panic("the component should be removed or evicted from its original place first")
+		panic("the component should be removed from its original place first")
 	}
 {{- end}}
 	if e, ok := x.syncable[k]; ok {
@@ -600,7 +600,7 @@ func (x *{{$MessageName}}) Get{{.Name}}() {{template "FieldType" .}} {
 
 func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
 	if v != nil && v.dirtyParent != nil {
-		panic("the component should be removed or evicted from its original place first")
+		panic("the component should be removed from its original place first")
 	}
 	if v == x.syncable{{.Name}} {
 		return
