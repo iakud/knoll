@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"sync"
 )
 
 type ActorSystem[T any] struct {
-	actors   map[string]Actor[T]
+	lock     sync.RWMutex
 	mailboxs map[string]*mailbox[T]
 	stop     chan struct{}
 	logger   *slog.Logger
@@ -62,7 +63,6 @@ func NewActorSystem[T any]() *ActorSystem[T] {
 
 func NewActorSystemWithConfig[T any]() *ActorSystem[T] {
 	system := &ActorSystem[T]{}
-	system.actors = make(map[string]Actor[T])
 	system.mailboxs = make(map[string]*mailbox[T])
 	system.logger = slog.Default()
 	system.stop = make(chan struct{})
@@ -71,13 +71,13 @@ func NewActorSystemWithConfig[T any]() *ActorSystem[T] {
 
 func (as *ActorSystem[T]) Spawn(name string, actor Actor[T]) (ActorRef, error) {
 	actorRef := newActorRef(name)
-	if _, ok := as.actors[name]; ok {
-		// InfoLogger.Printf("Actor %v already registered", name)
+	mailbox := NewMailbox[T]()
+
+	as.lock.Lock()
+	defer as.lock.Unlock()
+	if _, ok := as.mailboxs[name]; ok {
 		return actorRef, nil
 	}
-
-	as.actors[name] = actor
-	mailbox := NewMailbox[T]()
 	as.mailboxs[name] = mailbox
 	go receive(mailbox, actor)
 	return actorRef, nil
@@ -103,7 +103,7 @@ func receive[T any](mailbox *mailbox[T], actor Actor[T]) {
 }
 
 func (as *ActorSystem[T]) Send(ctx context.Context, actorRef ActorRef, message T) error {
-	mailbox, ok := as.mailboxs[actorRef.pid]
+	mailbox, ok := as.mailboxs[actorRef.id]
 	if !ok {
 		return fmt.Errorf("Mailbox failed")
 	}
@@ -111,11 +111,10 @@ func (as *ActorSystem[T]) Send(ctx context.Context, actorRef ActorRef, message T
 }
 
 func (as *ActorSystem[T]) Close(actorRef ActorRef) {
-	mailbox, ok := as.mailboxs[actorRef.pid]
+	mailbox, ok := as.mailboxs[actorRef.id]
 	if !ok {
 		return
 	}
 	mailbox.Close()
-	delete(as.mailboxs, actorRef.pid)
-	delete(as.actors, actorRef.pid)
+	delete(as.mailboxs, actorRef.id)
 }

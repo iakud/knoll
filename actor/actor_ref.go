@@ -1,7 +1,7 @@
 package actor
 
 type ActorRef struct {
-	pid string
+	id string
 }
 
 func newActorRef(name string) ActorRef {
