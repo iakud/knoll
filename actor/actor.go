@@ -1,10 +1,16 @@
 package actor
 
 import (
-	"runtime"
-	"sync"
+	"context"
 )
 
+type Actor[T any] interface {
+	OnStart()
+	OnClose()
+	Receive(ctx context.Context, message T)
+}
+
+/*
 type Actor struct {
 	Context interface{}
 
@@ -65,3 +71,4 @@ func (a *Actor) Close() {
 
 	a.cond.Signal()
 }
+*/
