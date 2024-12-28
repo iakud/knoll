@@ -23,7 +23,7 @@ func (f dirtyParentFunc_Int32_Empty_Map) invoke() {
 type Int32_Empty_Map struct {
 	syncable map[int32]struct{}
 
-	new map[int32]struct{}
+	update map[int32]struct{}
 	deleteKey map[int32]struct{}
 	clear bool
 	dirty bool
@@ -39,7 +39,7 @@ func (x *Int32_Empty_Map) Clear() {
 		return
 	}
 	clear(x.syncable)
-	clear(x.new)
+	clear(x.update)
 	clear(x.deleteKey)
 	x.clear = true
 	x.markDirty()
@@ -57,15 +57,18 @@ func (x *Int32_Empty_Map) Set(k int32, v struct{}) {
 		}
 	}
 	x.syncable[k] = v
-	x.new[k] = v
+	x.update[k] = v
 	delete(x.deleteKey, k)
 	x.markDirty()
 }
 
 func (x *Int32_Empty_Map) Delete(k int32) {
+	if _, ok := x.syncable[k]; !ok {
+		return
+	}
 	delete(x.syncable, k)
 	x.deleteKey[k] = struct{}{}
-	delete(x.new, k)
+	delete(x.update, k)
 	x.markDirty()
 }
 
@@ -82,9 +85,15 @@ func (x *Int32_Empty_Map) Values() iter.Seq[struct{}] {
 }
 
 func (x *Int32_Empty_Map) DumpChange() map[int32]*emptypb.Empty {
+	if x.clear {
+		return x.DumpFull()
+	}
 	m := make(map[int32]*emptypb.Empty)
-	for k := range x.syncable {
+	for k := range x.update {
 		m[k] = new(emptypb.Empty)
+	}
+	for k, _ := range x.deleteKey {
+		_ = k // deleteKeys
 	}
 	return m
 }
@@ -106,7 +115,10 @@ func (x *Int32_Empty_Map) markDirty() {
 }
 
 func (x *Int32_Empty_Map) clearDirty() {
-	clear(x.new)
+	if !x.dirty {
+		return
+	}
+	clear(x.update)
 	clear(x.deleteKey)
 	x.clear = false
 	x.dirty = false
@@ -124,7 +136,7 @@ func (f dirtyParentFunc_Int32_Int32_Map) invoke() {
 type Int32_Int32_Map struct {
 	syncable map[int32]int32
 
-	new map[int32]int32
+	update map[int32]int32
 	deleteKey map[int32]struct{}
 	clear bool
 	dirty bool
@@ -140,7 +152,7 @@ func (x *Int32_Int32_Map) Clear() {
 		return
 	}
 	clear(x.syncable)
-	clear(x.new)
+	clear(x.update)
 	clear(x.deleteKey)
 	x.clear = true
 	x.markDirty()
@@ -158,15 +170,18 @@ func (x *Int32_Int32_Map) Set(k int32, v int32) {
 		}
 	}
 	x.syncable[k] = v
-	x.new[k] = v
+	x.update[k] = v
 	delete(x.deleteKey, k)
 	x.markDirty()
 }
 
 func (x *Int32_Int32_Map) Delete(k int32) {
+	if _, ok := x.syncable[k]; !ok {
+		return
+	}
 	delete(x.syncable, k)
 	x.deleteKey[k] = struct{}{}
-	delete(x.new, k)
+	delete(x.update, k)
 	x.markDirty()
 }
 
@@ -183,9 +198,15 @@ func (x *Int32_Int32_Map) Values() iter.Seq[int32] {
 }
 
 func (x *Int32_Int32_Map) DumpChange() map[int32]int32 {
+	if x.clear {
+		return x.DumpFull()
+	}
 	m := make(map[int32]int32)
-	for k, v := range x.syncable {
+	for k, v := range x.update {
 		m[k] = v
+	}
+	for k, _ := range x.deleteKey {
+		_ = k // deleteKeys
 	}
 	return m
 }
@@ -207,7 +228,10 @@ func (x *Int32_Int32_Map) markDirty() {
 }
 
 func (x *Int32_Int32_Map) clearDirty() {
-	clear(x.new)
+	if !x.dirty {
+		return
+	}
+	clear(x.update)
 	clear(x.deleteKey)
 	x.clear = false
 	x.dirty = false
@@ -231,6 +255,15 @@ type Int64_List struct {
 
 func (x *Int64_List) Len() int {
 	return len(x.syncable)
+}
+
+func (x *Int64_List) Clear() {
+	if len(x.syncable) == 0 {
+		return
+	}
+	clear(x.syncable)
+	x.syncable = x.syncable[:0]
+	x.markDirty()
 }
 
 func (x *Int64_List) Get(i int) int64 {

@@ -5,7 +5,7 @@ go 1.23.3
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/spf13/cobra v1.8.1
-	google.golang.org/protobuf v1.35.2
+	google.golang.org/protobuf v1.36.1
 )
 
 require (

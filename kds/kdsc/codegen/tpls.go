@@ -140,6 +140,22 @@ func (x *{{.Name}}) Len() int {
 	return len(x.syncable)
 }
 
+func (x *{{.Name}}) Clear() {
+	if len(x.syncable) == 0 {
+		return
+	}
+{{- if eq .TypeKind "component"}}
+	for _, v := range x.syncable {
+		if v != nil {
+			v.dirtyParent = nil
+		}
+	}
+{{- end}}
+	clear(x.syncable)
+	x.syncable = x.syncable[:0]
+	x.markDirty()
+}
+
 func (x *{{.Name}}) Get(i int) {{template "ListValueType" .}} {
 	return x.syncable[i]
 }

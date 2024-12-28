@@ -47,13 +47,3 @@ message MapMask {
 		StringArray StringDeleteKeys = 7;
 	}
 }
-
-message MapMessage {
-	message _ {
-		uint64 update = 1;
-	}
-}
-
-message MapMessage___Field {
-	
-}

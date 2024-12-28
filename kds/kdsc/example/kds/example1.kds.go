@@ -14,14 +14,14 @@ import (
 )
 
 type syncablePlayer struct {
-	Info *PlayerBasicInfo
-	Hero *PlayerHero
-	Bag *PlayerBag
 }
 
 type Player struct {
 	id int64
 	syncable syncablePlayer
+	syncableInfo *PlayerBasicInfo
+	syncableHero *PlayerHero
+	syncableBag *PlayerBag
 
 	dirty uint64
 }
@@ -41,20 +41,20 @@ func (x *Player) Id() int64 {
 }
 
 func (x *Player) GetInfo() *PlayerBasicInfo {
-	return x.syncable.Info
+	return x.syncableInfo
 }
 
 func (x *Player) setInfo(v *PlayerBasicInfo) {
 	if v != nil && v.dirtyParent != nil {
-		panic("the component should be removed or evicted from its original place first")
+		panic("the component should be removed from its original place first")
 	}
-	if v == x.syncable.Info {
+	if v == x.syncableInfo {
 		return
 	}
-	if x.syncable.Info != nil {
-		x.syncable.Info.dirtyParent = nil
+	if x.syncableInfo != nil {
+		x.syncableInfo.dirtyParent = nil
 	}
-	x.syncable.Info = v
+	x.syncableInfo = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
@@ -65,20 +65,20 @@ func (x *Player) setInfo(v *PlayerBasicInfo) {
 }
 
 func (x *Player) GetHero() *PlayerHero {
-	return x.syncable.Hero
+	return x.syncableHero
 }
 
 func (x *Player) setHero(v *PlayerHero) {
 	if v != nil && v.dirtyParent != nil {
-		panic("the component should be removed or evicted from its original place first")
+		panic("the component should be removed from its original place first")
 	}
-	if v == x.syncable.Hero {
+	if v == x.syncableHero {
 		return
 	}
-	if x.syncable.Hero != nil {
-		x.syncable.Hero.dirtyParent = nil
+	if x.syncableHero != nil {
+		x.syncableHero.dirtyParent = nil
 	}
-	x.syncable.Hero = v
+	x.syncableHero = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 2)
 	}
@@ -89,20 +89,20 @@ func (x *Player) setHero(v *PlayerHero) {
 }
 
 func (x *Player) GetBag() *PlayerBag {
-	return x.syncable.Bag
+	return x.syncableBag
 }
 
 func (x *Player) setBag(v *PlayerBag) {
 	if v != nil && v.dirtyParent != nil {
-		panic("the component should be removed or evicted from its original place first")
+		panic("the component should be removed from its original place first")
 	}
-	if v == x.syncable.Bag {
+	if v == x.syncableBag {
 		return
 	}
-	if x.syncable.Bag != nil {
-		x.syncable.Bag.dirtyParent = nil
+	if x.syncableBag != nil {
+		x.syncableBag.dirtyParent = nil
 	}
-	x.syncable.Bag = v
+	x.syncableBag = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 3)
 	}
@@ -118,22 +118,22 @@ func (x *Player) DumpChange() *kdspb.Player {
 	}
 	m := new(kdspb.Player)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.Info = x.syncable.Info.DumpChange()
+		m.Info = x.syncableInfo.DumpChange()
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.Hero = x.syncable.Hero.DumpChange()
+		m.Hero = x.syncableHero.DumpChange()
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.Bag = x.syncable.Bag.DumpChange()
+		m.Bag = x.syncableBag.DumpChange()
 	}
 	return m
 }
 
 func (x *Player) DumpFull() *kdspb.Player {
 	m := new(kdspb.Player)
-	m.Info = x.syncable.Info.DumpFull()
-	m.Hero = x.syncable.Hero.DumpFull()
-	m.Bag = x.syncable.Bag.DumpFull()
+	m.Info = x.syncableInfo.DumpFull()
+	m.Hero = x.syncableHero.DumpFull()
+	m.Bag = x.syncableBag.DumpFull()
 	return m
 }
 
@@ -148,35 +148,24 @@ func (x *Player) markDirty(n uint64) {
 	x.dirty |= n
 }
 
-func (x *Player) clearAll() {
-	x.syncable.Info.clearDirty()
-	x.syncable.Hero.clearDirty()
-	x.syncable.Bag.clearDirty()
-	x.dirty = 0
+func (x *Player) checkDirty(n uint64) bool {
+	return x.dirty & n != 0
 }
 
 func (x *Player) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 {
-		x.clearAll()
-		return
+	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 1 != 0 {
+		x.syncableInfo.clearDirty()
 	}
-	if x.dirty & uint64(0x01) << 1 != 0 {
-		x.syncable.Info.clearDirty()
+	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 2 != 0 {
+		x.syncableHero.clearDirty()
 	}
-	if x.dirty & uint64(0x01) << 2 != 0 {
-		x.syncable.Hero.clearDirty()
-	}
-	if x.dirty & uint64(0x01) << 3 != 0 {
-		x.syncable.Bag.clearDirty()
+	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 3 != 0 {
+		x.syncableBag.clearDirty()
 	}
 	x.dirty = 0
-}
-
-func (x *Player) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
 }
 
 type syncablePlayerBasicInfo struct {
@@ -280,27 +269,18 @@ func (x *PlayerBasicInfo) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
-func (x *PlayerBasicInfo) clearAll() {
-	x.dirty = 0
+func (x *PlayerBasicInfo) checkDirty(n uint64) bool {
+	return x.dirty & n != 0
 }
 
 func (x *PlayerBasicInfo) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 {
-		x.clearAll()
-		return
-	}
 	x.dirty = 0
 }
 
-func (x *PlayerBasicInfo) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
-}
-
 type syncablePlayerHero struct {
-	Heroes Int64_Hero_Map
 }
 
 type dirtyParentFunc_PlayerHero func()
@@ -314,6 +294,7 @@ func (f dirtyParentFunc_PlayerHero) invoke() {
 
 type PlayerHero struct {
 	syncable syncablePlayerHero
+	syncableHeroes Int64_Hero_Map
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_PlayerHero
@@ -327,12 +308,14 @@ func NewPlayerHero() *PlayerHero {
 }
 
 func (x *PlayerHero) GetHeroes() *Int64_Hero_Map {
-	return &x.syncable.Heroes
+	return &x.syncableHeroes
 }
 
 func (x *PlayerHero) initHeroes() {
-	x.syncable.Heroes.syncable = make(map[int64]*Hero)
-	x.syncable.Heroes.dirtyParent = func() {
+	x.syncableHeroes.syncable = make(map[int64]*Hero)
+	x.syncableHeroes.update = make(map[int64]*Hero)
+	x.syncableHeroes.deleteKey = make(map[int64]struct{})
+	x.syncableHeroes.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
 }
@@ -343,14 +326,14 @@ func (x *PlayerHero) DumpChange() *kdspb.PlayerHero {
 	}
 	m := new(kdspb.PlayerHero)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.Heroes = x.syncable.Heroes.DumpChange()
+		m.Heroes = x.syncableHeroes.DumpChange()
 	}
 	return m
 }
 
 func (x *PlayerHero) DumpFull() *kdspb.PlayerHero {
 	m := new(kdspb.PlayerHero)
-	m.Heroes = x.syncable.Heroes.DumpFull()
+	m.Heroes = x.syncableHeroes.DumpFull()
 	return m
 }
 
@@ -366,31 +349,21 @@ func (x *PlayerHero) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
-func (x *PlayerHero) clearAll() {
-	x.syncable.Heroes.clearDirty()
-	x.dirty = 0
+func (x *PlayerHero) checkDirty(n uint64) bool {
+	return x.dirty & n != 0
 }
 
 func (x *PlayerHero) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 {
-		x.clearAll()
-		return
-	}
-	if x.dirty & uint64(0x01) << 1 != 0 {
-		x.syncable.Heroes.clearDirty()
+	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 1 != 0 {
+		x.syncableHeroes.clearDirty()
 	}
 	x.dirty = 0
 }
 
-func (x *PlayerHero) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
-}
-
 type syncablePlayerBag struct {
-	Resources Int32_Int32_Map
 }
 
 type dirtyParentFunc_PlayerBag func()
@@ -404,6 +377,7 @@ func (f dirtyParentFunc_PlayerBag) invoke() {
 
 type PlayerBag struct {
 	syncable syncablePlayerBag
+	syncableResources Int32_Int32_Map
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_PlayerBag
@@ -417,12 +391,14 @@ func NewPlayerBag() *PlayerBag {
 }
 
 func (x *PlayerBag) GetResources() *Int32_Int32_Map {
-	return &x.syncable.Resources
+	return &x.syncableResources
 }
 
 func (x *PlayerBag) initResources() {
-	x.syncable.Resources.syncable = make(map[int32]int32)
-	x.syncable.Resources.dirtyParent = func() {
+	x.syncableResources.syncable = make(map[int32]int32)
+	x.syncableResources.update = make(map[int32]int32)
+	x.syncableResources.deleteKey = make(map[int32]struct{})
+	x.syncableResources.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
 }
@@ -433,14 +409,14 @@ func (x *PlayerBag) DumpChange() *kdspb.PlayerBag {
 	}
 	m := new(kdspb.PlayerBag)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.Resources = x.syncable.Resources.DumpChange()
+		m.Resources = x.syncableResources.DumpChange()
 	}
 	return m
 }
 
 func (x *PlayerBag) DumpFull() *kdspb.PlayerBag {
 	m := new(kdspb.PlayerBag)
-	m.Resources = x.syncable.Resources.DumpFull()
+	m.Resources = x.syncableResources.DumpFull()
 	return m
 }
 
@@ -456,27 +432,18 @@ func (x *PlayerBag) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
-func (x *PlayerBag) clearAll() {
-	x.syncable.Resources.clearDirty()
-	x.dirty = 0
+func (x *PlayerBag) checkDirty(n uint64) bool {
+	return x.dirty & n != 0
 }
 
 func (x *PlayerBag) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 {
-		x.clearAll()
-		return
-	}
-	if x.dirty & uint64(0x01) << 1 != 0 {
-		x.syncable.Resources.clearDirty()
+	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 1 != 0 {
+		x.syncableResources.clearDirty()
 	}
 	x.dirty = 0
-}
-
-func (x *PlayerBag) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
 }
 
 type syncableHero struct {
@@ -597,23 +564,15 @@ func (x *Hero) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
-func (x *Hero) clearAll() {
-	x.dirty = 0
+func (x *Hero) checkDirty(n uint64) bool {
+	return x.dirty & n != 0
 }
 
 func (x *Hero) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 {
-		x.clearAll()
-		return
-	}
 	x.dirty = 0
-}
-
-func (x *Hero) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
 }
 
 type dirtyParentFunc_Int64_Hero_Map func()
@@ -628,7 +587,7 @@ func (f dirtyParentFunc_Int64_Hero_Map) invoke() {
 type Int64_Hero_Map struct {
 	syncable map[int64]*Hero
 
-	new map[int64]*Hero
+	update map[int64]*Hero
 	deleteKey map[int64]struct{}
 	clear bool
 	dirty bool
@@ -649,7 +608,7 @@ func (x *Int64_Hero_Map) Clear() {
 		}
 	}
 	clear(x.syncable)
-	clear(x.new)
+	clear(x.update)
 	clear(x.deleteKey)
 	x.clear = true
 	x.markDirty()
@@ -662,7 +621,7 @@ func (x *Int64_Hero_Map) Get(k int64) (*Hero, bool) {
 
 func (x *Int64_Hero_Map) Set(k int64, v *Hero) {
 	if v != nil && v.dirtyParent != nil {
-		panic("the component should be removed or evicted from its original place first")
+		panic("the component should be removed from its original place first")
 	}
 	if e, ok := x.syncable[k]; ok {
 		if e == v {
@@ -675,26 +634,28 @@ func (x *Int64_Hero_Map) Set(k int64, v *Hero) {
 	x.syncable[k] = v
 	if v != nil {
 		v.dirtyParent = func() {
-			if _, ok := x.new[k]; ok {
+			if _, ok := x.update[k]; ok {
 				return
 			}
-			x.new[k] = v
+			x.update[k] = v
 			x.markDirty()
 		}
 		v.dirty |= uint64(0x01)
 	}
-	x.new[k] = v
+	x.update[k] = v
 	delete(x.deleteKey, k)
 	x.markDirty()
 }
 
 func (x *Int64_Hero_Map) Delete(k int64) {
-	if v, ok := x.syncable[k]; ok && v != nil {
+	if v, ok := x.syncable[k]; !ok {
+		return
+	} else if v != nil {
 		v.dirtyParent = nil
 	}
 	delete(x.syncable, k)
 	x.deleteKey[k] = struct{}{}
-	delete(x.new, k)
+	delete(x.update, k)
 	x.markDirty()
 }
 
@@ -711,9 +672,15 @@ func (x *Int64_Hero_Map) Values() iter.Seq[*Hero] {
 }
 
 func (x *Int64_Hero_Map) DumpChange() map[int64]*kdspb.Hero {
+	if x.clear {
+		return x.DumpFull()
+	}
 	m := make(map[int64]*kdspb.Hero)
-	for k, v := range x.syncable {
+	for k, v := range x.update {
 		m[k] = v.DumpFull()
+	}
+	for k, _ := range x.deleteKey {
+		_ = k // deleteKeys
 	}
 	return m
 }
@@ -735,12 +702,15 @@ func (x *Int64_Hero_Map) markDirty() {
 }
 
 func (x *Int64_Hero_Map) clearDirty() {
-	for _, v := range x.new {
+	if !x.dirty {
+		return
+	}
+	for _, v := range x.update {
 		if v != nil {
 			v.clearDirty()
 		}
 	}
-	clear(x.new)
+	clear(x.update)
 	clear(x.deleteKey)
 	x.clear = false
 	x.dirty = false

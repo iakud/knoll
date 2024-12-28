@@ -35,4 +35,6 @@ PATH="$NEWPATH"
 protoc \
 	-I=. -I=../../local/protoc/include \
 	--go_out=paths=source_relative:. \
-	`find . -name "*.proto"`
+	`find . -name "fieldmask.proto"`
+
+#--go_opt=default_api_level=API_OPAQUE \

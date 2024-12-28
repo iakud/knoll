@@ -37,7 +37,7 @@ export http_proxy=http://127.0.0.1:1087
 export https_proxy=http://127.0.0.1:1087
 
 INSTALL_DIR="../local"
-PROTOC_VERSION=28.3
+PROTOC_VERSION=29.2
 
 if [[ `$INSTALL_DIR/protoc/bin/protoc --version 2>&1 | grep -e "libprotoc $PROTOC_VERSION"` ]]; then
 	echo -e "[misc] \033[0;33mprotoc $PROTOC_VERSION\033[0;37m is already installed."

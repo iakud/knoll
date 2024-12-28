@@ -37,7 +37,7 @@ export http_proxy=http://127.0.0.1:1087
 export https_proxy=http://127.0.0.1:1087
 
 INSTALL_DIR="../local"
-PROTOC_GEN_GO_VERSION=1.35.2
+PROTOC_GEN_GO_VERSION=1.36.1
 
 if [[ `$INSTALL_DIR/bin/protoc-gen-go --version 2>&1 | grep -e "protoc-gen-go v$PROTOC_GEN_GO_VERSION"` ]]; then
 	echo -e "[misc] \033[0;33mprotoc-gen-go v$PROTOC_GEN_GO_VERSION\033[0;37m is already installed."

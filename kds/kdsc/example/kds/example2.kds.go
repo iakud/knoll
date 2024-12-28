@@ -12,14 +12,14 @@ import (
 
 type syncableCity struct {
 	PlayerId int64
-	PlayerBasicInfo *PlayerBasicInfo
-	CityInfo *CityBaseInfo
-	Troops Int64_List
 }
 
 type City struct {
 	id int64
 	syncable syncableCity
+	syncablePlayerBasicInfo *PlayerBasicInfo
+	syncableCityInfo *CityBaseInfo
+	syncableTroops Int64_List
 
 	dirty uint64
 }
@@ -51,20 +51,20 @@ func (x *City) SetPlayerId(v int64) {
 }
 
 func (x *City) GetPlayerBasicInfo() *PlayerBasicInfo {
-	return x.syncable.PlayerBasicInfo
+	return x.syncablePlayerBasicInfo
 }
 
 func (x *City) setPlayerBasicInfo(v *PlayerBasicInfo) {
 	if v != nil && v.dirtyParent != nil {
-		panic("the component should be removed or evicted from its original place first")
+		panic("the component should be removed from its original place first")
 	}
-	if v == x.syncable.PlayerBasicInfo {
+	if v == x.syncablePlayerBasicInfo {
 		return
 	}
-	if x.syncable.PlayerBasicInfo != nil {
-		x.syncable.PlayerBasicInfo.dirtyParent = nil
+	if x.syncablePlayerBasicInfo != nil {
+		x.syncablePlayerBasicInfo.dirtyParent = nil
 	}
-	x.syncable.PlayerBasicInfo = v
+	x.syncablePlayerBasicInfo = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 2)
 	}
@@ -75,20 +75,20 @@ func (x *City) setPlayerBasicInfo(v *PlayerBasicInfo) {
 }
 
 func (x *City) GetCityInfo() *CityBaseInfo {
-	return x.syncable.CityInfo
+	return x.syncableCityInfo
 }
 
 func (x *City) setCityInfo(v *CityBaseInfo) {
 	if v != nil && v.dirtyParent != nil {
-		panic("the component should be removed or evicted from its original place first")
+		panic("the component should be removed from its original place first")
 	}
-	if v == x.syncable.CityInfo {
+	if v == x.syncableCityInfo {
 		return
 	}
-	if x.syncable.CityInfo != nil {
-		x.syncable.CityInfo.dirtyParent = nil
+	if x.syncableCityInfo != nil {
+		x.syncableCityInfo.dirtyParent = nil
 	}
-	x.syncable.CityInfo = v
+	x.syncableCityInfo = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 3)
 	}
@@ -99,11 +99,11 @@ func (x *City) setCityInfo(v *CityBaseInfo) {
 }
 
 func (x *City) GetTroops() *Int64_List {
-	return &x.syncable.Troops
+	return &x.syncableTroops
 }
 
 func (x *City) initTroops() {
-	x.syncable.Troops.dirtyParent = func() {
+	x.syncableTroops.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 4)
 	}
 }
@@ -117,13 +117,13 @@ func (x *City) DumpChange() *kdspb.City {
 		m.PlayerId = x.syncable.PlayerId
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.PlayerBasicInfo = x.syncable.PlayerBasicInfo.DumpChange()
+		m.PlayerBasicInfo = x.syncablePlayerBasicInfo.DumpChange()
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.CityInfo = x.syncable.CityInfo.DumpChange()
+		m.CityInfo = x.syncableCityInfo.DumpChange()
 	}
 	if x.checkDirty(uint64(0x01) << 4) {
-		m.Troops = x.syncable.Troops.DumpChange()
+		m.Troops = x.syncableTroops.DumpChange()
 	}
 	return m
 }
@@ -131,9 +131,9 @@ func (x *City) DumpChange() *kdspb.City {
 func (x *City) DumpFull() *kdspb.City {
 	m := new(kdspb.City)
 	m.PlayerId = x.syncable.PlayerId
-	m.PlayerBasicInfo = x.syncable.PlayerBasicInfo.DumpFull()
-	m.CityInfo = x.syncable.CityInfo.DumpFull()
-	m.Troops = x.syncable.Troops.DumpFull()
+	m.PlayerBasicInfo = x.syncablePlayerBasicInfo.DumpFull()
+	m.CityInfo = x.syncableCityInfo.DumpFull()
+	m.Troops = x.syncableTroops.DumpFull()
 	return m
 }
 
@@ -148,40 +148,27 @@ func (x *City) markDirty(n uint64) {
 	x.dirty |= n
 }
 
-func (x *City) clearAll() {
-	x.syncable.PlayerBasicInfo.clearDirty()
-	x.syncable.CityInfo.clearDirty()
-	x.syncable.Troops.clearDirty()
-	x.dirty = 0
+func (x *City) checkDirty(n uint64) bool {
+	return x.dirty & n != 0
 }
 
 func (x *City) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 {
-		x.clearAll()
-		return
+	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 2 != 0 {
+		x.syncablePlayerBasicInfo.clearDirty()
 	}
-	if x.dirty & uint64(0x01) << 2 != 0 {
-		x.syncable.PlayerBasicInfo.clearDirty()
+	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 3 != 0 {
+		x.syncableCityInfo.clearDirty()
 	}
-	if x.dirty & uint64(0x01) << 3 != 0 {
-		x.syncable.CityInfo.clearDirty()
-	}
-	if x.dirty & uint64(0x01) << 4 != 0 {
-		x.syncable.Troops.clearDirty()
+	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 4 != 0 {
+		x.syncableTroops.clearDirty()
 	}
 	x.dirty = 0
 }
 
-func (x *City) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
-}
-
 type syncableCityBaseInfo struct {
-	Positions Vector_List
-	Troops Int32_Empty_Map
 	BuildInfo []byte
 }
 
@@ -196,6 +183,8 @@ func (f dirtyParentFunc_CityBaseInfo) invoke() {
 
 type CityBaseInfo struct {
 	syncable syncableCityBaseInfo
+	syncablePositions Vector_List
+	syncableTroops Int32_Empty_Map
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_CityBaseInfo
@@ -210,22 +199,24 @@ func NewCityBaseInfo() *CityBaseInfo {
 }
 
 func (x *CityBaseInfo) GetPositions() *Vector_List {
-	return &x.syncable.Positions
+	return &x.syncablePositions
 }
 
 func (x *CityBaseInfo) initPositions() {
-	x.syncable.Positions.dirtyParent = func() {
+	x.syncablePositions.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
 }
 
 func (x *CityBaseInfo) GetTroops() *Int32_Empty_Map {
-	return &x.syncable.Troops
+	return &x.syncableTroops
 }
 
 func (x *CityBaseInfo) initTroops() {
-	x.syncable.Troops.syncable = make(map[int32]struct{})
-	x.syncable.Troops.dirtyParent = func() {
+	x.syncableTroops.syncable = make(map[int32]struct{})
+	x.syncableTroops.update = make(map[int32]struct{})
+	x.syncableTroops.deleteKey = make(map[int32]struct{})
+	x.syncableTroops.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 2)
 	}
 }
@@ -248,10 +239,10 @@ func (x *CityBaseInfo) DumpChange() *kdspb.CityBaseInfo {
 	}
 	m := new(kdspb.CityBaseInfo)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.Positions = x.syncable.Positions.DumpChange()
+		m.Positions = x.syncablePositions.DumpChange()
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.Troops = x.syncable.Troops.DumpChange()
+		m.Troops = x.syncableTroops.DumpChange()
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
 		m.BuildInfo = x.syncable.BuildInfo
@@ -261,8 +252,8 @@ func (x *CityBaseInfo) DumpChange() *kdspb.CityBaseInfo {
 
 func (x *CityBaseInfo) DumpFull() *kdspb.CityBaseInfo {
 	m := new(kdspb.CityBaseInfo)
-	m.Positions = x.syncable.Positions.DumpFull()
-	m.Troops = x.syncable.Troops.DumpFull()
+	m.Positions = x.syncablePositions.DumpFull()
+	m.Troops = x.syncableTroops.DumpFull()
 	m.BuildInfo = x.syncable.BuildInfo
 	return m
 }
@@ -279,31 +270,21 @@ func (x *CityBaseInfo) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
-func (x *CityBaseInfo) clearAll() {
-	x.syncable.Positions.clearDirty()
-	x.syncable.Troops.clearDirty()
-	x.dirty = 0
+func (x *CityBaseInfo) checkDirty(n uint64) bool {
+	return x.dirty & n != 0
 }
 
 func (x *CityBaseInfo) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 {
-		x.clearAll()
-		return
+	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 1 != 0 {
+		x.syncablePositions.clearDirty()
 	}
-	if x.dirty & uint64(0x01) << 1 != 0 {
-		x.syncable.Positions.clearDirty()
-	}
-	if x.dirty & uint64(0x01) << 2 != 0 {
-		x.syncable.Troops.clearDirty()
+	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 2 != 0 {
+		x.syncableTroops.clearDirty()
 	}
 	x.dirty = 0
-}
-
-func (x *CityBaseInfo) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
 }
 
 type syncableVector struct {
@@ -390,23 +371,15 @@ func (x *Vector) markDirty(n uint64) {
 	x.dirtyParent.invoke()
 }
 
-func (x *Vector) clearAll() {
-	x.dirty = 0
+func (x *Vector) checkDirty(n uint64) bool {
+	return x.dirty & n != 0
 }
 
 func (x *Vector) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 {
-		x.clearAll()
-		return
-	}
 	x.dirty = 0
-}
-
-func (x *Vector) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
 }
 
 type dirtyParentFunc_Vector_List func()
@@ -429,13 +402,27 @@ func (x *Vector_List) Len() int {
 	return len(x.syncable)
 }
 
+func (x *Vector_List) Clear() {
+	if len(x.syncable) == 0 {
+		return
+	}
+	for _, v := range x.syncable {
+		if v != nil {
+			v.dirtyParent = nil
+		}
+	}
+	clear(x.syncable)
+	x.syncable = x.syncable[:0]
+	x.markDirty()
+}
+
 func (x *Vector_List) Get(i int) *Vector {
 	return x.syncable[i]
 }
 
 func (x *Vector_List) Set(i int, v *Vector) {
 	if v != nil && v.dirtyParent != nil {
-		panic("the component should be removed or evicted from its original place first")
+		panic("the component should be removed from its original place first")
 	}
 	if v == x.syncable[i] {
 		return
@@ -456,7 +443,7 @@ func (x *Vector_List) Set(i int, v *Vector) {
 func (x *Vector_List) Append(v ...*Vector) {
 	for i := range v {
 		if v[i] != nil && v[i].dirtyParent != nil {
-			panic("the component should be removed or evicted from its original place first")
+			panic("the component should be removed from its original place first")
 		}
 	}
 	if len(v) == 0 {
@@ -477,7 +464,7 @@ func (x *Vector_List) Append(v ...*Vector) {
 func (x *Vector_List) Insert(i int, v ...*Vector) {
 	for j := range v {
 		if v[j] != nil && v[j].dirtyParent != nil {
-			panic("the component should be removed or evicted from its original place first")
+			panic("the component should be removed from its original place first")
 		}
 	}
 	if len(v) == 0 {
@@ -512,7 +499,7 @@ func (x *Vector_List) Delete(i, j int) {
 func (x *Vector_List) Replace(i, j int, v ...*Vector) {
 	for k := range v {
 		if v[k] != nil && v[k].dirtyParent != nil {
-			panic("the component should be removed or evicted from its original place first")
+			panic("the component should be removed from its original place first")
 		}
 	}
 	r := x.syncable[i:j:len(x.syncable)]
