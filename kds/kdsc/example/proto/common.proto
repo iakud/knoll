@@ -7,4 +7,4 @@ package kds;
 
 import "google/protobuf/empty.proto";
 
-option go_package="github.com/iakud/krocher/kds/kdsc/example/kdspb";
+option go_package="github.com/iakud/knoll/kds/kdsc/example/kdspb";

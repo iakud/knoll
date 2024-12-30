@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"runtime/debug"
 
-	"github.com/iakud/krocher/kds/kdsc/codegen"
+	"github.com/iakud/knoll/kds/kdsc/codegen"
 	"github.com/spf13/cobra"
 )
 

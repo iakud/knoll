@@ -1,6 +1,6 @@
 package kds;
 
-proto_go_package="github.com/iakud/krocher/kds/kdsc/example/kdspb";
+proto_go_package="github.com/iakud/knoll/kds/kdsc/example/kdspb";
 
 entity Player {
 	PlayerBasicInfo Info = 1;

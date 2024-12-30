@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ##################################################
-# Owned by krocher. DON'T change me.
+# Owned by knoll. DON'T change me.
 ##################################################
 
 [[ "$TRACE" ]] && set -x
@@ -39,37 +39,19 @@ export https_proxy=http://127.0.0.1:1087
 INSTALL_DIR="../local"
 ANTLR4_VERSION=4.13.2
 
-# 安装brew
-if [[ `which brew` == '' ]]; then
-    echo "[misc] Start to install brew..."
-    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-    [[ $? -ne 0 ]] && exit 1
+source ../var.sh
+
+if [[ `java -jar "$INSTALL_DIR/lib/antlr-$ANTLR4_VERSION-complete.jar" 2>&1 | grep -e "ANTLR Parser Generator  Version $ANTLR4_VERSION"` ]]; then
+    echo -e "[misc] \033[0;antlr4 $ANTLR4_VERSION\033[0;37m is already installed."
+	exit 0
 fi
 
-# 安装openjdk
-function brewInstall() {
-    [[ `echo "$1" | grep -e "^$2\$"` != '' ]] && echo -e "[brew] \033[0;33m$2\033[0;37m is already installed." && return
-    [[ `which "$3"` != '' ]] && echo -e "[brew] \033[0;33m$3\033[0;37m detected, skipped." && return
-    echo "[brew] Start to install $2..."
-    brew install $2
-    [[ $? -ne 0 ]] && exit 1
-}
-BREW_FORMULAS=`brew list --formula`
-brewInstall "$BREW_FORMULAS" openjdk@11 openjdk@11
+rm -rf "$INSTALL_DIR/lib/antlr-$ANTLR4_VERSION-complete.jar"
+mkdir -p "$INSTALL_DIR/lib"
 
-# source ../var.sh
+echo -e "[misc] Start to install \033[0;33mantlr4 $ANTLR4_VERSION\033[0;37m..."
 
-# if [[ `java -jar "$INSTALL_DIR/lib/antlr-$ANTLR4_VERSION-complete.jar" 2>&1 | grep -e "ANTLR Parser Generator  Version $ANTLR4_VERSION"` ]]; then
-#	echo -e "[misc] \033[0;antlr4 $ANTLR4_VERSION\033[0;37m is already installed."
-#	exit 0
-# fi
+wget -c "https://www.antlr.org/download/antlr-$ANTLR4_VERSION-complete.jar"
+[[ $? -ne 0 ]] && exit 1
 
-# rm -rf "$INSTALL_DIR/lib/antlr-$ANTLR4_VERSION-complete.jar"
-# mkdir -p "$INSTALL_DIR/lib"
-
-# echo -e "[misc] Start to install \033[0;33mantlr4 $ANTLR4_VERSION\033[0;37m..."
-
-# wget -c "https://www.antlr.org/download/antlr-$ANTLR4_VERSION-complete.jar"
-# [[ $? -ne 0 ]] && exit 1
-
-# mv "antlr-$ANTLR4_VERSION-complete.jar" "$INSTALL_DIR/lib"
+mv "antlr-$ANTLR4_VERSION-complete.jar" "$INSTALL_DIR/lib"

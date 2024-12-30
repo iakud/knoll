@@ -1,4 +1,4 @@
-module github.com/iakud/krocher
+module github.com/iakud/knoll
 
 go 1.23.3
 

@@ -1,6 +1,3 @@
-PROTOC_VERSION=28.3
-GOGOPROTO_VERSION=1.3.2
-
 .PHONY: all
 
 kdsc:
@@ -10,8 +7,8 @@ protoc:
 	script/protoc.sh
 	script/protoc-gen-go.sh
 
-antlr4:
-	script/antlr4.sh
+openjdk:
+	./script/brewInstall.sh openjdk@11
 
 kdspb:
 	TRACE=1 kds/kdspb/conv.sh

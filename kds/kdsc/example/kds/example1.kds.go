@@ -8,7 +8,7 @@ import (
 	"maps"
 	"time"
 
-	"github.com/iakud/krocher/kds/kdsc/example/kdspb"
+	"github.com/iakud/knoll/kds/kdsc/example/kdspb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

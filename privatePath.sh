@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ##################################################
-# Owned by krocher. DON'T change me.
+# Owned by knoll. DON'T change me.
 ##################################################
 
 [[ "$TRACE" ]] && set -x

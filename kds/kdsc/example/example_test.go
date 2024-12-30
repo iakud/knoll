@@ -1,8 +1,8 @@
 package example
 
 import (
-	// "github.com/iakud/krocher/kds/kdsc/example/pb"
-	"github.com/iakud/krocher/kds/kdspb"
+	// "github.com/iakud/knoll/kds/kdsc/example/pb"
+	"github.com/iakud/knoll/kds/kdspb"
 	"testing"
 
 	"google.golang.org/protobuf/proto"

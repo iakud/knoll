@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/iakud/krocher/kds/kdsc/parser"
+	"github.com/iakud/knoll/kds/kdsc/parser"
 )
 
 func visitKds(ctx *Context, filePath string, kdsCtx parser.IKdsContext) *Kds {

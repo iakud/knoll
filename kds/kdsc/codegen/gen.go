@@ -10,7 +10,7 @@ import (
 	"text/template"
 
 	"github.com/antlr4-go/antlr/v4"
-	"github.com/iakud/krocher/kds/kdsc/parser"
+	"github.com/iakud/knoll/kds/kdsc/parser"
 )
 
 func Parse(kdsFiles []string) *Context {
