@@ -1,12 +1,10 @@
 package actor
 
-type Envelope[T any] struct {
-	sender   ActorRef
-	receiver ActorRef
-
-	message T
+type Envelope struct {
+	Message interface{}
+	Sender  ActorRef
 }
 
-func NewEnvelope[T any](sender, receiver ActorRef, message T) {
+func NewEnvelope(sender ActorRef, message interface{}) {
 
 }
