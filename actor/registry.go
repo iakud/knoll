@@ -3,21 +3,39 @@ package actor
 import "sync"
 
 type registry struct {
-	localActors sync.Map
+	locker sync.RWMutex
+	lookup map[string]Processer
 }
 
-func (r *registry) Add(id string, mailbox *mailbox) (*PID, bool) {
-	if _, ok := r.localActors.LoadOrStore(id, mailbox); ok {
-		return ActorRef{id}, ok
+func newRegistry() *registry {
+	return &registry{
+		lookup: make(map[string]Processer),
 	}
-	return ActorRef{id}, false
 }
 
-func (r *registry) Remove(ref ActorRef) {
-	r.localActors.Delete(ref.id)
+func (r *registry) Add(id string, proc Processer) {
+	r.locker.Lock()
+	defer r.locker.Unlock()
+	if _, ok := r.lookup[id]; ok {
+		return
+	}
+	r.lookup[id] = proc
 }
 
-func (r *registry) Get(ref ActorRef) (*mailbox, bool) {
-	mailbox, ok := r.localActors.Load(ref.id)
-	return mailbox, ok
+func (r *registry) Remove(pid *PID) {
+	r.locker.Lock()
+	defer r.locker.Unlock()
+	delete(r.lookup, pid.ID)
+}
+
+func (r *registry) Get(pid *PID) Processer {
+	if pid == nil {
+		return nil
+	}
+	r.locker.RLock()
+	defer r.locker.RUnlock()
+	if proc, ok := r.lookup[pid.ID]; ok {
+		return proc
+	}
+	return nil
 }

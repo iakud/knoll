@@ -11,27 +11,27 @@ var (
 	ErrMailboxStopped = errors.New("Mailbox is stopped")
 )
 
-func NewMailbox[T any]() *mailbox[T] {
-	return &mailbox[T]{
-		messageC: make(chan T, 1024),
+func newMailbox() *mailbox {
+	return &mailbox{
+		messageC: make(chan Envelope, 1024),
 		done:     make(chan struct{}, 1),
 	}
 }
 
-type mailbox[T any] struct {
-	messageC chan T
+type mailbox struct {
+	messageC chan Envelope
 	closed   atomic.Bool
 	done     chan struct{}
 }
 
-func (m *mailbox[T]) Close() {
+func (m *mailbox) Close() {
 	if !m.closed.CompareAndSwap(false, true) {
 		return
 	}
 	close(m.done)
 }
 
-func (m *mailbox[T]) Send(ctx context.Context, message T) error {
+func (m *mailbox) Send(ctx context.Context, envelope Envelope) error {
 	if m.closed.Load() {
 		return fmt.Errorf("Mailbox.Send failed: %w", ErrMailboxStopped)
 	}
@@ -39,15 +39,15 @@ func (m *mailbox[T]) Send(ctx context.Context, message T) error {
 	select {
 	case <-ctx.Done():
 		return fmt.Errorf("Mailbox.Send canceled: %w", ctx.Err())
-	case m.messageC <- message:
+	case m.messageC <- envelope:
 		return nil
 	}
 }
 
-func (m *mailbox[T]) MessageC() <-chan T {
+func (m *mailbox) MessageC() <-chan Envelope {
 	return m.messageC
 }
 
-func (m *mailbox[T]) Done() <-chan struct{} {
+func (m *mailbox) Done() <-chan struct{} {
 	return m.done
 }

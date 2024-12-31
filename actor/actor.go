@@ -1,13 +1,9 @@
 package actor
 
-import (
-	"context"
-)
-
-type Actor[T any] interface {
+type Actor interface {
 	OnStart()
 	OnClose()
-	Receive(ctx context.Context, message T)
+	Receive(ctx Context, message any)
 }
 
 /*

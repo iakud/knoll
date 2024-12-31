@@ -1,7 +1,6 @@
 package actor
 
 import (
-	"context"
 	"log/slog"
 	"testing"
 	"time"
@@ -16,23 +15,30 @@ type ActorTest struct {
 }
 
 func (a *ActorTest) OnStart() {
-
+	slog.Info("actor start")
 }
 
 func (a *ActorTest) OnClose() {
-
+	slog.Info("actor close")
 }
 
-func (a *ActorTest) Receive(ctx context.Context, message MessageTest) {
-	slog.Info("receive message:", "CmdId", message.CmdId, "Message", message.Message)
+func (a *ActorTest) Receive(ctx Context, message any) {
+	switch msg := message.(type) {
+	case *MessageTest:
+		slog.Info("receive message:", "CmdId", msg.CmdId, "Message", msg.Message)
+	default:
+		slog.Info("receive message unknow type")
+	}
+
 }
 
 func TestActor(t *testing.T) {
-	actorSystem := NewActorSystem[MessageTest]()
-	actorRef, err := actorSystem.Spawn("hello", &ActorTest{})
+	actorSystem := NewSystem()
+	pid, err := actorSystem.Spawn("hello", &ActorTest{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	actorSystem.Send(context.Background(), actorRef, MessageTest{2, "hello"})
+	context := actorSystem.Context()
+	context.Send(pid, &MessageTest{2, "hello"})
 	time.Sleep(time.Second)
 }
