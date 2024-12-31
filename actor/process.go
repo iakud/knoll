@@ -54,13 +54,7 @@ func (proc *process) process() {
 	for {
 		select {
 		case envelope := <-proc.mailbox.MessageC():
-			ctx := &actorContext{
-				envelope: envelope,
-				system:   proc.system,
-				pid:      proc.pid,
-			}
-
-			proc.actor.Receive(ctx, envelope.Message)
+			proc.Invoke(envelope)
 		case <-proc.mailbox.Done():
 			return
 		}
@@ -69,4 +63,17 @@ func (proc *process) process() {
 
 func (proc *process) Close() {
 
+}
+
+func (proc *process) Invoke(envelope Envelope) {
+	message := envelope.Message
+	switch message.(type) {
+	case PoisonPill:
+	}
+	ctx := &actorContext{
+		envelope: envelope,
+		system:   proc.system,
+		pid:      proc.pid,
+	}
+	proc.actor.Receive(ctx, envelope.Message)
 }

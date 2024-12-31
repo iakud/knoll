@@ -29,6 +29,25 @@ func (c *actorContext) Send(pid *PID, message any) {
 	proc.Send(message, c.pid)
 }
 
+func (c *actorContext) Request(pid *PID, message any) {
+	proc := c.system.registry.Get(pid)
+	if proc == nil {
+		return
+	}
+	proc.Send(message, c.pid)
+}
+
+func (c *actorContext) Respond(message any) {
+	if c.envelope.Sender == nil {
+		return
+	}
+	proc := c.system.registry.Get(c.envelope.Sender)
+	if proc == nil {
+		return
+	}
+	proc.Send(message, c.pid)
+}
+
 func (c *actorContext) Close(pid *PID) {
 	proc := c.system.registry.Get(pid)
 	if proc == nil {
