@@ -1,57 +1,72 @@
 package actor
 
+import "context"
+
 type Context interface {
 	Sender() *PID
 	Message() interface{}
 	Send(pid *PID, message any)
-	Close(pid *PID)
+	Request(ctx context.Context, pid *PID, message any) (interface{}, error)
+	Respond(message any)
+	System() *System
 }
 
 type actorContext struct {
 	envelope Envelope
 	system   *System
 	pid      *PID
+	response chan response
 }
 
 func (ctx *actorContext) Sender() *PID {
 	return ctx.envelope.Sender
 }
 
-func (ctx *actorContext) Message() interface{} {
-	return ctx.envelope.Message
+func (c *actorContext) Message() interface{} {
+	if req, ok := c.envelope.Message.(*request); ok {
+		return req.message
+	}
+	return c.envelope.Message
 }
 
 func (c *actorContext) Send(pid *PID, message any) {
-	proc := c.system.registry.Get(pid)
-	if proc == nil {
-		return
-	}
-	proc.Send(message, c.pid)
+	c.system.SendWithSender(pid, message, c.pid)
 }
 
-func (c *actorContext) Request(pid *PID, message any) {
-	proc := c.system.registry.Get(pid)
-	if proc == nil {
-		return
+type request struct {
+	message  interface{}
+	response chan response
+}
+
+type response struct {
+	resp interface{}
+	err  error
+}
+
+func (c *actorContext) Request(ctx context.Context, pid *PID, message any) (interface{}, error) {
+	respc := make(chan response, 1)
+	c.system.SendWithSender(pid, &request{message, respc}, c.pid)
+	select {
+	case resp := <-respc:
+		return resp.resp, resp.err
+	case <-ctx.Done():
+		return nil, ctx.Err()
 	}
-	proc.Send(message, c.pid)
 }
 
 func (c *actorContext) Respond(message any) {
 	if c.envelope.Sender == nil {
 		return
 	}
-	proc := c.system.registry.Get(c.envelope.Sender)
-	if proc == nil {
-		return
+	if req, ok := c.envelope.Message.(*request); ok {
+		select {
+		case req.response <- response{message, nil}:
+		default:
+		}
 	}
-	proc.Send(message, c.pid)
+	c.system.SendWithSender(c.envelope.Sender, message, c.pid)
 }
 
-func (c *actorContext) Close(pid *PID) {
-	proc := c.system.registry.Get(pid)
-	if proc == nil {
-		return
-	}
-	proc.Close()
+func (c *actorContext) System() *System {
+	return c.system
 }

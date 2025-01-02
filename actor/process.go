@@ -8,7 +8,6 @@ import (
 type Processer interface {
 	Start()
 	Stop()
-	Close()
 	Send(message any, sender *PID)
 }
 
@@ -30,50 +29,52 @@ func newProcess(pid *PID, system *System, actor Actor) Processer {
 	}
 }
 
-func (proc *process) Send(message any, sender *PID) {
-	proc.mailbox.Send(context.Background(), Envelope{message, sender})
+func (p *process) Send(message any, sender *PID) {
+	p.mailbox.Send(context.Background(), Envelope{message, sender})
 }
 
-func (proc *process) Start() {
-	go proc.process()
+func (p *process) Start() {
+	go p.process()
 }
 
-func (proc *process) Stop() {
-
+func (p *process) Stop() {
+	p.mailbox.Close()
 }
 
-func (proc *process) process() {
+func (p *process) process() {
 	defer func() {
 		if r := recover(); r != nil {
 			slog.Info("Receive recovered in %v", r)
 		}
 	}()
-	proc.actor.OnStart()
-	defer proc.actor.OnClose()
+	p.actor.OnStart()
+	defer p.actor.OnClose()
 
 	for {
 		select {
-		case envelope := <-proc.mailbox.MessageC():
-			proc.Invoke(envelope)
-		case <-proc.mailbox.Done():
+		case envelope := <-p.mailbox.MessageC():
+			p.Invoke(envelope)
+		case <-p.mailbox.Done():
 			return
 		}
 	}
 }
 
-func (proc *process) Close() {
-
-}
-
-func (proc *process) Invoke(envelope Envelope) {
+func (p *process) Invoke(envelope Envelope) {
 	message := envelope.Message
 	switch message.(type) {
 	case PoisonPill:
+		p.Stop()
+	default:
+		p.InvokeMessage(envelope)
 	}
+}
+
+func (p *process) InvokeMessage(envelope Envelope) {
 	ctx := &actorContext{
 		envelope: envelope,
-		system:   proc.system,
-		pid:      proc.pid,
+		system:   p.system,
+		pid:      p.pid,
 	}
-	proc.actor.Receive(ctx, envelope.Message)
+	p.actor.Receive(ctx)
 }

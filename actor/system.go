@@ -85,7 +85,11 @@ func (s *System) Context() Context {
 	}
 }
 
-func (s *System) Send(pid *PID, message any, sender *PID) {
+func (s *System) Send(pid *PID, message any) {
+	s.SendWithSender(pid, message, nil)
+}
+
+func (s *System) SendWithSender(pid *PID, message any, sender *PID) {
 	proc := s.registry.Get(pid)
 	if proc == nil {
 		return
@@ -94,5 +98,5 @@ func (s *System) Send(pid *PID, message any, sender *PID) {
 }
 
 func (s *System) Poison(pid *PID) {
-	s.Send(pid, poisonPillMessage, nil)
+	s.SendWithSender(pid, poisonPillMessage, nil)
 }
