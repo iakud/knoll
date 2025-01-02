@@ -63,6 +63,7 @@ func (c *actorContext) Respond(message any) {
 		case req.response <- response{message, nil}:
 		default:
 		}
+		return
 	}
 	c.system.SendWithSender(c.envelope.Sender, message, c.pid)
 }

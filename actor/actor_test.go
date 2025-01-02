@@ -94,7 +94,7 @@ func (a *Actor1) Receive(ctx Context) {
 	case *ActorStart:
 		ctx1, cancel := context.WithTimeout(context.Background(), time.Second)
 		_ = cancel
-		if resp, err := ctx.Request(ctx1, msg.pid, "123"); err != nil {
+		if resp, err := ctx.Request(ctx1, msg.pid, "123"); err == nil {
 			slog.Info(resp.(string))
 		}
 	case string:
