@@ -85,6 +85,17 @@ type queueElem struct {
 	next     atomic.Pointer[queueElem] // *queueElem, accessed atomically
 }
 
+func (m *mailbox) send(envelope Envelope) {
+	q := &queueElem{envelope: envelope}
+	tail := m.tail.Swap(q)
+	if tail != nil {
+		tail.next.Store(q)
+	} else {
+		m.head = q
+		go m.run()
+	}
+}
+
 func (m *mailbox) run() {
 	for {
 		head := m.head
@@ -96,7 +107,6 @@ func (m *mailbox) run() {
 		}
 		*head = queueElem{}
 	}
-
 }
 
 func (m *mailbox) next(head *queueElem) bool {
