@@ -1,8 +1,11 @@
 package actor
 
-type PoisonPill struct {
-}
+type PoisonPill struct{}
+type Started struct{}
+type Stopped struct{}
 
 var (
-	poisonPillMessage PoisonPill = PoisonPill{}
+	poisonPill PoisonPill = PoisonPill{}
+	started    Started    = Started{}
+	stopped    Stopped    = Stopped{}
 )

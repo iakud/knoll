@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"runtime"
 	"sync/atomic"
 )
 
@@ -11,28 +13,55 @@ var (
 	ErrMailboxStopped = errors.New("Mailbox is stopped")
 )
 
-func newMailbox() *mailbox {
-	return &mailbox{
-		messageC: make(chan Envelope, 1024),
-		done:     make(chan struct{}, 1),
-	}
+type Invoker interface {
+	Invoke(envelope Envelope)
 }
 
 type mailbox struct {
 	messageC chan Envelope
-	closed   atomic.Bool
-	done     chan struct{}
+	invoker  Invoker
+	stopped  atomic.Bool
+	ctx      context.Context
+	cancel   context.CancelFunc
+
+	head *queueElem                // Used carefully to avoid needing atomics
+	tail atomic.Pointer[queueElem] // *queueElem, accessed atomically
 }
 
-func (m *mailbox) Close() {
-	if !m.closed.CompareAndSwap(false, true) {
-		return
+func newMailbox(invoker Invoker) *mailbox {
+	ctx, cancel := context.WithCancel(context.Background())
+	m := &mailbox{
+		messageC: make(chan Envelope, 1024),
+		invoker:  invoker,
+		ctx:      ctx,
+		cancel:   cancel,
 	}
-	close(m.done)
+	return m
+}
+
+func (m *mailbox) Start() {
+	// var i atomic.Int32
+	go m.process(m.ctx)
+}
+
+func (m *mailbox) process(ctx context.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			slog.Info("Receive recovered in %v", r)
+		}
+	}()
+	for {
+		select {
+		case envelope := <-m.messageC:
+			m.invoker.Invoke(envelope)
+		case <-ctx.Done():
+			return
+		}
+	}
 }
 
 func (m *mailbox) Send(ctx context.Context, envelope Envelope) error {
-	if m.closed.Load() {
+	if m.stopped.Load() {
 		return fmt.Errorf("Mailbox.Send failed: %w", ErrMailboxStopped)
 	}
 
@@ -44,10 +73,44 @@ func (m *mailbox) Send(ctx context.Context, envelope Envelope) error {
 	}
 }
 
-func (m *mailbox) MessageC() <-chan Envelope {
-	return m.messageC
+func (m *mailbox) Stop() {
+	if !m.stopped.CompareAndSwap(false, true) {
+		return
+	}
+	m.cancel()
 }
 
-func (m *mailbox) Done() <-chan struct{} {
-	return m.done
+type queueElem struct {
+	envelope Envelope
+	next     atomic.Pointer[queueElem] // *queueElem, accessed atomically
+}
+
+func (m *mailbox) run() {
+	for {
+		head := m.head
+		m.invoker.Invoke(head.envelope)
+
+		if !m.next(head) {
+			*head = queueElem{}
+			return
+		}
+		*head = queueElem{}
+	}
+
+}
+
+func (m *mailbox) next(head *queueElem) bool {
+	if m.head = head.next.Load(); m.head != nil {
+		return true
+	}
+
+	if m.tail.CompareAndSwap(head, nil) {
+		return false
+	}
+
+	for m.head == nil {
+		runtime.Gosched()
+		m.head = head.next.Load()
+	}
+	return true
 }

@@ -77,14 +77,6 @@ func (s *System) Spawn(name string, actor Actor) (*PID, error) {
 	return pid, nil
 }
 
-func (s *System) Context() Context {
-	return &actorContext{
-		envelope: Envelope{},
-		system:   s,
-		pid:      nil,
-	}
-}
-
 func (s *System) Send(pid *PID, message any) {
 	s.SendWithSender(pid, message, nil)
 }
@@ -98,5 +90,5 @@ func (s *System) SendWithSender(pid *PID, message any, sender *PID) {
 }
 
 func (s *System) Poison(pid *PID) {
-	s.SendWithSender(pid, poisonPillMessage, nil)
+	s.SendWithSender(pid, poisonPill, nil)
 }

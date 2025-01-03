@@ -2,48 +2,46 @@ package actor
 
 import "context"
 
-type Context interface {
-	Sender() *PID
-	Message() interface{}
-	Send(pid *PID, message any)
-	Request(ctx context.Context, pid *PID, message any) (interface{}, error)
-	Respond(message any)
-	System() *System
-}
-
-type actorContext struct {
-	envelope Envelope
-	system   *System
+type Context struct {
 	pid      *PID
+	system   *System
+	envelope Envelope
 	response chan response
 }
 
-func (ctx *actorContext) Sender() *PID {
-	return ctx.envelope.Sender
+func newContext(pid *PID, system *System) *Context {
+	return &Context{
+		pid:    pid,
+		system: system,
+	}
 }
 
-func (c *actorContext) Message() interface{} {
+func (c *Context) Sender() *PID {
+	return c.envelope.Sender
+}
+
+func (c *Context) Message() any {
 	if req, ok := c.envelope.Message.(*request); ok {
 		return req.message
 	}
 	return c.envelope.Message
 }
 
-func (c *actorContext) Send(pid *PID, message any) {
+func (c *Context) Send(pid *PID, message any) {
 	c.system.SendWithSender(pid, message, c.pid)
 }
 
 type request struct {
-	message  interface{}
+	message  any
 	response chan response
 }
 
 type response struct {
-	resp interface{}
+	resp any
 	err  error
 }
 
-func (c *actorContext) Request(ctx context.Context, pid *PID, message any) (interface{}, error) {
+func (c *Context) Request(ctx context.Context, pid *PID, message any) (any, error) {
 	respc := make(chan response, 1)
 	c.system.SendWithSender(pid, &request{message, respc}, c.pid)
 	select {
@@ -54,7 +52,7 @@ func (c *actorContext) Request(ctx context.Context, pid *PID, message any) (inte
 	}
 }
 
-func (c *actorContext) Respond(message any) {
+func (c *Context) Respond(message any) {
 	if c.envelope.Sender == nil {
 		return
 	}
@@ -68,6 +66,6 @@ func (c *actorContext) Respond(message any) {
 	c.system.SendWithSender(c.envelope.Sender, message, c.pid)
 }
 
-func (c *actorContext) System() *System {
+func (c *Context) System() *System {
 	return c.system
 }

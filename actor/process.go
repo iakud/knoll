@@ -2,31 +2,27 @@ package actor
 
 import (
 	"context"
-	"log/slog"
 )
 
 type Processer interface {
+	Send(message any, sender *PID)
 	Start()
 	Stop()
-	Send(message any, sender *PID)
 }
 
 type process struct {
-	pid     *PID
-	system  *System
+	context *Context
 	mailbox *mailbox
-
-	actor Actor
+	actor   Actor
 }
 
 func newProcess(pid *PID, system *System, actor Actor) Processer {
-	return &process{
-		pid:     pid,
-		system:  system,
-		mailbox: newMailbox(),
-
-		actor: actor,
+	p := &process{
+		context: newContext(pid, system),
+		actor:   actor,
 	}
+	p.mailbox = newMailbox(p)
+	return p
 }
 
 func (p *process) Send(message any, sender *PID) {
@@ -34,47 +30,39 @@ func (p *process) Send(message any, sender *PID) {
 }
 
 func (p *process) Start() {
-	go p.process()
+	/*
+		p.context.envelope.Message = started
+		p.InvokeMessage()
+		p.context.envelope.Message = nil
+	*/
+	p.mailbox.Start()
 }
 
 func (p *process) Stop() {
-	p.mailbox.Close()
-}
-
-func (p *process) process() {
-	defer func() {
-		if r := recover(); r != nil {
-			slog.Info("Receive recovered in %v", r)
-		}
-	}()
-	p.actor.OnStart()
-	defer p.actor.OnClose()
-
-	for {
-		select {
-		case envelope := <-p.mailbox.MessageC():
-			p.Invoke(envelope)
-		case <-p.mailbox.Done():
-			return
-		}
-	}
+	p.mailbox.Send(context.Background(), Envelope{stopped, nil})
 }
 
 func (p *process) Invoke(envelope Envelope) {
 	message := envelope.Message
 	switch message.(type) {
+	case Started:
+
+	case Stopped:
+		p.handleStop()
 	case PoisonPill:
 		p.Stop()
 	default:
-		p.InvokeMessage(envelope)
+		p.context.envelope = envelope
+		p.InvokeMessage()
+		p.context.envelope = Envelope{}
 	}
 }
 
-func (p *process) InvokeMessage(envelope Envelope) {
-	ctx := &actorContext{
-		envelope: envelope,
-		system:   p.system,
-		pid:      p.pid,
-	}
-	p.actor.Receive(ctx)
+func (p *process) InvokeMessage() {
+	p.actor.Receive(p.context)
+}
+
+func (p *process) handleStop() {
+	p.context.system.registry.Remove(p.context.pid)
+	p.mailbox.Stop()
 }

@@ -23,7 +23,7 @@ func (a *ActorTest) OnClose() {
 	slog.Info("actor close")
 }
 
-func (a *ActorTest) Receive(ctx Context) {
+func (a *ActorTest) Receive(ctx *Context) {
 	switch msg := ctx.Message().(type) {
 	case *MessageTest:
 		slog.Info("receive message:", "CmdId", msg.CmdId, "Message", msg.Message)
@@ -38,8 +38,7 @@ func TestActor(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	context := actorSystem.Context()
-	context.Send(pid, &MessageTest{2, "hello"})
+	actorSystem.Send(pid, &MessageTest{2, "hello"})
 	time.Sleep(time.Second)
 }
 
@@ -70,7 +69,7 @@ func (a *Actor2) OnStart() {
 func (a *Actor2) OnClose() {
 }
 
-func (a *Actor2) Receive(ctx Context) {
+func (a *Actor2) Receive(ctx *Context) {
 	switch msg := ctx.Message().(type) {
 	case string:
 		slog.Info("actor2 receive,", "message", msg)
@@ -89,7 +88,7 @@ func (a *Actor1) OnStart() {
 func (a *Actor1) OnClose() {
 }
 
-func (a *Actor1) Receive(ctx Context) {
+func (a *Actor1) Receive(ctx *Context) {
 	switch msg := ctx.Message().(type) {
 	case *ActorStart:
 		ctx1, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -114,7 +113,6 @@ func TestRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	context := actorSystem.Context()
-	context.Send(pid1, &ActorStart{pid2})
+	actorSystem.Send(pid1, &ActorStart{pid2})
 	time.Sleep(time.Second)
 }
