@@ -1,9 +1,5 @@
 package actor
 
-import (
-	"context"
-)
-
 type Processer interface {
 	Send(message any, sender *PID)
 	Start()
@@ -26,20 +22,15 @@ func newProcess(pid *PID, system *System, actor Actor) Processer {
 }
 
 func (p *process) Send(message any, sender *PID) {
-	p.mailbox.Send(context.Background(), Envelope{message, sender})
+	p.mailbox.Send(Envelope{message, sender})
 }
 
 func (p *process) Start() {
-	/*
-		p.context.envelope.Message = started
-		p.InvokeMessage()
-		p.context.envelope.Message = nil
-	*/
-	p.mailbox.Start()
+	p.mailbox.Send(Envelope{started, nil})
 }
 
 func (p *process) Stop() {
-	p.mailbox.Send(context.Background(), Envelope{stopped, nil})
+	p.mailbox.Send(Envelope{stopped, nil})
 }
 
 func (p *process) Invoke(envelope Envelope) {
@@ -51,11 +42,13 @@ func (p *process) Invoke(envelope Envelope) {
 		p.handleStop()
 	case PoisonPill:
 		p.Stop()
+		return
 	default:
-		p.context.envelope = envelope
-		p.InvokeMessage()
-		p.context.envelope = Envelope{}
+		
 	}
+	p.context.envelope = envelope
+	p.InvokeMessage()
+	p.context.envelope = Envelope{}
 }
 
 func (p *process) InvokeMessage() {

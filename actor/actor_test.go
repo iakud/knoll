@@ -15,16 +15,12 @@ type MessageTest struct {
 type ActorTest struct {
 }
 
-func (a *ActorTest) OnStart() {
-	slog.Info("actor start")
-}
-
-func (a *ActorTest) OnClose() {
-	slog.Info("actor close")
-}
-
 func (a *ActorTest) Receive(ctx *Context) {
 	switch msg := ctx.Message().(type) {
+	case Started:
+		slog.Info("actor start")
+	case Stopped:
+		slog.Info("actor close")
 	case *MessageTest:
 		slog.Info("receive message:", "CmdId", msg.CmdId, "Message", msg.Message)
 	default:
@@ -71,6 +67,10 @@ func (a *Actor2) OnClose() {
 
 func (a *Actor2) Receive(ctx *Context) {
 	switch msg := ctx.Message().(type) {
+	case Started:
+		slog.Info("actor2 started")
+	case Stopped:
+		slog.Info("actor2 stopped")
 	case string:
 		slog.Info("actor2 receive,", "message", msg)
 		ctx.Respond("456")
@@ -90,11 +90,15 @@ func (a *Actor1) OnClose() {
 
 func (a *Actor1) Receive(ctx *Context) {
 	switch msg := ctx.Message().(type) {
+	case Started:
+		slog.Info("actor1 started")
+	case Stopped:
+		slog.Info("actor1 stopped")
 	case *ActorStart:
 		ctx1, cancel := context.WithTimeout(context.Background(), time.Second)
 		_ = cancel
 		if resp, err := ctx.Request(ctx1, msg.pid, "123"); err == nil {
-			slog.Info(resp.(string))
+			slog.Info("actor1 get response,", "message", resp.(string))
 		}
 	case string:
 		slog.Info("actor1 receive,", "message", msg)

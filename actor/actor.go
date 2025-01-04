@@ -1,8 +1,6 @@
 package actor
 
 type Actor interface {
-	OnStart()
-	OnClose()
 	Receive(ctx *Context)
 }
 
