@@ -5,14 +5,16 @@ import "context"
 type Context struct {
 	pid      *PID
 	system   *System
+	actor    Actor
 	envelope Envelope
 	response chan response
 }
 
-func newContext(pid *PID, system *System) *Context {
+func newContext(pid *PID, system *System, actor Actor) *Context {
 	return &Context{
 		pid:    pid,
 		system: system,
+		actor:  actor,
 	}
 }
 

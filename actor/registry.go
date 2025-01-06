@@ -13,13 +13,14 @@ func newRegistry() *registry {
 	}
 }
 
-func (r *registry) Add(id string, proc Processer) {
+func (r *registry) Add(id string, proc Processer) bool {
 	r.locker.Lock()
 	defer r.locker.Unlock()
 	if _, ok := r.lookup[id]; ok {
-		return
+		return false
 	}
 	r.lookup[id] = proc
+	return true
 }
 
 func (r *registry) Remove(pid *PID) {

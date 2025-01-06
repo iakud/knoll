@@ -9,20 +9,15 @@ type Processer interface {
 type process struct {
 	context *Context
 	mailbox *mailbox
-	actor   Actor
+	stopped bool
 }
 
-func newProcess(pid *PID, system *System, actor Actor) Processer {
+func newProcess(context *Context) Processer {
 	p := &process{
-		context: newContext(pid, system),
-		actor:   actor,
+		context: context,
 	}
 	p.mailbox = newMailbox(p)
 	return p
-}
-
-func (p *process) Send(message any, sender *PID) {
-	p.mailbox.Send(Envelope{message, sender})
 }
 
 func (p *process) Start() {
@@ -33,29 +28,39 @@ func (p *process) Stop() {
 	p.mailbox.Send(Envelope{stopped, nil})
 }
 
+func (p *process) Send(message any, sender *PID) {
+	p.mailbox.Send(Envelope{message, sender})
+}
+
 func (p *process) Invoke(envelope Envelope) {
 	message := envelope.Message
 	switch message.(type) {
 	case Started:
-
+		p.handleStarted()
 	case Stopped:
-		p.handleStop()
+		p.handleStopped()
 	case PoisonPill:
-		p.Stop()
-		return
+		p.context.system.Stop(p.context.pid)
 	default:
-		
+		p.invokeMessage(envelope)
 	}
-	p.context.envelope = envelope
-	p.InvokeMessage()
-	p.context.envelope = Envelope{}
 }
 
-func (p *process) InvokeMessage() {
-	p.actor.Receive(p.context)
+func (p *process) handleStarted() {
+	p.invokeMessage(Envelope{started, nil})
 }
 
-func (p *process) handleStop() {
+func (p *process) handleStopped() {
+	if p.stopped {
+		return
+	}
+	p.stopped = true
 	p.context.system.registry.Remove(p.context.pid)
-	p.mailbox.Stop()
+	p.invokeMessage(Envelope{stopped, nil})
+}
+
+func (p *process) invokeMessage(envelope Envelope) {
+	p.context.envelope = envelope
+	p.context.actor.Receive(p.context)
+	p.context.envelope = Envelope{}
 }

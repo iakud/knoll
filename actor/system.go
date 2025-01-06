@@ -2,13 +2,10 @@ package actor
 
 import (
 	"log/slog"
-	"sync"
 )
 
 type System struct {
 	registry *registry
-	lock     sync.RWMutex
-	stop     chan struct{}
 	logger   *slog.Logger
 }
 
@@ -42,18 +39,6 @@ func (s *System) Logger() *slog.Logger {
 		return
 	}
 */
-func (s *System) Stop() {
-	close(s.stop)
-}
-
-func (s *System) IsStopped() bool {
-	select {
-	case <-s.stop:
-		return true
-	default:
-		return false
-	}
-}
 
 func NewSystem() *System {
 	return NewSystemWithConfig()
@@ -63,18 +48,24 @@ func NewSystemWithConfig() *System {
 	system := &System{}
 	system.registry = newRegistry()
 	system.logger = slog.Default()
-	system.stop = make(chan struct{})
 	return system
 }
 
 func (s *System) Spawn(name string, actor Actor) (*PID, error) {
 	const address = "nohost"
 	pid := NewPID(address, name)
-	proc := newProcess(pid, s, actor)
+	context := newContext(pid, s, actor)
+	proc := newProcess(context)
 
-	s.registry.Add(name, proc)
+	if s.registry.Add(name, proc) {
+		return pid, nil
+	}
 	proc.Start()
 	return pid, nil
+}
+
+func (s *System) SpawnFunc(name string, f func(*Context)) (*PID, error) {
+	return s.Spawn(name, newFuncReceiver(f))
 }
 
 func (s *System) Send(pid *PID, message any) {
@@ -91,4 +82,12 @@ func (s *System) SendWithSender(pid *PID, message any, sender *PID) {
 
 func (s *System) Poison(pid *PID) {
 	s.SendWithSender(pid, poisonPill, nil)
+}
+
+func (s *System) Stop(pid *PID) {
+	proc := s.registry.Get(pid)
+	if proc == nil {
+		return
+	}
+	proc.Stop()
 }

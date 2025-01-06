@@ -1,14 +1,9 @@
 package actor
 
 import (
-	"errors"
 	"runtime"
-	"sync/atomic"
 	"sync"
-)
-
-var (
-	ErrMailboxStopped = errors.New("Mailbox is stopped")
+	"sync/atomic"
 )
 
 var nodes = sync.Pool{New: func() interface{} { return new(queueNode) }}
@@ -23,8 +18,7 @@ type Invoker interface {
 }
 
 type mailbox struct {
-	invoker  Invoker
-	stopped  atomic.Bool
+	invoker Invoker
 
 	head *queueNode
 	tail atomic.Pointer[queueNode]
@@ -32,7 +26,7 @@ type mailbox struct {
 
 func newMailbox(invoker Invoker) *mailbox {
 	m := &mailbox{
-		invoker:  invoker,
+		invoker: invoker,
 	}
 	return m
 }
@@ -74,10 +68,3 @@ func (m *mailbox) process() {
 		nodes.Put(node)
 	}
 }
-
-func (m *mailbox) Stop() {
-	if !m.stopped.CompareAndSwap(false, true) {
-		return
-	}
-}
-
