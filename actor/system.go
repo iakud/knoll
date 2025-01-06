@@ -4,8 +4,15 @@ import (
 	"log/slog"
 )
 
+type Remoter interface {
+	Address() string
+	Send(pid *PID, message any, sender *PID)
+}
+
 type System struct {
 	registry *registry
+	remote   Remoter
+	address  string
 	logger   *slog.Logger
 }
 
@@ -44,16 +51,29 @@ func NewSystem() *System {
 	return NewSystemWithConfig()
 }
 
-func NewSystemWithConfig() *System {
+func NewSystemWithConfig(o ...Option) *System {
+	opts := options{}
+	for _, option := range o {
+		option(&opts)
+	}
+
 	system := &System{}
 	system.registry = newRegistry()
 	system.logger = slog.Default()
+	system.address = LocalAddress
+
+	if opts.remote != nil {
+		system.remote = opts.remote
+		system.address = opts.remote.Address()
+	}
+	if opts.logger != nil {
+		system.logger = opts.logger
+	}
 	return system
 }
 
 func (s *System) Spawn(name string, actor Actor) (*PID, error) {
-	const address = "nohost"
-	pid := NewPID(address, name)
+	pid := NewPID(s.address, name)
 	context := newContext(pid, s, actor)
 	proc := newProcess(context)
 
@@ -73,6 +93,20 @@ func (s *System) Send(pid *PID, message any) {
 }
 
 func (s *System) SendWithSender(pid *PID, message any, sender *PID) {
+	if pid == nil {
+		return
+	}
+	if s.address == pid.Address {
+		s.send(pid, message, sender)
+		return
+	}
+	if s.remote == nil {
+		return
+	}
+	s.remote.Send(pid, message, sender)
+}
+
+func (s *System) send(pid *PID, message any, sender *PID) {
 	proc := s.registry.Get(pid)
 	if proc == nil {
 		return

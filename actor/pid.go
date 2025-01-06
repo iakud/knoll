@@ -1,5 +1,7 @@
 package actor
 
+const LocalAddress = "local"
+
 // Process ID
 type PID struct {
 	Address string
