@@ -1,6 +1,7 @@
 package actor
 
 import (
+	"context"
 	"log/slog"
 )
 
@@ -114,19 +115,30 @@ func (s *System) send(pid *PID, message any, sender *PID) {
 	proc.Send(message, sender)
 }
 
-func (s *System) Poison(pid *PID) {
-	proc := s.registry.Get(pid)
-	if proc == nil {
-		return
-	}
-	proc.Send(poisonPill, nil)
-	<-proc.Done()
-}
-
 func (s *System) Stop(pid *PID) {
 	proc := s.registry.Get(pid)
 	if proc == nil {
 		return
 	}
 	proc.Stop()
+}
+
+func (s *System) Poison(pid *PID) {
+	proc := s.registry.Get(pid)
+	if proc == nil {
+		return
+	}
+	proc.Send(poisonPill, nil)
+}
+
+func (s *System) Shutdown(ctx context.Context, pid *PID) {
+	proc := s.registry.Get(pid)
+	if proc == nil {
+		return
+	}
+	proc.Send(poisonPill, nil)
+	select {
+	case <-proc.Done():
+	case <-ctx.Done():
+	}
 }

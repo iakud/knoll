@@ -35,7 +35,7 @@ func TestActor(t *testing.T) {
 		t.Fatal(err)
 	}
 	actorSystem.Send(pid, &MessageTest{2, "hello"})
-	actorSystem.Poison(pid)
+	actorSystem.Shutdown(context.Background(), pid)
 }
 
 /*
@@ -118,6 +118,6 @@ func TestRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 	actorSystem.Send(pid1, &ActorStart{pid2})
-	actorSystem.Poison(pid1)
-	actorSystem.Poison(pid2)
+	actorSystem.Shutdown(context.Background(), pid1)
+	actorSystem.Shutdown(context.Background(), pid2)
 }
