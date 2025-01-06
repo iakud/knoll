@@ -21,7 +21,7 @@ func (a *ActorTest) Receive(ctx *Context) {
 		slog.Info("actor start")
 	case Stopped:
 		slog.Info("actor close")
-	case *MessageTest:
+	case MessageTest:
 		slog.Info("receive message:", "CmdId", msg.CmdId, "Message", msg.Message)
 	default:
 		slog.Info("receive message unknow type")
@@ -34,7 +34,7 @@ func TestActor(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	actorSystem.Send(pid, &MessageTest{2, "hello"})
+	actorSystem.Send(pid, MessageTest{2, "hello"})
 	actorSystem.Shutdown(context.Background(), pid)
 }
 

@@ -21,32 +21,13 @@ func (s *System) Logger() *slog.Logger {
 	return s.logger
 }
 
-/*
-	func (as *ActorSystem) NewLocalPID(id string) *PID {
-		return NewPID(as.ProcessRegistry.Address, id)
-	}
+func (s *System) NewLocalPID(id string) *PID {
+	return NewPID(s.address, id)
+}
 
-	func (as *ActorSystem) Address() string {
-		return as.ProcessRegistry.Address
-	}
-
-	func (as *ActorSystem) GetHostPort() (host string, port int, err error) {
-		addr := as.ProcessRegistry.Address
-		if h, p, e := net.SplitHostPort(addr); e != nil {
-			if addr != localAddress {
-				err = e
-			}
-
-			host = localAddress
-			port = -1
-		} else {
-			host = h
-			port, err = strconv.Atoi(p)
-		}
-
-		return
-	}
-*/
+func (s *System) Address() string {
+	return s.address
+}
 
 func NewSystem() *System {
 	return NewSystemWithConfig()
