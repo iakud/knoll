@@ -4,17 +4,20 @@ type Processer interface {
 	Send(message any, sender *PID)
 	Start()
 	Stop()
+	Done() <-chan struct{}
 }
 
 type process struct {
 	context *Context
 	mailbox *mailbox
 	stopped bool
+	done    chan struct{}
 }
 
 func newProcess(context *Context) Processer {
 	p := &process{
 		context: context,
+		done:    make(chan struct{}),
 	}
 	p.mailbox = newMailbox(p)
 	return p
@@ -30,6 +33,10 @@ func (p *process) Stop() {
 
 func (p *process) Send(message any, sender *PID) {
 	p.mailbox.Send(Envelope{message, sender})
+}
+
+func (p *process) Done() <-chan struct{} {
+	return p.done
 }
 
 func (p *process) Invoke(envelope Envelope) {
@@ -57,6 +64,7 @@ func (p *process) handleStopped() {
 	p.stopped = true
 	p.context.system.registry.Remove(p.context.pid)
 	p.invokeMessage(Envelope{stopped, nil})
+	close(p.done)
 }
 
 func (p *process) invokeMessage(envelope Envelope) {

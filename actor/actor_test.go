@@ -35,7 +35,7 @@ func TestActor(t *testing.T) {
 		t.Fatal(err)
 	}
 	actorSystem.Send(pid, &MessageTest{2, "hello"})
-	time.Sleep(time.Second)
+	actorSystem.Poison(pid)
 }
 
 /*
@@ -118,5 +118,6 @@ func TestRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 	actorSystem.Send(pid1, &ActorStart{pid2})
-	time.Sleep(time.Second)
+	actorSystem.Poison(pid1)
+	actorSystem.Poison(pid2)
 }

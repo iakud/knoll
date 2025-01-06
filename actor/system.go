@@ -77,7 +77,7 @@ func (s *System) Spawn(name string, actor Actor) (*PID, error) {
 	context := newContext(pid, s, actor)
 	proc := newProcess(context)
 
-	if s.registry.Add(name, proc) {
+	if !s.registry.Add(name, proc) {
 		return pid, nil
 	}
 	proc.Start()
@@ -115,7 +115,12 @@ func (s *System) send(pid *PID, message any, sender *PID) {
 }
 
 func (s *System) Poison(pid *PID) {
-	s.SendWithSender(pid, poisonPill, nil)
+	proc := s.registry.Get(pid)
+	if proc == nil {
+		return
+	}
+	proc.Send(poisonPill, nil)
+	<-proc.Done()
 }
 
 func (s *System) Stop(pid *PID) {
