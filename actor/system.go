@@ -3,6 +3,8 @@ package actor
 import (
 	"context"
 	"log/slog"
+	"strconv"
+	"sync/atomic"
 )
 
 type Remoter interface {
@@ -11,10 +13,11 @@ type Remoter interface {
 }
 
 type System struct {
-	registry *registry
-	remote   Remoter
-	address  string
-	logger   *slog.Logger
+	registry  *registry
+	remote    Remoter
+	address   string
+	requestId atomic.Int32
+	logger    *slog.Logger
 }
 
 func (s *System) Logger() *slog.Logger {
@@ -117,9 +120,15 @@ func (s *System) Shutdown(ctx context.Context, pid *PID) {
 	if proc == nil {
 		return
 	}
-	proc.Send(poisonPill, nil)
-	select {
-	case <-proc.Done():
-	case <-ctx.Done():
-	}
+	proc.Shutdown(ctx)
+}
+
+func (s *System) Request(ctx context.Context, pid *PID, message any) (any, error) {
+	reqID := NewPID(s.address, "request/"+strconv.Itoa(int(s.requestId.Add(1))))
+	req := newRequest()
+	s.registry.Add(reqID.ID, req)
+	defer s.registry.Remove(reqID)
+
+	s.SendWithSender(pid, message, reqID)
+	return req.Result(ctx)
 }

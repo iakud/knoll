@@ -8,13 +8,3 @@ message PID {
 	string address = 1;
 	string ID = 2;
 }
-
-service Remote {
-	rpc Receive(stream Envelope) returns (stream Envelope) {}
-} 
-
-message Envelope {
-	PID target = 1;
-	PID sender = 2;
-	bytes message = 3;
-}

@@ -1,10 +1,12 @@
 package actor
 
+import "context"
+
 type Processer interface {
-	Send(message any, sender *PID)
 	Start()
 	Stop()
-	Done() <-chan struct{}
+	Send(message any, sender *PID)
+	Shutdown(ctx context.Context)
 }
 
 type process struct {
@@ -35,8 +37,12 @@ func (p *process) Send(message any, sender *PID) {
 	p.mailbox.Send(Envelope{message, sender})
 }
 
-func (p *process) Done() <-chan struct{} {
-	return p.done
+func (p *process) Shutdown(ctx context.Context) {
+	p.Send(poisonPill, nil)
+	select {
+	case <-p.done:
+	case <-ctx.Done():
+	}
 }
 
 func (p *process) Invoke(envelope Envelope) {
