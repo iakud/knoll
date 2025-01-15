@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package remote;
 
-import "actor.proto"
+import "actor.proto";
 
 option go_package = "github.com/iakud/knoll/actor/remote";
 
