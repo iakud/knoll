@@ -82,7 +82,7 @@ func (s *System) SendWithSender(pid *PID, message any, sender *PID) {
 		return
 	}
 	if s.address == pid.Address {
-		s.send(pid, message, sender)
+		s.SendLocal(pid, message, sender)
 		return
 	}
 	if s.remote == nil {
@@ -91,7 +91,7 @@ func (s *System) SendWithSender(pid *PID, message any, sender *PID) {
 	s.remote.Send(pid, message, sender)
 }
 
-func (s *System) send(pid *PID, message any, sender *PID) {
+func (s *System) SendLocal(pid *PID, message any, sender *PID) {
 	proc := s.registry.Get(pid)
 	if proc == nil {
 		return

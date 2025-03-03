@@ -1,10 +1,9 @@
 syntax = "proto3";
 
 package remote;
+option go_package = "github.com/iakud/knoll/actor/remote";
 
 import "actor.proto";
-
-option go_package = "github.com/iakud/knoll/actor/remote";
 
 service Remote {
 	rpc Receive(stream Envelope) returns (stream Envelope) {}
@@ -13,5 +12,6 @@ service Remote {
 message Envelope {
 	actor.PID target = 1;
 	actor.PID sender = 2;
-	bytes message = 3;
+	string typeName = 3;
+	bytes message = 4;
 }

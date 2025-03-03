@@ -55,3 +55,5 @@ tar -xvf "protoc-gen-go.v$PROTOC_GEN_GO_VERSION.darwin.arm64.tar.gz" -C $INSTALL
 [[ $? -ne 0 ]] && exit 1
 
 rm "protoc-gen-go.v$PROTOC_GEN_GO_VERSION.darwin.arm64.tar.gz"
+
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest

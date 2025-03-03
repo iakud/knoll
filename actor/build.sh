@@ -34,4 +34,4 @@ PATH="$NEW_PATH"
 
 protoc -I=. -I=../local/protoc/include --go_out=paths=source_relative:. `find . -name "actor.proto"`
 
-protoc -I=. -I=../local/protoc/include --go_out=paths=source_relative:. `find remote -name "remote.proto"`
+protoc -I=. -I=../local/protoc/include --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. `find remote -name "remote.proto"`
