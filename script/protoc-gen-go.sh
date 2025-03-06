@@ -35,7 +35,6 @@ function printUsage() {
 #export http_proxy=http://127.0.0.1:1087
 #export https_proxy=http://127.0.0.1:1087
 
-INSTALL_DIR="../local"
 PROTOC_GEN_GO_VERSION=1.36.5
 PROTOC_GEN_GO_GRPC_VERSION=1.5.1
 
