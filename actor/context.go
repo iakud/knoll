@@ -19,6 +19,10 @@ func newContext(pid *PID, system *System, actor Actor) *Context {
 	}
 }
 
+func (c *Context) PID() *PID {
+	return c.pid
+}
+
 func (c *Context) Sender() *PID {
 	return c.envelope.Sender
 }

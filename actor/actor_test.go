@@ -30,10 +30,7 @@ func (a *ActorTest) Receive(ctx *Context) {
 
 func TestActor(t *testing.T) {
 	actorSystem := NewSystem()
-	pid, err := actorSystem.Spawn("hello", &ActorTest{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	pid := actorSystem.Spawn("hello", &ActorTest{})
 	actorSystem.Send(pid, MessageTest{2, "hello"})
 	actorSystem.Shutdown(context.Background(), pid)
 }
@@ -109,14 +106,8 @@ func (a *Actor1) Receive(ctx *Context) {
 
 func TestRequest(t *testing.T) {
 	actorSystem := NewSystem()
-	pid1, err := actorSystem.Spawn("actor1", &Actor1{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	pid2, err := actorSystem.Spawn("actor2", &Actor2{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	pid1 := actorSystem.Spawn("actor1", &Actor1{})
+	pid2 := actorSystem.Spawn("actor2", &Actor2{})
 	actorSystem.Send(pid1, &ActorStart{pid2})
 	actorSystem.Shutdown(context.Background(), pid1)
 	actorSystem.Shutdown(context.Background(), pid2)

@@ -6,19 +6,19 @@ import (
 	"log/slog"
 )
 
-type streamReader struct {
+type endpointReader struct {
 	remote     *Remote
 	serializer Serializer
 }
 
-func newStreamReader(r *Remote) *streamReader {
-	return &streamReader{
+func newEndpointReader(r *Remote) *endpointReader {
+	return &endpointReader{
 		remote:     r,
 		serializer: ProtoSerializer{},
 	}
 }
 
-func (r *streamReader) Receive(stream Remote_ReceiveServer) error {
+func (r *endpointReader) Receive(stream Remote_ReceiveServer) error {
 	defer slog.Debug("streamreader terminated")
 
 	for {
@@ -27,17 +27,21 @@ func (r *streamReader) Receive(stream Remote_ReceiveServer) error {
 			if errors.Is(err, context.Canceled) {
 				break
 			}
-			slog.Error("streamReader receive", "err", err)
+			slog.Error("EndpointReader receive", "err", err)
 			return err
 		}
 
 		payload, err := r.serializer.Deserialize(envelope.TypeName, envelope.Message)
 		if err != nil {
-			slog.Error("streamReader deserialize", "err", err)
+			slog.Error("EndpointReader deserialize", "err", err)
 			return err
 		}
 
 		r.remote.system.SendLocal(envelope.Target, payload, envelope.Sender)
 	}
 	return nil
+}
+
+func (r *endpointReader) mustEmbedUnimplementedRemoteServer() {
+
 }

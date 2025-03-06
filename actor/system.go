@@ -57,19 +57,19 @@ func NewSystemWithConfig(o ...Option) *System {
 	return system
 }
 
-func (s *System) Spawn(name string, actor Actor) (*PID, error) {
+func (s *System) Spawn(name string, actor Actor) *PID {
 	pid := NewPID(s.address, name)
 	context := newContext(pid, s, actor)
 	proc := newProcess(context)
 
 	if !s.registry.Add(name, proc) {
-		return pid, nil
+		return pid
 	}
 	proc.Start()
-	return pid, nil
+	return pid
 }
 
-func (s *System) SpawnFunc(name string, f func(*Context)) (*PID, error) {
+func (s *System) SpawnFunc(name string, f func(*Context)) *PID {
 	return s.Spawn(name, newFuncReceiver(f))
 }
 
