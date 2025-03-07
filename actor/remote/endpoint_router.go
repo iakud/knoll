@@ -1,7 +1,7 @@
 package remote
 
 import (
-	"log/slog"
+	"context"
 
 	"github.com/iakud/knoll/actor"
 )
@@ -23,6 +23,8 @@ func (r *endpointRouter) Receive(ctx *actor.Context) {
 	switch msg := ctx.Message().(type) {
 	case actor.Started:
 		r.pid = ctx.PID()
+	case actor.Stopped:
+		r.stop()
 	case *remoteDeliver:
 		r.remoteDeliver(msg)
 	case RemoteUnreachableEvent:
@@ -31,11 +33,13 @@ func (r *endpointRouter) Receive(ctx *actor.Context) {
 	}
 }
 
-func (r *endpointRouter) handleEndpointTerminated(msg RemoteUnreachableEvent) {
-	edpWriter := r.connections[msg.Address]
-	delete(r.connections, msg.Address)
-	slog.Debug("endpoint terminated", "remote", msg.Address, "pid", edpWriter)
-}
+/*
+	func (r *endpointRouter) handleEndpointTerminated(msg RemoteUnreachableEvent) {
+		edpWriter := r.connections[msg.Address]
+		delete(r.connections, msg.Address)
+		slog.Debug("endpoint terminated", "remote", msg.Address, "pid", edpWriter)
+	}
+*/
 
 func (r *endpointRouter) removeEndpoint(address string) {
 	edpWriter, ok := r.connections[address]
@@ -54,4 +58,11 @@ func (r *endpointRouter) remoteDeliver(msg *remoteDeliver) {
 		r.connections[address] = edpWriter
 	}
 	r.system.Send(edpWriter, msg)
+}
+
+func (r *endpointRouter) stop() {
+	for _, writerPID := range r.connections {
+		r.system.Shutdown(context.Background(), writerPID)
+	}
+	clear(r.connections)
 }

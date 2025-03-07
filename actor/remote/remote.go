@@ -1,69 +1,54 @@
 package remote
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net"
-	sync "sync"
-	"sync/atomic"
+	"sync"
 
 	"github.com/iakud/knoll/actor"
 	"google.golang.org/grpc"
 )
 
 type Remote struct {
-	addr   string
-	system *actor.System
-	router *actor.PID
-	stopCh chan struct{} // Stop closes this channel to signal the remote to stop listening.
-	stopWg *sync.WaitGroup
-	state  atomic.Uint32
+	address   string
+	system    *actor.System
+	routerPID *actor.PID
+	server    *grpc.Server
+	stopCh    chan struct{} // Stop closes this channel to signal the remote to stop listening.
+	stopWg    *sync.WaitGroup
 }
 
-const (
-	stateInvalid uint32 = iota
-	stateInitialized
-	stateRunning
-	stateStopped
-)
-
-func New(addr string) *Remote {
+func New(address string) *Remote {
 	r := &Remote{
-		addr: addr,
+		address: address,
 	}
-	r.state.Store(stateInitialized)
 	return r
 }
 
-func (r *Remote) Start(system *actor.System) error {
-	if r.state.Load() != stateInitialized {
-		return fmt.Errorf("remote already started")
-	}
-	r.state.Store(stateRunning)
+func (r *Remote) Start(system *actor.System) {
 	r.system = system
-	ln, err := net.Listen("tcp", r.addr)
+	ln, err := net.Listen("tcp", r.address)
 	if err != nil {
-		return fmt.Errorf("remote failed to listen: %w", err)
+		panic(fmt.Errorf("remote: Failed to listen: %w", err))
 	}
-	slog.Debug("listening", "addr", r.addr)
 
-	r.router = system.Spawn("router", newEndpointRouter(system))
-	slog.Debug("server started", "listenAddr", r.addr)
-
-	s := grpc.NewServer()
-	RegisterRemoteServer(s, newEndpointReader(r))
-	slog.Info("Starting Proto.Actor server", slog.String("address", r.addr))
-	go s.Serve(ln)
-
-	return nil
+	r.routerPID = system.Spawn("router", newEndpointRouter(system))
+	r.server = grpc.NewServer()
+	RegisterRemoteServer(r.server, newEndpointReader(r))
+	slog.Info("remote: Starting", slog.String("address", r.address))
+	go r.server.Serve(ln)
 }
 
 func (r *Remote) Shutdown() {
-
+	r.system.Shutdown(context.Background(), r.routerPID)
+	r.server.GracefulStop()
 }
 
 func (r *Remote) Stop() {
-
+	r.system.Stop(r.routerPID)
+	r.server.Stop()
 }
 
 func (r *Remote) Send(pid *actor.PID, msg any, sender *actor.PID) {
@@ -72,9 +57,9 @@ func (r *Remote) Send(pid *actor.PID, msg any, sender *actor.PID) {
 		sender:  sender,
 		message: msg,
 	}
-	r.system.Send(r.router, rd)
+	r.system.Send(r.routerPID, rd)
 }
 
 func (r *Remote) Address() string {
-	return r.addr
+	return r.address
 }

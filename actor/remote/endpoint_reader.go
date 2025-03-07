@@ -1,8 +1,8 @@
 package remote
 
 import (
-	"context"
 	"errors"
+	"io"
 	"log/slog"
 )
 
@@ -19,29 +19,26 @@ func newEndpointReader(r *Remote) *endpointReader {
 }
 
 func (r *endpointReader) Receive(stream Remote_ReceiveServer) error {
-	defer slog.Debug("streamreader terminated")
-
+	defer slog.Info("remote: EndpointReader closed")
 	for {
 		envelope, err := stream.Recv()
 		if err != nil {
-			if errors.Is(err, context.Canceled) {
-				break
+			if errors.Is(err, io.EOF) {
+				slog.Info("remote: EndpointReader stream closed")
+				return nil
 			}
-			slog.Error("EndpointReader receive", "err", err)
+			slog.Error("remote: EndpointReader failed to read", slog.Any("error", err))
 			return err
 		}
 
-		payload, err := r.serializer.Deserialize(envelope.TypeName, envelope.Message)
+		message, err := r.serializer.Deserialize(envelope.TypeName, envelope.Message)
 		if err != nil {
-			slog.Error("EndpointReader deserialize", "err", err)
+			slog.Error("remote: EndpointReader failed to deserialize", slog.Any("error", err))
 			return err
 		}
 
-		r.remote.system.SendLocal(envelope.Target, payload, envelope.Sender)
+		r.remote.system.SendLocal(envelope.Target, message, envelope.Sender)
 	}
-	return nil
 }
 
-func (r *endpointReader) mustEmbedUnimplementedRemoteServer() {
-
-}
+func (r *endpointReader) mustEmbedUnimplementedRemoteServer() {}

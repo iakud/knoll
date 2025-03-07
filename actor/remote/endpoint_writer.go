@@ -2,6 +2,8 @@ package remote
 
 import (
 	"context"
+	"errors"
+	"io"
 	"log/slog"
 	"time"
 
@@ -37,7 +39,7 @@ func (w *endpointWriter) Receive(ctx *actor.Context) {
 	case actor.Stopped:
 		w.stop()
 	case *remoteDeliver:
-		w.send(msg)
+		w.sendMessage(msg)
 	}
 }
 
@@ -51,19 +53,18 @@ func (w *endpointWriter) start() {
 			} else {
 				tempDelay *= 2
 			}
-			slog.Error("EndpointWriter failed to connect", slog.String("address", w.address), slog.Any("error", err), slog.Int("retry", i))
+			slog.Error("remote: EndpointWriter failed to connect", slog.String("address", w.address), slog.Any("error", err), slog.Int("retry", i))
 			time.Sleep(tempDelay)
 			continue
 		}
-		slog.Info("EndpointWriter connected", slog.String("address", w.address), slog.Duration("cost", time.Since(now)))
+		slog.Info("remote: EndpointWriter connected", slog.String("address", w.address), slog.Duration("cost", time.Since(now)))
 		return
 	}
-	terminated := &RemoteUnreachableEvent{Address: w.address}
-	w.system.Send(w.router, terminated)
+	w.system.Send(w.router, &RemoteUnreachableEvent{Address: w.address})
 }
 
 func (w *endpointWriter) connect() error {
-	conn, err := grpc.Dial(w.address)
+	conn, err := grpc.Dial(w.address, grpc.WithInsecure())
 	if err != nil {
 		return err
 	}
@@ -71,19 +72,21 @@ func (w *endpointWriter) connect() error {
 	client := NewRemoteClient(conn)
 	stream, err := client.Receive(context.Background())
 	if err != nil {
-		slog.Error("EndpointWriter failed to create receive stream", slog.String("address", w.address), slog.Any("error", err))
+		slog.Error("remote: EndpointWriter failed to create receive stream", slog.String("address", w.address), slog.Any("error", err))
 		return err
 	}
 	w.stream = stream
 
 	go func() {
-		if _, err := w.stream.Recv(); err != nil {
-			slog.Error("EndpointWriter lost connection", slog.String("address", w.address), slog.Any("error", err))
+		_, err := w.stream.Recv()
+		if errors.Is(err, io.EOF) {
+			slog.Debug("remote: EndpointWriter stream completed", slog.String("address", w.address))
+		} else if err != nil {
+			slog.Error("remote: EndpointWriter lost connection", slog.String("address", w.address), slog.Any("error", err))
 		} else {
-			slog.Info("EndpointWriter disconnected from remote", slog.String("address", w.address))
+			slog.Info("remote: EndpointWriter disconnect from remote", slog.String("address", w.address))
 		}
-		terminated := &RemoteUnreachableEvent{Address: w.address}
-		w.system.Send(w.router, terminated)
+		w.system.Send(w.router, &RemoteUnreachableEvent{Address: w.address})
 	}()
 	return nil
 }
@@ -99,22 +102,20 @@ func (w *endpointWriter) stop() {
 	}
 }
 
-func (w *endpointWriter) send(msg *remoteDeliver) {
-	data, err := w.serializer.Serialize(msg.message)
+func (w *endpointWriter) sendMessage(msg *remoteDeliver) {
+	typeName, data, err := w.serializer.Serialize(msg.message)
 	if err != nil {
-		slog.Error("EndpointWriter failed to serialize message", slog.String("address", w.address), slog.Any("error", err), slog.Any("message", msg.message))
+		slog.Error("remote: EndpointWriter failed to serialize", slog.String("address", w.address), slog.Any("error", err), slog.Any("message", msg.message))
 		return
 	}
-	tname := w.serializer.TypeName(msg)
-
-	envelope := &Envelope{}
-	envelope.Target = msg.target
-	envelope.Sender = msg.target
-	envelope.TypeName = tname
-	envelope.Message = data
+	envelope := &Envelope{
+		Target:   msg.target,
+		Sender:   msg.sender,
+		TypeName: typeName,
+		Message:  data,
+	}
 	if err := w.stream.Send(envelope); err != nil {
-		terminated := &RemoteUnreachableEvent{Address: w.address}
-		w.system.Send(w.router, terminated)
-		slog.Debug("gRPC Failed to send", slog.String("address", w.address), slog.Any("error", err))
+		w.system.Send(w.router, &RemoteUnreachableEvent{Address: w.address})
+		slog.Debug("remote: EndpointWriter failed to send", slog.String("address", w.address), slog.Any("error", err))
 	}
 }

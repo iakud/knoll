@@ -35,6 +35,10 @@ func (c *Context) Send(pid *PID, message any) {
 	c.system.SendWithSender(pid, message, c.pid)
 }
 
+func (c *Context) Forward(pid *PID) {
+	c.system.SendWithSender(pid, c.envelope.Message, c.pid)
+}
+
 func (c *Context) Request(ctx context.Context, pid *PID, message any) (any, error) {
 	return c.system.Request(ctx, pid, message)
 }
