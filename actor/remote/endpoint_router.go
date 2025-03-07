@@ -2,6 +2,7 @@ package remote
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/iakud/knoll/actor"
 )
@@ -27,19 +28,10 @@ func (r *endpointRouter) Receive(ctx *actor.Context) {
 		r.stop()
 	case *remoteDeliver:
 		r.remoteDeliver(msg)
-	case RemoteUnreachableEvent:
-		// r.handleEndpointTerminated(msg)
+	case *RemoteUnreachableEvent:
 		r.removeEndpoint(msg.Address)
 	}
 }
-
-/*
-	func (r *endpointRouter) handleEndpointTerminated(msg RemoteUnreachableEvent) {
-		edpWriter := r.connections[msg.Address]
-		delete(r.connections, msg.Address)
-		slog.Debug("endpoint terminated", "remote", msg.Address, "pid", edpWriter)
-	}
-*/
 
 func (r *endpointRouter) removeEndpoint(address string) {
 	edpWriter, ok := r.connections[address]
@@ -47,6 +39,7 @@ func (r *endpointRouter) removeEndpoint(address string) {
 		return
 	}
 	delete(r.connections, address)
+	slog.Info("remote: EndpointRouter remove endpoint", "address", address)
 	r.system.Stop(edpWriter)
 }
 

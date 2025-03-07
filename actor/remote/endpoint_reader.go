@@ -19,7 +19,6 @@ func newEndpointReader(r *Remote) *endpointReader {
 }
 
 func (r *endpointReader) Receive(stream Remote_ReceiveServer) error {
-	defer slog.Info("remote: EndpointReader closed")
 	for {
 		envelope, err := stream.Recv()
 		if err != nil {

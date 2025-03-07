@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"math/rand"
 	"os"
+	"time"
 
 	"github.com/iakud/knoll/actor"
 	"github.com/iakud/knoll/actor/remote"
@@ -75,6 +76,10 @@ func main() {
 
 	s.SendWithSender(serverPID, &messages.Disconnect{}, clientPID)
 	s.Shutdown(context.Background(), clientPID)
-	r.Stop()
+	timer := time.AfterFunc(3*time.Second, func() {
+		r.Stop()
+	})
+	defer timer.Stop()
+	r.Shutdown()
 	slog.Info("client disconnected")
 }

@@ -11,23 +11,21 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-const kMaxRetryCount int = 3
-
 type endpointWriter struct {
 	address    string
 	system     *actor.System
-	router     *actor.PID
+	routerPID  *actor.PID
 	serializer Serializer
 
 	conn   *grpc.ClientConn
 	stream Remote_ReceiveClient
 }
 
-func newEndpointWriter(system *actor.System, router *actor.PID, address string) *endpointWriter {
+func newEndpointWriter(system *actor.System, routerPID *actor.PID, address string) *endpointWriter {
 	return &endpointWriter{
 		address:    address,
 		system:     system,
-		router:     router,
+		routerPID:  routerPID,
 		serializer: ProtoSerializer{},
 	}
 }
@@ -35,19 +33,21 @@ func newEndpointWriter(system *actor.System, router *actor.PID, address string) 
 func (w *endpointWriter) Receive(ctx *actor.Context) {
 	switch msg := ctx.Message().(type) {
 	case actor.Started:
-		w.start()
+		w.init()
 	case actor.Stopped:
-		w.stop()
+		w.closeConn()
 	case *remoteDeliver:
 		w.sendMessage(msg)
 	}
 }
 
-func (w *endpointWriter) start() {
+func (w *endpointWriter) init() {
 	now := time.Now()
+
+	const kMaxRetryCount int = 3
 	var tempDelay time.Duration
 	for i := 0; i < kMaxRetryCount; i++ {
-		if err := w.connect(); err != nil {
+		if err := w.initConnect(); err != nil {
 			if tempDelay == 0 {
 				tempDelay = 5 * time.Millisecond
 			} else {
@@ -60,10 +60,10 @@ func (w *endpointWriter) start() {
 		slog.Info("remote: EndpointWriter connected", slog.String("address", w.address), slog.Duration("cost", time.Since(now)))
 		return
 	}
-	w.system.Send(w.router, &RemoteUnreachableEvent{Address: w.address})
+	w.system.Send(w.routerPID, &RemoteUnreachableEvent{Address: w.address})
 }
 
-func (w *endpointWriter) connect() error {
+func (w *endpointWriter) initConnect() error {
 	conn, err := grpc.Dial(w.address, grpc.WithInsecure())
 	if err != nil {
 		return err
@@ -86,12 +86,13 @@ func (w *endpointWriter) connect() error {
 		} else {
 			slog.Info("remote: EndpointWriter disconnect from remote", slog.String("address", w.address))
 		}
-		w.system.Send(w.router, &RemoteUnreachableEvent{Address: w.address})
+		w.system.Send(w.routerPID, &RemoteUnreachableEvent{Address: w.address})
 	}()
 	return nil
 }
 
-func (w *endpointWriter) stop() {
+func (w *endpointWriter) closeConn() {
+	slog.Debug("remote: EndpointWriter closing connection", slog.String("address", w.address))
 	if w.stream != nil {
 		w.stream.CloseSend()
 		w.stream = nil
@@ -115,7 +116,7 @@ func (w *endpointWriter) sendMessage(msg *remoteDeliver) {
 		Message:  data,
 	}
 	if err := w.stream.Send(envelope); err != nil {
-		w.system.Send(w.router, &RemoteUnreachableEvent{Address: w.address})
+		w.system.Send(w.routerPID, &RemoteUnreachableEvent{Address: w.address})
 		slog.Debug("remote: EndpointWriter failed to send", slog.String("address", w.address), slog.Any("error", err))
 	}
 }

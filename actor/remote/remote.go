@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
-	"sync"
 
 	"github.com/iakud/knoll/actor"
 	"google.golang.org/grpc"
@@ -16,8 +15,6 @@ type Remote struct {
 	system    *actor.System
 	routerPID *actor.PID
 	server    *grpc.Server
-	stopCh    chan struct{} // Stop closes this channel to signal the remote to stop listening.
-	stopWg    *sync.WaitGroup
 }
 
 func New(address string) *Remote {
@@ -33,7 +30,6 @@ func (r *Remote) Start(system *actor.System) {
 	if err != nil {
 		panic(fmt.Errorf("remote: Failed to listen: %w", err))
 	}
-
 	r.routerPID = system.Spawn("router", newEndpointRouter(system))
 	r.server = grpc.NewServer()
 	RegisterRemoteServer(r.server, newEndpointReader(r))
@@ -42,13 +38,13 @@ func (r *Remote) Start(system *actor.System) {
 }
 
 func (r *Remote) Shutdown() {
-	r.system.Shutdown(context.Background(), r.routerPID)
 	r.server.GracefulStop()
+	r.system.Shutdown(context.Background(), r.routerPID)
 }
 
 func (r *Remote) Stop() {
-	r.system.Stop(r.routerPID)
 	r.server.Stop()
+	r.system.Stop(r.routerPID)
 }
 
 func (r *Remote) Send(pid *actor.PID, msg any, sender *actor.PID) {
