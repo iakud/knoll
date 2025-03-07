@@ -28,8 +28,8 @@ function printUsage() {
     $colorful && tput setaf 7
 }
 
-NEW_PATH=`../../privatePath.sh`
+NEW_PATH=`../../../privatePath.sh`
 [[ $? -ne 0 ]] && exit 1
 PATH="$NEW_PATH"
 
-protoc -I=. -I=../../local/protoc/include --go_out=paths=source_relative:. messages.proto
+protoc -I=. -I=../../../local/protoc/include --go_out=paths=source_relative:. messages.proto
