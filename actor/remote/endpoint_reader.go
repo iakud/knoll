@@ -4,16 +4,18 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+
+	"github.com/iakud/knoll/actor"
 )
 
 type endpointReader struct {
-	remote     *Remote
+	system     *actor.System
 	serializer Serializer
 }
 
-func newEndpointReader(r *Remote) *endpointReader {
+func newEndpointReader(system *actor.System) *endpointReader {
 	return &endpointReader{
-		remote:     r,
+		system:     system,
 		serializer: ProtoSerializer{},
 	}
 }
@@ -23,20 +25,20 @@ func (r *endpointReader) Receive(stream Remote_ReceiveServer) error {
 		envelope, err := stream.Recv()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				slog.Info("remote: EndpointReader stream closed")
+				r.system.Logger().Info("remote: Reader stream closed")
 				return nil
 			}
-			slog.Error("remote: EndpointReader failed to read", slog.Any("error", err))
+			r.system.Logger().Error("remote: Reader failed to read", slog.Any("error", err))
 			return err
 		}
 
 		message, err := r.serializer.Deserialize(envelope.TypeName, envelope.Message)
 		if err != nil {
-			slog.Error("remote: EndpointReader failed to deserialize", slog.Any("error", err))
+			r.system.Logger().Error("remote: Reader failed to deserialize", slog.Any("error", err))
 			return err
 		}
 
-		r.remote.system.SendLocal(envelope.Target, message, envelope.Sender)
+		r.system.SendLocal(envelope.Target, message, envelope.Sender)
 	}
 }
 

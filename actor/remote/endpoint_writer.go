@@ -53,11 +53,11 @@ func (w *endpointWriter) init() {
 			} else {
 				tempDelay *= 2
 			}
-			slog.Error("remote: EndpointWriter failed to connect", slog.String("address", w.address), slog.Any("error", err), slog.Int("retry", i))
+			w.system.Logger().Error("remote: Writer failed to connect", slog.String("address", w.address), slog.Any("error", err), slog.Int("retry", i))
 			time.Sleep(tempDelay)
 			continue
 		}
-		slog.Info("remote: EndpointWriter connected", slog.String("address", w.address), slog.Duration("cost", time.Since(now)))
+		w.system.Logger().Info("remote: Writer connected", slog.String("address", w.address), slog.Duration("cost", time.Since(now)))
 		return
 	}
 	w.system.Send(w.routerPID, &RemoteUnreachableEvent{Address: w.address})
@@ -72,7 +72,7 @@ func (w *endpointWriter) initConnect() error {
 	client := NewRemoteClient(conn)
 	stream, err := client.Receive(context.Background())
 	if err != nil {
-		slog.Error("remote: EndpointWriter failed to create receive stream", slog.String("address", w.address), slog.Any("error", err))
+		w.system.Logger().Error("remote: Writer failed to create receive stream", slog.String("address", w.address), slog.Any("error", err))
 		return err
 	}
 	w.stream = stream
@@ -80,11 +80,11 @@ func (w *endpointWriter) initConnect() error {
 	go func() {
 		_, err := w.stream.Recv()
 		if errors.Is(err, io.EOF) {
-			slog.Debug("remote: EndpointWriter stream completed", slog.String("address", w.address))
+			w.system.Logger().Debug("remote: Writer stream completed", slog.String("address", w.address))
 		} else if err != nil {
-			slog.Error("remote: EndpointWriter lost connection", slog.String("address", w.address), slog.Any("error", err))
+			w.system.Logger().Error("remote: Writer lost connection", slog.String("address", w.address), slog.Any("error", err))
 		} else {
-			slog.Info("remote: EndpointWriter disconnect from remote", slog.String("address", w.address))
+			w.system.Logger().Info("remote: Writer disconnect from remote", slog.String("address", w.address))
 		}
 		w.system.Send(w.routerPID, &RemoteUnreachableEvent{Address: w.address})
 	}()
@@ -92,7 +92,7 @@ func (w *endpointWriter) initConnect() error {
 }
 
 func (w *endpointWriter) closeConn() {
-	slog.Debug("remote: EndpointWriter closing connection", slog.String("address", w.address))
+	w.system.Logger().Debug("remote: Writer closing connection", slog.String("address", w.address))
 	if w.stream != nil {
 		w.stream.CloseSend()
 		w.stream = nil
@@ -106,7 +106,7 @@ func (w *endpointWriter) closeConn() {
 func (w *endpointWriter) sendMessage(msg *remoteDeliver) {
 	typeName, data, err := w.serializer.Serialize(msg.message)
 	if err != nil {
-		slog.Error("remote: EndpointWriter failed to serialize", slog.String("address", w.address), slog.Any("error", err), slog.Any("message", msg.message))
+		w.system.Logger().Error("remote: Writer failed to serialize", slog.String("address", w.address), slog.Any("error", err), slog.Any("message", msg.message))
 		return
 	}
 	envelope := &Envelope{
@@ -117,6 +117,6 @@ func (w *endpointWriter) sendMessage(msg *remoteDeliver) {
 	}
 	if err := w.stream.Send(envelope); err != nil {
 		w.system.Send(w.routerPID, &RemoteUnreachableEvent{Address: w.address})
-		slog.Debug("remote: EndpointWriter failed to send", slog.String("address", w.address), slog.Any("error", err))
+		w.system.Logger().Debug("remote: Writer failed to send", slog.String("address", w.address), slog.Any("error", err))
 	}
 }

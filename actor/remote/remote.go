@@ -24,17 +24,21 @@ func New(address string) *Remote {
 	return r
 }
 
-func (r *Remote) Start(system *actor.System) {
+func (r *Remote) Start(system *actor.System) error {
+	if r.system != nil {
+		return fmt.Errorf("remote already started")
+	}
 	r.system = system
 	ln, err := net.Listen("tcp", r.address)
 	if err != nil {
-		panic(fmt.Errorf("remote: Failed to listen: %w", err))
+		return fmt.Errorf("remote: Failed to listen: %w", err)
 	}
 	r.routerPID = system.Spawn("router", newEndpointRouter(system))
 	r.server = grpc.NewServer()
-	RegisterRemoteServer(r.server, newEndpointReader(r))
-	slog.Info("remote: Starting", slog.String("address", r.address))
+	RegisterRemoteServer(r.server, newEndpointReader(system))
+	r.system.Logger().Info("remote: Starting", slog.String("address", r.address))
 	go r.server.Serve(ln)
+	return nil
 }
 
 func (r *Remote) Shutdown() {

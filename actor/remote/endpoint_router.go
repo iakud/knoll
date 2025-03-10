@@ -39,7 +39,7 @@ func (r *endpointRouter) removeEndpoint(address string) {
 		return
 	}
 	delete(r.connections, address)
-	slog.Info("remote: EndpointRouter remove endpoint", "address", address)
+	r.system.Logger().Info("remote: Router remove endpoint", slog.String("address", address))
 	r.system.Stop(edpWriter)
 }
 
