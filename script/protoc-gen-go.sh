@@ -35,7 +35,7 @@ function printUsage() {
 #export http_proxy=http://127.0.0.1:1087
 #export https_proxy=http://127.0.0.1:1087
 
-PROTOC_GEN_GO_VERSION=1.36.5
+PROTOC_GEN_GO_VERSION=1.36.6
 PROTOC_GEN_GO_GRPC_VERSION=1.5.1
 
 hash protoc-gen-go 2>/dev/null || go install google.golang.org/protobuf/cmd/protoc-gen-go@v$PROTOC_GEN_GO_VERSION

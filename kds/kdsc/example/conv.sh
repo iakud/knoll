@@ -45,5 +45,6 @@ rm -rf kdspb
 mkdir -p kdspb
 
 protoc -I=./proto -I=../../../local/protoc/include \
+    --go_opt=default_api_level=API_OPAQUE \
 	--go_out=paths=source_relative:./kdspb \
 	`find proto -name "*.proto"`
