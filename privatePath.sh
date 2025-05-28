@@ -32,4 +32,5 @@ function printUsage() {
     $colorful && tput setaf 7
 }
 
-echo "`pwd`/local/bin:`pwd`/local/protoc/bin:$PATH"
+echo "`pwd`/local/bin:$PATH"
+#echo "`pwd`/local/bin:`pwd`/local/protoc/bin:$PATH"

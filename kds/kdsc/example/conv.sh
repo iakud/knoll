@@ -44,7 +44,9 @@ kdsc --go_out=kds --proto_out=proto *.kds
 rm -rf kdspb
 mkdir -p kdspb
 
-protoc -I=./proto -I=../../../local/protoc/include \
+protoc -I=./proto \
     --go_opt=default_api_level=API_OPAQUE \
 	--go_out=paths=source_relative:./kdspb \
 	`find proto -name "*.proto"`
+
+#-I=../../../local/protoc/include \

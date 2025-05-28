@@ -38,5 +38,10 @@ function printUsage() {
 PROTOC_GEN_GO_VERSION=1.36.6
 PROTOC_GEN_GO_GRPC_VERSION=1.5.1
 
+INSTALL_DIR="../local"
+
+rm -rf $INSTALL_DIR
+mkdir -p $INSTALL_DIR
+
 hash protoc-gen-go 2>/dev/null || go install google.golang.org/protobuf/cmd/protoc-gen-go@v$PROTOC_GEN_GO_VERSION
 hash protoc-gen-go-grpc 2>/dev/null || go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v$PROTOC_GEN_GO_GRPC_VERSION

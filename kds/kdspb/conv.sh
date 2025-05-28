@@ -33,8 +33,9 @@ NEWPATH=`../../privatePath.sh`
 PATH="$NEWPATH"
 
 protoc \
-	-I=. -I=../../local/protoc/include \
+	-I=. \
 	--go_out=paths=source_relative:. \
 	`find . -name "fieldmask.proto"`
 
+#-I=../../local/protoc/include \
 #--go_opt=default_api_level=API_OPAQUE \
