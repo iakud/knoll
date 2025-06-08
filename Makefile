@@ -4,9 +4,7 @@ kdsc:
 	GOBIN=$(shell pwd)/local/bin go install ./kds/kdsc
 
 protoc:
-	#script/protoc.sh
-	./script/brewInstall.sh protobuf
-	script/protoc-gen-go.sh
+	script/protoc.sh
 
 openjdk:
 	./script/brewInstall.sh openjdk@11

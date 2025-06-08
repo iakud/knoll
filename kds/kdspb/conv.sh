@@ -28,14 +28,11 @@ function printUsage() {
     $colorful && tput setaf 7
 }
 
-NEWPATH=`../../privatePath.sh`
-[[ $? -ne 0 ]] && exit 1
-PATH="$NEWPATH"
+source ../../var.sh
 
 protoc \
-	-I=. \
+	-I=. -I=$PROTOC_INCLUDE\
 	--go_out=paths=source_relative:. \
 	`find . -name "fieldmask.proto"`
 
-#-I=../../local/protoc/include \
 #--go_opt=default_api_level=API_OPAQUE \

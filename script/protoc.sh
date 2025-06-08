@@ -32,26 +32,44 @@ function printUsage() {
     $colorful && tput setaf 7
 }
 
+source ../var.sh
 
-#export http_proxy=http://127.0.0.1:1087
-#export https_proxy=http://127.0.0.1:1087
-
-INSTALL_DIR="../local"
 PROTOC_VERSION=30.2
 
-if [[ `$INSTALL_DIR/protoc/bin/protoc --version 2>&1 | grep -e "libprotoc $PROTOC_VERSION"` ]]; then
-	echo -e "[misc] \033[0;33mprotoc $PROTOC_VERSION\033[0;37m is already installed."
-	exit 0
+if [[ `$PROTOC_BIN/protoc --version 2>&1 | grep -e "libprotoc $PROTOC_VERSION"` ]]; then
+    echo -e "[misc] \033[0;33mprotoc $PROTOC_VERSION\033[0;37m is already installed."
+    exit 0
 fi
 
-rm -rf $INSTALL_DIR"/protoc"
-mkdir -p $INSTALL_DIR
+case $(uname -m) in # 检测系统架构
+    x86_64) ARCH="x86_64" ;;
+    aarch64) ARCH="aarch_64" ;;
+    arm64) ARCH="aarch_64" ;;   # Mac M1/M2
+    *) ARCH="x86_64" ;;         # 默认x86_64
+esac
+
+case $(uname -s) in # 检测操作系统
+    Linux) OS="linux" ;;
+    Darwin) OS="osx" ;;
+    *) echo "Unsupported OS"; exit 1 ;;
+esac
+
+PROTOC_FILE="protoc-${PROTOC_VERSION}-${OS}-${ARCH}.zip"
 
 echo -e "[misc] Start to install \033[0;33mprotoc $PROTOC_VERSION\033[0;37m..."
-wget -c	"https://github.com/protocolbuffers/protobuf/releases/download/v$PROTOC_VERSION/protoc-$PROTOC_VERSION-osx-aarch_64.zip"
+wget -c "https://github.com/protocolbuffers/protobuf/releases/download/v$PROTOC_VERSION/$PROTOC_FILE"
 [[ $? -ne 0 ]] && exit 1
 
-unzip "protoc-$PROTOC_VERSION-osx-aarch_64.zip" -d $INSTALL_DIR"/protoc"
+rm -rf $PROTOC_PATH
+unzip $PROTOC_FILE -d $PROTOC_PATH
 [[ $? -ne 0 ]] && exit 1
 
-rm "protoc-$PROTOC_VERSION-osx-aarch_64.zip"
+rm -rf $PROTOC_FILE
+
+echo -e "[misc] Start to install \033[0;33mprotoc-gen-go\033[0;37m..."
+rm -rf $LOCAL_BIN/protoc-gen-go
+GOBIN=$LOCAL_BIN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+
+echo -e "[misc] Start to install \033[0;33mprotoc-gen-go-grpc\033[0;37m..."
+rm -rf $LOCAL_BIN/protoc-gen-go-grpc
+GOBIN=$LOCAL_BIN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
