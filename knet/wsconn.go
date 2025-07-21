@@ -21,6 +21,8 @@ type WSConn struct {
 	mutex       sync.Mutex
 	cond        *sync.Cond
 	closed      bool
+
+	Userdata interface{}
 }
 
 func newWSConn(wsconn *websocket.Conn) *WSConn {

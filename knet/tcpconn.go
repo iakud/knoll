@@ -40,7 +40,7 @@ func (c *TCPConn) serve(handler TCPHandler, codec Codec) {
 			const size = 64 << 10
 			buf := make([]byte, size)
 			buf = buf[:runtime.Stack(buf, false)]
-			log.Printf("network: panic serving %v: %v\n%s", c.RemoteAddr(), err, buf)
+			log.Printf("knet: panic serving %v: %v\n%s", c.RemoteAddr(), err, buf)
 			c.Close()
 		}
 	}()
@@ -78,7 +78,7 @@ func (c *TCPConn) backgroundWrite(codec Codec) {
 			const size = 64 << 10
 			buf := make([]byte, size)
 			buf = buf[:runtime.Stack(buf, false)]
-			log.Printf("network: panic serving %v: %v\n%s", c.RemoteAddr(), err, buf)
+			log.Printf("knet: panic serving %v: %v\n%s", c.RemoteAddr(), err, buf)
 			c.Close()
 		}
 	}()

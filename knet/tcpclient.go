@@ -71,7 +71,7 @@ func (c *TCPClient) DialAndServe(handler TCPHandler, codec Codec) error {
 			if max := 1 * time.Minute; tempDelay > max {
 				tempDelay = max
 			}
-			log.Printf("network: TCPClient dial error: %v; retrying in %v", err, tempDelay)
+			log.Printf("knet: TCPClient dial error: %v; retrying in %v", err, tempDelay)
 			time.Sleep(tempDelay)
 			continue
 		}
