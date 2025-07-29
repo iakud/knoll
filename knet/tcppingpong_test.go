@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iakud/knoll/krpc/knet"
+	"github.com/iakud/knoll/knet"
 )
 
 const (

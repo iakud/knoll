@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/iakud/knoll/krpc/knet"
+	"github.com/iakud/knoll/knet"
 )
 
 func TestCodec(t *testing.T) {

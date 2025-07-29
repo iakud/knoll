@@ -4,7 +4,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/iakud/knoll/krpc/knet"
+	"github.com/iakud/knoll/knet"
 )
 
 type wsEchoServer struct {
