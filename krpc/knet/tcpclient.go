@@ -13,18 +13,22 @@ var (
 )
 
 type TCPClient struct {
-	addr  string
-	retry bool
+	addr    string
+	handler TCPHandler
+	codec   Codec
+	retry   bool
 
 	mutex  sync.Mutex
 	conn   *TCPConn
 	closed bool
 }
 
-func NewTCPClient(addr string) *TCPClient {
+func NewTCPClient(addr string, handler TCPHandler, codec Codec) *TCPClient {
 	client := &TCPClient{
-		addr:  addr,
-		retry: false,
+		addr:    addr,
+		handler: handler,
+		codec:   codec,
+		retry:   false,
 	}
 	return client
 }
@@ -40,14 +44,16 @@ func dialTCP(addr string) (*net.TCPConn, error) {
 	return net.DialTCP("tcp", nil, raddr)
 }
 
-func (c *TCPClient) DialAndServe(handler TCPHandler, codec Codec) error {
+func (c *TCPClient) DialAndServe() error {
 	if c.isClosed() {
 		return ErrClientClosed
 	}
 
+	handler := c.handler
 	if handler == nil {
 		handler = DefaultTCPHandler
 	}
+	codec := c.codec
 	if codec == nil {
 		codec = DefaultCodec
 	}

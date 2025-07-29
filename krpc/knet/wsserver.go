@@ -15,19 +15,19 @@ var (
 
 type WSServer struct {
 	Handler WSHandler
-	server  websocket.Server
+	server  *http.Server
 
 	mutex  sync.Mutex
 	conns  map[*WSConn]struct{}
 	closed bool
 }
 
-func NewWSServer(handler WSHandler) *WSServer {
+func NewWSServer(addr string, handler WSHandler) *WSServer {
 	server := &WSServer{
 		Handler: handler,
 		conns:   make(map[*WSConn]struct{}),
 	}
-	server.server = websocket.Server{Handler: server.serveWebSocket, Handshake: checkOrigin}
+	server.server = &http.Server{Addr: addr, Handler: websocket.Server{Handler: server.serveWebSocket, Handshake: checkOrigin}}
 	return server
 }
 
@@ -39,8 +39,8 @@ func checkOrigin(config *websocket.Config, req *http.Request) (err error) {
 	return err
 }
 
-func (s *WSServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	s.server.ServeHTTP(w, req)
+func (s *WSServer) ListenAndServe() error {
+	return s.server.ListenAndServe()
 }
 
 func (s *WSServer) serveWebSocket(wsconn *websocket.Conn) {
@@ -86,6 +86,7 @@ func (s *WSServer) Close() {
 		return
 	}
 	s.closed = true
+	s.server.Close()
 	for conn := range s.conns {
 		conn.Close()
 		delete(s.conns, conn)

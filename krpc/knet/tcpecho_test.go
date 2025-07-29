@@ -4,7 +4,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/iakud/knoll/knet"
+	"github.com/iakud/knoll/krpc/knet"
 )
 
 type echoServer struct {
@@ -12,14 +12,13 @@ type echoServer struct {
 }
 
 func newEchoServer(addr string) *echoServer {
-	srv := &echoServer{
-		server: knet.NewTCPServer(addr),
-	}
+	srv := &echoServer{}
+	srv.server = knet.NewTCPServer(addr, srv, nil)
 	return srv
 }
 
-func (srv *echoServer) ListenAndServe() {
-	if err := srv.server.ListenAndServe(srv, nil); err != nil {
+func (s *echoServer) ListenAndServe() {
+	if err := s.server.ListenAndServe(); err != nil {
 		log.Println(err)
 	}
 }
@@ -49,15 +48,14 @@ type echoClient struct {
 }
 
 func newEchoClient(addr string) *echoClient {
-	echoClient := &echoClient{
-		client: knet.NewTCPClient(addr),
-	}
-	return echoClient
+	client := &echoClient{}
+	client.client = knet.NewTCPClient(addr, client, nil)
+	return client
 }
 
 func (c *echoClient) ConnectAndServe() {
 	c.client.EnableRetry() // 启用retry
-	if err := c.client.DialAndServe(c, nil); err != nil {
+	if err := c.client.DialAndServe(); err != nil {
 		log.Println(err)
 	}
 }

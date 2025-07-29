@@ -2,10 +2,9 @@ package knet_test
 
 import (
 	"log"
-	"net/http"
 	"testing"
 
-	"github.com/iakud/knoll/knet"
+	"github.com/iakud/knoll/krpc/knet"
 )
 
 type wsEchoServer struct {
@@ -59,9 +58,7 @@ func (c *wsEchoClient) Receive(connection *knet.WSConn, data []byte) {
 
 func TestWSEcho(t *testing.T) {
 	log.Println("test start")
-	server := newWSEchoServer()
-	wsServer := knet.NewWSServer(server)
-	httpServer := &http.Server{Addr: "localhost:8000"}
+	wsServer := knet.NewWSServer("localhost:8000", newWSEchoServer())
 	go func() {
 		client := newWSEchoClient()
 		wsClient := knet.NewWSClient("ws://localhost:8000", client)
@@ -71,9 +68,7 @@ func TestWSEcho(t *testing.T) {
 			log.Println(err)
 		}
 		wsServer.Close()
-		httpServer.Close()
+		wsServer.Close()
 	}()
-
-	http.Handle("/", wsServer)
-	httpServer.ListenAndServe()
+	wsServer.ListenAndServe()
 }

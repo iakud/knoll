@@ -13,7 +13,9 @@ var (
 )
 
 type TCPServer struct {
-	addr string
+	addr    string
+	handler TCPHandler
+	codec   Codec
 
 	mutex    sync.Mutex
 	listener *net.TCPListener
@@ -21,9 +23,11 @@ type TCPServer struct {
 	closed   bool
 }
 
-func NewTCPServer(addr string) *TCPServer {
+func NewTCPServer(addr string, handler TCPHandler, codec Codec) *TCPServer {
 	server := &TCPServer{
-		addr: addr,
+		addr:    addr,
+		handler: handler,
+		codec:   codec,
 	}
 	return server
 }
@@ -39,7 +43,7 @@ func listenTCP(addr string) (*net.TCPListener, error) {
 	return net.ListenTCP("tcp", laddr)
 }
 
-func (s *TCPServer) ListenAndServe(handler TCPHandler, codec Codec) error {
+func (s *TCPServer) ListenAndServe() error {
 	if s.isClosed() {
 		return ErrServerClosed
 	}
@@ -54,9 +58,11 @@ func (s *TCPServer) ListenAndServe(handler TCPHandler, codec Codec) error {
 		return err
 	}
 
+	handler := s.handler
 	if handler == nil {
 		handler = DefaultTCPHandler
 	}
+	codec := s.codec
 	if codec == nil {
 		codec = DefaultCodec
 	}
@@ -137,21 +143,22 @@ func (s *TCPServer) serveConn(conn *TCPConn, handler TCPHandler, codec Codec) {
 	delete(s.conns, conn)
 }
 
-func (s *TCPServer) Close() {
+func (s *TCPServer) Close() error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	if s.closed {
-		return
+		return nil
 	}
 	s.closed = true
 	if s.listener == nil {
-		return
+		return nil
 	}
-	s.listener.Close()
+	err := s.listener.Close()
 	s.listener = nil
 	for conn := range s.conns {
 		conn.Close()
 		delete(s.conns, conn)
 	}
+	return err
 }

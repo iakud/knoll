@@ -1,12 +1,12 @@
 package knet_test
 
 import (
-	"log/slog"
+	"log"
 	"sync/atomic"
 	"testing"
 	"time"
 
-	"github.com/iakud/knoll/knet"
+	"github.com/iakud/knoll/krpc/knet"
 )
 
 const (
@@ -21,32 +21,31 @@ type pingpongServer struct {
 }
 
 func newPingpongServer(addr string) *pingpongServer {
-	srv := &pingpongServer{
-		server: knet.NewTCPServer(addr),
-	}
-	return srv
+	server := &pingpongServer{}
+	server.server = knet.NewTCPServer(addr, server, nil)
+	return server
 }
 
-func (srv *pingpongServer) ListenAndServe() {
-	if err := srv.server.ListenAndServe(srv, nil); err != nil {
+func (s *pingpongServer) ListenAndServe() {
+	if err := s.server.ListenAndServe(); err != nil {
 		if err == knet.ErrServerClosed {
 			return
 		}
-		slog.Info(err.Error())
+		log.Println(err.Error())
 	}
 }
 
-func (srv *pingpongServer) Close() {
-	srv.server.Close()
+func (s *pingpongServer) Close() {
+	s.server.Close()
 }
 
-func (srv *pingpongServer) Connect(connection *knet.TCPConn, connected bool) {
+func (s *pingpongServer) Connect(connection *knet.TCPConn, connected bool) {
 	if connected {
 		connection.SetNoDelay(true)
 	}
 }
 
-func (srv *pingpongServer) Receive(connection *knet.TCPConn, b []byte) {
+func (s *pingpongServer) Receive(connection *knet.TCPConn, b []byte) {
 	connection.Send(b)
 }
 
@@ -73,7 +72,7 @@ func newPingpongClient(addr string) *pingpongClient {
 	}
 	clients := make([]*knet.TCPClient, kClientCount)
 	for i := 0; i < kClientCount; i++ {
-		client := knet.NewTCPClient(addr)
+		client := knet.NewTCPClient(addr, c, nil)
 		go c.serveClient(client)
 		clients[i] = client
 	}
@@ -84,11 +83,11 @@ func newPingpongClient(addr string) *pingpongClient {
 
 func (c *pingpongClient) serveClient(client *knet.TCPClient) {
 	client.EnableRetry() // 启用retry
-	if err := client.DialAndServe(c, nil); err != nil {
+	if err := client.DialAndServe(); err != nil {
 		if err == knet.ErrClientClosed {
 			return
 		}
-		slog.Error(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -105,18 +104,19 @@ func (c *pingpongClient) Connect(connection *knet.TCPConn, connected bool) {
 		if atomic.AddInt32(&c.nConnected, 1) != kClientCount {
 			return
 		}
-		slog.Info("all connected")
+		log.Println("all connected")
 	} else {
 		if atomic.AddInt32(&c.nConnected, -1) != 0 {
 			return
 		}
 		bytesRead := atomic.LoadInt64(&c.bytesRead)
 		messagesRead := atomic.LoadInt64(&c.messagesRead)
-		slog.Info("", "total bytes read", bytesRead)
-		slog.Info("", "total messages read", messagesRead)
-		slog.Info("", "average message size", bytesRead/messagesRead)
+
+		log.Println("total bytes read", bytesRead)
+		log.Println("total messages read", messagesRead)
+		log.Println("average message size", bytesRead/messagesRead)
 		timeout := int64(kTimeout / time.Second)
-		slog.Info("", "MiB/s throughput", bytesRead/(timeout*1024*1024))
+		log.Println("MiB/s throughput", bytesRead/(timeout*1024*1024))
 		close(c.done)
 	}
 }
@@ -132,9 +132,10 @@ func (c *pingpongClient) Done() {
 }
 
 func TestPingpong(t *testing.T) {
-	srv := newPingpongServer("localhost:8000")
-	go srv.ListenAndServe()
-	defer srv.Close()
-	c := newPingpongClient("localhost:8000")
-	c.Done()
+	server := newPingpongServer("localhost:8000")
+	go server.ListenAndServe()
+	defer server.Close()
+	time.Sleep(time.Second)
+	client := newPingpongClient("localhost:8000")
+	client.Done()
 }

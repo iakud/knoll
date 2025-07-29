@@ -2,7 +2,7 @@ package knet
 
 type TCPHandler interface {
 	Connect(conn *TCPConn, connected bool)
-	Receive(conn *TCPConn, buf []byte)
+	Receive(conn *TCPConn, data []byte)
 }
 
 type defaultTCPHandler struct {
