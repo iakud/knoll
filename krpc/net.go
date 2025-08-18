@@ -18,6 +18,9 @@ type Conn interface {
 	Close() error
 	Send(msg Msg) error
 	Reply(reqId uint32, msg Msg) error
+
+	SetUserdata(userdata any)
+	GetUserdata() any
 }
 
 type Handler interface {

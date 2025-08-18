@@ -11,7 +11,7 @@ type wsConn struct {
 	wsconn   *knet.WSConn
 	hash     uint64
 	timer    *time.Timer
-	Userdata any
+	userdata any
 }
 
 func newWSConn(id uint64, wsconn *knet.WSConn, hash uint64) *wsConn {
@@ -58,4 +58,12 @@ func (c *wsConn) ReplyOK(reqId uint32) error {
 
 func (c *wsConn) ReplyError(reqId uint32, err error) error {
 	return nil
+}
+
+func (c *wsConn) SetUserdata(userdata any) {
+	c.userdata = userdata
+}
+
+func (c *wsConn) GetUserdata() any {
+	return c.userdata
 }

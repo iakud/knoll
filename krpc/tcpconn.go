@@ -11,7 +11,7 @@ type tcpConn struct {
 	tcpconn  *knet.TCPConn
 	hash     uint64
 	timer    *time.Timer
-	Userdata any
+	userdata any
 }
 
 func newTCPConn(id uint64, tcpconn *knet.TCPConn, hash uint64) *tcpConn {
@@ -58,4 +58,12 @@ func (c *tcpConn) ReplyOK(reqId uint32) error {
 
 func (c *tcpConn) ReplyError(reqId uint32, err error) error {
 	return nil
+}
+
+func (c *tcpConn) SetUserdata(userdata any) {
+	c.userdata = userdata
+}
+
+func (c *tcpConn) GetUserdata() any {
+	return c.userdata
 }
