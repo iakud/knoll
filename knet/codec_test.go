@@ -10,13 +10,13 @@ import (
 
 func TestCodec(t *testing.T) {
 	buffer := bytes.NewBuffer(nil)
-	var c knet.Codec = &knet.StdCodec{}
+	var codec knet.Codec = knet.StdCodec
 	message := "hello"
-	if err := c.Write(buffer, []byte(message)); err != nil {
+	if err := codec.Write(buffer, []byte(message)); err != nil {
 		log.Fatalln(err)
 	}
 	log.Println("codec write", message)
-	b, err := c.Read(buffer)
+	b, err := codec.Read(buffer)
 	if err != nil {
 		log.Fatalln(err)
 	}

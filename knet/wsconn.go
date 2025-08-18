@@ -138,9 +138,11 @@ func (c *WSConn) Shutdown() {
 	c.stopBackgroundWrite()
 }
 
-func (c *WSConn) Close() {
-	c.wsconn.Close()
+func (c *WSConn) Close() error {
+	return c.wsconn.Close()
 }
 func (c *WSConn) CloseWithTimeout(timeout time.Duration) {
-	time.AfterFunc(timeout, c.Close)
+	time.AfterFunc(timeout, func() {
+		c.Close()
+	})
 }

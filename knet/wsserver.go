@@ -78,17 +78,18 @@ func (s *WSServer) serveConn(conn *WSConn, handler WSHandler) {
 	delete(s.conns, conn)
 }
 
-func (s *WSServer) Close() {
+func (s *WSServer) Close() error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	if s.closed {
-		return
+		return nil
 	}
 	s.closed = true
-	s.server.Close()
+	err := s.server.Close()
 	for conn := range s.conns {
 		conn.Close()
 		delete(s.conns, conn)
 	}
+	return err
 }

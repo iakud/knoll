@@ -171,10 +171,12 @@ func (c *TCPConn) Shutdown() {
 	c.stopBackgroundWrite() // stop write
 }
 
-func (c *TCPConn) Close() {
-	c.tcpconn.Close()
+func (c *TCPConn) Close() error {
+	return c.tcpconn.Close()
 }
 
 func (c *TCPConn) CloseWithTimeout(timeout time.Duration) {
-	time.AfterFunc(timeout, c.Close)
+	time.AfterFunc(timeout, func() {
+		c.Close()
+	})
 }

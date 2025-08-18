@@ -65,11 +65,3 @@ unzip $PROTOC_FILE -d $PROTOC_PATH
 [[ $? -ne 0 ]] && exit 1
 
 rm -rf $PROTOC_FILE
-
-echo -e "[misc] Start to install \033[0;33mprotoc-gen-go\033[0;37m..."
-rm -rf $LOCAL_BIN/protoc-gen-go
-GOBIN=$LOCAL_BIN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-
-echo -e "[misc] Start to install \033[0;33mprotoc-gen-go-grpc\033[0;37m..."
-rm -rf $LOCAL_BIN/protoc-gen-go-grpc
-GOBIN=$LOCAL_BIN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest

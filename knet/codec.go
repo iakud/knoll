@@ -21,8 +21,6 @@ type CodecWriter interface {
 
 type defaultCodec struct{}
 
-var DefaultCodec *defaultCodec = &defaultCodec{}
-
 func (*defaultCodec) Read(r io.Reader) ([]byte, error) {
 	rBuf := bufio.NewReader(r)
 	if _, err := rBuf.Peek(1); err != nil {
@@ -42,9 +40,11 @@ func (*defaultCodec) Write(w io.Writer, b []byte) error {
 	return nil
 }
 
-type StdCodec struct{}
+var DefaultCodec *defaultCodec = &defaultCodec{}
 
-func (c *StdCodec) Read(r io.Reader) ([]byte, error) {
+type stdCodec struct{}
+
+func (c *stdCodec) Read(r io.Reader) ([]byte, error) {
 	h := make([]byte, 2)
 	if _, err := io.ReadFull(r, h); err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (c *StdCodec) Read(r io.Reader) ([]byte, error) {
 	return b, nil
 }
 
-func (c *StdCodec) Write(w io.Writer, b []byte) error {
+func (c *stdCodec) Write(w io.Writer, b []byte) error {
 	h := make([]byte, 2)
 	binary.BigEndian.PutUint16(h, uint16(len(b)))
 	if _, err := w.Write(h); err != nil {
@@ -68,3 +68,5 @@ func (c *StdCodec) Write(w io.Writer, b []byte) error {
 	}
 	return nil
 }
+
+var StdCodec *stdCodec = &stdCodec{}

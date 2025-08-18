@@ -1,6 +1,6 @@
-PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-LOCAL_PATH=$PWD/local
+LOCAL_PATH=$ROOT_PATH/local
 LOCAL_BIN=$LOCAL_PATH/bin
 LOCAL_INCLUDE=$LOCAL_PATH/include
 

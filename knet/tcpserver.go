@@ -69,7 +69,7 @@ func (s *TCPServer) ListenAndServe() error {
 
 	var tempDelay time.Duration // how long to sleep on accept failure
 	for {
-		wsconn, err := ln.AcceptTCP()
+		tcpconn, err := ln.AcceptTCP()
 		if err != nil {
 			if s.isClosed() {
 				return ErrServerClosed
@@ -92,7 +92,7 @@ func (s *TCPServer) ListenAndServe() error {
 		}
 		tempDelay = 0
 
-		conn := newTCPConn(wsconn)
+		conn := newTCPConn(tcpconn)
 		if err := s.newConn(conn); err != nil {
 			conn.Close() // close
 			return err

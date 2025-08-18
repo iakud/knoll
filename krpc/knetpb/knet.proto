@@ -1,0 +1,39 @@
+edition = "2023";
+
+package knetpb;
+
+option go_package="github.com/iakud/krpc/knetpb";
+
+enum Msg {
+	INVALID = 0;
+    OK = 1;
+	ERROR = 2;
+	HANDSHAKE = 3;
+	PING = 4;
+	PONG = 5;
+	KICKED_OUT_NTF = 6;
+
+	RESERVED_END = 100;
+}
+
+message Error {
+	int32 Code = 1;
+	string Msg = 2;
+}
+
+message HandshakeRequest {
+	uint64 Hash = 1;
+}
+
+message HandshakeReply {
+}
+
+message Ping {
+}
+
+message Pong {
+}
+
+message KickedOutNotify {
+	string Message = 1;
+}

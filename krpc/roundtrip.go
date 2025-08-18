@@ -10,12 +10,14 @@ import (
 type RoundTrip struct {
 	reqId atomic.Uint32
 
-	lock     sync.Mutex
+	locker   sync.Mutex
 	requests map[uint32]chan Msg
 }
 
 func NewRoundTrip() *RoundTrip {
-	r := &RoundTrip{}
+	r := &RoundTrip{
+		requests: make(map[uint32]chan Msg),
+	}
 	return r
 }
 
@@ -25,14 +27,14 @@ func (r *RoundTrip) Request(ctx context.Context, conn Conn, msg Msg) (Msg, error
 	msg.setReqId(reqId)
 
 	rc := make(chan Msg, 1)
-	r.lock.Lock()
+	r.locker.Lock()
 	r.requests[reqId] = rc
-	r.lock.Unlock()
+	r.locker.Unlock()
 
-	if err := Send(conn, msg); err != nil {
-		r.lock.Lock()
+	if err := conn.Send(msg); err != nil {
+		r.locker.Lock()
 		delete(r.requests, reqId)
-		r.lock.Unlock()
+		r.locker.Unlock()
 		return nil, err
 	}
 
@@ -40,22 +42,22 @@ func (r *RoundTrip) Request(ctx context.Context, conn Conn, msg Msg) (Msg, error
 	case reply := <-rc:
 		return reply, nil
 	case <-ctx.Done():
-		r.lock.Lock()
+		r.locker.Lock()
 		delete(r.requests, reqId)
-		r.lock.Unlock()
+		r.locker.Unlock()
 		return nil, ctx.Err()
 	}
 }
 
 func (r *RoundTrip) HandleReply(msg Msg) error {
-	r.lock.Lock()
+	r.locker.Lock()
 	rc, ok := r.requests[msg.ReqId()]
 	if !ok {
-		r.lock.Unlock()
+		r.locker.Unlock()
 		return errors.New("invalid reply detected")
 	}
 	delete(r.requests, msg.ReqId())
-	r.lock.Unlock()
+	r.locker.Unlock()
 	rc <- msg
 	return nil
 }

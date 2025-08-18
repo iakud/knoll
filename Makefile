@@ -3,7 +3,8 @@
 kdsc:
 	GOBIN=$(shell pwd)/local/bin go install ./kds/kdsc
 
-protoc:
+tool:
+	GOBIN=$(shell pwd)/local/bin go install tool
 	script/protoc.sh
 
 openjdk:

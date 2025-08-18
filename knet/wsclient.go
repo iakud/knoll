@@ -125,17 +125,16 @@ func (c *WSClient) GetConn() *WSConn {
 	return c.conn
 }
 
-func (c *WSClient) Close() {
+func (c *WSClient) Close() error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
 	if c.closed {
-		return
+		return nil
 	}
 	c.closed = true
 	if c.conn == nil {
-		return
+		return nil
 	}
-	c.conn.Close()
-	c.conn = nil
+	return c.conn.Close()
 }
