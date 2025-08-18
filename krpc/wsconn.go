@@ -26,6 +26,10 @@ func (c *wsConn) Hash() uint64 {
 	return c.hash
 }
 
+func (c *wsConn) Close() error {
+	return c.wsconn.Close()
+}
+
 func (c *wsConn) Send(msg Msg) error {
 	data, err := Marshal(msg)
 	if err != nil {

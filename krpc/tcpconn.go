@@ -26,6 +26,10 @@ func (c *tcpConn) Hash() uint64 {
 	return c.hash
 }
 
+func (c *tcpConn) Close() error {
+	return c.tcpconn.Close()
+}
+
 func (c *tcpConn) Send(msg Msg) error {
 	data, err := Marshal(msg)
 	if err != nil {

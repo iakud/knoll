@@ -15,6 +15,7 @@ type Client interface {
 type Conn interface {
 	Id() uint64
 	Hash() uint64
+	Close() error
 	Send(msg Msg) error
 	Reply(reqId uint32, msg Msg) error
 }
