@@ -63,7 +63,7 @@ func (s *wsServer) Connect(wsconn *knet.WSConn, connected bool) {
 }
 
 func (s *wsServer) Receive(wsconn *knet.WSConn, data []byte) {
-	var msg ClientMsg
+	var msg ClientMessage
 	if err := Unmarshal(data, &msg); err != nil {
 		wsconn.Close()
 		return
@@ -85,7 +85,7 @@ func (s *wsServer) Receive(wsconn *knet.WSConn, data []byte) {
 	s.handler.Receive(conn, &msg)
 }
 
-func (s *wsServer) handleMsg(wsconn *knet.WSConn, msg *ClientMsg) error {
+func (s *wsServer) handleMsg(wsconn *knet.WSConn, msg *ClientMessage) error {
 	switch msg.MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
 		return s.handleHandshake(wsconn, msg)
@@ -94,7 +94,7 @@ func (s *wsServer) handleMsg(wsconn *knet.WSConn, msg *ClientMsg) error {
 	}
 }
 
-func (s *wsServer) handleHandshake(wsconn *knet.WSConn, msg *ClientMsg) error {
+func (s *wsServer) handleHandshake(wsconn *knet.WSConn, msg *ClientMessage) error {
 	var req knetpb.HandshakeRequest
 	if err := proto.Unmarshal(msg.Payload(), &req); err != nil {
 		return err
@@ -126,7 +126,7 @@ func (s *wsServer) handshakeReply(wsconn *knet.WSConn) error {
 	if err != nil {
 		return err
 	}
-	var msg ClientMsg
+	var msg ClientMessage
 	msg.SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
 	msg.SetPayload(payload)
 

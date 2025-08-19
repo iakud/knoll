@@ -1,8 +1,6 @@
 package krpc
 
 import (
-	"time"
-
 	"github.com/iakud/knoll/knet"
 )
 
@@ -10,7 +8,6 @@ type wsConn struct {
 	id       uint64
 	wsconn   *knet.WSConn
 	hash     uint64
-	timer    *time.Timer
 	userdata any
 }
 
@@ -30,7 +27,7 @@ func (c *wsConn) Close() error {
 	return c.wsconn.Close()
 }
 
-func (c *wsConn) Send(msg Msg) error {
+func (c *wsConn) Send(msg Message) error {
 	data, err := Marshal(msg)
 	if err != nil {
 		return err
@@ -38,18 +35,10 @@ func (c *wsConn) Send(msg Msg) error {
 	return c.wsconn.Send(data)
 }
 
-func (c *wsConn) SendOK() error {
-	return nil
-}
-
-func (c *wsConn) SendError(err error) error {
-	return nil
-}
-
-func (c *wsConn) Reply(reqId uint32, msg Msg) error {
-	msg.setFlagReply()
-	msg.setReqId(reqId)
-	return c.Send(msg)
+func (c *wsConn) Reply(req Message, reply Message) error {
+	reply.setFlagReply()
+	reply.setReqId(req.ReqId())
+	return c.Send(reply)
 }
 
 func (c *wsConn) ReplyOK(reqId uint32) error {

@@ -60,7 +60,7 @@ func (c *wsClient) Connect(wsconn *knet.WSConn, connected bool) {
 }
 
 func (c *wsClient) Receive(wsconn *knet.WSConn, data []byte) {
-	var msg ClientMsg
+	var msg ClientMessage
 	if err := Unmarshal(data, &msg); err != nil {
 		wsconn.Close()
 		return
@@ -82,7 +82,7 @@ func (c *wsClient) Receive(wsconn *knet.WSConn, data []byte) {
 	c.handler.Receive(conn, &msg)
 }
 
-func (c *wsClient) handleMsg(wsconn *knet.WSConn, msg *ClientMsg) error {
+func (c *wsClient) handleMsg(wsconn *knet.WSConn, msg *ClientMessage) error {
 	switch msg.MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
 		return c.handleHandshake(wsconn, msg)
@@ -99,7 +99,7 @@ func (c *wsClient) handshake(wsconn *knet.WSConn) {
 		wsconn.Close()
 		return
 	}
-	var msg ClientMsg
+	var msg ClientMessage
 	msg.SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
 	msg.SetPayload(payload)
 	data, err := Marshal(&msg)
@@ -110,7 +110,7 @@ func (c *wsClient) handshake(wsconn *knet.WSConn) {
 	wsconn.Send(data)
 }
 
-func (c *wsClient) handleHandshake(wsconn *knet.WSConn, msg *ClientMsg) error {
+func (c *wsClient) handleHandshake(wsconn *knet.WSConn, msg *ClientMessage) error {
 	if wsconn.Userdata != nil {
 		return errors.New("already handshake")
 	}

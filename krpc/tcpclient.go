@@ -60,7 +60,7 @@ func (c *tcpClient) Connect(tcpconn *knet.TCPConn, connected bool) {
 }
 
 func (c *tcpClient) Receive(tcpconn *knet.TCPConn, data []byte) {
-	var msg InternalMsg
+	var msg BackendMessage
 	if err := Unmarshal(data, &msg); err != nil {
 		tcpconn.Close()
 		return
@@ -82,7 +82,7 @@ func (c *tcpClient) Receive(tcpconn *knet.TCPConn, data []byte) {
 	c.handler.Receive(conn, &msg)
 }
 
-func (c *tcpClient) handleMsg(tcpconn *knet.TCPConn, msg *InternalMsg) error {
+func (c *tcpClient) handleMsg(tcpconn *knet.TCPConn, msg *BackendMessage) error {
 	switch msg.MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
 		return c.handleHandshake(tcpconn, msg)
@@ -99,7 +99,7 @@ func (c *tcpClient) handshake(tcpconn *knet.TCPConn) {
 		tcpconn.Close()
 		return
 	}
-	var msg InternalMsg
+	var msg BackendMessage
 	msg.SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
 	msg.SetPayload(payload)
 	data, err := Marshal(&msg)
@@ -110,7 +110,7 @@ func (c *tcpClient) handshake(tcpconn *knet.TCPConn) {
 	tcpconn.Send(data)
 }
 
-func (c *tcpClient) handleHandshake(tcpconn *knet.TCPConn, msg *InternalMsg) error {
+func (c *tcpClient) handleHandshake(tcpconn *knet.TCPConn, msg *BackendMessage) error {
 	if tcpconn.Userdata != nil {
 		return errors.New("already handshake")
 	}

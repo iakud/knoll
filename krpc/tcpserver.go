@@ -63,7 +63,7 @@ func (s *tcpServer) Connect(tcpconn *knet.TCPConn, connected bool) {
 }
 
 func (s *tcpServer) Receive(tcpconn *knet.TCPConn, data []byte) {
-	var msg InternalMsg
+	var msg BackendMessage
 	if err := Unmarshal(data, &msg); err != nil {
 		tcpconn.Close()
 		return
@@ -85,7 +85,7 @@ func (s *tcpServer) Receive(tcpconn *knet.TCPConn, data []byte) {
 	s.handler.Receive(conn, &msg)
 }
 
-func (s *tcpServer) handleMsg(tcpconn *knet.TCPConn, msg *InternalMsg) error {
+func (s *tcpServer) handleMsg(tcpconn *knet.TCPConn, msg *BackendMessage) error {
 	switch msg.MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
 		return s.handleHandshake(tcpconn, msg)
@@ -94,7 +94,7 @@ func (s *tcpServer) handleMsg(tcpconn *knet.TCPConn, msg *InternalMsg) error {
 	}
 }
 
-func (s *tcpServer) handleHandshake(tcpconn *knet.TCPConn, msg *InternalMsg) error {
+func (s *tcpServer) handleHandshake(tcpconn *knet.TCPConn, msg *BackendMessage) error {
 	var req knetpb.HandshakeRequest
 	if err := proto.Unmarshal(msg.Payload(), &req); err != nil {
 		return err
@@ -126,7 +126,7 @@ func (s *tcpServer) handshakeReply(tcpconn *knet.TCPConn) error {
 	if err != nil {
 		return err
 	}
-	var msg InternalMsg
+	var msg BackendMessage
 	msg.SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
 	msg.SetPayload(payload)
 

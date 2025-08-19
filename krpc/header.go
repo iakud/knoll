@@ -5,12 +5,12 @@ import (
 	"errors"
 )
 
-type MsgFlag uint16
+type MessageFlag uint16
 
-const MF_None MsgFlag = 0x00
+const MF_None MessageFlag = 0x00
 
 const (
-	MF_Request MsgFlag = 0x01 << iota
+	MF_Request MessageFlag = 0x01 << iota
 	MF_Reply
 )
 

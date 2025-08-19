@@ -16,8 +16,8 @@ type Conn interface {
 	Id() uint64
 	Hash() uint64
 	Close() error
-	Send(msg Msg) error
-	Reply(reqId uint32, msg Msg) error
+	Send(msg Message) error
+	Reply(req Message, reply Message) error
 
 	SetUserdata(userdata any)
 	GetUserdata() any
@@ -25,5 +25,5 @@ type Conn interface {
 
 type Handler interface {
 	Connect(conn Conn, connected bool)
-	Receive(conn Conn, msg Msg)
+	Receive(conn Conn, msg Message)
 }

@@ -1,8 +1,6 @@
 package krpc
 
 import (
-	"time"
-
 	"github.com/iakud/knoll/knet"
 )
 
@@ -10,7 +8,6 @@ type tcpConn struct {
 	id       uint64
 	tcpconn  *knet.TCPConn
 	hash     uint64
-	timer    *time.Timer
 	userdata any
 }
 
@@ -30,7 +27,7 @@ func (c *tcpConn) Close() error {
 	return c.tcpconn.Close()
 }
 
-func (c *tcpConn) Send(msg Msg) error {
+func (c *tcpConn) Send(msg Message) error {
 	data, err := Marshal(msg)
 	if err != nil {
 		return err
@@ -38,25 +35,17 @@ func (c *tcpConn) Send(msg Msg) error {
 	return c.tcpconn.Send(data)
 }
 
-func (c *tcpConn) SendOK() error {
+func (c *tcpConn) Reply(req Message, reply Message) error {
+	reply.setFlagReply()
+	reply.setReqId(req.ReqId())
+	return c.Send(reply)
+}
+
+func (c *tcpConn) ReplyOK(req Message) error {
 	return nil
 }
 
-func (c *tcpConn) SendError(err error) error {
-	return nil
-}
-
-func (c *tcpConn) Reply(reqId uint32, msg Msg) error {
-	msg.setFlagReply()
-	msg.setReqId(reqId)
-	return c.Send(msg)
-}
-
-func (c *tcpConn) ReplyOK(reqId uint32) error {
-	return nil
-}
-
-func (c *tcpConn) ReplyError(reqId uint32, err error) error {
+func (c *tcpConn) ReplyError(req Message, err error) error {
 	return nil
 }
 
