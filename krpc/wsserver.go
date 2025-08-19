@@ -19,7 +19,10 @@ type wsServer struct {
 }
 
 func NewWSServer(addr string, handler Handler) Server {
-	s := &wsServer{handler: handler}
+	s := &wsServer{
+		handler: handler,
+		conns:   make(map[uint64]*wsConn),
+	}
 	s.server = knet.NewWSServer(addr, s)
 	return s
 }

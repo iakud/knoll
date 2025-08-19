@@ -19,7 +19,10 @@ type tcpServer struct {
 }
 
 func NewTCPServer(addr string, handler Handler) Server {
-	s := &tcpServer{handler: handler}
+	s := &tcpServer{
+		handler: handler,
+		conns:   make(map[uint64]*tcpConn),
+	}
 	s.server = knet.NewTCPServer(addr, s, knet.StdCodec)
 	return s
 }
