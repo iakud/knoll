@@ -23,14 +23,17 @@ const (
 type Msg int32
 
 const (
-	Msg_INVALID        Msg = 0
-	Msg_OK             Msg = 1
-	Msg_ERROR          Msg = 2
-	Msg_HANDSHAKE      Msg = 3
-	Msg_PING           Msg = 4
-	Msg_PONG           Msg = 5
-	Msg_KICKED_OUT_NTF Msg = 6
-	Msg_RESERVED_END   Msg = 100
+	Msg_INVALID          Msg = 0
+	Msg_OK               Msg = 1
+	Msg_ERROR            Msg = 2
+	Msg_HANDSHAKE        Msg = 3
+	Msg_PING             Msg = 4
+	Msg_PONG             Msg = 5
+	Msg_KICK_OUT         Msg = 11
+	Msg_KICKED_OUT_NTF   Msg = 12
+	Msg_USER_ONLINE      Msg = 13
+	Msg_USER_OFFLINE_NTF Msg = 14
+	Msg_RESERVED_END     Msg = 100
 )
 
 // Enum value maps for Msg.
@@ -42,18 +45,24 @@ var (
 		3:   "HANDSHAKE",
 		4:   "PING",
 		5:   "PONG",
-		6:   "KICKED_OUT_NTF",
+		11:  "KICK_OUT",
+		12:  "KICKED_OUT_NTF",
+		13:  "USER_ONLINE",
+		14:  "USER_OFFLINE_NTF",
 		100: "RESERVED_END",
 	}
 	Msg_value = map[string]int32{
-		"INVALID":        0,
-		"OK":             1,
-		"ERROR":          2,
-		"HANDSHAKE":      3,
-		"PING":           4,
-		"PONG":           5,
-		"KICKED_OUT_NTF": 6,
-		"RESERVED_END":   100,
+		"INVALID":          0,
+		"OK":               1,
+		"ERROR":            2,
+		"HANDSHAKE":        3,
+		"PING":             4,
+		"PONG":             5,
+		"KICK_OUT":         11,
+		"KICKED_OUT_NTF":   12,
+		"USER_ONLINE":      13,
+		"USER_OFFLINE_NTF": 14,
+		"RESERVED_END":     100,
 	}
 )
 
@@ -391,29 +400,31 @@ func (b0 Pong_builder) Build() *Pong {
 	return m0
 }
 
-type KickedOutNotify struct {
+type KickOutRequest struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Message     *string                `protobuf:"bytes,1,opt,name=Message"`
+	xxx_hidden_Uid         int64                  `protobuf:"varint,1,opt,name=Uid"`
+	xxx_hidden_ConnId      int64                  `protobuf:"varint,2,opt,name=ConnId"`
+	xxx_hidden_Msg         *string                `protobuf:"bytes,3,opt,name=Msg"`
 	XXX_raceDetectHookData protoimpl.RaceDetectHookData
 	XXX_presence           [1]uint32
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
 
-func (x *KickedOutNotify) Reset() {
-	*x = KickedOutNotify{}
+func (x *KickOutRequest) Reset() {
+	*x = KickOutRequest{}
 	mi := &file_knet_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *KickedOutNotify) String() string {
+func (x *KickOutRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*KickedOutNotify) ProtoMessage() {}
+func (*KickOutRequest) ProtoMessage() {}
 
-func (x *KickedOutNotify) ProtoReflect() protoreflect.Message {
+func (x *KickOutRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_knet_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -425,46 +436,418 @@ func (x *KickedOutNotify) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *KickedOutNotify) GetMessage() string {
+func (x *KickOutRequest) GetUid() int64 {
 	if x != nil {
-		if x.xxx_hidden_Message != nil {
-			return *x.xxx_hidden_Message
+		return x.xxx_hidden_Uid
+	}
+	return 0
+}
+
+func (x *KickOutRequest) GetConnId() int64 {
+	if x != nil {
+		return x.xxx_hidden_ConnId
+	}
+	return 0
+}
+
+func (x *KickOutRequest) GetMsg() string {
+	if x != nil {
+		if x.xxx_hidden_Msg != nil {
+			return *x.xxx_hidden_Msg
 		}
 		return ""
 	}
 	return ""
 }
 
-func (x *KickedOutNotify) SetMessage(v string) {
-	x.xxx_hidden_Message = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
+func (x *KickOutRequest) SetUid(v int64) {
+	x.xxx_hidden_Uid = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 3)
 }
 
-func (x *KickedOutNotify) HasMessage() bool {
+func (x *KickOutRequest) SetConnId(v int64) {
+	x.xxx_hidden_ConnId = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 3)
+}
+
+func (x *KickOutRequest) SetMsg(v string) {
+	x.xxx_hidden_Msg = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 3)
+}
+
+func (x *KickOutRequest) HasUid() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
 }
 
-func (x *KickedOutNotify) ClearMessage() {
+func (x *KickOutRequest) HasConnId() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
+}
+
+func (x *KickOutRequest) HasMsg() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
+}
+
+func (x *KickOutRequest) ClearUid() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
-	x.xxx_hidden_Message = nil
+	x.xxx_hidden_Uid = 0
+}
+
+func (x *KickOutRequest) ClearConnId() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
+	x.xxx_hidden_ConnId = 0
+}
+
+func (x *KickOutRequest) ClearMsg() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
+	x.xxx_hidden_Msg = nil
+}
+
+type KickOutRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	Uid    *int64
+	ConnId *int64
+	Msg    *string
+}
+
+func (b0 KickOutRequest_builder) Build() *KickOutRequest {
+	m0 := &KickOutRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	if b.Uid != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 3)
+		x.xxx_hidden_Uid = *b.Uid
+	}
+	if b.ConnId != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 3)
+		x.xxx_hidden_ConnId = *b.ConnId
+	}
+	if b.Msg != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 3)
+		x.xxx_hidden_Msg = b.Msg
+	}
+	return m0
+}
+
+type KickOutReply struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KickOutReply) Reset() {
+	*x = KickOutReply{}
+	mi := &file_knet_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KickOutReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KickOutReply) ProtoMessage() {}
+
+func (x *KickOutReply) ProtoReflect() protoreflect.Message {
+	mi := &file_knet_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type KickOutReply_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 KickOutReply_builder) Build() *KickOutReply {
+	m0 := &KickOutReply{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type KickedOutNotify struct {
+	state                  protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Msg         *string                `protobuf:"bytes,1,opt,name=Msg"`
+	XXX_raceDetectHookData protoimpl.RaceDetectHookData
+	XXX_presence           [1]uint32
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *KickedOutNotify) Reset() {
+	*x = KickedOutNotify{}
+	mi := &file_knet_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KickedOutNotify) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KickedOutNotify) ProtoMessage() {}
+
+func (x *KickedOutNotify) ProtoReflect() protoreflect.Message {
+	mi := &file_knet_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *KickedOutNotify) GetMsg() string {
+	if x != nil {
+		if x.xxx_hidden_Msg != nil {
+			return *x.xxx_hidden_Msg
+		}
+		return ""
+	}
+	return ""
+}
+
+func (x *KickedOutNotify) SetMsg(v string) {
+	x.xxx_hidden_Msg = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
+}
+
+func (x *KickedOutNotify) HasMsg() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *KickedOutNotify) ClearMsg() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_Msg = nil
 }
 
 type KickedOutNotify_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Message *string
+	Msg *string
 }
 
 func (b0 KickedOutNotify_builder) Build() *KickedOutNotify {
 	m0 := &KickedOutNotify{}
 	b, x := &b0, m0
 	_, _ = b, x
-	if b.Message != nil {
+	if b.Msg != nil {
 		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 1)
-		x.xxx_hidden_Message = b.Message
+		x.xxx_hidden_Msg = b.Msg
+	}
+	return m0
+}
+
+type UserOnlineRequest struct {
+	state                  protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Uid         int64                  `protobuf:"varint,1,opt,name=Uid"`
+	XXX_raceDetectHookData protoimpl.RaceDetectHookData
+	XXX_presence           [1]uint32
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *UserOnlineRequest) Reset() {
+	*x = UserOnlineRequest{}
+	mi := &file_knet_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserOnlineRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserOnlineRequest) ProtoMessage() {}
+
+func (x *UserOnlineRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_knet_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *UserOnlineRequest) GetUid() int64 {
+	if x != nil {
+		return x.xxx_hidden_Uid
+	}
+	return 0
+}
+
+func (x *UserOnlineRequest) SetUid(v int64) {
+	x.xxx_hidden_Uid = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
+}
+
+func (x *UserOnlineRequest) HasUid() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *UserOnlineRequest) ClearUid() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_Uid = 0
+}
+
+type UserOnlineRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	Uid *int64
+}
+
+func (b0 UserOnlineRequest_builder) Build() *UserOnlineRequest {
+	m0 := &UserOnlineRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	if b.Uid != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 1)
+		x.xxx_hidden_Uid = *b.Uid
+	}
+	return m0
+}
+
+type UserOnlineReply struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserOnlineReply) Reset() {
+	*x = UserOnlineReply{}
+	mi := &file_knet_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserOnlineReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserOnlineReply) ProtoMessage() {}
+
+func (x *UserOnlineReply) ProtoReflect() protoreflect.Message {
+	mi := &file_knet_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type UserOnlineReply_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 UserOnlineReply_builder) Build() *UserOnlineReply {
+	m0 := &UserOnlineReply{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type UserOfflineNotify struct {
+	state                  protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Uid         int64                  `protobuf:"varint,1,opt,name=Uid"`
+	XXX_raceDetectHookData protoimpl.RaceDetectHookData
+	XXX_presence           [1]uint32
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *UserOfflineNotify) Reset() {
+	*x = UserOfflineNotify{}
+	mi := &file_knet_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserOfflineNotify) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserOfflineNotify) ProtoMessage() {}
+
+func (x *UserOfflineNotify) ProtoReflect() protoreflect.Message {
+	mi := &file_knet_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *UserOfflineNotify) GetUid() int64 {
+	if x != nil {
+		return x.xxx_hidden_Uid
+	}
+	return 0
+}
+
+func (x *UserOfflineNotify) SetUid(v int64) {
+	x.xxx_hidden_Uid = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
+}
+
+func (x *UserOfflineNotify) HasUid() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *UserOfflineNotify) ClearUid() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_Uid = 0
+}
+
+type UserOfflineNotify_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	Uid *int64
+}
+
+func (b0 UserOfflineNotify_builder) Build() *UserOfflineNotify {
+	m0 := &UserOfflineNotify{}
+	b, x := &b0, m0
+	_, _ = b, x
+	if b.Uid != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 1)
+		x.xxx_hidden_Uid = *b.Uid
 	}
 	return m0
 }
@@ -482,29 +865,47 @@ const file_knet_proto_rawDesc = "" +
 	"\x04Hash\x18\x01 \x01(\x04R\x04Hash\"\x10\n" +
 	"\x0eHandshakeReply\"\x06\n" +
 	"\x04Ping\"\x06\n" +
-	"\x04Pong\"+\n" +
-	"\x0fKickedOutNotify\x12\x18\n" +
-	"\aMessage\x18\x01 \x01(\tR\aMessage*n\n" +
+	"\x04Pong\"L\n" +
+	"\x0eKickOutRequest\x12\x10\n" +
+	"\x03Uid\x18\x01 \x01(\x03R\x03Uid\x12\x16\n" +
+	"\x06ConnId\x18\x02 \x01(\x03R\x06ConnId\x12\x10\n" +
+	"\x03Msg\x18\x03 \x01(\tR\x03Msg\"\x0e\n" +
+	"\fKickOutReply\"#\n" +
+	"\x0fKickedOutNotify\x12\x10\n" +
+	"\x03Msg\x18\x01 \x01(\tR\x03Msg\"%\n" +
+	"\x11UserOnlineRequest\x12\x10\n" +
+	"\x03Uid\x18\x01 \x01(\x03R\x03Uid\"\x11\n" +
+	"\x0fUserOnlineReply\"%\n" +
+	"\x11UserOfflineNotify\x12\x10\n" +
+	"\x03Uid\x18\x01 \x01(\x03R\x03Uid*\xa3\x01\n" +
 	"\x03Msg\x12\v\n" +
 	"\aINVALID\x10\x00\x12\x06\n" +
 	"\x02OK\x10\x01\x12\t\n" +
 	"\x05ERROR\x10\x02\x12\r\n" +
 	"\tHANDSHAKE\x10\x03\x12\b\n" +
 	"\x04PING\x10\x04\x12\b\n" +
-	"\x04PONG\x10\x05\x12\x12\n" +
-	"\x0eKICKED_OUT_NTF\x10\x06\x12\x10\n" +
+	"\x04PONG\x10\x05\x12\f\n" +
+	"\bKICK_OUT\x10\v\x12\x12\n" +
+	"\x0eKICKED_OUT_NTF\x10\f\x12\x0f\n" +
+	"\vUSER_ONLINE\x10\r\x12\x14\n" +
+	"\x10USER_OFFLINE_NTF\x10\x0e\x12\x10\n" +
 	"\fRESERVED_END\x10dB\x1eZ\x1cgithub.com/iakud/krpc/knetpbb\beditionsp\xe8\a"
 
 var file_knet_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_knet_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_knet_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_knet_proto_goTypes = []any{
-	(Msg)(0),                 // 0: knetpb.Msg
-	(*Error)(nil),            // 1: knetpb.Error
-	(*HandshakeRequest)(nil), // 2: knetpb.HandshakeRequest
-	(*HandshakeReply)(nil),   // 3: knetpb.HandshakeReply
-	(*Ping)(nil),             // 4: knetpb.Ping
-	(*Pong)(nil),             // 5: knetpb.Pong
-	(*KickedOutNotify)(nil),  // 6: knetpb.KickedOutNotify
+	(Msg)(0),                  // 0: knetpb.Msg
+	(*Error)(nil),             // 1: knetpb.Error
+	(*HandshakeRequest)(nil),  // 2: knetpb.HandshakeRequest
+	(*HandshakeReply)(nil),    // 3: knetpb.HandshakeReply
+	(*Ping)(nil),              // 4: knetpb.Ping
+	(*Pong)(nil),              // 5: knetpb.Pong
+	(*KickOutRequest)(nil),    // 6: knetpb.KickOutRequest
+	(*KickOutReply)(nil),      // 7: knetpb.KickOutReply
+	(*KickedOutNotify)(nil),   // 8: knetpb.KickedOutNotify
+	(*UserOnlineRequest)(nil), // 9: knetpb.UserOnlineRequest
+	(*UserOnlineReply)(nil),   // 10: knetpb.UserOnlineReply
+	(*UserOfflineNotify)(nil), // 11: knetpb.UserOfflineNotify
 }
 var file_knet_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -525,7 +926,7 @@ func file_knet_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_knet_proto_rawDesc), len(file_knet_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   6,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
