@@ -27,9 +27,9 @@ func (c *wsConn) Close() error {
 	return c.wsconn.Close()
 }
 
-func (c *wsConn) Send(msg Message) error {
-	data, err := Marshal(msg)
-	if err != nil {
+func (c *wsConn) Send(m Message) error {
+	data := make([]byte, m.Size())
+	if _, err := m.Marshal(data); err != nil {
 		return err
 	}
 	return c.wsconn.Send(data)
@@ -39,14 +39,6 @@ func (c *wsConn) Reply(req Message, reply Message) error {
 	reply.setFlagReply()
 	reply.setReqId(req.ReqId())
 	return c.Send(reply)
-}
-
-func (c *wsConn) ReplyOK(reqId uint32) error {
-	return nil
-}
-
-func (c *wsConn) ReplyError(reqId uint32, err error) error {
-	return nil
 }
 
 func (c *wsConn) SetUserdata(userdata any) {

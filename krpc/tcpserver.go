@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type tcpServer struct {
+type tcpServer[T any, M MessagePtr[T]] struct {
 	connId  atomic.Uint64
 	server  *knet.TCPServer
 	handler Handler
@@ -18,8 +18,8 @@ type tcpServer struct {
 	conns   map[uint64]*tcpConn
 }
 
-func NewTCPServer(addr string, handler Handler) Server {
-	s := &tcpServer{
+func NewTCPServer[T any, M MessagePtr[T]](addr string, handler Handler) Server {
+	s := &tcpServer[T, M]{
 		handler: handler,
 		conns:   make(map[uint64]*tcpConn),
 	}
@@ -27,22 +27,22 @@ func NewTCPServer(addr string, handler Handler) Server {
 	return s
 }
 
-func (s *tcpServer) ListenAndServe() error {
+func (s *tcpServer[T, M]) ListenAndServe() error {
 	return s.server.ListenAndServe()
 }
 
-func (s *tcpServer) Close() error {
+func (s *tcpServer[T, M]) Close() error {
 	return s.server.Close()
 }
 
-func (s *tcpServer) GetConn(id uint64) (Conn, bool) {
+func (s *tcpServer[T, M]) GetConn(id uint64) (Conn, bool) {
 	s.locker.RLock()
 	conn, ok := s.conns[id]
 	s.locker.RUnlock()
 	return conn, ok
 }
 
-func (s *tcpServer) Connect(tcpconn *knet.TCPConn, connected bool) {
+func (s *tcpServer[T, M]) Connect(tcpconn *knet.TCPConn, connected bool) {
 	if connected {
 		// FIXME: rouge timeout
 		return
@@ -62,15 +62,15 @@ func (s *tcpServer) Connect(tcpconn *knet.TCPConn, connected bool) {
 	s.handler.Connect(conn, false)
 }
 
-func (s *tcpServer) Receive(tcpconn *knet.TCPConn, data []byte) {
-	var msg BackendMessage
-	if err := Unmarshal(data, &msg); err != nil {
+func (s *tcpServer[T, M]) Receive(tcpconn *knet.TCPConn, data []byte) {
+	var m M = new(T)
+	if _, err := m.Unmarshal(data); err != nil {
 		tcpconn.Close()
 		return
 	}
 
-	if msg.MsgId() < uint16(knetpb.Msg_RESERVED_END) {
-		if err := s.handleMsg(tcpconn, &msg); err != nil {
+	if m.MsgId() < uint16(knetpb.Msg_RESERVED_END) {
+		if err := s.handleMsg(tcpconn, m); err != nil {
 			tcpconn.Close()
 		}
 		return
@@ -82,21 +82,21 @@ func (s *tcpServer) Receive(tcpconn *knet.TCPConn, data []byte) {
 		return
 	}
 
-	s.handler.Receive(conn, &msg)
+	s.handler.Receive(conn, m)
 }
 
-func (s *tcpServer) handleMsg(tcpconn *knet.TCPConn, msg *BackendMessage) error {
-	switch msg.MsgId() {
+func (s *tcpServer[T, M]) handleMsg(tcpconn *knet.TCPConn, m M) error {
+	switch m.MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
-		return s.handleHandshake(tcpconn, msg)
+		return s.handleHandshake(tcpconn, m)
 	default:
 		return errors.New("unknow message")
 	}
 }
 
-func (s *tcpServer) handleHandshake(tcpconn *knet.TCPConn, msg *BackendMessage) error {
+func (s *tcpServer[T, M]) handleHandshake(tcpconn *knet.TCPConn, m M) error {
 	var req knetpb.HandshakeRequest
-	if err := proto.Unmarshal(msg.Payload(), &req); err != nil {
+	if err := proto.Unmarshal(m.Payload(), &req); err != nil {
 		return err
 	}
 
@@ -120,18 +120,18 @@ func (s *tcpServer) handleHandshake(tcpconn *knet.TCPConn, msg *BackendMessage) 
 	return nil
 }
 
-func (s *tcpServer) handshakeReply(tcpconn *knet.TCPConn) error {
+func (s *tcpServer[T, M]) handshakeReply(tcpconn *knet.TCPConn) error {
 	var reply knetpb.HandshakeReply
 	payload, err := proto.Marshal(&reply)
 	if err != nil {
 		return err
 	}
-	var msg BackendMessage
-	msg.SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
-	msg.SetPayload(payload)
+	var m M = new(T)
+	m.SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
+	m.SetPayload(payload)
 
-	data, err := Marshal(&msg)
-	if err != nil {
+	data := make([]byte, m.Size())
+	if _, err := m.Marshal(data); err != nil {
 		return err
 	}
 	return tcpconn.Send(data)

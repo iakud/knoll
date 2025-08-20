@@ -16,8 +16,8 @@ const (
 
 const (
 	OffsetFlag  = 0
-	OffsetMsgID = 2
-	OffsetReqID = 4
+	OffsetMsgId = 2
+	OffsetReqId = 4
 
 	HeaderSize = 8
 )
@@ -73,8 +73,8 @@ func (h *Header) Marshal(buf []byte) (int, error) {
 		return 0, errors.New("buffer too small")
 	}
 	binary.BigEndian.PutUint16(buf[OffsetFlag:], h.flag)
-	binary.BigEndian.PutUint16(buf[OffsetMsgID:], h.msgId)
-	binary.BigEndian.PutUint32(buf[OffsetReqID:], h.reqId)
+	binary.BigEndian.PutUint16(buf[OffsetMsgId:], h.msgId)
+	binary.BigEndian.PutUint32(buf[OffsetReqId:], h.reqId)
 	return HeaderSize, nil
 }
 
@@ -83,7 +83,7 @@ func (h *Header) Unmarshal(buf []byte) (int, error) {
 		return 0, errors.New("buffer too small")
 	}
 	h.flag = binary.BigEndian.Uint16(buf[OffsetFlag:])
-	h.msgId = binary.BigEndian.Uint16(buf[OffsetMsgID:])
-	h.reqId = binary.BigEndian.Uint32(buf[OffsetReqID:])
+	h.msgId = binary.BigEndian.Uint16(buf[OffsetMsgId:])
+	h.reqId = binary.BigEndian.Uint32(buf[OffsetReqId:])
 	return HeaderSize, nil
 }

@@ -25,5 +25,5 @@ type Conn interface {
 
 type Handler interface {
 	Connect(conn Conn, connected bool)
-	Receive(conn Conn, msg Message)
+	Receive(conn Conn, message Message)
 }

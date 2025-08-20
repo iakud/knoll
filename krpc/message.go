@@ -4,8 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"slices"
-
-	"google.golang.org/protobuf/proto"
 )
 
 type Message interface {
@@ -22,57 +20,52 @@ type Message interface {
 	SetConnId(connId uint64)
 	UserId() uint64
 	SetUserId(userId uint64)
+	Payload() []byte
+	SetPayload(payload []byte)
 	Marshal(buf []byte) (int, error)
 	Unmarshal(buf []byte) (int, error)
 }
 
-func Marshal(m Message) ([]byte, error) {
-	buf := make([]byte, m.Size())
-	if _, err := m.Marshal(buf); err != nil {
-		return nil, err
-	}
-	return buf, nil
+type MessagePtr[T any] interface {
+	~*T
+	Message
 }
 
-func Unmarshal(buf []byte, m Message) error {
-	if _, err := m.Unmarshal(buf); err != nil {
-		return err
-	}
-	return nil
-}
-
-type ClientMessage struct {
+type CMessage struct {
 	Header
 	payload []byte
 }
 
-func (m *ClientMessage) ConnId() uint64 {
+func (m *CMessage) ConnId() uint64 {
 	return 0
 }
 
-func (m *ClientMessage) SetConnId(connId uint64) {
+func (m *CMessage) SetConnId(connId uint64) {
 }
 
-func (m *ClientMessage) UserId() uint64 {
+func (m *CMessage) UserId() uint64 {
 	return 0
 }
 
-func (m *ClientMessage) SetUserId(userId uint64) {
+func (m *CMessage) SetUserId(userId uint64) {
 }
 
-func (m *ClientMessage) Payload() []byte {
+func (m *CMessage) Payload() []byte {
 	return m.payload
 }
 
-func (m *ClientMessage) SetPayload(payload []byte) {
+func (m *CMessage) SetPayload(payload []byte) {
 	m.payload = payload
 }
 
-func (m *ClientMessage) Size() int {
+func (m *CMessage) Size() int {
 	return HeaderSize + len(m.payload)
 }
 
-func (m *ClientMessage) Marshal(buf []byte) (int, error) {
+func (m *CMessage) Marshal(buf []byte) (int, error) {
+	if len(buf) < HeaderSize+len(m.payload) {
+		return 0, errors.New("buffer too small")
+	}
 	n, err := m.Header.Marshal(buf)
 	if err != nil {
 		return n, err
@@ -82,7 +75,10 @@ func (m *ClientMessage) Marshal(buf []byte) (int, error) {
 	return n, nil
 }
 
-func (m *ClientMessage) Unmarshal(buf []byte) (int, error) {
+func (m *CMessage) Unmarshal(buf []byte) (int, error) {
+	if len(buf) < HeaderSize {
+		return 0, errors.New("buffer too small")
+	}
 	n, err := m.Header.Unmarshal(buf)
 	if err != nil {
 		return n, err
@@ -98,43 +94,43 @@ const (
 	MessageUserIdSize = 8
 )
 
-type BackendMessage struct {
+type BMessage struct {
 	Header
 	connId  uint64
 	userId  uint64
 	payload []byte
 }
 
-func (m *BackendMessage) ConnId() uint64 {
+func (m *BMessage) ConnId() uint64 {
 	return m.connId
 }
 
-func (m *BackendMessage) SetConnId(connId uint64) {
+func (m *BMessage) SetConnId(connId uint64) {
 	m.connId = connId
 }
 
-func (m *BackendMessage) UserId() uint64 {
+func (m *BMessage) UserId() uint64 {
 	return m.userId
 }
 
-func (m *BackendMessage) SetUserId(userId uint64) {
+func (m *BMessage) SetUserId(userId uint64) {
 	m.userId = userId
 }
 
-func (m *BackendMessage) Payload() []byte {
+func (m *BMessage) Payload() []byte {
 	return m.payload
 }
 
-func (m *BackendMessage) SetPayload(payload []byte) {
+func (m *BMessage) SetPayload(payload []byte) {
 	m.payload = payload
 }
 
-func (m *BackendMessage) Size() int {
+func (m *BMessage) Size() int {
 	return HeaderSize + MessageConnIdSize + MessageUserIdSize + len(m.payload)
 }
 
-func (m *BackendMessage) Marshal(buf []byte) (int, error) {
-	if cap(buf) < HeaderSize+MessageConnIdSize+MessageUserIdSize+len(m.payload) {
+func (m *BMessage) Marshal(buf []byte) (int, error) {
+	if len(buf) < HeaderSize+MessageConnIdSize+MessageUserIdSize+len(m.payload) {
 		return 0, errors.New("buffer too small")
 	}
 	n, err := m.Header.Marshal(buf)
@@ -151,7 +147,7 @@ func (m *BackendMessage) Marshal(buf []byte) (int, error) {
 	return n, nil
 }
 
-func (m *BackendMessage) Unmarshal(buf []byte) (int, error) {
+func (m *BMessage) Unmarshal(buf []byte) (int, error) {
 	if len(buf) < HeaderSize+MessageConnIdSize+MessageUserIdSize {
 		return 0, errors.New("buffer too small")
 	}
@@ -170,26 +166,16 @@ func (m *BackendMessage) Unmarshal(buf []byte) (int, error) {
 	return n, nil
 }
 
-func BuildClientMessage(msgId uint16, payload proto.Message) (*ClientMessage, error) {
-	data, err := proto.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-	m := new(ClientMessage)
+func BuildCMessage(msgId uint16, payload []byte) *CMessage {
+	m := CMessagePool.Get().(*CMessage)
 	m.SetMsgId(msgId)
-	m.SetPayload(data)
-	return m, nil
+	m.SetPayload(payload)
+	return m
 }
 
-func BuildBackendMessage(msgId uint16, payload proto.Message, connId uint64, userId uint64) (*BackendMessage, error) {
-	data, err := proto.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-	m := new(BackendMessage)
+func BuildBMessage(msgId uint16, payload []byte) *BMessage {
+	m := BMessagePool.Get().(*BMessage)
 	m.SetMsgId(msgId)
-	m.SetConnId(connId)
-	m.SetUserId(userId)
-	m.SetPayload(data)
-	return m, nil
+	m.SetPayload(payload)
+	return m
 }

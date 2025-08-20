@@ -27,9 +27,9 @@ func (c *tcpConn) Close() error {
 	return c.tcpconn.Close()
 }
 
-func (c *tcpConn) Send(msg Message) error {
-	data, err := Marshal(msg)
-	if err != nil {
+func (c *tcpConn) Send(m Message) error {
+	data := make([]byte, m.Size())
+	if _, err := m.Marshal(data); err != nil {
 		return err
 	}
 	return c.tcpconn.Send(data)
@@ -39,14 +39,6 @@ func (c *tcpConn) Reply(req Message, reply Message) error {
 	reply.setFlagReply()
 	reply.setReqId(req.ReqId())
 	return c.Send(reply)
-}
-
-func (c *tcpConn) ReplyOK(req Message) error {
-	return nil
-}
-
-func (c *tcpConn) ReplyError(req Message, err error) error {
-	return nil
 }
 
 func (c *tcpConn) SetUserdata(userdata any) {

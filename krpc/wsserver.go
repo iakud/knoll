@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type wsServer struct {
+type wsServer[T any, M MessagePtr[T]] struct {
 	connId  atomic.Uint64
 	server  *knet.WSServer
 	handler Handler
@@ -18,8 +18,8 @@ type wsServer struct {
 	conns   map[uint64]*wsConn
 }
 
-func NewWSServer(addr string, handler Handler) Server {
-	s := &wsServer{
+func NewWSServer[T any, M MessagePtr[T]](addr string, handler Handler) Server {
+	s := &wsServer[T, M]{
 		handler: handler,
 		conns:   make(map[uint64]*wsConn),
 	}
@@ -27,22 +27,22 @@ func NewWSServer(addr string, handler Handler) Server {
 	return s
 }
 
-func (s *wsServer) ListenAndServe() error {
+func (s *wsServer[T, M]) ListenAndServe() error {
 	return s.server.ListenAndServe()
 }
 
-func (s *wsServer) Close() error {
+func (s *wsServer[T, M]) Close() error {
 	return s.server.Close()
 }
 
-func (s *wsServer) GetConn(id uint64) (Conn, bool) {
+func (s *wsServer[T, M]) GetConn(id uint64) (Conn, bool) {
 	s.locker.RLock()
 	conn, ok := s.conns[id]
 	s.locker.RUnlock()
 	return conn, ok
 }
 
-func (s *wsServer) Connect(wsconn *knet.WSConn, connected bool) {
+func (s *wsServer[T, M]) Connect(wsconn *knet.WSConn, connected bool) {
 	if connected {
 		// FIXME: rouge timeout
 		return
@@ -62,15 +62,15 @@ func (s *wsServer) Connect(wsconn *knet.WSConn, connected bool) {
 	s.handler.Connect(conn, false)
 }
 
-func (s *wsServer) Receive(wsconn *knet.WSConn, data []byte) {
-	var msg ClientMessage
-	if err := Unmarshal(data, &msg); err != nil {
+func (s *wsServer[T, M]) Receive(wsconn *knet.WSConn, data []byte) {
+	var m M = new(T)
+	if _, err := m.Unmarshal(data); err != nil {
 		wsconn.Close()
 		return
 	}
 
-	if msg.MsgId() < uint16(knetpb.Msg_RESERVED_END) {
-		if err := s.handleMsg(wsconn, &msg); err != nil {
+	if m.MsgId() < uint16(knetpb.Msg_RESERVED_END) {
+		if err := s.handleMsg(wsconn, m); err != nil {
 			wsconn.Close()
 		}
 		return
@@ -82,21 +82,21 @@ func (s *wsServer) Receive(wsconn *knet.WSConn, data []byte) {
 		return
 	}
 
-	s.handler.Receive(conn, &msg)
+	s.handler.Receive(conn, m)
 }
 
-func (s *wsServer) handleMsg(wsconn *knet.WSConn, msg *ClientMessage) error {
-	switch msg.MsgId() {
+func (s *wsServer[T, M]) handleMsg(wsconn *knet.WSConn, m M) error {
+	switch m.MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
-		return s.handleHandshake(wsconn, msg)
+		return s.handleHandshake(wsconn, m)
 	default:
 		return errors.New("unknow message")
 	}
 }
 
-func (s *wsServer) handleHandshake(wsconn *knet.WSConn, msg *ClientMessage) error {
+func (s *wsServer[T, M]) handleHandshake(wsconn *knet.WSConn, m M) error {
 	var req knetpb.HandshakeRequest
-	if err := proto.Unmarshal(msg.Payload(), &req); err != nil {
+	if err := proto.Unmarshal(m.Payload(), &req); err != nil {
 		return err
 	}
 
@@ -120,18 +120,19 @@ func (s *wsServer) handleHandshake(wsconn *knet.WSConn, msg *ClientMessage) erro
 	return nil
 }
 
-func (s *wsServer) handshakeReply(wsconn *knet.WSConn) error {
+func (s *wsServer[T, M]) handshakeReply(wsconn *knet.WSConn) error {
 	var reply knetpb.HandshakeReply
 	payload, err := proto.Marshal(&reply)
 	if err != nil {
 		return err
 	}
-	var msg ClientMessage
-	msg.SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
-	msg.SetPayload(payload)
+	// var m T
+	var m M = new(T)
+	m.SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
+	m.SetPayload(payload)
 
-	data, err := Marshal(&msg)
-	if err != nil {
+	data := make([]byte, m.Size())
+	if _, err := m.Marshal(data); err != nil {
 		return err
 	}
 	return wsconn.Send(data)
