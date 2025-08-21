@@ -9,37 +9,41 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type tcpClient[T any, M MessagePtr[T]] struct {
-	hash    uint64
-	client  *knet.TCPClient
-	handler Handler
-	locker  sync.RWMutex
-	conn    *tcpConn
+type tcpClient struct {
+	hash       uint64
+	client     *knet.TCPClient
+	handler    Handler
+	newMessage func() Message
+	locker     sync.RWMutex
+	conn       *tcpConn
 }
 
-func NewTCPClient[T any, M MessagePtr[T]](addr string, hash uint64, handler Handler) Client {
-	c := &tcpClient[T, M]{handler: handler}
+func NewTCPClient(addr string, hash uint64, handler Handler, newMessage func() Message) Client {
+	c := &tcpClient{
+		handler:    handler,
+		newMessage: newMessage,
+	}
 	c.client = knet.NewTCPClient(addr, c, knet.StdCodec)
 	c.client.EnableRetry()
 	return c
 }
 
-func (c *tcpClient[T, M]) DialAndServe() error {
+func (c *tcpClient) DialAndServe() error {
 	return c.client.DialAndServe()
 }
 
-func (c *tcpClient[T, M]) Close() error {
+func (c *tcpClient) Close() error {
 	return c.client.Close()
 }
 
-func (c *tcpClient[T, M]) GetConn() (Conn, bool) {
+func (c *tcpClient) GetConn() (Conn, bool) {
 	c.locker.RLock()
 	conn := c.conn
 	c.locker.RUnlock()
 	return conn, conn != nil
 }
 
-func (c *tcpClient[T, M]) Connect(tcpconn *knet.TCPConn, connected bool) {
+func (c *tcpClient) Connect(tcpconn *knet.TCPConn, connected bool) {
 	if connected {
 		if err := c.handshake(tcpconn); err != nil {
 			tcpconn.Close()
@@ -61,9 +65,8 @@ func (c *tcpClient[T, M]) Connect(tcpconn *knet.TCPConn, connected bool) {
 	c.handler.Connect(conn, false)
 }
 
-func (c *tcpClient[T, M]) Receive(tcpconn *knet.TCPConn, data []byte) {
-	var m M = new(T)
-
+func (c *tcpClient) Receive(tcpconn *knet.TCPConn, data []byte) {
+	m := c.newMessage()
 	if _, err := m.Unmarshal(data); err != nil {
 		tcpconn.Close()
 		return
@@ -85,7 +88,7 @@ func (c *tcpClient[T, M]) Receive(tcpconn *knet.TCPConn, data []byte) {
 	c.handler.Receive(conn, m)
 }
 
-func (c *tcpClient[T, M]) handleMsg(tcpconn *knet.TCPConn, m M) error {
+func (c *tcpClient) handleMsg(tcpconn *knet.TCPConn, m Message) error {
 	switch m.MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
 		return c.handleHandshake(tcpconn, m)
@@ -94,14 +97,14 @@ func (c *tcpClient[T, M]) handleMsg(tcpconn *knet.TCPConn, m M) error {
 	}
 }
 
-func (c *tcpClient[T, M]) handshake(tcpconn *knet.TCPConn) error {
+func (c *tcpClient) handshake(tcpconn *knet.TCPConn) error {
 	var req knetpb.HandshakeRequest
 	req.SetHash(c.hash)
 	payload, err := proto.Marshal(&req)
 	if err != nil {
 		return err
 	}
-	var m M = new(T)
+	m := c.newMessage()
 	m.SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
 	m.SetPayload(payload)
 
@@ -112,7 +115,12 @@ func (c *tcpClient[T, M]) handshake(tcpconn *knet.TCPConn) error {
 	return tcpconn.Send(data)
 }
 
-func (c *tcpClient[T, M]) handleHandshake(tcpconn *knet.TCPConn, m M) error {
+func (c *tcpClient) handleHandshake(tcpconn *knet.TCPConn, m Message) error {
+	var reply knetpb.HandshakeReply
+	if err := proto.Unmarshal(m.Payload(), &reply); err != nil {
+		return err
+	}
+
 	if tcpconn.Userdata != nil {
 		return errors.New("already handshake")
 	}

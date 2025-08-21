@@ -26,11 +26,6 @@ type Message interface {
 	Unmarshal(buf []byte) (int, error)
 }
 
-type MessagePtr[T any] interface {
-	~*T
-	Message
-}
-
 type CMessage struct {
 	Header
 	payload []byte
