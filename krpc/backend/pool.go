@@ -6,8 +6,8 @@ import (
 	"github.com/iakud/knoll/krpc"
 )
 
-var bPool = sync.Pool{New: func() any { return &Message{} }}
+var pool = sync.Pool{New: func() any { return &Message{} }}
 
-func NewBMessage() krpc.Message {
-	return bPool.Get().(krpc.Message)
+func New() krpc.Message {
+	return pool.Get().(krpc.Message)
 }
