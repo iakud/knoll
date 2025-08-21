@@ -17,7 +17,7 @@ type Conn interface {
 	Hash() uint64
 	Close() error
 	Send(msg Message) error
-	Reply(req Message, reply Message) error
+	Reply(reqId uint32, reply Message) error
 
 	SetUserdata(userdata any)
 	GetUserdata() any

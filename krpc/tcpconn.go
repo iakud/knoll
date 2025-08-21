@@ -35,9 +35,9 @@ func (c *tcpConn) Send(m Message) error {
 	return c.tcpconn.Send(data)
 }
 
-func (c *tcpConn) Reply(req Message, reply Message) error {
+func (c *tcpConn) Reply(reqId uint32, reply Message) error {
 	reply.setFlagReply()
-	reply.setReqId(req.ReqId())
+	reply.setReqId(reqId)
 	return c.Send(reply)
 }
 

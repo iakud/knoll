@@ -35,9 +35,9 @@ func (c *wsConn) Send(m Message) error {
 	return c.wsconn.Send(data)
 }
 
-func (c *wsConn) Reply(req Message, reply Message) error {
+func (c *wsConn) Reply(reqId uint32, reply Message) error {
 	reply.setFlagReply()
-	reply.setReqId(req.ReqId())
+	reply.setReqId(reqId)
 	return c.Send(reply)
 }
 
