@@ -11,19 +11,19 @@ import (
 )
 
 type wsServer struct {
-	connId  atomic.Uint64
-	server  *knet.WSServer
-	handler Handler
-	newMsg  func() Message
-	locker  sync.RWMutex
-	conns   map[uint64]*wsConn
+	connId     atomic.Uint64
+	server     *knet.WSServer
+	handler    Handler
+	newMessage func() Message
+	locker     sync.RWMutex
+	conns      map[uint64]*wsConn
 }
 
-func NewWSServer(addr string, handler Handler, newMsg func() Message) Server {
+func NewWSServer(addr string, handler Handler, newMessage func() Message) Server {
 	s := &wsServer{
-		handler: handler,
-		newMsg:  newMsg,
-		conns:   make(map[uint64]*wsConn),
+		handler:    handler,
+		newMessage: newMessage,
+		conns:      make(map[uint64]*wsConn),
 	}
 	s.server = knet.NewWSServer(addr, s)
 	return s
@@ -65,7 +65,7 @@ func (s *wsServer) Connect(wsconn *knet.WSConn, connected bool) {
 }
 
 func (s *wsServer) Receive(wsconn *knet.WSConn, data []byte) {
-	m := s.newMsg()
+	m := s.newMessage()
 	if _, err := m.Unmarshal(data); err != nil {
 		wsconn.Close()
 		return
@@ -129,7 +129,7 @@ func (s *wsServer) handshakeReply(wsconn *knet.WSConn) error {
 		return err
 	}
 
-	m := s.newMsg()
+	m := s.newMessage()
 	m.SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
 	m.SetPayload(payload)
 

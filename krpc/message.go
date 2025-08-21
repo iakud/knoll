@@ -161,15 +161,15 @@ func (m *BMessage) Unmarshal(buf []byte) (int, error) {
 	return n, nil
 }
 
-func BuildCMessage(msgId uint16, payload []byte) *CMessage {
-	m := CMessagePool.Get().(*CMessage)
+func BuildCMessage(msgId uint16, payload []byte) Message {
+	m := NewCMessage()
 	m.SetMsgId(msgId)
 	m.SetPayload(payload)
 	return m
 }
 
-func BuildBMessage(msgId uint16, payload []byte) *BMessage {
-	m := BMessagePool.Get().(*BMessage)
+func BuildBMessage(msgId uint16, payload []byte) Message {
+	m := NewBMessage()
 	m.SetMsgId(msgId)
 	m.SetPayload(payload)
 	return m

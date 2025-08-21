@@ -27,3 +27,8 @@ type Handler interface {
 	Connect(conn Conn, connected bool)
 	Receive(conn Conn, message Message)
 }
+
+type Codec interface {
+	Unmarshal(data []byte) (Message, error)
+	Marshal(m Message) ([]byte, error)
+}
