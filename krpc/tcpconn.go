@@ -36,8 +36,8 @@ func (c *tcpConn) Send(m Message) error {
 }
 
 func (c *tcpConn) Reply(reqId uint32, reply Message) error {
-	reply.setFlagReply()
-	reply.setReqId(reqId)
+	reply.Header().setFlagReply()
+	reply.Header().setReqId(reqId)
 	return c.Send(reply)
 }
 

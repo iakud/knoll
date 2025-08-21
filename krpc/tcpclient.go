@@ -72,7 +72,7 @@ func (c *tcpClient) Receive(tcpconn *knet.TCPConn, data []byte) {
 		return
 	}
 
-	if m.MsgId() < uint16(knetpb.Msg_RESERVED_END) {
+	if m.Header().MsgId() < uint16(knetpb.Msg_RESERVED_END) {
 		if err := c.handleMsg(tcpconn, m); err != nil {
 			tcpconn.Close()
 		}
@@ -89,7 +89,7 @@ func (c *tcpClient) Receive(tcpconn *knet.TCPConn, data []byte) {
 }
 
 func (c *tcpClient) handleMsg(tcpconn *knet.TCPConn, m Message) error {
-	switch m.MsgId() {
+	switch m.Header().MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
 		return c.handleHandshake(tcpconn, m)
 	default:
@@ -105,7 +105,7 @@ func (c *tcpClient) handshake(tcpconn *knet.TCPConn) error {
 		return err
 	}
 	m := c.newMessage()
-	m.SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
+	m.Header().SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
 	m.SetPayload(payload)
 
 	data := make([]byte, m.Size())

@@ -72,7 +72,7 @@ func (c *wsClient) Receive(wsconn *knet.WSConn, data []byte) {
 		return
 	}
 
-	if m.MsgId() < uint16(knetpb.Msg_RESERVED_END) {
+	if m.Header().MsgId() < uint16(knetpb.Msg_RESERVED_END) {
 		if err := c.handleMsg(wsconn, m); err != nil {
 			wsconn.Close()
 		}
@@ -89,7 +89,7 @@ func (c *wsClient) Receive(wsconn *knet.WSConn, data []byte) {
 }
 
 func (c *wsClient) handleMsg(wsconn *knet.WSConn, m Message) error {
-	switch m.MsgId() {
+	switch m.Header().MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
 		return c.handleHandshake(wsconn, m)
 	default:
@@ -105,7 +105,7 @@ func (c *wsClient) handshake(wsconn *knet.WSConn) error {
 		return err
 	}
 	m := c.newMessage()
-	m.SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
+	m.Header().SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
 	m.SetPayload(payload)
 
 	data := make([]byte, m.Size())
