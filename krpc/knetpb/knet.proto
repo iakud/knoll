@@ -12,8 +12,9 @@ enum Msg {
 	PING = 4;
 	PONG = 5;
 
-	KICK_OUT = 11;
-	KICKED_OUT_NTF = 12;
+	KICKED_OUT_NTF = 11;
+
+	KICK_OUT = 12;
     USER_ONLINE = 13;
     USER_OFFLINE_NTF = 14;
 
@@ -22,7 +23,7 @@ enum Msg {
 
 message Error {
 	int32 Code = 1;
-	string Msg = 2;
+	string Message = 2;
 }
 
 message HandshakeRequest {
@@ -38,26 +39,26 @@ message Ping {
 message Pong {
 }
 
+message KickedOutNotify {
+	string Message = 1;
+}
+
 message KickOutRequest {
-	uint64 Uid = 1;
-	uint64 ConnId = 2;
-	string Msg = 3;
+	uint64 UserId = 1;
+	uint64 UserConnId = 2;
+	string Message = 3;
 }
 
 message KickOutReply {
 }
 
-message KickedOutNotify {
-	string Msg = 1;
-}
-
 message UserOnlineRequest {
-	uint64 Uid = 1;
+	uint64 UserId = 1;
 }
 
 message UserOnlineReply {
 }
 
 message UserOfflineNotify {
-	uint64 Uid = 1;
+	uint64 UserId = 1;
 }
