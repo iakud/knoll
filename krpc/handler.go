@@ -24,7 +24,7 @@ func handleServerHandshake(conn Conn, m Message, handler Handler) error {
 		return err
 	}
 
-	if err := replyServerHandshake(conn); err != nil {
+	if err := replyHandshake(conn); err != nil {
 		return err
 	}
 	conn.setHash(req.GetHash())
@@ -45,30 +45,6 @@ func handleServerUserOnline(conn Conn, m Message, handler Handler) error {
 	return nil
 }
 
-func replyServerHandshake(conn Conn) error {
-	var reply knetpb.HandshakeReply
-	payload, err := proto.Marshal(&reply)
-	if err != nil {
-		return err
-	}
-	m := conn.NewMessage()
-	m.Header().SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
-	m.SetPayload(payload)
-	return conn.Send(m)
-}
-
-func replyUserOnline(conn Conn) error {
-	var reply knetpb.UserOnlineReply
-	payload, err := proto.Marshal(&reply)
-	if err != nil {
-		return err
-	}
-	m := conn.NewMessage()
-	m.Header().SetMsgId(uint16(knetpb.Msg_USER_ONLINE))
-	m.SetPayload(payload)
-	return conn.Send(m)
-}
-
 func handleClientMsg(conn Conn, m Message, handler Handler) error {
 	switch m.Header().MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
@@ -76,19 +52,6 @@ func handleClientMsg(conn Conn, m Message, handler Handler) error {
 	default:
 		return errors.New("unknow message")
 	}
-}
-
-func requestHandshake(conn Conn, hash uint64) error {
-	var req knetpb.HandshakeRequest
-	req.SetHash(hash)
-	payload, err := proto.Marshal(&req)
-	if err != nil {
-		return err
-	}
-	m := conn.NewMessage()
-	m.Header().SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
-	m.SetPayload(payload)
-	return conn.Send(m)
 }
 
 func handleClientHandshake(conn Conn, m Message, handler Handler) error {
