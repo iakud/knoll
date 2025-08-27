@@ -1,12 +1,10 @@
 package krpc
 
 import (
-	"errors"
 	"sync"
 
 	"github.com/iakud/knoll/knet"
 	"github.com/iakud/knoll/krpc/knetpb"
-	"google.golang.org/protobuf/proto"
 )
 
 type tcpClient struct {
@@ -45,27 +43,42 @@ func (c *tcpClient) GetConn() (Conn, bool) {
 
 func (c *tcpClient) Connect(tcpconn *knet.TCPConn, connected bool) {
 	if connected {
-		if err := c.handshake(tcpconn); err != nil {
-			tcpconn.Close()
-		}
-		return
-	}
+		conn := newTCPConn(0, tcpconn, c.newMessage)
+		tcpconn.Userdata = conn
 
+		c.locker.Lock()
+		c.conn = conn
+		c.locker.Unlock()
+		if err := requestHandshake(conn, c.hash); err != nil {
+			tcpconn.Close()
+			return
+		}
+	} else {
+		if tcpconn.Userdata == nil {
+			return
+		}
+		conn, ok := tcpconn.Userdata.(*tcpConn)
+		if !ok {
+			return
+		}
+		c.locker.Lock()
+		c.conn = nil
+		c.locker.Unlock()
+
+		c.handler.Connect(conn, false)
+	}
+}
+
+func (c *tcpClient) Receive(tcpconn *knet.TCPConn, data []byte) {
 	if tcpconn.Userdata == nil {
 		return
 	}
 	conn, ok := tcpconn.Userdata.(*tcpConn)
 	if !ok {
+		tcpconn.Close()
 		return
 	}
-	c.locker.Lock()
-	c.conn = nil
-	c.locker.Unlock()
 
-	c.handler.Connect(conn, false)
-}
-
-func (c *tcpClient) Receive(tcpconn *knet.TCPConn, data []byte) {
 	m := c.newMessage()
 	if _, err := m.Unmarshal(data); err != nil {
 		tcpconn.Close()
@@ -73,64 +86,11 @@ func (c *tcpClient) Receive(tcpconn *knet.TCPConn, data []byte) {
 	}
 
 	if m.Header().MsgId() < uint16(knetpb.Msg_RESERVED_END) {
-		if err := c.handleMsg(tcpconn, m); err != nil {
+		if err := handleClientMsg(conn, m, c.handler); err != nil {
 			tcpconn.Close()
 		}
 		return
 	}
 
-	conn, ok := tcpconn.Userdata.(*tcpConn)
-	if !ok {
-		tcpconn.Close()
-		return
-	}
-
 	c.handler.Receive(conn, m)
-}
-
-func (c *tcpClient) handleMsg(tcpconn *knet.TCPConn, m Message) error {
-	switch m.Header().MsgId() {
-	case uint16(knetpb.Msg_HANDSHAKE):
-		return c.handleHandshake(tcpconn, m)
-	default:
-		return errors.New("unknow message")
-	}
-}
-
-func (c *tcpClient) handshake(tcpconn *knet.TCPConn) error {
-	var req knetpb.HandshakeRequest
-	req.SetHash(c.hash)
-	payload, err := proto.Marshal(&req)
-	if err != nil {
-		return err
-	}
-	m := c.newMessage()
-	m.Header().SetMsgId(uint16(knetpb.Msg_HANDSHAKE))
-	m.SetPayload(payload)
-
-	data := make([]byte, m.Size())
-	if _, err := m.Marshal(data); err != nil {
-		return err
-	}
-	return tcpconn.Send(data)
-}
-
-func (c *tcpClient) handleHandshake(tcpconn *knet.TCPConn, m Message) error {
-	var reply knetpb.HandshakeReply
-	if err := proto.Unmarshal(m.Payload(), &reply); err != nil {
-		return err
-	}
-
-	if tcpconn.Userdata != nil {
-		return errors.New("already handshake")
-	}
-	conn := newTCPConn(0, tcpconn, 0)
-	tcpconn.Userdata = conn
-
-	c.locker.Lock()
-	c.conn = conn
-	c.locker.Unlock()
-
-	c.handler.Connect(conn, true)
-	return nil
 }

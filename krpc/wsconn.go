@@ -5,22 +5,31 @@ import (
 )
 
 type wsConn struct {
-	id       uint64
-	wsconn   *knet.WSConn
-	hash     uint64
-	userdata any
+	id         uint64
+	wsconn     *knet.WSConn
+	hash       uint64
+	userdata   any
+	newMessage func() Message
 }
 
-func newWSConn(id uint64, wsconn *knet.WSConn, hash uint64) *wsConn {
-	return &wsConn{id: id, wsconn: wsconn, hash: hash}
+func newWSConn(id uint64, wsconn *knet.WSConn, newMessage func() Message) *wsConn {
+	return &wsConn{id: id, wsconn: wsconn, newMessage: newMessage}
 }
 
 func (s *wsConn) Id() uint64 {
 	return s.id
 }
 
+func (c *wsConn) setHash(hash uint64) {
+	c.hash = hash
+}
+
 func (c *wsConn) Hash() uint64 {
 	return c.hash
+}
+
+func (c *wsConn) NewMessage() Message {
+	return c.newMessage()
 }
 
 func (c *wsConn) Close() error {

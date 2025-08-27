@@ -14,10 +14,12 @@ type Client interface {
 
 type Conn interface {
 	Id() uint64
+	setHash(hash uint64)
 	Hash() uint64
 	Close() error
 	Send(msg Message) error
 	Reply(reqId uint32, reply Message) error
+	NewMessage() Message
 
 	SetUserdata(userdata any)
 	GetUserdata() any
@@ -26,6 +28,8 @@ type Conn interface {
 type Handler interface {
 	Connect(conn Conn, connected bool)
 	Receive(conn Conn, message Message)
+	Handshake(conn Conn, hash uint64)
+	UserOnline(conn Conn, userId uint64)
 }
 
 type Codec interface {

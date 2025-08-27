@@ -5,22 +5,31 @@ import (
 )
 
 type tcpConn struct {
-	id       uint64
-	tcpconn  *knet.TCPConn
-	hash     uint64
-	userdata any
+	id         uint64
+	tcpconn    *knet.TCPConn
+	hash       uint64
+	userdata   any
+	newMessage func() Message
 }
 
-func newTCPConn(id uint64, tcpconn *knet.TCPConn, hash uint64) *tcpConn {
-	return &tcpConn{id: id, tcpconn: tcpconn, hash: hash}
+func newTCPConn(id uint64, tcpconn *knet.TCPConn, newMessage func() Message) *tcpConn {
+	return &tcpConn{id: id, tcpconn: tcpconn, newMessage: newMessage}
 }
 
 func (s *tcpConn) Id() uint64 {
 	return s.id
 }
 
+func (c *tcpConn) setHash(hash uint64) {
+	c.hash = hash
+}
+
 func (c *tcpConn) Hash() uint64 {
 	return c.hash
+}
+
+func (c *tcpConn) NewMessage() Message {
+	return c.newMessage()
 }
 
 func (c *tcpConn) Close() error {

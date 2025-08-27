@@ -402,8 +402,8 @@ func (b0 Pong_builder) Build() *Pong {
 
 type KickOutRequest struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Uid         int64                  `protobuf:"varint,1,opt,name=Uid"`
-	xxx_hidden_ConnId      int64                  `protobuf:"varint,2,opt,name=ConnId"`
+	xxx_hidden_Uid         uint64                 `protobuf:"varint,1,opt,name=Uid"`
+	xxx_hidden_ConnId      uint64                 `protobuf:"varint,2,opt,name=ConnId"`
 	xxx_hidden_Msg         *string                `protobuf:"bytes,3,opt,name=Msg"`
 	XXX_raceDetectHookData protoimpl.RaceDetectHookData
 	XXX_presence           [1]uint32
@@ -436,14 +436,14 @@ func (x *KickOutRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *KickOutRequest) GetUid() int64 {
+func (x *KickOutRequest) GetUid() uint64 {
 	if x != nil {
 		return x.xxx_hidden_Uid
 	}
 	return 0
 }
 
-func (x *KickOutRequest) GetConnId() int64 {
+func (x *KickOutRequest) GetConnId() uint64 {
 	if x != nil {
 		return x.xxx_hidden_ConnId
 	}
@@ -460,12 +460,12 @@ func (x *KickOutRequest) GetMsg() string {
 	return ""
 }
 
-func (x *KickOutRequest) SetUid(v int64) {
+func (x *KickOutRequest) SetUid(v uint64) {
 	x.xxx_hidden_Uid = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 3)
 }
 
-func (x *KickOutRequest) SetConnId(v int64) {
+func (x *KickOutRequest) SetConnId(v uint64) {
 	x.xxx_hidden_ConnId = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 3)
 }
@@ -514,8 +514,8 @@ func (x *KickOutRequest) ClearMsg() {
 type KickOutRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Uid    *int64
-	ConnId *int64
+	Uid    *uint64
+	ConnId *uint64
 	Msg    *string
 }
 
@@ -661,7 +661,7 @@ func (b0 KickedOutNotify_builder) Build() *KickedOutNotify {
 
 type UserOnlineRequest struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Uid         int64                  `protobuf:"varint,1,opt,name=Uid"`
+	xxx_hidden_Uid         uint64                 `protobuf:"varint,1,opt,name=Uid"`
 	XXX_raceDetectHookData protoimpl.RaceDetectHookData
 	XXX_presence           [1]uint32
 	unknownFields          protoimpl.UnknownFields
@@ -693,14 +693,14 @@ func (x *UserOnlineRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *UserOnlineRequest) GetUid() int64 {
+func (x *UserOnlineRequest) GetUid() uint64 {
 	if x != nil {
 		return x.xxx_hidden_Uid
 	}
 	return 0
 }
 
-func (x *UserOnlineRequest) SetUid(v int64) {
+func (x *UserOnlineRequest) SetUid(v uint64) {
 	x.xxx_hidden_Uid = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
 }
@@ -720,7 +720,7 @@ func (x *UserOnlineRequest) ClearUid() {
 type UserOnlineRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Uid *int64
+	Uid *uint64
 }
 
 func (b0 UserOnlineRequest_builder) Build() *UserOnlineRequest {
@@ -779,7 +779,7 @@ func (b0 UserOnlineReply_builder) Build() *UserOnlineReply {
 
 type UserOfflineNotify struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Uid         int64                  `protobuf:"varint,1,opt,name=Uid"`
+	xxx_hidden_Uid         uint64                 `protobuf:"varint,1,opt,name=Uid"`
 	XXX_raceDetectHookData protoimpl.RaceDetectHookData
 	XXX_presence           [1]uint32
 	unknownFields          protoimpl.UnknownFields
@@ -811,14 +811,14 @@ func (x *UserOfflineNotify) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *UserOfflineNotify) GetUid() int64 {
+func (x *UserOfflineNotify) GetUid() uint64 {
 	if x != nil {
 		return x.xxx_hidden_Uid
 	}
 	return 0
 }
 
-func (x *UserOfflineNotify) SetUid(v int64) {
+func (x *UserOfflineNotify) SetUid(v uint64) {
 	x.xxx_hidden_Uid = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
 }
@@ -838,7 +838,7 @@ func (x *UserOfflineNotify) ClearUid() {
 type UserOfflineNotify_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Uid *int64
+	Uid *uint64
 }
 
 func (b0 UserOfflineNotify_builder) Build() *UserOfflineNotify {
@@ -867,17 +867,17 @@ const file_knet_proto_rawDesc = "" +
 	"\x04Ping\"\x06\n" +
 	"\x04Pong\"L\n" +
 	"\x0eKickOutRequest\x12\x10\n" +
-	"\x03Uid\x18\x01 \x01(\x03R\x03Uid\x12\x16\n" +
-	"\x06ConnId\x18\x02 \x01(\x03R\x06ConnId\x12\x10\n" +
+	"\x03Uid\x18\x01 \x01(\x04R\x03Uid\x12\x16\n" +
+	"\x06ConnId\x18\x02 \x01(\x04R\x06ConnId\x12\x10\n" +
 	"\x03Msg\x18\x03 \x01(\tR\x03Msg\"\x0e\n" +
 	"\fKickOutReply\"#\n" +
 	"\x0fKickedOutNotify\x12\x10\n" +
 	"\x03Msg\x18\x01 \x01(\tR\x03Msg\"%\n" +
 	"\x11UserOnlineRequest\x12\x10\n" +
-	"\x03Uid\x18\x01 \x01(\x03R\x03Uid\"\x11\n" +
+	"\x03Uid\x18\x01 \x01(\x04R\x03Uid\"\x11\n" +
 	"\x0fUserOnlineReply\"%\n" +
 	"\x11UserOfflineNotify\x12\x10\n" +
-	"\x03Uid\x18\x01 \x01(\x03R\x03Uid*\xa3\x01\n" +
+	"\x03Uid\x18\x01 \x01(\x04R\x03Uid*\xa3\x01\n" +
 	"\x03Msg\x12\v\n" +
 	"\aINVALID\x10\x00\x12\x06\n" +
 	"\x02OK\x10\x01\x12\t\n" +
