@@ -52,7 +52,7 @@ func (s *wsServer) Connect(wsconn *knet.WSConn, connected bool) {
 		s.conns[conn.id] = conn
 		s.locker.Unlock()
 
-		s.handler.Connect(conn, true)
+		// s.handler.Connect(conn, true)
 	} else {
 		if wsconn.Userdata == nil {
 			return

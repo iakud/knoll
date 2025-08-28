@@ -28,6 +28,7 @@ func handleServerHandshake(conn Conn, m Message, handler Handler) error {
 		return err
 	}
 	conn.setHash(req.GetHash())
+	handler.Connect(conn, true)
 	handler.Handshake(conn, req.GetHash())
 	return nil
 }
@@ -41,7 +42,7 @@ func handleServerUserOnline(conn Conn, m Message, handler Handler) error {
 	if err := replyUserOnline(conn); err != nil {
 		return err
 	}
-	handler.Handshake(conn, req.GetUid())
+	handler.UserOnline(conn, req.GetUserId())
 	return nil
 }
 
@@ -49,6 +50,8 @@ func handleClientMsg(conn Conn, m Message, handler Handler) error {
 	switch m.Header().MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
 		return handleClientHandshake(conn, m, handler)
+	case uint16(knetpb.Msg_USER_ONLINE):
+		return handleClientUserOnline(conn, m, handler)
 	default:
 		return errors.New("unknow message")
 	}
@@ -61,6 +64,15 @@ func handleClientHandshake(conn Conn, m Message, handler Handler) error {
 	}
 
 	conn.setHash(0)
+	handler.Connect(conn, true)
 	handler.Handshake(conn, 0)
+	return nil
+}
+
+func handleClientUserOnline(conn Conn, m Message, handler Handler) error {
+	var reply knetpb.UserOnlineReply
+	if err := proto.Unmarshal(m.Payload(), &reply); err != nil {
+		return err
+	}
 	return nil
 }

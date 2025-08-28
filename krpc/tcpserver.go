@@ -52,7 +52,7 @@ func (s *tcpServer) Connect(tcpconn *knet.TCPConn, connected bool) {
 		s.conns[conn.id] = conn
 		s.locker.Unlock()
 
-		s.handler.Connect(conn, true)
+		// s.handler.Connect(conn, true)
 	} else {
 		if tcpconn.Userdata == nil {
 			return

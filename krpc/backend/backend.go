@@ -21,10 +21,10 @@ func ReplyOK(conn krpc.Conn, reqId uint32, connId uint64) error {
 	return conn.Reply(reqId, m)
 }
 
-func ReplyError(conn krpc.Conn, reqId uint32, code int32, msg string, connId uint64) error {
+func ReplyError(conn krpc.Conn, reqId uint32, code int32, message string, connId uint64) error {
 	var reply knetpb.Error
 	reply.SetCode(code)
-	reply.SetMsg(msg)
+	reply.SetMessage(message)
 	return Reply(conn, reqId, uint16(knetpb.Msg_ERROR), &reply, connId)
 }
 
