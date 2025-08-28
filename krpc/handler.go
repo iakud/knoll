@@ -42,7 +42,7 @@ func handleServerUserOnline(conn Conn, m Message, handler Handler) error {
 	if err := replyUserOnline(conn); err != nil {
 		return err
 	}
-	handler.UserOnline(conn, req.GetUserId())
+	handler.UserOnline(conn, req.GetUserConnId(), req.GetUserId())
 	return nil
 }
 

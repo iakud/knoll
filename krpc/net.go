@@ -29,7 +29,7 @@ type Handler interface {
 	Connect(conn Conn, connected bool)
 	Receive(conn Conn, message Message)
 	Handshake(conn Conn, hash uint64)
-	UserOnline(conn Conn, userId uint64)
+	UserOnline(conn Conn, userConnId uint64, userId uint64)
 }
 
 type Codec interface {

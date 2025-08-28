@@ -54,6 +54,7 @@ message KickOutReply {
 
 message UserOnlineRequest {
 	uint64 UserId = 1;
+	uint64 UserConnId = 2;
 }
 
 message UserOnlineReply {

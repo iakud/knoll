@@ -662,6 +662,7 @@ func (b0 KickOutReply_builder) Build() *KickOutReply {
 type UserOnlineRequest struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_UserId      uint64                 `protobuf:"varint,1,opt,name=UserId"`
+	xxx_hidden_UserConnId  uint64                 `protobuf:"varint,2,opt,name=UserConnId"`
 	XXX_raceDetectHookData protoimpl.RaceDetectHookData
 	XXX_presence           [1]uint32
 	unknownFields          protoimpl.UnknownFields
@@ -700,9 +701,21 @@ func (x *UserOnlineRequest) GetUserId() uint64 {
 	return 0
 }
 
+func (x *UserOnlineRequest) GetUserConnId() uint64 {
+	if x != nil {
+		return x.xxx_hidden_UserConnId
+	}
+	return 0
+}
+
 func (x *UserOnlineRequest) SetUserId(v uint64) {
 	x.xxx_hidden_UserId = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 2)
+}
+
+func (x *UserOnlineRequest) SetUserConnId(v uint64) {
+	x.xxx_hidden_UserConnId = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 2)
 }
 
 func (x *UserOnlineRequest) HasUserId() bool {
@@ -712,15 +725,28 @@ func (x *UserOnlineRequest) HasUserId() bool {
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
 }
 
+func (x *UserOnlineRequest) HasUserConnId() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
+}
+
 func (x *UserOnlineRequest) ClearUserId() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
 	x.xxx_hidden_UserId = 0
 }
 
+func (x *UserOnlineRequest) ClearUserConnId() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
+	x.xxx_hidden_UserConnId = 0
+}
+
 type UserOnlineRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	UserId *uint64
+	UserId     *uint64
+	UserConnId *uint64
 }
 
 func (b0 UserOnlineRequest_builder) Build() *UserOnlineRequest {
@@ -728,8 +754,12 @@ func (b0 UserOnlineRequest_builder) Build() *UserOnlineRequest {
 	b, x := &b0, m0
 	_, _ = b, x
 	if b.UserId != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 1)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 2)
 		x.xxx_hidden_UserId = *b.UserId
+	}
+	if b.UserConnId != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 2)
+		x.xxx_hidden_UserConnId = *b.UserConnId
 	}
 	return m0
 }
@@ -874,9 +904,12 @@ const file_knet_proto_rawDesc = "" +
 	"UserConnId\x18\x02 \x01(\x04R\n" +
 	"UserConnId\x12\x18\n" +
 	"\aMessage\x18\x03 \x01(\tR\aMessage\"\x0e\n" +
-	"\fKickOutReply\"+\n" +
+	"\fKickOutReply\"K\n" +
 	"\x11UserOnlineRequest\x12\x16\n" +
-	"\x06UserId\x18\x01 \x01(\x04R\x06UserId\"\x11\n" +
+	"\x06UserId\x18\x01 \x01(\x04R\x06UserId\x12\x1e\n" +
+	"\n" +
+	"UserConnId\x18\x02 \x01(\x04R\n" +
+	"UserConnId\"\x11\n" +
 	"\x0fUserOnlineReply\"+\n" +
 	"\x11UserOfflineNotify\x12\x16\n" +
 	"\x06UserId\x18\x01 \x01(\x04R\x06UserId*\xa3\x01\n" +
