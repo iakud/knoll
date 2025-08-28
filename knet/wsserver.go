@@ -2,7 +2,6 @@ package knet
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"sync"
 
@@ -27,16 +26,8 @@ func NewWSServer(addr string, handler WSHandler) *WSServer {
 		Handler: handler,
 		conns:   make(map[*WSConn]struct{}),
 	}
-	server.server = &http.Server{Addr: addr, Handler: websocket.Server{Handler: server.serveWebSocket, Handshake: checkOrigin}}
+	server.server = &http.Server{Addr: addr, Handler: websocket.Server{Handler: server.serveWebSocket}}
 	return server
-}
-
-func checkOrigin(config *websocket.Config, req *http.Request) (err error) {
-	config.Origin, err = websocket.Origin(config, req)
-	if err == nil && config.Origin == nil {
-		return fmt.Errorf("null origin")
-	}
-	return err
 }
 
 func (s *WSServer) ListenAndServe() error {
