@@ -18,6 +18,7 @@ type tcpClient struct {
 
 func NewTCPClient(addr string, hash uint64, handler Handler, newMessage func() Message) Client {
 	c := &tcpClient{
+		hash:       hash,
 		handler:    handler,
 		newMessage: newMessage,
 	}

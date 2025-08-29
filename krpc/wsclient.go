@@ -18,6 +18,7 @@ type wsClient struct {
 
 func NewWSClient(url string, hash uint64, handler Handler, newMessage func() Message) Client {
 	c := &wsClient{
+		hash:       hash,
 		handler:    handler,
 		newMessage: newMessage,
 	}
