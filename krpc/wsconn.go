@@ -1,6 +1,8 @@
 package krpc
 
 import (
+	"net"
+
 	"github.com/iakud/knoll/knet"
 )
 
@@ -14,6 +16,14 @@ type wsConn struct {
 
 func newWSConn(id uint64, wsconn *knet.WSConn, newMessage func() Message) *wsConn {
 	return &wsConn{id: id, wsconn: wsconn, newMessage: newMessage}
+}
+
+func (c *wsConn) LocalAddr() net.Addr {
+	return c.wsconn.LocalAddr()
+}
+
+func (c *wsConn) RemoteAddr() net.Addr {
+	return c.wsconn.RemoteAddr()
 }
 
 func (s *wsConn) Id() uint64 {

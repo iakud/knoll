@@ -1,6 +1,8 @@
 package krpc
 
 import (
+	"net"
+
 	"github.com/iakud/knoll/knet"
 )
 
@@ -14,6 +16,14 @@ type tcpConn struct {
 
 func newTCPConn(id uint64, tcpconn *knet.TCPConn, newMessage func() Message) *tcpConn {
 	return &tcpConn{id: id, tcpconn: tcpconn, newMessage: newMessage}
+}
+
+func (c *tcpConn) LocalAddr() net.Addr {
+	return c.tcpconn.LocalAddr()
+}
+
+func (c *tcpConn) RemoteAddr() net.Addr {
+	return c.tcpconn.RemoteAddr()
 }
 
 func (s *tcpConn) Id() uint64 {

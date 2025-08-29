@@ -2,7 +2,9 @@ package knet
 
 import (
 	"errors"
+	"log"
 	"net"
+	"runtime"
 	"sync"
 	"time"
 
@@ -32,7 +34,15 @@ func newWSConn(wsconn *websocket.Conn) *WSConn {
 }
 
 func (c *WSConn) serve(handler WSHandler) {
-	defer c.wsconn.Close()
+	defer func() {
+		if err := recover(); err != nil {
+			const size = 64 << 10
+			buf := make([]byte, size)
+			buf = buf[:runtime.Stack(buf, false)]
+			log.Printf("knet: panic serving %v: %v\n%s", c.RemoteAddr(), err, buf)
+			c.Close()
+		}
+	}()
 
 	// start write
 	c.startBackgroundWrite()

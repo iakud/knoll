@@ -1,5 +1,7 @@
 package krpc
 
+import "net"
+
 type Server interface {
 	ListenAndServe() error
 	Close() error
@@ -17,6 +19,8 @@ type Conn interface {
 	setHash(hash uint64)
 	Hash() uint64
 	Close() error
+	LocalAddr() net.Addr
+	RemoteAddr() net.Addr
 	Send(msg Message) error
 	Reply(reqId uint32, reply Message) error
 	NewMessage() Message
