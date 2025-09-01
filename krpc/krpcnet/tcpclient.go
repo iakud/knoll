@@ -1,4 +1,4 @@
-package krpc
+package krpcnet
 
 import (
 	"errors"
@@ -9,43 +9,43 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type wsClient struct {
-	client  *knet.WSClient
+type tcpClient struct {
+	client  *knet.TCPClient
 	handler ClientHandler
 	backend bool
 	locker  sync.RWMutex
-	conn    *wsConn
+	conn    *tcpConn
 }
 
-func NewWSClient(url string, handler ClientHandler, backend bool) Client {
-	c := &wsClient{
+func NewTCPClient(addr string, handler ClientHandler, backend bool) Client {
+	c := &tcpClient{
 		handler: handler,
 		backend: backend,
 	}
-	c.client = knet.NewWSClient(url, c)
+	c.client = knet.NewTCPClient(addr, c, knet.StdCodec)
 	c.client.EnableRetry()
 	return c
 }
 
-func (c *wsClient) DialAndServe() error {
+func (c *tcpClient) DialAndServe() error {
 	return c.client.DialAndServe()
 }
 
-func (c *wsClient) Close() error {
+func (c *tcpClient) Close() error {
 	return c.client.Close()
 }
 
-func (c *wsClient) GetConn() (Conn, bool) {
+func (c *tcpClient) GetConn() (Conn, bool) {
 	c.locker.RLock()
 	conn := c.conn
 	c.locker.RUnlock()
 	return conn, conn != nil
 }
 
-func (c *wsClient) Connect(wsconn *knet.WSConn, connected bool) {
+func (c *tcpClient) Connect(tcpconn *knet.TCPConn, connected bool) {
 	if connected {
-		conn := newWSConn(0, wsconn, c.backend)
-		wsconn.Userdata = conn
+		conn := newTCPConn(0, tcpconn, c.backend)
+		tcpconn.Userdata = conn
 
 		c.locker.Lock()
 		c.conn = conn
@@ -53,10 +53,10 @@ func (c *wsClient) Connect(wsconn *knet.WSConn, connected bool) {
 
 		c.handler.Connect(conn, true)
 	} else {
-		if wsconn.Userdata == nil {
+		if tcpconn.Userdata == nil {
 			return
 		}
-		conn, ok := wsconn.Userdata.(*wsConn)
+		conn, ok := tcpconn.Userdata.(*tcpConn)
 		if !ok {
 			return
 		}
@@ -68,13 +68,13 @@ func (c *wsClient) Connect(wsconn *knet.WSConn, connected bool) {
 	}
 }
 
-func (c *wsClient) Receive(wsconn *knet.WSConn, data []byte) {
-	if wsconn.Userdata == nil {
+func (c *tcpClient) Receive(tcpconn *knet.TCPConn, data []byte) {
+	if tcpconn.Userdata == nil {
 		return
 	}
-	conn, ok := wsconn.Userdata.(*wsConn)
+	conn, ok := tcpconn.Userdata.(*tcpConn)
 	if !ok {
-		wsconn.Close()
+		tcpconn.Close()
 		return
 	}
 
@@ -101,7 +101,7 @@ func (c *wsClient) Receive(wsconn *knet.WSConn, data []byte) {
 	c.handler.Receive(conn, m)
 }
 
-func (c *wsClient) handleMessage(conn *wsConn, m Msg) error {
+func (c *tcpClient) handleMessage(conn *tcpConn, m Msg) error {
 	switch m.Header().MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
 		return c.handleHandshake(conn, m)
@@ -114,7 +114,7 @@ func (c *wsClient) handleMessage(conn *wsConn, m Msg) error {
 	}
 }
 
-func (c *wsClient) handleHandshake(conn *wsConn, m Msg) error {
+func (c *tcpClient) handleHandshake(conn *tcpConn, m Msg) error {
 	var msg knetpb.ServerHandshake
 	if err := proto.Unmarshal(m.Payload(), &msg); err != nil {
 		return err
@@ -123,7 +123,7 @@ func (c *wsClient) handleHandshake(conn *wsConn, m Msg) error {
 	return c.handler.Handshake(conn, &msg)
 }
 
-func (c *wsClient) handleUserOffline(conn *wsConn, m Msg) error {
+func (c *tcpClient) handleUserOffline(conn *tcpConn, m Msg) error {
 	var reply knetpb.UserOfflineNotify
 	if err := proto.Unmarshal(m.Payload(), &reply); err != nil {
 		return err
@@ -131,7 +131,7 @@ func (c *wsClient) handleUserOffline(conn *wsConn, m Msg) error {
 	return c.handler.UserOffline(conn, &reply)
 }
 
-func (c *wsClient) handleKickedOut(conn *wsConn, m Msg) error {
+func (c *tcpClient) handleKickedOut(conn *tcpConn, m Msg) error {
 	var reply knetpb.KickedOutNotify
 	if err := proto.Unmarshal(m.Payload(), &reply); err != nil {
 		return err

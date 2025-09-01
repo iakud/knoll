@@ -1,4 +1,4 @@
-package krpc
+package krpcnet
 
 import (
 	"context"

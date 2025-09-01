@@ -1,4 +1,4 @@
-package krpc
+package krpcnet
 
 import (
 	"github.com/iakud/knoll/krpc/knetpb"
