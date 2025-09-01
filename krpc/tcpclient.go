@@ -10,17 +10,17 @@ import (
 )
 
 type tcpClient struct {
-	client     *knet.TCPClient
-	handler    ClientHandler
-	newMessage func() Message
-	locker     sync.RWMutex
-	conn       *tcpConn
+	client  *knet.TCPClient
+	handler ClientHandler
+	backend bool
+	locker  sync.RWMutex
+	conn    *tcpConn
 }
 
-func NewTCPClient(addr string, handler ClientHandler, newMessage func() Message) Client {
+func NewTCPClient(addr string, handler ClientHandler, backend bool) Client {
 	c := &tcpClient{
-		handler:    handler,
-		newMessage: newMessage,
+		handler: handler,
+		backend: backend,
 	}
 	c.client = knet.NewTCPClient(addr, c, knet.StdCodec)
 	c.client.EnableRetry()
@@ -44,7 +44,7 @@ func (c *tcpClient) GetConn() (Conn, bool) {
 
 func (c *tcpClient) Connect(tcpconn *knet.TCPConn, connected bool) {
 	if connected {
-		conn := newTCPConn(0, tcpconn, c.newMessage)
+		conn := newTCPConn(0, tcpconn, c.backend)
 		tcpconn.Userdata = conn
 
 		c.locker.Lock()
@@ -78,7 +78,7 @@ func (c *tcpClient) Receive(tcpconn *knet.TCPConn, data []byte) {
 		return
 	}
 
-	m := c.newMessage()
+	m := NewMsg(c.backend)
 	if _, err := m.Unmarshal(data); err != nil {
 		conn.Close()
 		return
@@ -101,7 +101,7 @@ func (c *tcpClient) Receive(tcpconn *knet.TCPConn, data []byte) {
 	c.handler.Receive(conn, m)
 }
 
-func (c *tcpClient) handleMessage(conn *tcpConn, m Message) error {
+func (c *tcpClient) handleMessage(conn *tcpConn, m Msg) error {
 	switch m.Header().MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
 		return c.handleHandshake(conn, m)
@@ -114,7 +114,7 @@ func (c *tcpClient) handleMessage(conn *tcpConn, m Message) error {
 	}
 }
 
-func (c *tcpClient) handleHandshake(conn *tcpConn, m Message) error {
+func (c *tcpClient) handleHandshake(conn *tcpConn, m Msg) error {
 	var msg knetpb.ServerHandshake
 	if err := proto.Unmarshal(m.Payload(), &msg); err != nil {
 		return err
@@ -123,7 +123,7 @@ func (c *tcpClient) handleHandshake(conn *tcpConn, m Message) error {
 	return c.handler.Handshake(conn, &msg)
 }
 
-func (c *tcpClient) handleUserOffline(conn *tcpConn, m Message) error {
+func (c *tcpClient) handleUserOffline(conn *tcpConn, m Msg) error {
 	var reply knetpb.UserOfflineNotify
 	if err := proto.Unmarshal(m.Payload(), &reply); err != nil {
 		return err
@@ -131,7 +131,7 @@ func (c *tcpClient) handleUserOffline(conn *tcpConn, m Message) error {
 	return c.handler.UserOffline(conn, &reply)
 }
 
-func (c *tcpClient) handleKickedOut(conn *tcpConn, m Message) error {
+func (c *tcpClient) handleKickedOut(conn *tcpConn, m Msg) error {
 	var reply knetpb.KickedOutNotify
 	if err := proto.Unmarshal(m.Payload(), &reply); err != nil {
 		return err

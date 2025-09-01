@@ -1,9 +1,6 @@
 package krpc
 
 import (
-	"context"
-	"net"
-
 	"github.com/iakud/knoll/krpc/knetpb"
 )
 
@@ -15,7 +12,7 @@ type Server interface {
 
 type ServerHandler interface {
 	Connect(conn Conn, connected bool)
-	Receive(conn Conn, msg Message)
+	Receive(conn Conn, msg Msg)
 	Handshake(conn Conn, msg *knetpb.ClientHandshake) error
 	UserOnline(conn Conn, req *knetpb.UserOnlineRequest) (*knetpb.UserOnlineReply, error)
 	KickOut(conn Conn, req *knetpb.KickOutRequest) (*knetpb.KickOutReply, error)
@@ -29,24 +26,8 @@ type Client interface {
 
 type ClientHandler interface {
 	Connect(conn Conn, connected bool)
-	Receive(conn Conn, msg Message)
+	Receive(conn Conn, msg Msg)
 	Handshake(conn Conn, msg *knetpb.ServerHandshake) error
 	UserOffline(conn Conn, msg *knetpb.UserOfflineNotify) error
 	KickedOut(conn Conn, msg *knetpb.KickedOutNotify) error
-}
-
-type Conn interface {
-	Id() uint64
-	setHash(hash uint64)
-	Hash() uint64
-	Close() error
-	LocalAddr() net.Addr
-	RemoteAddr() net.Addr
-	Send(msg Message) error
-	Reply(reqId uint32, reply Message) error
-	Request(ctx context.Context, m Message) (Message, error)
-	NewMessage() Message
-
-	SetUserdata(userdata any)
-	GetUserdata() any
 }

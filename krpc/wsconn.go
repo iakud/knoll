@@ -8,22 +8,34 @@ import (
 )
 
 type wsConn struct {
-	id         uint64
-	wsconn     *knet.WSConn
-	hash       uint64
-	rt         *roundTrip
-	userdata   any
-	newMessage func() Message
+	id       uint64
+	wsconn   *knet.WSConn
+	backend  bool
+	rt       *roundTrip
+	hash     uint64
+	userdata any
 }
 
-func newWSConn(id uint64, wsconn *knet.WSConn, newMessage func() Message) *wsConn {
+func newWSConn(id uint64, wsconn *knet.WSConn, backend bool) *wsConn {
 	c := &wsConn{
-		id:         id,
-		wsconn:     wsconn,
-		rt:         newRoundTrip(),
-		newMessage: newMessage,
+		id:      id,
+		wsconn:  wsconn,
+		backend: backend,
+		rt:      newRoundTrip(),
 	}
 	return c
+}
+
+func (s *wsConn) Id() uint64 {
+	return s.id
+}
+
+func (c *wsConn) Hash() uint64 {
+	return c.hash
+}
+
+func (c *wsConn) Close() error {
+	return c.wsconn.Close()
 }
 
 func (c *wsConn) LocalAddr() net.Addr {
@@ -34,31 +46,11 @@ func (c *wsConn) RemoteAddr() net.Addr {
 	return c.wsconn.RemoteAddr()
 }
 
-func (s *wsConn) Id() uint64 {
-	return s.id
+func (c *wsConn) NewMsg() Msg {
+	return NewMsg(c.backend)
 }
 
-func (c *wsConn) setHash(hash uint64) {
-	c.hash = hash
-}
-
-func (c *wsConn) Hash() uint64 {
-	return c.hash
-}
-
-func (c *wsConn) Request(ctx context.Context, m Message) (Message, error) {
-	return c.rt.request(ctx, c, m)
-}
-
-func (c *wsConn) NewMessage() Message {
-	return c.newMessage()
-}
-
-func (c *wsConn) Close() error {
-	return c.wsconn.Close()
-}
-
-func (c *wsConn) Send(m Message) error {
+func (c *wsConn) Send(m Msg) error {
 	data := make([]byte, m.Size())
 	if _, err := m.Marshal(data); err != nil {
 		return err
@@ -66,9 +58,13 @@ func (c *wsConn) Send(m Message) error {
 	return c.wsconn.Send(data)
 }
 
-func (c *wsConn) Reply(reqId uint32, reply Message) error {
-	reply.Header().setFlagReply()
-	reply.Header().setReqId(reqId)
+func (c *wsConn) Request(ctx context.Context, m Msg) (Msg, error) {
+	return c.rt.request(ctx, c, m)
+}
+
+func (c *wsConn) Reply(reqId uint32, reply Msg) error {
+	reply.Header().SetFlagReply()
+	reply.Header().SetReqId(reqId)
 	return c.Send(reply)
 }
 

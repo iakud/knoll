@@ -2,8 +2,8 @@ package krpc
 
 import "sync"
 
-var cPool = sync.Pool{New: func() any { return &CMessage{} }}
+var cPool = sync.Pool{New: func() any { return &userMsg{} }}
 
-func NewCMessage() Message {
-	return cPool.Get().(Message)
+func NewCMessage() Msg {
+	return cPool.Get().(Msg)
 }

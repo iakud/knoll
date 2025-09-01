@@ -8,22 +8,34 @@ import (
 )
 
 type tcpConn struct {
-	id         uint64
-	tcpconn    *knet.TCPConn
-	hash       uint64
-	rt         *roundTrip
-	userdata   any
-	newMessage func() Message
+	id       uint64
+	tcpconn  *knet.TCPConn
+	backend  bool
+	rt       *roundTrip
+	hash     uint64
+	userdata any
 }
 
-func newTCPConn(id uint64, tcpconn *knet.TCPConn, newMessage func() Message) *tcpConn {
+func newTCPConn(id uint64, tcpconn *knet.TCPConn, backend bool) *tcpConn {
 	c := &tcpConn{
-		id:         id,
-		tcpconn:    tcpconn,
-		rt:         newRoundTrip(),
-		newMessage: newMessage,
+		id:      id,
+		tcpconn: tcpconn,
+		backend: backend,
+		rt:      newRoundTrip(),
 	}
 	return c
+}
+
+func (s *tcpConn) Id() uint64 {
+	return s.id
+}
+
+func (c *tcpConn) Hash() uint64 {
+	return c.hash
+}
+
+func (c *tcpConn) Close() error {
+	return c.tcpconn.Close()
 }
 
 func (c *tcpConn) LocalAddr() net.Addr {
@@ -34,31 +46,11 @@ func (c *tcpConn) RemoteAddr() net.Addr {
 	return c.tcpconn.RemoteAddr()
 }
 
-func (s *tcpConn) Id() uint64 {
-	return s.id
+func (c *tcpConn) NewMsg() Msg {
+	return NewMsg(c.backend)
 }
 
-func (c *tcpConn) setHash(hash uint64) {
-	c.hash = hash
-}
-
-func (c *tcpConn) Hash() uint64 {
-	return c.hash
-}
-
-func (c *tcpConn) Request(ctx context.Context, m Message) (Message, error) {
-	return c.rt.request(ctx, c, m)
-}
-
-func (c *tcpConn) NewMessage() Message {
-	return c.newMessage()
-}
-
-func (c *tcpConn) Close() error {
-	return c.tcpconn.Close()
-}
-
-func (c *tcpConn) Send(m Message) error {
+func (c *tcpConn) Send(m Msg) error {
 	data := make([]byte, m.Size())
 	if _, err := m.Marshal(data); err != nil {
 		return err
@@ -66,9 +58,13 @@ func (c *tcpConn) Send(m Message) error {
 	return c.tcpconn.Send(data)
 }
 
-func (c *tcpConn) Reply(reqId uint32, reply Message) error {
-	reply.Header().setFlagReply()
-	reply.Header().setReqId(reqId)
+func (c *tcpConn) Request(ctx context.Context, m Msg) (Msg, error) {
+	return c.rt.request(ctx, c, m)
+}
+
+func (c *tcpConn) Reply(reqId uint32, reply Msg) error {
+	reply.Header().SetFlagReply()
+	reply.Header().SetReqId(reqId)
 	return c.Send(reply)
 }
 

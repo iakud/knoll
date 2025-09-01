@@ -11,19 +11,19 @@ import (
 )
 
 type wsServer struct {
-	connId     atomic.Uint64
-	server     *knet.WSServer
-	handler    ServerHandler
-	newMessage func() Message
-	locker     sync.RWMutex
-	conns      map[uint64]*wsConn
+	connId  atomic.Uint64
+	server  *knet.WSServer
+	handler ServerHandler
+	backend bool
+	locker  sync.RWMutex
+	conns   map[uint64]*wsConn
 }
 
-func NewWSServer(addr string, handler ServerHandler, newMessage func() Message) Server {
+func NewWSServer(addr string, handler ServerHandler, backend bool) Server {
 	s := &wsServer{
-		handler:    handler,
-		newMessage: newMessage,
-		conns:      make(map[uint64]*wsConn),
+		handler: handler,
+		backend: backend,
+		conns:   make(map[uint64]*wsConn),
 	}
 	s.server = knet.NewWSServer(addr, s)
 	return s
@@ -47,7 +47,7 @@ func (s *wsServer) GetConn(id uint64) (Conn, bool) {
 func (s *wsServer) Connect(wsconn *knet.WSConn, connected bool) {
 	if connected {
 		connId := s.connId.Add(1)
-		conn := newWSConn(connId, wsconn, s.newMessage)
+		conn := newWSConn(connId, wsconn, s.backend)
 		wsconn.Userdata = conn
 
 		s.locker.Lock()
@@ -81,7 +81,7 @@ func (s *wsServer) Receive(wsconn *knet.WSConn, data []byte) {
 		return
 	}
 
-	m := s.newMessage()
+	m := NewMsg(s.backend)
 	if _, err := m.Unmarshal(data); err != nil {
 		conn.Close()
 		return
@@ -97,7 +97,7 @@ func (s *wsServer) Receive(wsconn *knet.WSConn, data []byte) {
 	s.handler.Receive(conn, m)
 }
 
-func (s *wsServer) handleMessage(conn *wsConn, m Message) error {
+func (s *wsServer) handleMessage(conn *wsConn, m Msg) error {
 	switch m.Header().MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
 		return s.handleHandshake(conn, m)
@@ -110,7 +110,7 @@ func (s *wsServer) handleMessage(conn *wsConn, m Message) error {
 	}
 }
 
-func (s *wsServer) handleHandshake(conn *wsConn, m Message) error {
+func (s *wsServer) handleHandshake(conn *wsConn, m Msg) error {
 	var msg knetpb.ClientHandshake
 	if err := proto.Unmarshal(m.Payload(), &msg); err != nil {
 		return err
@@ -119,7 +119,7 @@ func (s *wsServer) handleHandshake(conn *wsConn, m Message) error {
 	return s.handler.Handshake(conn, &msg)
 }
 
-func (s *wsServer) handleUserOnline(conn *wsConn, m Message) error {
+func (s *wsServer) handleUserOnline(conn *wsConn, m Msg) error {
 	var req knetpb.UserOnlineRequest
 	if err := proto.Unmarshal(m.Payload(), &req); err != nil {
 		return err
@@ -131,7 +131,7 @@ func (s *wsServer) handleUserOnline(conn *wsConn, m Message) error {
 	return Reply(conn, m, uint16(knetpb.Msg_USER_ONLINE), reply)
 }
 
-func (s *wsServer) handleKickOut(conn *wsConn, m Message) error {
+func (s *wsServer) handleKickOut(conn *wsConn, m Msg) error {
 	var req knetpb.KickOutRequest
 	if err := proto.Unmarshal(m.Payload(), &req); err != nil {
 		return err
