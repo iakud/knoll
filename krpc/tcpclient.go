@@ -1,24 +1,24 @@
 package krpc
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/iakud/knoll/knet"
 	"github.com/iakud/knoll/krpc/knetpb"
+	"google.golang.org/protobuf/proto"
 )
 
 type tcpClient struct {
-	hash       uint64
 	client     *knet.TCPClient
-	handler    Handler
+	handler    ClientHandler
 	newMessage func() Message
 	locker     sync.RWMutex
 	conn       *tcpConn
 }
 
-func NewTCPClient(addr string, hash uint64, handler Handler, newMessage func() Message) Client {
+func NewTCPClient(addr string, handler ClientHandler, newMessage func() Message) Client {
 	c := &tcpClient{
-		hash:       hash,
 		handler:    handler,
 		newMessage: newMessage,
 	}
@@ -50,10 +50,8 @@ func (c *tcpClient) Connect(tcpconn *knet.TCPConn, connected bool) {
 		c.locker.Lock()
 		c.conn = conn
 		c.locker.Unlock()
-		if err := requestHandshake(conn, c.hash); err != nil {
-			tcpconn.Close()
-			return
-		}
+
+		c.handler.Connect(conn, true)
 	} else {
 		if tcpconn.Userdata == nil {
 			return
@@ -82,16 +80,61 @@ func (c *tcpClient) Receive(tcpconn *knet.TCPConn, data []byte) {
 
 	m := c.newMessage()
 	if _, err := m.Unmarshal(data); err != nil {
-		tcpconn.Close()
+		conn.Close()
+		return
+	}
+
+	if m.Header().FlagReply() && conn.rt != nil {
+		if err := conn.rt.handleReply(m); err != nil {
+			conn.Close()
+		}
 		return
 	}
 
 	if m.Header().MsgId() < uint16(knetpb.Msg_RESERVED_END) {
-		if err := handleClientMsg(conn, m, c.handler); err != nil {
-			tcpconn.Close()
+		if err := c.handleMessage(conn, m); err != nil {
+			conn.Close()
 		}
 		return
 	}
 
 	c.handler.Receive(conn, m)
+}
+
+func (c *tcpClient) handleMessage(conn *tcpConn, m Message) error {
+	switch m.Header().MsgId() {
+	case uint16(knetpb.Msg_HANDSHAKE):
+		return c.handleHandshake(conn, m)
+	case uint16(knetpb.Msg_USER_OFFLINE_NTF):
+		return c.handleUserOffline(conn, m)
+	case uint16(knetpb.Msg_KICKED_OUT_NTF):
+		return c.handleKickedOut(conn, m)
+	default:
+		return errors.New("unknow message")
+	}
+}
+
+func (c *tcpClient) handleHandshake(conn *tcpConn, m Message) error {
+	var msg knetpb.ServerHandshake
+	if err := proto.Unmarshal(m.Payload(), &msg); err != nil {
+		return err
+	}
+	conn.hash = msg.GetHash()
+	return c.handler.Handshake(conn, &msg)
+}
+
+func (c *tcpClient) handleUserOffline(conn *tcpConn, m Message) error {
+	var reply knetpb.UserOfflineNotify
+	if err := proto.Unmarshal(m.Payload(), &reply); err != nil {
+		return err
+	}
+	return c.handler.UserOffline(conn, &reply)
+}
+
+func (c *tcpClient) handleKickedOut(conn *tcpConn, m Message) error {
+	var reply knetpb.KickedOutNotify
+	if err := proto.Unmarshal(m.Payload(), &reply); err != nil {
+		return err
+	}
+	return c.handler.KickedOut(conn, &reply)
 }

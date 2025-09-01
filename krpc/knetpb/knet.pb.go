@@ -196,7 +196,7 @@ func (b0 Error_builder) Build() *Error {
 	return m0
 }
 
-type HandshakeRequest struct {
+type ClientHandshake struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Hash        uint64                 `protobuf:"varint,1,opt,name=Hash"`
 	XXX_raceDetectHookData protoimpl.RaceDetectHookData
@@ -205,20 +205,20 @@ type HandshakeRequest struct {
 	sizeCache              protoimpl.SizeCache
 }
 
-func (x *HandshakeRequest) Reset() {
-	*x = HandshakeRequest{}
+func (x *ClientHandshake) Reset() {
+	*x = ClientHandshake{}
 	mi := &file_knet_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *HandshakeRequest) String() string {
+func (x *ClientHandshake) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*HandshakeRequest) ProtoMessage() {}
+func (*ClientHandshake) ProtoMessage() {}
 
-func (x *HandshakeRequest) ProtoReflect() protoreflect.Message {
+func (x *ClientHandshake) ProtoReflect() protoreflect.Message {
 	mi := &file_knet_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -230,38 +230,38 @@ func (x *HandshakeRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *HandshakeRequest) GetHash() uint64 {
+func (x *ClientHandshake) GetHash() uint64 {
 	if x != nil {
 		return x.xxx_hidden_Hash
 	}
 	return 0
 }
 
-func (x *HandshakeRequest) SetHash(v uint64) {
+func (x *ClientHandshake) SetHash(v uint64) {
 	x.xxx_hidden_Hash = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
 }
 
-func (x *HandshakeRequest) HasHash() bool {
+func (x *ClientHandshake) HasHash() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
 }
 
-func (x *HandshakeRequest) ClearHash() {
+func (x *ClientHandshake) ClearHash() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
 	x.xxx_hidden_Hash = 0
 }
 
-type HandshakeRequest_builder struct {
+type ClientHandshake_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 	Hash *uint64
 }
 
-func (b0 HandshakeRequest_builder) Build() *HandshakeRequest {
-	m0 := &HandshakeRequest{}
+func (b0 ClientHandshake_builder) Build() *ClientHandshake {
+	m0 := &ClientHandshake{}
 	b, x := &b0, m0
 	_, _ = b, x
 	if b.Hash != nil {
@@ -271,26 +271,29 @@ func (b0 HandshakeRequest_builder) Build() *HandshakeRequest {
 	return m0
 }
 
-type HandshakeReply struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+type ServerHandshake struct {
+	state                  protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Hash        uint64                 `protobuf:"varint,1,opt,name=Hash"`
+	XXX_raceDetectHookData protoimpl.RaceDetectHookData
+	XXX_presence           [1]uint32
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
-func (x *HandshakeReply) Reset() {
-	*x = HandshakeReply{}
+func (x *ServerHandshake) Reset() {
+	*x = ServerHandshake{}
 	mi := &file_knet_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *HandshakeReply) String() string {
+func (x *ServerHandshake) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*HandshakeReply) ProtoMessage() {}
+func (*ServerHandshake) ProtoMessage() {}
 
-func (x *HandshakeReply) ProtoReflect() protoreflect.Message {
+func (x *ServerHandshake) ProtoReflect() protoreflect.Message {
 	mi := &file_knet_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -302,15 +305,44 @@ func (x *HandshakeReply) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-type HandshakeReply_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
+func (x *ServerHandshake) GetHash() uint64 {
+	if x != nil {
+		return x.xxx_hidden_Hash
+	}
+	return 0
 }
 
-func (b0 HandshakeReply_builder) Build() *HandshakeReply {
-	m0 := &HandshakeReply{}
+func (x *ServerHandshake) SetHash(v uint64) {
+	x.xxx_hidden_Hash = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
+}
+
+func (x *ServerHandshake) HasHash() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *ServerHandshake) ClearHash() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_Hash = 0
+}
+
+type ServerHandshake_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	Hash *uint64
+}
+
+func (b0 ServerHandshake_builder) Build() *ServerHandshake {
+	m0 := &ServerHandshake{}
 	b, x := &b0, m0
 	_, _ = b, x
+	if b.Hash != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 1)
+		x.xxx_hidden_Hash = *b.Hash
+	}
 	return m0
 }
 
@@ -890,10 +922,11 @@ const file_knet_proto_rawDesc = "" +
 	"knet.proto\x12\x06knetpb\"5\n" +
 	"\x05Error\x12\x12\n" +
 	"\x04Code\x18\x01 \x01(\x05R\x04Code\x12\x18\n" +
-	"\aMessage\x18\x02 \x01(\tR\aMessage\"&\n" +
-	"\x10HandshakeRequest\x12\x12\n" +
-	"\x04Hash\x18\x01 \x01(\x04R\x04Hash\"\x10\n" +
-	"\x0eHandshakeReply\"\x06\n" +
+	"\aMessage\x18\x02 \x01(\tR\aMessage\"%\n" +
+	"\x0fClientHandshake\x12\x12\n" +
+	"\x04Hash\x18\x01 \x01(\x04R\x04Hash\"%\n" +
+	"\x0fServerHandshake\x12\x12\n" +
+	"\x04Hash\x18\x01 \x01(\x04R\x04Hash\"\x06\n" +
 	"\x04Ping\"\x06\n" +
 	"\x04Pong\"+\n" +
 	"\x0fKickedOutNotify\x12\x18\n" +
@@ -931,8 +964,8 @@ var file_knet_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_knet_proto_goTypes = []any{
 	(Msg)(0),                  // 0: knetpb.Msg
 	(*Error)(nil),             // 1: knetpb.Error
-	(*HandshakeRequest)(nil),  // 2: knetpb.HandshakeRequest
-	(*HandshakeReply)(nil),    // 3: knetpb.HandshakeReply
+	(*ClientHandshake)(nil),   // 2: knetpb.ClientHandshake
+	(*ServerHandshake)(nil),   // 3: knetpb.ServerHandshake
 	(*Ping)(nil),              // 4: knetpb.Ping
 	(*Pong)(nil),              // 5: knetpb.Pong
 	(*KickedOutNotify)(nil),   // 6: knetpb.KickedOutNotify

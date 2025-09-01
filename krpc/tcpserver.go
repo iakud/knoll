@@ -1,23 +1,25 @@
 package krpc
 
 import (
+	"errors"
 	"sync"
 	"sync/atomic"
 
 	"github.com/iakud/knoll/knet"
 	"github.com/iakud/knoll/krpc/knetpb"
+	"google.golang.org/protobuf/proto"
 )
 
 type tcpServer struct {
 	connId     atomic.Uint64
 	server     *knet.TCPServer
-	handler    Handler
+	handler    ServerHandler
 	newMessage func() Message
 	locker     sync.RWMutex
 	conns      map[uint64]*tcpConn
 }
 
-func NewTCPServer(addr string, handler Handler, newMessage func() Message) Server {
+func NewTCPServer(addr string, handler ServerHandler, newMessage func() Message) Server {
 	s := &tcpServer{
 		handler:    handler,
 		newMessage: newMessage,
@@ -52,7 +54,7 @@ func (s *tcpServer) Connect(tcpconn *knet.TCPConn, connected bool) {
 		s.conns[conn.id] = conn
 		s.locker.Unlock()
 
-		// s.handler.Connect(conn, true)
+		s.handler.Connect(conn, true)
 	} else {
 		if tcpconn.Userdata == nil {
 			return
@@ -81,16 +83,69 @@ func (s *tcpServer) Receive(tcpconn *knet.TCPConn, data []byte) {
 
 	m := s.newMessage()
 	if _, err := m.Unmarshal(data); err != nil {
-		tcpconn.Close()
+		conn.Close()
+		return
+	}
+
+	if m.Header().FlagReply() && conn.rt != nil {
+		if err := conn.rt.handleReply(m); err != nil {
+			conn.Close()
+		}
 		return
 	}
 
 	if m.Header().MsgId() < uint16(knetpb.Msg_RESERVED_END) {
-		if err := handleServerMsg(conn, m, s.handler); err != nil {
-			tcpconn.Close()
+		if err := s.handleMessage(conn, m); err != nil {
+			conn.Close()
 		}
 		return
 	}
 
 	s.handler.Receive(conn, m)
+}
+
+func (s *tcpServer) handleMessage(conn *tcpConn, m Message) error {
+	switch m.Header().MsgId() {
+	case uint16(knetpb.Msg_HANDSHAKE):
+		return s.handleHandshake(conn, m)
+	case uint16(knetpb.Msg_USER_ONLINE):
+		return s.handleUserOnline(conn, m)
+	case uint16(knetpb.Msg_KICK_OUT):
+		return s.handleKickOut(conn, m)
+	default:
+		return errors.New("unknow message")
+	}
+}
+
+func (s *tcpServer) handleHandshake(conn *tcpConn, m Message) error {
+	var msg knetpb.ClientHandshake
+	if err := proto.Unmarshal(m.Payload(), &msg); err != nil {
+		return err
+	}
+	conn.hash = msg.GetHash()
+	return s.handler.Handshake(conn, &msg)
+}
+
+func (s *tcpServer) handleUserOnline(conn *tcpConn, m Message) error {
+	var req knetpb.UserOnlineRequest
+	if err := proto.Unmarshal(m.Payload(), &req); err != nil {
+		return err
+	}
+	reply, err := s.handler.UserOnline(conn, &req)
+	if err != nil {
+		return err
+	}
+	return Reply(conn, m, uint16(knetpb.Msg_USER_ONLINE), reply)
+}
+
+func (s *tcpServer) handleKickOut(conn *tcpConn, m Message) error {
+	var req knetpb.KickOutRequest
+	if err := proto.Unmarshal(m.Payload(), &req); err != nil {
+		return err
+	}
+	reply, err := s.handler.KickOut(conn, &req)
+	if err != nil {
+		return err
+	}
+	return Reply(conn, m, uint16(knetpb.Msg_KICK_OUT), reply)
 }

@@ -26,11 +26,12 @@ message Error {
 	string Message = 2;
 }
 
-message HandshakeRequest {
+message ClientHandshake {
 	uint64 Hash = 1;
 }
 
-message HandshakeReply {
+message ServerHandshake {
+	uint64 Hash = 1;
 }
 
 message Ping {

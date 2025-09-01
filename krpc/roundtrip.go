@@ -7,21 +7,21 @@ import (
 	"sync/atomic"
 )
 
-type RoundTrip struct {
+type roundTrip struct {
 	reqId atomic.Uint32
 
 	locker   sync.Mutex
 	requests map[uint32]chan Message
 }
 
-func NewRoundTrip() *RoundTrip {
-	r := &RoundTrip{
+func newRoundTrip() *roundTrip {
+	r := &roundTrip{
 		requests: make(map[uint32]chan Message),
 	}
 	return r
 }
 
-func (r *RoundTrip) Request(ctx context.Context, conn Conn, m Message) (Message, error) {
+func (r *roundTrip) request(ctx context.Context, conn Conn, m Message) (Message, error) {
 	reqId := r.reqId.Add(1)
 	m.Header().setFlagRequest()
 	m.Header().setReqId(reqId)
@@ -49,7 +49,7 @@ func (r *RoundTrip) Request(ctx context.Context, conn Conn, m Message) (Message,
 	}
 }
 
-func (r *RoundTrip) HandleReply(m Message) error {
+func (r *roundTrip) handleReply(m Message) error {
 	r.locker.Lock()
 	rc, ok := r.requests[m.Header().ReqId()]
 	if !ok {

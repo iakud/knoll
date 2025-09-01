@@ -1,78 +1,52 @@
 package krpc
 
 import (
-	"errors"
+	"context"
+	"net"
 
 	"github.com/iakud/knoll/krpc/knetpb"
-	"google.golang.org/protobuf/proto"
 )
 
-func handleServerMsg(conn Conn, m Message, handler Handler) error {
-	switch m.Header().MsgId() {
-	case uint16(knetpb.Msg_HANDSHAKE):
-		return handleServerHandshake(conn, m, handler)
-	case uint16(knetpb.Msg_USER_ONLINE):
-		return handleServerUserOnline(conn, m, handler)
-	default:
-		return errors.New("unknow message")
-	}
+type Server interface {
+	ListenAndServe() error
+	Close() error
+	GetConn(id uint64) (Conn, bool)
 }
 
-func handleServerHandshake(conn Conn, m Message, handler Handler) error {
-	var req knetpb.HandshakeRequest
-	if err := proto.Unmarshal(m.Payload(), &req); err != nil {
-		return err
-	}
-
-	if err := replyHandshake(conn); err != nil {
-		return err
-	}
-	conn.setHash(req.GetHash())
-	handler.Connect(conn, true)
-	handler.Handshake(conn, req.GetHash())
-	return nil
+type ServerHandler interface {
+	Connect(conn Conn, connected bool)
+	Receive(conn Conn, msg Message)
+	Handshake(conn Conn, msg *knetpb.ClientHandshake) error
+	UserOnline(conn Conn, req *knetpb.UserOnlineRequest) (*knetpb.UserOnlineReply, error)
+	KickOut(conn Conn, req *knetpb.KickOutRequest) (*knetpb.KickOutReply, error)
 }
 
-func handleServerUserOnline(conn Conn, m Message, handler Handler) error {
-	var req knetpb.UserOnlineRequest
-	if err := proto.Unmarshal(m.Payload(), &req); err != nil {
-		return err
-	}
-
-	if err := replyUserOnline(conn); err != nil {
-		return err
-	}
-	handler.UserOnline(conn, req.GetUserConnId(), req.GetUserId())
-	return nil
+type Client interface {
+	DialAndServe() error
+	Close() error
+	GetConn() (Conn, bool)
 }
 
-func handleClientMsg(conn Conn, m Message, handler Handler) error {
-	switch m.Header().MsgId() {
-	case uint16(knetpb.Msg_HANDSHAKE):
-		return handleClientHandshake(conn, m, handler)
-	case uint16(knetpb.Msg_USER_ONLINE):
-		return handleClientUserOnline(conn, m, handler)
-	default:
-		return errors.New("unknow message")
-	}
+type ClientHandler interface {
+	Connect(conn Conn, connected bool)
+	Receive(conn Conn, msg Message)
+	Handshake(conn Conn, msg *knetpb.ServerHandshake) error
+	UserOffline(conn Conn, msg *knetpb.UserOfflineNotify) error
+	KickedOut(conn Conn, msg *knetpb.KickedOutNotify) error
 }
 
-func handleClientHandshake(conn Conn, m Message, handler Handler) error {
-	var reply knetpb.HandshakeReply
-	if err := proto.Unmarshal(m.Payload(), &reply); err != nil {
-		return err
-	}
+type Conn interface {
+	Id() uint64
+	setHash(hash uint64)
+	Hash() uint64
+	Close() error
+	LocalAddr() net.Addr
+	RemoteAddr() net.Addr
+	Send(msg Message) error
+	Reply(reqId uint32, reply Message) error
+	Request(ctx context.Context, m Message) (Message, error)
+	NewMessage() Message
 
-	conn.setHash(0)
-	handler.Connect(conn, true)
-	handler.Handshake(conn, 0)
-	return nil
-}
-
-func handleClientUserOnline(conn Conn, m Message, handler Handler) error {
-	var reply knetpb.UserOnlineReply
-	if err := proto.Unmarshal(m.Payload(), &reply); err != nil {
-		return err
-	}
-	return nil
+	SetUserdata(userdata any)
+	GetUserdata() any
 }
