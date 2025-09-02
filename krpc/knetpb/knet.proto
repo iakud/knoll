@@ -63,4 +63,5 @@ message UserOnlineReply {
 
 message UserOfflineNotify {
 	uint64 UserId = 1;
+	uint64 UserConnId = 2;
 }

@@ -80,6 +80,7 @@ func SendClientHandshake(conn Conn, hash uint64) error {
 
 func SendServerHandshake(conn Conn, hash uint64) error {
 	var msg knetpb.ServerHandshake
+	msg.SetHash(hash)
 	payload, err := proto.Marshal(&msg)
 	if err != nil {
 		return err
@@ -109,9 +110,10 @@ func RequestUserOnline(ctx context.Context, conn Conn, req *knetpb.UserOnlineReq
 	return &reply, nil
 }
 
-func SendUserOffline(conn Conn, userId uint64) error {
+func SendUserOffline(conn Conn, userId uint64, userConnId uint64) error {
 	var msg knetpb.UserOfflineNotify
 	msg.SetUserId(userId)
+	msg.SetUserConnId(userConnId)
 	payload, err := proto.Marshal(&msg)
 	if err != nil {
 		return err
