@@ -2,6 +2,7 @@ package krpcnet
 
 import (
 	"errors"
+	"log/slog"
 	"sync"
 
 	"github.com/iakud/knoll/knet"
@@ -86,7 +87,7 @@ func (c *wsClient) Receive(wsconn *knet.WSConn, data []byte) {
 
 	if m.Header().FlagReply() && conn.rt != nil {
 		if err := conn.rt.handleReply(m); err != nil {
-			conn.Close()
+			slog.Info("krpcnet: wsclient handle reply", "error", err)
 		}
 		return
 	}
@@ -94,6 +95,7 @@ func (c *wsClient) Receive(wsconn *knet.WSConn, data []byte) {
 	if m.Header().MsgId() < uint16(knetpb.Msg_RESERVED_END) {
 		if err := c.handleMessage(conn, m); err != nil {
 			conn.Close()
+			slog.Info("krpcnet: wsclient handle msg", "error", err)
 		}
 		return
 	}

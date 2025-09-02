@@ -2,6 +2,7 @@ package krpcnet
 
 import (
 	"errors"
+	"log/slog"
 	"sync"
 	"sync/atomic"
 
@@ -89,7 +90,7 @@ func (s *tcpServer) Receive(tcpconn *knet.TCPConn, data []byte) {
 
 	if m.Header().FlagReply() && conn.rt != nil {
 		if err := conn.rt.handleReply(m); err != nil {
-			conn.Close()
+			slog.Info("krpcnet: tcpserver handle reply", "error", err)
 		}
 		return
 	}
@@ -97,6 +98,7 @@ func (s *tcpServer) Receive(tcpconn *knet.TCPConn, data []byte) {
 	if m.Header().MsgId() < uint16(knetpb.Msg_RESERVED_END) {
 		if err := s.handleMessage(conn, m); err != nil {
 			conn.Close()
+			slog.Info("krpcnet: tcpserver handle msg", "error", err)
 		}
 		return
 	}
