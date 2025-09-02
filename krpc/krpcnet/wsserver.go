@@ -88,12 +88,14 @@ func (s *wsServer) Receive(wsconn *knet.WSConn, data []byte) {
 		return
 	}
 
-	if m.Header().FlagReply() && conn.rt != nil {
-		if err := conn.rt.handleReply(m); err != nil {
-			slog.Info("krpcnet: wsserver handle reply", "error", err)
+	/*
+		if m.Header().FlagReply() && conn.rt != nil {
+			if err := conn.rt.handleReply(m); err != nil {
+				slog.Info("krpcnet: wsserver handle reply", "error", err)
+			}
+			return
 		}
-		return
-	}
+	*/
 
 	if m.Header().MsgId() < uint16(knetpb.Msg_RESERVED_END) {
 		if err := s.handleMessage(conn, m); err != nil {
