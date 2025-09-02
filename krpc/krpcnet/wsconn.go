@@ -34,6 +34,10 @@ func (c *wsConn) Hash() uint64 {
 	return c.hash
 }
 
+func (c *wsConn) Shutdown() {
+	c.wsconn.Shutdown()
+}
+
 func (c *wsConn) Close() error {
 	return c.wsconn.Close()
 }

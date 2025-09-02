@@ -11,6 +11,7 @@ import (
 type Conn interface {
 	Id() uint64
 	Hash() uint64
+	Shutdown()
 	Close() error
 	LocalAddr() net.Addr
 	RemoteAddr() net.Addr

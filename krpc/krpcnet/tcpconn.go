@@ -34,6 +34,10 @@ func (c *tcpConn) Hash() uint64 {
 	return c.hash
 }
 
+func (c *tcpConn) Shutdown() {
+	c.tcpconn.Shutdown()
+}
+
 func (c *tcpConn) Close() error {
 	return c.tcpconn.Close()
 }
