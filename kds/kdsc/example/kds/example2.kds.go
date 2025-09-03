@@ -114,26 +114,26 @@ func (x *City) DumpChange() *kdspb.City {
 	}
 	m := new(kdspb.City)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.PlayerId = x.syncable.PlayerId
+		m.SetPlayerId(x.syncable.PlayerId)
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.PlayerBasicInfo = x.syncablePlayerBasicInfo.DumpChange()
+		m.SetPlayerBasicInfo(x.syncablePlayerBasicInfo.DumpChange())
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.CityInfo = x.syncableCityInfo.DumpChange()
+		m.SetCityInfo(x.syncableCityInfo.DumpChange())
 	}
 	if x.checkDirty(uint64(0x01) << 4) {
-		m.Troops = x.syncableTroops.DumpChange()
+		m.SetTroops(x.syncableTroops.DumpChange())
 	}
 	return m
 }
 
 func (x *City) DumpFull() *kdspb.City {
 	m := new(kdspb.City)
-	m.PlayerId = x.syncable.PlayerId
-	m.PlayerBasicInfo = x.syncablePlayerBasicInfo.DumpFull()
-	m.CityInfo = x.syncableCityInfo.DumpFull()
-	m.Troops = x.syncableTroops.DumpFull()
+	m.SetPlayerId(x.syncable.PlayerId)
+	m.SetPlayerBasicInfo(x.syncablePlayerBasicInfo.DumpFull())
+	m.SetCityInfo(x.syncableCityInfo.DumpFull())
+	m.SetTroops(x.syncableTroops.DumpFull())
 	return m
 }
 
@@ -239,22 +239,22 @@ func (x *CityBaseInfo) DumpChange() *kdspb.CityBaseInfo {
 	}
 	m := new(kdspb.CityBaseInfo)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.Positions = x.syncablePositions.DumpChange()
+		m.SetPositions(x.syncablePositions.DumpChange())
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.Troops = x.syncableTroops.DumpChange()
+		m.SetTroops(x.syncableTroops.DumpChange())
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.BuildInfo = x.syncable.BuildInfo
+		m.SetBuildInfo(x.syncable.BuildInfo)
 	}
 	return m
 }
 
 func (x *CityBaseInfo) DumpFull() *kdspb.CityBaseInfo {
 	m := new(kdspb.CityBaseInfo)
-	m.Positions = x.syncablePositions.DumpFull()
-	m.Troops = x.syncableTroops.DumpFull()
-	m.BuildInfo = x.syncable.BuildInfo
+	m.SetPositions(x.syncablePositions.DumpFull())
+	m.SetTroops(x.syncableTroops.DumpFull())
+	m.SetBuildInfo(x.syncable.BuildInfo)
 	return m
 }
 
@@ -344,18 +344,18 @@ func (x *Vector) DumpChange() *kdspb.Vector {
 	}
 	m := new(kdspb.Vector)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.X = x.syncable.X
+		m.SetX(x.syncable.X)
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.Y = x.syncable.Y
+		m.SetY(x.syncable.Y)
 	}
 	return m
 }
 
 func (x *Vector) DumpFull() *kdspb.Vector {
 	m := new(kdspb.Vector)
-	m.X = x.syncable.X
-	m.Y = x.syncable.Y
+	m.SetX(x.syncable.X)
+	m.SetY(x.syncable.Y)
 	return m
 }
 

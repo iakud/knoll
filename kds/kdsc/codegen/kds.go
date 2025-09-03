@@ -72,7 +72,7 @@ func (k *Kds) addType(name string) {
 func (k *Kds) format() {
 	for _, type_ := range k.Types {
 		k.addGoImportByType(type_)
-		k.addProtoImportByType(type_)
+		// k.addProtoImportByType(type_)
 	}
 
 	k.sortImports()

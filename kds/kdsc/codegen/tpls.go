@@ -647,6 +647,10 @@ func (x *{{$MessageName}}) Set{{.Name}}(v {{template "FieldType" .}}) {
 	if v != nil || x.syncable.{{.Name}} != nil {
 		return
 	}
+{{- else if eq .Type "timestamp"}}
+	if v.Equal(x.syncable.{{.Name}}) {
+		return
+	}
 {{- else}}
 	if v == x.syncable.{{.Name}} {
 		return
@@ -666,19 +670,19 @@ func (x *{{$MessageName}}) DumpChange() *{{.GoProtoPackage}}.{{.Name}} {
 {{- range .Fields}}
 	if x.checkDirty(uint64(0x01) << {{.Number}}) {
 {{- if .Repeated}}
-		m.{{.Name}} = x.syncable{{.Name}}.DumpChange()
+		m.Set{{.Name}}(x.syncable{{.Name}}.DumpChange())
 {{- else if .Map}}
-		m.{{.Name}} = x.syncable{{.Name}}.DumpChange()
+		m.Set{{.Name}}(x.syncable{{.Name}}.DumpChange())
 {{- else if eq .TypeKind "component"}}
-		m.{{.Name}} = x.syncable{{.Name}}.DumpChange()
+		m.Set{{.Name}}(x.syncable{{.Name}}.DumpChange())
 {{- else if eq .Type "timestamp"}}
-		m.{{.Name}} = timestamppb.New(x.syncable.{{.Name}})
+		m.Set{{.Name}}(timestamppb.New(x.syncable.{{.Name}}))
 {{- else if eq .Type "duration"}}
-		m.{{.Name}} = durationpb.New(x.syncable.{{.Name}})
+		m.Set{{.Name}}(durationpb.New(x.syncable.{{.Name}}))
 {{- else if eq .Type "empty"}}
-		m.{{.Name}} = new(emptypb.Empty)
+		m.Set{{.Name}}(new(emptypb.Empty))
 {{- else}}
-		m.{{.Name}} = x.syncable.{{.Name}}
+		m.Set{{.Name}}(x.syncable.{{.Name}})
 {{- end}}
 	}
 {{- end}}
@@ -689,19 +693,19 @@ func (x *{{$MessageName}}) DumpFull() *{{.GoProtoPackage}}.{{.Name}} {
 	m := new({{.GoProtoPackage}}.{{.Name}})
 {{- range .Fields}}
 {{- if .Repeated}}
-	m.{{.Name}} = x.syncable{{.Name}}.DumpFull()
+	m.Set{{.Name}}(x.syncable{{.Name}}.DumpFull())
 {{- else if .Map}}
-	m.{{.Name}} = x.syncable{{.Name}}.DumpFull()
+	m.Set{{.Name}}(x.syncable{{.Name}}.DumpFull())
 {{- else if eq .TypeKind "component"}}
-	m.{{.Name}} = x.syncable{{.Name}}.DumpFull()
+	m.Set{{.Name}}(x.syncable{{.Name}}.DumpFull())
 {{- else if eq .Type "timestamp"}}
-	m.{{.Name}} = timestamppb.New(x.syncable.{{.Name}})
+	m.Set{{.Name}}(timestamppb.New(x.syncable.{{.Name}}))
 {{- else if eq .Type "duration"}}
-	m.{{.Name}} = durationpb.New(x.syncable.{{.Name}})
+	m.Set{{.Name}}(durationpb.New(x.syncable.{{.Name}}))
 {{- else if eq .Type "empty"}}
-	m.{{.Name}} = new(emptypb.Empty)
+	m.Set{{.Name}}(new(emptypb.Empty))
 {{- else}}
-	m.{{.Name}} = x.syncable.{{.Name}}
+	m.Set{{.Name}}(x.syncable.{{.Name}})
 {{- end}}
 {{- end}}
 	return m

@@ -118,22 +118,22 @@ func (x *Player) DumpChange() *kdspb.Player {
 	}
 	m := new(kdspb.Player)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.Info = x.syncableInfo.DumpChange()
+		m.SetInfo(x.syncableInfo.DumpChange())
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.Hero = x.syncableHero.DumpChange()
+		m.SetHero(x.syncableHero.DumpChange())
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.Bag = x.syncableBag.DumpChange()
+		m.SetBag(x.syncableBag.DumpChange())
 	}
 	return m
 }
 
 func (x *Player) DumpFull() *kdspb.Player {
 	m := new(kdspb.Player)
-	m.Info = x.syncableInfo.DumpFull()
-	m.Hero = x.syncableHero.DumpFull()
-	m.Bag = x.syncableBag.DumpFull()
+	m.SetInfo(x.syncableInfo.DumpFull())
+	m.SetHero(x.syncableHero.DumpFull())
+	m.SetBag(x.syncableBag.DumpFull())
 	return m
 }
 
@@ -225,7 +225,7 @@ func (x *PlayerBasicInfo) GetCreateTime() time.Time {
 }
 
 func (x *PlayerBasicInfo) SetCreateTime(v time.Time) {
-	if v == x.syncable.CreateTime {
+	if v.Equal(x.syncable.CreateTime) {
 		return
 	}
 	x.syncable.CreateTime = v
@@ -238,22 +238,22 @@ func (x *PlayerBasicInfo) DumpChange() *kdspb.PlayerBasicInfo {
 	}
 	m := new(kdspb.PlayerBasicInfo)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.Name = x.syncable.Name
+		m.SetName(x.syncable.Name)
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.IsNew = x.syncable.IsNew
+		m.SetIsNew(x.syncable.IsNew)
 	}
 	if x.checkDirty(uint64(0x01) << 5) {
-		m.CreateTime = timestamppb.New(x.syncable.CreateTime)
+		m.SetCreateTime(timestamppb.New(x.syncable.CreateTime))
 	}
 	return m
 }
 
 func (x *PlayerBasicInfo) DumpFull() *kdspb.PlayerBasicInfo {
 	m := new(kdspb.PlayerBasicInfo)
-	m.Name = x.syncable.Name
-	m.IsNew = x.syncable.IsNew
-	m.CreateTime = timestamppb.New(x.syncable.CreateTime)
+	m.SetName(x.syncable.Name)
+	m.SetIsNew(x.syncable.IsNew)
+	m.SetCreateTime(timestamppb.New(x.syncable.CreateTime))
 	return m
 }
 
@@ -326,14 +326,14 @@ func (x *PlayerHero) DumpChange() *kdspb.PlayerHero {
 	}
 	m := new(kdspb.PlayerHero)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.Heroes = x.syncableHeroes.DumpChange()
+		m.SetHeroes(x.syncableHeroes.DumpChange())
 	}
 	return m
 }
 
 func (x *PlayerHero) DumpFull() *kdspb.PlayerHero {
 	m := new(kdspb.PlayerHero)
-	m.Heroes = x.syncableHeroes.DumpFull()
+	m.SetHeroes(x.syncableHeroes.DumpFull())
 	return m
 }
 
@@ -409,14 +409,14 @@ func (x *PlayerBag) DumpChange() *kdspb.PlayerBag {
 	}
 	m := new(kdspb.PlayerBag)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.Resources = x.syncableResources.DumpChange()
+		m.SetResources(x.syncableResources.DumpChange())
 	}
 	return m
 }
 
 func (x *PlayerBag) DumpFull() *kdspb.PlayerBag {
 	m := new(kdspb.PlayerBag)
-	m.Resources = x.syncableResources.DumpFull()
+	m.SetResources(x.syncableResources.DumpFull())
 	return m
 }
 
@@ -529,26 +529,26 @@ func (x *Hero) DumpChange() *kdspb.Hero {
 	}
 	m := new(kdspb.Hero)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.HeroId = x.syncable.HeroId
+		m.SetHeroId(x.syncable.HeroId)
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.HeroLevel = x.syncable.HeroLevel
+		m.SetHeroLevel(x.syncable.HeroLevel)
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.Type = x.syncable.Type
+		m.SetType(x.syncable.Type)
 	}
 	if x.checkDirty(uint64(0x01) << 4) {
-		m.NeedTime = durationpb.New(x.syncable.NeedTime)
+		m.SetNeedTime(durationpb.New(x.syncable.NeedTime))
 	}
 	return m
 }
 
 func (x *Hero) DumpFull() *kdspb.Hero {
 	m := new(kdspb.Hero)
-	m.HeroId = x.syncable.HeroId
-	m.HeroLevel = x.syncable.HeroLevel
-	m.Type = x.syncable.Type
-	m.NeedTime = durationpb.New(x.syncable.NeedTime)
+	m.SetHeroId(x.syncable.HeroId)
+	m.SetHeroLevel(x.syncable.HeroLevel)
+	m.SetType(x.syncable.Type)
+	m.SetNeedTime(durationpb.New(x.syncable.NeedTime))
 	return m
 }
 
