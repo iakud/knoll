@@ -137,6 +137,13 @@ func (x *City) DumpFull() *kdspb.City {
 	return m
 }
 
+func (x *City) Load(m *kdspb.City) {
+	x.syncable.PlayerId = m.GetPlayerId()
+	x.syncablePlayerBasicInfo.Load(m.GetPlayerBasicInfo())
+	x.syncableCityInfo.Load(m.GetCityInfo())
+	x.syncableTroops.Load(m.GetTroops())
+}
+
 func (x *City) markAll() {
 	x.dirty = uint64(0x01)
 }
@@ -258,6 +265,12 @@ func (x *CityBaseInfo) DumpFull() *kdspb.CityBaseInfo {
 	return m
 }
 
+func (x *CityBaseInfo) Load(m *kdspb.CityBaseInfo) {
+	x.syncablePositions.Load(m.GetPositions())
+	x.syncableTroops.Load(m.GetTroops())
+	x.syncable.BuildInfo = m.GetBuildInfo()
+}
+
 func (x *CityBaseInfo) markAll() {
 	x.dirty = uint64(0x01)
 }
@@ -357,6 +370,11 @@ func (x *Vector) DumpFull() *kdspb.Vector {
 	m.SetX(x.syncable.X)
 	m.SetY(x.syncable.Y)
 	return m
+}
+
+func (x *Vector) Load(m *kdspb.Vector) {
+	x.syncable.X = m.GetX()
+	x.syncable.Y = m.GetY()
 }
 
 func (x *Vector) markAll() {
@@ -553,6 +571,14 @@ func (x *Vector_List) DumpFull() []*kdspb.Vector {
 		m = append(m, v.DumpChange())
 	}
 	return m
+}
+
+func (x *Vector_List) Load(m []*kdspb.Vector) {
+	for _, v := range m {
+		c := NewVector()
+		c.Load(v)
+		x.syncable = append(x.syncable, c)
+	}
 }
 
 func (x *Vector_List) markDirty() {

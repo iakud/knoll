@@ -106,6 +106,12 @@ func (x *Int32_Empty_Map) DumpFull() map[int32]*emptypb.Empty {
 	return m
 }
 
+func (x *Int32_Empty_Map) Load(m map[int32]*emptypb.Empty) {
+	for k := range m {
+		x.syncable[k] = struct{}{}
+	}
+}
+
 func (x *Int32_Empty_Map) markDirty() {
 	if x.dirty {
 		return
@@ -217,6 +223,12 @@ func (x *Int32_Int32_Map) DumpFull() map[int32]int32 {
 		m[k] = v
 	}
 	return m
+}
+
+func (x *Int32_Int32_Map) Load(m map[int32]int32) {
+	for k, v := range m {
+		x.syncable[k] = v
+	}
 }
 
 func (x *Int32_Int32_Map) markDirty() {
@@ -340,6 +352,12 @@ func (x *Int64_List) DumpFull() []int64 {
 		m = append(m, v)
 	}
 	return m
+}
+
+func (x *Int64_List) Load(m []int64) {
+	for _, v := range m {
+		x.syncable = append(x.syncable, v)
+	}
 }
 
 func (x *Int64_List) markDirty() {

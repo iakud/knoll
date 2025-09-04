@@ -337,6 +337,36 @@ func (x *{{.Name}}) DumpFull() []{{template "ListValueProtoType" .}} {
 	return m
 }
 
+func (x *{{.Name}}) Load(m []{{template "ListValueProtoType" .}}) {
+{{- if eq .TypeKind "component"}}
+	for _, v := range m {
+		c := New{{.Type}}()
+		c.Load(v)
+		x.syncable = append(x.syncable, c)
+	}
+{{- else if eq .TypeKind "enum"}}
+	for _, v := range m {
+		x.syncable = append(x.syncable, v)
+	}
+{{- else if eq .Type "timestamp"}}
+	for _, v := range m {
+		x.syncable = append(x.syncable, v.AsTime())
+	}
+{{- else if eq .Type "duration"}}
+	for _, v := range m {
+		x.syncable = append(x.syncable, v.AsDuration())
+	}
+{{- else if eq .Type "empty"}}
+	for range m {
+		x.syncable = append(x.syncable, struct{}{})
+	}
+{{- else}}
+	for _, v := range m {
+		x.syncable = append(x.syncable, v)
+	}
+{{- end}}
+}
+
 func (x *{{.Name}}) markDirty() {
 	if x.dirty {
 		return
@@ -535,6 +565,36 @@ func (x *{{.Name}}) DumpFull() map[{{goType .KeyType}}]{{template "MapValueProto
 	return m
 }
 
+func (x *{{.Name}}) Load(m map[{{goType .KeyType}}]{{template "MapValueProtoType" .}}) {
+{{- if eq .TypeKind "component"}}
+	for k, v := range m {
+		c := New{{.Type}}()
+		c.Load(v)
+		x.syncable[k] = c
+	}
+{{- else if eq .TypeKind "enum"}}
+	for k, v := range m {
+		x.syncable[k] = v
+	}
+{{- else if eq .Type "timestamp"}}
+	for k, v := range m {
+		x.syncable[k] = v.AsTime()
+	}
+{{- else if eq .Type "duration"}}
+	for k, v := range m {
+		x.syncable[k] = v.AsDuration()
+	}
+{{- else if eq .Type "empty"}}
+	for k := range m {
+		x.syncable[k] = struct{}{}
+	}
+{{- else}}
+	for k, v := range m {
+		x.syncable[k] = v
+	}
+{{- end}}
+}
+
 func (x *{{.Name}}) markDirty() {
 	if x.dirty {
 		return
@@ -709,6 +769,26 @@ func (x *{{$MessageName}}) DumpFull() *{{.GoProtoPackage}}.{{.Name}} {
 {{- end}}
 {{- end}}
 	return m
+}
+
+func (x *{{$MessageName}}) Load(m *{{.GoProtoPackage}}.{{.Name}}) {
+{{- range .Fields}}
+{{- if .Repeated}}
+	x.syncable{{.Name}}.Load(m.Get{{.Name}}())
+{{- else if .Map}}
+	x.syncable{{.Name}}.Load(m.Get{{.Name}}())
+{{- else if eq .TypeKind "component"}}
+	x.syncable{{.Name}}.Load(m.Get{{.Name}}())
+{{- else if eq .Type "timestamp"}}
+	x.syncable.{{.Name}} = m.Get{{.Name}}().AsTime()
+{{- else if eq .Type "duration"}}
+	x.syncable.{{.Name}} = m.Get{{.Name}}().AsDuration()
+{{- else if eq .Type "empty"}}
+	x.syncable.{{.Name}} = struct{}{}
+{{- else}}
+	x.syncable.{{.Name}} = m.Get{{.Name}}()
+{{- end}}
+{{- end}}
 }
 
 {{- end}}
