@@ -47,13 +47,13 @@ func (ctx *Context) addListType(name string) string {
 }
 
 func (ctx *Context) addMapType(name string, keyType string) string {
-	mapTypes, _ := ctx.TypeMap[name]
-	if index := slices.IndexFunc(mapTypes, func(mapType *MapType) bool {
+	mapTypes := ctx.TypeMap[name]
+	index := slices.IndexFunc(mapTypes, func(mapType *MapType) bool {
 		return mapType.KeyType == keyType
-	}); index >= 0 {
+	})
+	if index >= 0 {
 		return mapTypes[index].Name
 	}
-
 	mapType := new(MapType)
 	mapType.ctx = ctx
 	mapType.Name = GoCamelCase(keyType) + "_" + GoCamelCase(name) + "_Map"
