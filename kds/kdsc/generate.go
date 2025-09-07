@@ -1,3 +1,3 @@
-package parser
+package main
 
 //go:generate ./generate.sh

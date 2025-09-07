@@ -5,6 +5,7 @@ kdsc:
 
 tool:
 	GOBIN=$(shell pwd)/local/bin go install tool
+	script/antlr4.sh
 	script/protoc.sh
 
 openjdk:
