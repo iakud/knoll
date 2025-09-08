@@ -12,7 +12,7 @@ type Server interface {
 
 type ServerHandler interface {
 	Connect(conn Conn, connected bool)
-	Receive(conn Conn, msg Msg)
+	Receive(conn Conn, msg Msg) error
 	Handshake(conn Conn, msg *knetpb.ClientHandshake) error
 	UserOnline(conn Conn, req *knetpb.UserOnlineRequest) (*knetpb.UserOnlineReply, error)
 	KickOut(conn Conn, req *knetpb.KickOutRequest) (*knetpb.KickOutReply, error)
@@ -26,7 +26,7 @@ type Client interface {
 
 type ClientHandler interface {
 	Connect(conn Conn, connected bool)
-	Receive(conn Conn, msg Msg)
+	Receive(conn Conn, msg Msg) error
 	Handshake(conn Conn, msg *knetpb.ServerHandshake) error
 	UserOffline(conn Conn, msg *knetpb.UserOfflineNotify) error
 	KickedOut(conn Conn, msg *knetpb.KickedOutNotify) error

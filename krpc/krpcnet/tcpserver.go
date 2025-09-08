@@ -1,7 +1,6 @@
 package krpcnet
 
 import (
-	"errors"
 	"log/slog"
 	"sync"
 	"sync/atomic"
@@ -97,15 +96,9 @@ func (s *tcpServer) Receive(tcpconn *knet.TCPConn, data []byte) {
 		}
 	*/
 
-	if m.Header().MsgId() < uint16(knetpb.Msg_RESERVED_END) {
-		if err := s.handleMessage(conn, m); err != nil {
-			conn.Close()
-			slog.Info("krpcnet: tcpserver handle msg", "error", err)
-		}
-		return
+	if err := s.handleMessage(conn, m); err != nil {
+		slog.Info("krpcnet: tcpserver handle msg", "msgId", m.Header().MsgId(), "error", err)
 	}
-
-	s.handler.Receive(conn, m)
 }
 
 func (s *tcpServer) handleMessage(conn *tcpConn, m Msg) error {
@@ -116,9 +109,8 @@ func (s *tcpServer) handleMessage(conn *tcpConn, m Msg) error {
 		return s.handleUserOnline(conn, m)
 	case uint16(knetpb.Msg_KICK_OUT):
 		return s.handleKickOut(conn, m)
-	default:
-		return errors.New("unknow message")
 	}
+	return s.handler.Receive(conn, m)
 }
 
 func (s *tcpServer) handleHandshake(conn *tcpConn, m Msg) error {

@@ -1,7 +1,6 @@
 package krpcnet
 
 import (
-	"errors"
 	"log/slog"
 	"sync"
 
@@ -92,15 +91,9 @@ func (c *wsClient) Receive(wsconn *knet.WSConn, data []byte) {
 		return
 	}
 
-	if m.Header().MsgId() < uint16(knetpb.Msg_RESERVED_END) {
-		if err := c.handleMessage(conn, m); err != nil {
-			conn.Close()
-			slog.Info("krpcnet: wsclient handle msg", "error", err)
-		}
-		return
+	if err := c.handleMessage(conn, m); err != nil {
+		slog.Info("krpcnet: wsclient handle msg", "msgId", m.Header().MsgId(), "error", err)
 	}
-
-	c.handler.Receive(conn, m)
 }
 
 func (c *wsClient) handleMessage(conn *wsConn, m Msg) error {
@@ -111,9 +104,8 @@ func (c *wsClient) handleMessage(conn *wsConn, m Msg) error {
 		return c.handleUserOffline(conn, m)
 	case uint16(knetpb.Msg_KICKED_OUT_NTF):
 		return c.handleKickedOut(conn, m)
-	default:
-		return errors.New("unknow message")
 	}
+	return c.handler.Receive(conn, m)
 }
 
 func (c *wsClient) handleHandshake(conn *wsConn, m Msg) error {
