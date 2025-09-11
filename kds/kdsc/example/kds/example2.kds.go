@@ -556,6 +556,7 @@ func (x *Vector_List) DeleteFunc(del func(*Vector) bool) {
 		i++
 	}
 	clear(x.syncable[i:])
+	x.syncable = x.syncable[:i]
 	x.markDirty()
 }
 

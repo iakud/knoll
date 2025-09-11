@@ -354,6 +354,7 @@ func (x *Int64_List) DeleteFunc(del func(int64) bool) {
 		i++
 	}
 	clear(x.syncable[i:])
+	x.syncable = x.syncable[:i]
 	x.markDirty()
 }
 

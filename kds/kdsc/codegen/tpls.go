@@ -298,6 +298,7 @@ func (x *{{.Name}}) DeleteFunc(del func({{template "ListValueType" .}}) bool) {
 		i++
 	}
 	clear(x.syncable[i:])
+	x.syncable = x.syncable[:i]
 	x.markDirty()
 }
 
