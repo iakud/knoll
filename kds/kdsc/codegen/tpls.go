@@ -211,6 +211,32 @@ func (x *{{.Name}}) Append(v ...{{template "ListValueType" .}}) {
 	x.markDirty()
 }
 
+func (x *{{.Name}}) Index(v {{template "ListValueType" .}}) int {
+	for i := range x.syncable {
+		if v == x.syncable[i] {
+			return i
+		}
+	}
+	return -1
+}
+
+func (x *{{.Name}}) IndexFunc(f func({{template "ListValueType" .}}) bool) int {
+	for i := range x.syncable {
+		if f(x.syncable[i]) {
+			return i
+		}
+	}
+	return -1
+}
+
+func (x *{{.Name}}) Contains(v {{template "ListValueType" .}}) bool {
+	return x.Index(v) >= 0
+}
+
+func (x *{{.Name}}) ContainsFunc(f func({{template "ListValueType" .}}) bool) bool {
+	return x.IndexFunc(f) >= 0
+}
+
 func (x *{{.Name}}) Insert(i int, v ...{{template "ListValueType" .}}) {
 {{- if eq .TypeKind "component"}}
 	for j := range v {
@@ -249,6 +275,29 @@ func (x *{{.Name}}) Delete(i, j int) {
 		return
 	}
 	x.syncable = slices.Delete(x.syncable, i, j)
+	x.markDirty()
+}
+
+func (x *{{.Name}}) DeleteFunc(del func({{template "ListValueType" .}}) bool) {
+	i := x.IndexFunc(del)
+	if i == -1 {
+		return
+	}
+{{- if eq .TypeKind "component"}}
+	x.syncable[i].dirtyParent = nil
+{{- end}}
+	for j := i + 1; j < len(x.syncable); j++ {
+		v := x.syncable[j]
+		if del(v) {
+{{- if eq .TypeKind "component"}}
+			v.dirtyParent = nil
+{{- end}}
+			continue
+		}
+		x.syncable[i] = v
+		i++
+	}
+	clear(x.syncable[i:])
 	x.markDirty()
 }
 

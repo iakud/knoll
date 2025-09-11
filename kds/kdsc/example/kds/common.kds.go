@@ -298,6 +298,32 @@ func (x *Int64_List) Append(v ...int64) {
 	x.markDirty()
 }
 
+func (x *Int64_List) Index(v int64) int {
+	for i := range x.syncable {
+		if v == x.syncable[i] {
+			return i
+		}
+	}
+	return -1
+}
+
+func (x *Int64_List) IndexFunc(f func(int64) bool) int {
+	for i := range x.syncable {
+		if f(x.syncable[i]) {
+			return i
+		}
+	}
+	return -1
+}
+
+func (x *Int64_List) Contains(v int64) bool {
+	return x.Index(v) >= 0
+}
+
+func (x *Int64_List) ContainsFunc(f func(int64) bool) bool {
+	return x.IndexFunc(f) >= 0
+}
+
 func (x *Int64_List) Insert(i int, v ...int64) {
 	if len(v) == 0 {
 		return
@@ -311,6 +337,23 @@ func (x *Int64_List) Delete(i, j int) {
 		return
 	}
 	x.syncable = slices.Delete(x.syncable, i, j)
+	x.markDirty()
+}
+
+func (x *Int64_List) DeleteFunc(del func(int64) bool) {
+	i := x.IndexFunc(del)
+	if i == -1 {
+		return
+	}
+	for j := i + 1; j < len(x.syncable); j++ {
+		v := x.syncable[j]
+		if del(v) {
+			continue
+		}
+		x.syncable[i] = v
+		i++
+	}
+	clear(x.syncable[i:])
 	x.markDirty()
 }
 

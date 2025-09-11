@@ -479,6 +479,32 @@ func (x *Vector_List) Append(v ...*Vector) {
 	x.markDirty()
 }
 
+func (x *Vector_List) Index(v *Vector) int {
+	for i := range x.syncable {
+		if v == x.syncable[i] {
+			return i
+		}
+	}
+	return -1
+}
+
+func (x *Vector_List) IndexFunc(f func(*Vector) bool) int {
+	for i := range x.syncable {
+		if f(x.syncable[i]) {
+			return i
+		}
+	}
+	return -1
+}
+
+func (x *Vector_List) Contains(v *Vector) bool {
+	return x.Index(v) >= 0
+}
+
+func (x *Vector_List) ContainsFunc(f func(*Vector) bool) bool {
+	return x.IndexFunc(f) >= 0
+}
+
 func (x *Vector_List) Insert(i int, v ...*Vector) {
 	for j := range v {
 		if v[j] != nil && v[j].dirtyParent != nil {
@@ -511,6 +537,25 @@ func (x *Vector_List) Delete(i, j int) {
 		return
 	}
 	x.syncable = slices.Delete(x.syncable, i, j)
+	x.markDirty()
+}
+
+func (x *Vector_List) DeleteFunc(del func(*Vector) bool) {
+	i := x.IndexFunc(del)
+	if i == -1 {
+		return
+	}
+	x.syncable[i].dirtyParent = nil
+	for j := i + 1; j < len(x.syncable); j++ {
+		v := x.syncable[j]
+		if del(v) {
+			v.dirtyParent = nil
+			continue
+		}
+		x.syncable[i] = v
+		i++
+	}
+	clear(x.syncable[i:])
 	x.markDirty()
 }
 
