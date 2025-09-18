@@ -13,15 +13,17 @@ import (
 	"time"
 )
 
-var ErrClosed = errors.New("log: file writer already closed")
+var ErrClosed = errors.New("klog: file writer already closed")
 
-const kBufferSize = 256 * 1024
-const kFlushInterval = 10 * time.Second
+const bufferSize = 256 * 1024
+const flushInterval = 3 * time.Second
+const rollInterval = 60 * 60 * 24 * time.Second
+const fileRotateLayout = "20060102-150405"
+const DefaultRollSize = 10240000
 
 type FileWriter struct {
 	dir    string
 	name   string
-	period time.Duration
 	cancel context.CancelFunc
 
 	mutex  sync.Mutex
@@ -29,28 +31,35 @@ type FileWriter struct {
 	buffer *bufio.Writer
 	closed bool
 
-	maxRolls   int
-	history    []string
-	filePeriod time.Time
+	rollTime     time.Time
+	writtenBytes int
+	rollSize     int
+	maxRolls     int
+	history      []string
+	filePeriod   time.Time
 }
 
 // maxRools: if <= 0, unlimited
-func NewFileWriter(path string, period time.Duration, maxRolls int) *FileWriter {
+func NewFileWriter(path string, rollSize int, maxRolls int) *FileWriter {
 	ctx, cancel := context.WithCancel(context.Background())
 	dir, name := filepath.Split(path)
 	fw := &FileWriter{
-		dir:    filepath.Dir(dir),
-		name:   name,
-		period: period,
+		dir:  filepath.Dir(dir),
+		name: name,
+
 		cancel: cancel,
 
+		rollTime: time.Unix(0, 0),
+		rollSize: rollSize,
 		maxRolls: maxRolls,
 	}
 	if maxRolls > 0 {
 		if history, err := fw.historyRolls(); err == nil {
 			fw.history = history
 		}
+		fw.removeOldRolls()
 	}
+	fw.rollFile(time.Now())
 	go fw.flushPeriodically(ctx)
 	return fw
 }
@@ -61,14 +70,17 @@ func (fw *FileWriter) Write(p []byte) (int, error) {
 	if fw.closed {
 		return 0, ErrClosed
 	}
-	thisPeriod := time.Now().Truncate(fw.period)
-	if thisPeriod != fw.filePeriod {
-		if err := fw.rollFile(thisPeriod); err != nil {
-			return 0, err
-		}
-		fw.filePeriod = thisPeriod
+
+	n, err := fw.buffer.Write(p)
+	fw.writtenBytes += n
+
+	now := time.Now()
+	if fw.writtenBytes > fw.rollSize {
+		fw.rollFile(now)
+	} else if period := now.Truncate(rollInterval); period != fw.filePeriod {
+		fw.rollFile(now)
 	}
-	return fw.buffer.Write(p)
+	return n, err
 }
 
 func (fw *FileWriter) Sync() error {
@@ -112,7 +124,7 @@ func (fw *FileWriter) Close() error {
 }
 
 func (fw *FileWriter) flushPeriodically(ctx context.Context) {
-	ticker := time.NewTicker(kFlushInterval)
+	ticker := time.NewTicker(flushInterval)
 	defer ticker.Stop()
 	for {
 		select {
@@ -124,62 +136,57 @@ func (fw *FileWriter) flushPeriodically(ctx context.Context) {
 	}
 }
 
-func (fw *FileWriter) rollFile(t time.Time) error {
+func (fw *FileWriter) rollFile(now time.Time) {
+	if !now.After(fw.rollTime) {
+		return
+	}
+
 	if fw.buffer != nil {
 		fw.buffer.Flush()
 		fw.buffer = nil
+		filename := fw.file.Name()
 		fw.file.Close()
 		fw.file = nil
-	}
-	file, err := fw.createFile(t)
-	if err != nil {
-		return err
-	}
-	fw.file = file
-	fw.buffer = bufio.NewWriterSize(file, kBufferSize)
-	if fw.maxRolls > 0 {
-		if stat, err := file.Stat(); err == nil {
-			fw.history = append(fw.history, stat.Name())
+		if fw.maxRolls > 0 {
+			fw.history = append(fw.history, filepath.Base(filename))
 			fw.removeOldRolls()
 		}
 	}
-	return nil
-}
+	file, err := fw.createFile(now)
+	if err != nil {
+		panic(err)
+	}
+	fw.file = file
+	fw.buffer = bufio.NewWriterSize(file, bufferSize)
+	fw.writtenBytes = 0
 
-func (fw *FileWriter) logName(t time.Time) string {
-	name := fmt.Sprintf("%s.%04d%02d%02d-%02d", fw.name, t.Year(), t.Month(), t.Day(), t.Hour())
-	if fw.period.Truncate(time.Hour) == fw.period {
-		return name
-	}
-	name += fmt.Sprintf("%02d", t.Minute())
-	if fw.period.Truncate(time.Minute) == fw.period {
-		return name
-	}
-	name += fmt.Sprintf("%02d", t.Second())
-	if fw.period.Truncate(time.Second) == fw.period {
-		return name
-	}
-	name += fmt.Sprintf(".%d", t.Nanosecond())
-	return name
+	period := now.Truncate(rollInterval)
+	fw.rollTime = now
+	fw.filePeriod = period
 }
 
 func (fw *FileWriter) createFile(t time.Time) (*os.File, error) {
-	name := fw.logName(t)
+	ext := filepath.Ext(fw.name)
+	prefix := strings.TrimSuffix(fw.name, ext)
+	name := fmt.Sprintf("%s.%s%s", prefix, t.Format(fileRotateLayout), ext)
 	filename := filepath.Join(fw.dir, name)
+
 	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
-		return nil, fmt.Errorf("log: cannot create log: %v", err)
+		return nil, fmt.Errorf("klog: open file error: %v", err)
 	}
 
 	symlink := filepath.Join(fw.dir, fw.name)
 	os.Remove(symlink) // ignore err
-	if err := os.Symlink(filename, symlink); err != nil {
+	if err := os.Symlink(name, symlink); err != nil {
 		os.Link(filename, symlink)
 	}
 	return file, nil
 }
 
 func (fw *FileWriter) historyRolls() ([]string, error) {
+	ext := filepath.Ext(fw.name)
+	prefix := strings.TrimSuffix(fw.name, ext)
 	f, err := os.Open(fw.dir)
 	if err != nil {
 		return nil, err
@@ -196,7 +203,7 @@ func (fw *FileWriter) historyRolls() ([]string, error) {
 			continue
 		}
 		// filter
-		if strings.HasPrefix(file.Name(), fw.name) {
+		if strings.HasPrefix(file.Name(), prefix) {
 			history = append(history, file.Name())
 		}
 	}
@@ -207,9 +214,9 @@ func (fw *FileWriter) historyRolls() ([]string, error) {
 func (fw *FileWriter) removeOldRolls() {
 	if nRolls := len(fw.history); nRolls > fw.maxRolls {
 		removeRools := nRolls - fw.maxRolls
-		for _, name := range fw.history[:removeRools] {
-			filename := filepath.Join(fw.dir, name)
-			os.Remove(filename) // ignore err
+		for _, filename := range fw.history[:removeRools] {
+			name := filepath.Join(fw.dir, filename)
+			os.Remove(name) // ignore err
 		}
 		fw.history = fw.history[removeRools:]
 	}

@@ -2,11 +2,10 @@ package klog
 
 import (
 	"testing"
-	"time"
 )
 
 func BenchmarkLog(b *testing.B) {
-	fw := NewFileWriter(b.Name()+".log", time.Hour, 0)
+	fw := NewFileWriter(b.Name()+".log", DefaultRollSize, 0)
 	defer fw.Flush()
 	SetOutput(fw)
 	b.ResetTimer()
