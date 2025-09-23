@@ -135,15 +135,91 @@ func (x *Int32_Empty_Map) MarshalMap(b []byte) ([]byte, error) {
 	if len(x.syncable) == 0 {
 		return b, nil
 	}
+	var pos int
 	var err error
 	for k, v := range x.syncable {
+		b = wire.AppendTag(b, 3, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
 		b = wire.AppendTag(b, 1, wire.VarintType)
 		b = wire.AppendInt32(b, k)
 		b = wire.AppendTag(b, 2, wire.BytesType)
 		b = wire.AppendEmpty(b)
 		_ = v
+		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	return b, err
+}
+
+func (x *Int32_Empty_Map) unmarshalMap(b []byte) error {
+	var key int32
+	var value struct{}
+	for len(b) > 0 {
+		num, wtyp, n := wire.ConsumeTag(b)
+		if n < 0 {
+			return wire.ErrDecode
+		}
+		if num > wire.MaxValidNumber {
+			return wire.ErrDecode
+		}
+		b = b[n:]
+
+		err := wire.ErrUnknown
+		switch num {
+		case 1:
+			n, err = wire.UnmarshalInt32(b, wtyp, &key)
+		case 2:
+			n, err = wire.UnmarshalEmpty(b, wtyp)
+		}
+		if err == wire.ErrUnknown {
+			n = wire.ConsumeFieldValue(num, wtyp, b)
+			if n < 0 {
+				return wire.ErrDecode
+			}
+		} else if err != nil {
+			return err
+		}
+		b = b[n:]
+	}
+	x.syncable[key] = value
+	return nil
+}
+
+func (x *Int32_Empty_Map) UnmarshalMap(b []byte) error {
+	for len(b) > 0 {
+		num, wtyp, n := wire.ConsumeTag(b)
+		if n < 0 {
+			return wire.ErrDecode
+		}
+		if num > wire.MaxValidNumber {
+			return wire.ErrDecode
+		}
+		b = b[n:]
+		err := wire.ErrUnknown
+		switch num {
+		case 3:
+			if wtyp != wire.BytesType {
+				break
+			}
+			v, n := wire.ConsumeBytes(b)
+			if n < 0 {
+				return wire.ErrDecode
+			}
+			if err := x.unmarshalMap(v); err != nil {
+				return err
+			}
+			err = nil
+		}
+		if err == wire.ErrUnknown {
+			n = wire.ConsumeFieldValue(num, wtyp, b)
+			if n < 0 {
+				return wire.ErrDecode
+			}
+		} else if err != nil {
+			return err
+		}
+		b = b[n:]
+	}
+	return nil
 }
 
 type dirtyParentFunc_Int32_Int32_Map func()
@@ -269,14 +345,90 @@ func (x *Int32_Int32_Map) MarshalMap(b []byte) ([]byte, error) {
 	if len(x.syncable) == 0 {
 		return b, nil
 	}
+	var pos int
 	var err error
 	for k, v := range x.syncable {
+		b = wire.AppendTag(b, 3, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
 		b = wire.AppendTag(b, 1, wire.VarintType)
 		b = wire.AppendInt32(b, k)
 		b = wire.AppendTag(b, 2, wire.VarintType)
 		b = wire.AppendInt32(b, v)
+		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	return b, err
+}
+
+func (x *Int32_Int32_Map) unmarshalMap(b []byte) error {
+	var key int32
+	var value int32
+	for len(b) > 0 {
+		num, wtyp, n := wire.ConsumeTag(b)
+		if n < 0 {
+			return wire.ErrDecode
+		}
+		if num > wire.MaxValidNumber {
+			return wire.ErrDecode
+		}
+		b = b[n:]
+
+		err := wire.ErrUnknown
+		switch num {
+		case 1:
+			n, err = wire.UnmarshalInt32(b, wtyp, &key)
+		case 2:
+			n, err = wire.UnmarshalInt32(b, wtyp, &value)
+		}
+		if err == wire.ErrUnknown {
+			n = wire.ConsumeFieldValue(num, wtyp, b)
+			if n < 0 {
+				return wire.ErrDecode
+			}
+		} else if err != nil {
+			return err
+		}
+		b = b[n:]
+	}
+	x.syncable[key] = value
+	return nil
+}
+
+func (x *Int32_Int32_Map) UnmarshalMap(b []byte) error {
+	for len(b) > 0 {
+		num, wtyp, n := wire.ConsumeTag(b)
+		if n < 0 {
+			return wire.ErrDecode
+		}
+		if num > wire.MaxValidNumber {
+			return wire.ErrDecode
+		}
+		b = b[n:]
+		err := wire.ErrUnknown
+		switch num {
+		case 3:
+			if wtyp != wire.BytesType {
+				break
+			}
+			v, n := wire.ConsumeBytes(b)
+			if n < 0 {
+				return wire.ErrDecode
+			}
+			if err := x.unmarshalMap(v); err != nil {
+				return err
+			}
+			err = nil
+		}
+		if err == wire.ErrUnknown {
+			n = wire.ConsumeFieldValue(num, wtyp, b)
+			if n < 0 {
+				return wire.ErrDecode
+			}
+		} else if err != nil {
+			return err
+		}
+		b = b[n:]
+	}
+	return nil
 }
 
 type dirtyParentFunc_Int64_List func()
@@ -455,4 +607,17 @@ func (x *Int64_List) MarshalList(b []byte) ([]byte, error) {
 		b = wire.AppendInt64(b, v)
 	}
 	return b, err
+}
+
+func (x *Int64_List) UnmarshalList(b []byte) error {
+	for len(b) > 0 {
+		var value int64
+		n, err := wire.UnmarshalInt64(b, wire.VarintType, &value)
+		if err != nil {
+			return err
+		}
+		b = b[n:]
+		x.syncable = append(x.syncable, value)
+	}
+	return nil
 }

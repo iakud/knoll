@@ -164,6 +164,71 @@ func (x *City) MarshalMessage(b []byte) ([]byte, error) {
 	return b, err
 }
 
+func (x *City) MarshalMessageDirty(b []byte) ([]byte, error) {
+	if x.checkDirty(uint64(0x01)) {
+		return x.MarshalMessage(b)
+	}
+	var err error
+	if x.checkDirty(uint64(0x01) << 1) {
+		b = wire.AppendTag(b, 1, wire.VarintType)
+		b = wire.AppendInt64(b, x.syncable.PlayerId)
+	}
+	if x.checkDirty(uint64(0x01) << 2) {
+		b = wire.AppendTag(b, 2, wire.BytesType)
+		if b, err = wire.AppendMessageDirty(b, x.syncablePlayerBasicInfo); err != nil {
+			return b, err
+		}
+	}
+	if x.checkDirty(uint64(0x01) << 3) {
+		b = wire.AppendTag(b, 3, wire.BytesType)
+		if b, err = wire.AppendMessageDirty(b, x.syncableCityInfo); err != nil {
+			return b, err
+		}
+	}
+	if x.checkDirty(uint64(0x01) << 4) {
+		b = wire.AppendTag(b, 4, wire.BytesType)
+		if b, err = wire.AppendList(b, &x.syncableTroops); err != nil {
+			return b, err
+		}
+	}
+	return b, err
+}
+
+func (x *City) UnmarshalMessage(b []byte) error {
+	for len(b) > 0 {
+		num, wtyp, tagLen := wire.ConsumeTag(b)
+		if tagLen < 0 {
+			return wire.ErrDecode
+		}
+		if num > wire.MaxValidNumber {
+			return wire.ErrDecode
+		}
+
+		var err error = wire.ErrUnknown
+		var valLen int
+		switch num {
+		case 1:
+			valLen, err = wire.UnmarshalInt64(b[tagLen:], wtyp, &x.syncable.PlayerId)
+		case 2:
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.syncablePlayerBasicInfo)
+		case 3:
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.syncableCityInfo)
+		case 4:
+			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.syncableTroops)
+		}
+		if err == wire.ErrUnknown {
+			valLen = wire.ConsumeFieldValue(num, wtyp, b[tagLen:])
+			if valLen < 0 {
+				return wire.ErrDecode
+			}
+		} else if err != nil {
+			return err
+		}
+		b = b[tagLen+valLen:]
+	}
+	return nil
+}
+
 func (x *City) markAll() {
 	x.dirty = uint64(0x01)
 }
@@ -179,7 +244,7 @@ func (x *City) checkDirty(n uint64) bool {
 	return x.dirty & n != 0
 }
 
-func (x *City) clearDirty() {
+func (x *City) ClearDirty() {
 	if x.dirty == 0 {
 		return
 	}
@@ -197,6 +262,10 @@ func (x *City) clearDirty() {
 
 func (x *City) Marshal() ([]byte, error) {
 	return x.MarshalMessage(nil)
+}
+
+func (x *City) Unmarshal(b []byte) error {
+	return x.UnmarshalMessage(b)
 }
 
 type syncableCityBaseInfo struct {
@@ -308,6 +377,63 @@ func (x *CityBaseInfo) MarshalMessage(b []byte) ([]byte, error) {
 	b = wire.AppendTag(b, 3, wire.BytesType)
 	b = wire.AppendBytes(b, x.syncable.BuildInfo)
 	return b, err
+}
+
+func (x *CityBaseInfo) MarshalMessageDirty(b []byte) ([]byte, error) {
+	if x.checkDirty(uint64(0x01)) {
+		return x.MarshalMessage(b)
+	}
+	var err error
+	if x.checkDirty(uint64(0x01) << 1) {
+		b = wire.AppendTag(b, 1, wire.BytesType)
+		if b, err = wire.AppendList(b, &x.syncablePositions); err != nil {
+			return b, err
+		}
+	}
+	if x.checkDirty(uint64(0x01) << 2) {
+		b = wire.AppendTag(b, 2, wire.BytesType)
+		if b, err = wire.AppendMap(b, &x.syncableTroops); err != nil {
+			return b, err
+		}
+	}
+	if x.checkDirty(uint64(0x01) << 3) {
+		b = wire.AppendTag(b, 3, wire.BytesType)
+		b = wire.AppendBytes(b, x.syncable.BuildInfo)
+	}
+	return b, err
+}
+
+func (x *CityBaseInfo) UnmarshalMessage(b []byte) error {
+	for len(b) > 0 {
+		num, wtyp, tagLen := wire.ConsumeTag(b)
+		if tagLen < 0 {
+			return wire.ErrDecode
+		}
+		if num > wire.MaxValidNumber {
+			return wire.ErrDecode
+		}
+
+		var err error = wire.ErrUnknown
+		var valLen int
+		switch num {
+		case 1:
+			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.syncablePositions)
+		case 2:
+			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.syncableTroops)
+		case 3:
+			valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp, &x.syncable.BuildInfo)
+		}
+		if err == wire.ErrUnknown {
+			valLen = wire.ConsumeFieldValue(num, wtyp, b[tagLen:])
+			if valLen < 0 {
+				return wire.ErrDecode
+			}
+		} else if err != nil {
+			return err
+		}
+		b = b[tagLen+valLen:]
+	}
+	return nil
 }
 
 func (x *CityBaseInfo) markAll() {
@@ -423,6 +549,53 @@ func (x *Vector) MarshalMessage(b []byte) ([]byte, error) {
 	b = wire.AppendTag(b, 2, wire.VarintType)
 	b = wire.AppendInt32(b, x.syncable.Y)
 	return b, err
+}
+
+func (x *Vector) MarshalMessageDirty(b []byte) ([]byte, error) {
+	if x.checkDirty(uint64(0x01)) {
+		return x.MarshalMessage(b)
+	}
+	var err error
+	if x.checkDirty(uint64(0x01) << 1) {
+		b = wire.AppendTag(b, 1, wire.VarintType)
+		b = wire.AppendInt32(b, x.syncable.X)
+	}
+	if x.checkDirty(uint64(0x01) << 2) {
+		b = wire.AppendTag(b, 2, wire.VarintType)
+		b = wire.AppendInt32(b, x.syncable.Y)
+	}
+	return b, err
+}
+
+func (x *Vector) UnmarshalMessage(b []byte) error {
+	for len(b) > 0 {
+		num, wtyp, tagLen := wire.ConsumeTag(b)
+		if tagLen < 0 {
+			return wire.ErrDecode
+		}
+		if num > wire.MaxValidNumber {
+			return wire.ErrDecode
+		}
+
+		var err error = wire.ErrUnknown
+		var valLen int
+		switch num {
+		case 1:
+			valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp, &x.syncable.X)
+		case 2:
+			valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp, &x.syncable.Y)
+		}
+		if err == wire.ErrUnknown {
+			valLen = wire.ConsumeFieldValue(num, wtyp, b[tagLen:])
+			if valLen < 0 {
+				return wire.ErrDecode
+			}
+		} else if err != nil {
+			return err
+		}
+		b = b[tagLen+valLen:]
+	}
+	return nil
 }
 
 func (x *Vector) markAll() {
@@ -703,4 +876,17 @@ func (x *Vector_List) MarshalList(b []byte) ([]byte, error) {
 		}
 	}
 	return b, err
+}
+
+func (x *Vector_List) UnmarshalList(b []byte) error {
+	for len(b) > 0 {
+		value := NewVector()
+		n, err := wire.UnmarshalMessage(b, wire.BytesType, value)
+		if err != nil {
+			return err
+		}
+		b = b[n:]
+		x.syncable = append(x.syncable, value)
+	}
+	return nil
 }

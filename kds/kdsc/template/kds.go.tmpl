@@ -451,6 +451,65 @@ func (x *{{.Name}}) MarshalList(b []byte) ([]byte, error) {
 {{- end}}
 	return b, err
 }
+
+func (x *{{.Name}}) UnmarshalList(b []byte) error {
+	for len(b) > 0 {
+{{- if eq .TypeKind "component"}}
+		value := New{{.Type}}()
+{{- else}}
+		var value {{template "ListValueType" .}}
+{{- end}}
+{{- if eq .TypeKind "component"}}
+		n, err := wire.UnmarshalMessage(b, wire.BytesType, value)
+{{- else if eq .TypeKind "enum"}}
+		n, err := wire.UnmarshalInt32(b, wire.VarintType, &value)
+{{- else if eq .Type "bool"}}
+		n, err := wire.UnmarshalBool(b, wire.VarintType, &value)
+{{- else if eq .Type "int32"}}
+		n, err := wire.UnmarshalInt32(b, wire.VarintType, &value)
+{{- else if eq .Type "sint32"}}
+		n, err := wire.UnmarshalSint32(b, wire.VarintType, &value)
+{{- else if eq .Type "uint32"}}
+		n, err := wire.UnmarshalUint32(b, wire.VarintType, &value)
+{{- else if eq .Type "int64"}}
+		n, err := wire.UnmarshalInt64(b, wire.VarintType, &value)
+{{- else if eq .Type "sint64"}}
+		n, err := wire.UnmarshalSint64(b, wire.VarintType, &value)
+{{- else if eq .Type "uint64"}}
+		n, err := wire.UnmarshalUint64(b, wire.VarintType, &value)
+{{- else if eq .Type "sfixed32"}}
+		n, err := wire.UnmarshalSfixed32(b, wire.Fixed32Type, &value)
+{{- else if eq .Type "fixed32"}}
+		n, err := wire.UnmarshalFixed32(b, wire.Fixed32Type, &value)
+{{- else if eq .Type "float"}}
+		n, err := wire.UnmarshalFloat(b, wire.Fixed32Type, &value)
+{{- else if eq .Type "sfixed64"}}
+		n, err := wire.UnmarshalSfixed64(b, wire.Fixed64Type, &value)
+{{- else if eq .Type "fixed64"}}
+		n, err := wire.UnmarshalFixed64(b, wire.Fixed64Type, &value)
+{{- else if eq .Type "double"}}
+		n, err := wire.UnmarshalDouble(b, wire.Fixed64Type, &value)
+{{- else if eq .Type "string"}}
+		n, err := wire.UnmarshalString(b, wire.BytesType, &value)
+{{- else if eq .Type "bytes"}}
+		n, err := wire.UnmarshalBytes(b, wire.BytesType, &value)
+{{- else if eq .Type "timestamp"}}
+		n, err := wire.UnmarshalTimestamp(b, wire.BytesType, &value)
+{{- else if eq .Type "duration"}}
+		n, err := wire.UnmarshalDuration(b, wire.BytesType, &value)
+{{- else if eq .Type "empty"}}
+		n, err := wire.UnmarshalEmpty(b, wire.BytesType)
+{{- else}}
+	// FIXME: unknow type
+{{- end}}
+		if err != nil {
+			return err
+		}
+		b = b[n:]
+		x.syncable = append(x.syncable, value)
+	}
+	return nil
+}
 {{- end}}
 
 {{- /* MAP */ -}}
@@ -690,8 +749,11 @@ func (x *{{.Name}}) MarshalMap(b []byte) ([]byte, error) {
 	if len(x.syncable) == 0 {
 		return b, nil
 	}
+	var pos int
 	var err error
 	for k, v := range x.syncable {
+		b = wire.AppendTag(b, 3, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
 {{- if eq .KeyType "bool"}}
 		b = wire.AppendTag(b, 1, wire.VarintType)
 		b = wire.AppendBool(b, k)
@@ -797,8 +859,153 @@ func (x *{{.Name}}) MarshalMap(b []byte) ([]byte, error) {
 {{- else}}
 	// FIXME: unknow type
 {{- end}}
+		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	return b, err
+}
+
+func (x *{{.Name}}) unmarshalMap(b []byte) error {
+	var key {{goType .KeyType}}
+{{- if eq .TypeKind "component"}}
+	value := New{{.Type}}()
+{{- else}}
+	var value {{template "MapValueType" .}}
+{{- end}}
+	for len(b) > 0 {
+		num, wtyp, n := wire.ConsumeTag(b)
+		if n < 0 {
+			return wire.ErrDecode
+		}
+		if num > wire.MaxValidNumber {
+			return wire.ErrDecode
+		}
+		b = b[n:]
+
+		err := wire.ErrUnknown
+		switch num {
+		case 1:
+{{- if eq .KeyType "bool"}}
+			n, err = wire.UnmarshalBool(b, wtyp, &key)
+{{- else if eq .KeyType "int32"}}
+			n, err = wire.UnmarshalInt32(b, wtyp, &key)
+{{- else if eq .KeyType "sint32"}}
+			n, err = wire.UnmarshalSint32(b, wtyp, &key)
+{{- else if eq .KeyType "uint32"}}
+			n, err = wire.UnmarshalUint32(b, wtyp, &key)
+{{- else if eq .KeyType "int64"}}
+			n, err = wire.UnmarshalInt64(b, wtyp, &key)
+{{- else if eq .KeyType "sint64"}}
+			n, err = wire.UnmarshalSint64(b, wtyp, &key)
+{{- else if eq .KeyType "uint64"}}
+			n, err = wire.UnmarshalUint64(b, wtyp, &key)
+{{- else if eq .KeyType "sfixed32"}}
+			n, err = wire.UnmarshalSfixed32(b, wtyp, &key)
+{{- else if eq .KeyType "fixed32"}}
+			n, err = wire.UnmarshalFixed32(b, wtyp, &key)
+{{- else if eq .KeyType "sfixed64"}}
+			n, err = wire.UnmarshalSfixed64(b, wtyp, &key)
+{{- else if eq .KeyType "fixed64"}}
+			n, err = wire.UnmarshalFixed64(b, wtyp, &key)
+{{- else if eq .KeyType "string"}}
+			n, err = wire.UnmarshalString(b, wtyp, &key)
+{{- else}}
+			// FIXME: unknow type
+{{- end}}
+		case 2:
+{{- if eq .TypeKind "component"}}
+			n, err = wire.UnmarshalMessage(b, wtyp, value)
+{{- else if eq .TypeKind "enum"}}
+			n, err = wire.UnmarshalInt32(b, wtyp, (*int32)(&value))
+{{- else if eq .Type "bool"}}
+			n, err = wire.UnmarshalBool(b, wtyp, &value)
+{{- else if eq .Type "int32"}}
+			n, err = wire.UnmarshalInt32(b, wtyp, &value)
+{{- else if eq .Type "sint32"}}
+			n, err = wire.UnmarshalSint32(b, wtyp, &value)
+{{- else if eq .Type "uint32"}}
+			n, err = wire.UnmarshalUint32(b, wtyp, &value)
+{{- else if eq .Type "int64"}}
+			n, err = wire.UnmarshalInt64(b, wtyp, &value)
+{{- else if eq .Type "sint64"}}
+			n, err = wire.UnmarshalSint64(b, wtyp, &value)
+{{- else if eq .Type "uint64"}}
+			n, err = wire.UnmarshalUint64(b, wtyp, &value)
+{{- else if eq .Type "sfixed32"}}
+			n, err = wire.UnmarshalFixed32(b, wtyp, &value)
+{{- else if eq .Type "fixed32"}}
+			n, err = wire.UnmarshalFixed32(b, wtyp, &value)
+{{- else if eq .Type "float"}}
+			n, err = wire.UnmarshalFloat(b, wtyp, &value)
+{{- else if eq .Type "sfixed64"}}
+			n, err = wire.UnmarshalSfixed64(b, wtyp, &value)
+{{- else if eq .Type "fixed64"}}
+			n, err = wire.UnmarshalFixed64(b, wtyp, &value)
+{{- else if eq .Type "double"}}
+			n, err = wire.UnmarshalDouble(b, wtyp, &value)
+{{- else if eq .Type "string"}}
+			n, err = wire.UnmarshalString(b, wtyp, &value)
+{{- else if eq .Type "bytes"}}
+			n, err = wire.UnmarshalBytes(b, wtyp, &value)
+{{- else if eq .Type "timestamp"}}
+			n, err = wire.UnmarshalTimestamp(b, wtyp, &value)
+{{- else if eq .Type "duration"}}
+			n, err = wire.UnmarshalDuration(b, wtyp, &value)
+{{- else if eq .Type "empty"}}
+			n, err = wire.UnmarshalEmpty(b, wtyp)
+{{- else}}
+			// FIXME: unknow type
+{{- end}}
+		}
+		if err == wire.ErrUnknown {
+			n = wire.ConsumeFieldValue(num, wtyp, b)
+			if n < 0 {
+				return wire.ErrDecode
+			}
+		} else if err != nil {
+			return err
+		}
+		b = b[n:]
+	}
+	x.syncable[key] = value
+	return nil
+}
+
+func (x *{{.Name}}) UnmarshalMap(b []byte) error {
+	for len(b) > 0 {
+		num, wtyp, n := wire.ConsumeTag(b)
+		if n < 0 {
+			return wire.ErrDecode
+		}
+		if num > wire.MaxValidNumber {
+			return wire.ErrDecode
+		}
+		b = b[n:]
+		err := wire.ErrUnknown
+		switch num {
+		case 3:
+			if wtyp != wire.BytesType {
+				break
+			}
+			v, n := wire.ConsumeBytes(b)
+			if n < 0 {
+				return wire.ErrDecode
+			}
+			if err := x.unmarshalMap(v); err != nil {
+				return err
+			}
+			err = nil
+		}
+		if err == wire.ErrUnknown {
+			n = wire.ConsumeFieldValue(num, wtyp, b)
+			if n < 0 {
+				return wire.ErrDecode
+			}
+		} else if err != nil {
+			return err
+		}
+		b = b[n:]
+	}
+	return nil
 }
 {{- end}}
 
@@ -1055,6 +1262,172 @@ func (x *{{$MessageName}}) MarshalMessage(b []byte) ([]byte, error) {
 	return b, err
 }
 
+func (x *{{$MessageName}}) MarshalMessageDirty(b []byte) ([]byte, error) {
+	if x.checkDirty(uint64(0x01)) {
+		return x.MarshalMessage(b)
+	}
+	var err error
+{{- range .Fields}}
+	if x.checkDirty(uint64(0x01) << {{.Number}}) {
+{{- if .Repeated}}
+		b = wire.AppendTag(b, {{.Number}}, wire.BytesType)
+		if b, err = wire.AppendList(b, &x.syncable{{.Name}}); err != nil {
+			return b, err
+		}
+{{- else if .Map}}
+		b = wire.AppendTag(b, {{.Number}}, wire.BytesType)
+		if b, err = wire.AppendMap(b, &x.syncable{{.Name}}); err != nil {
+			return b, err
+		}
+{{- else if eq .TypeKind "component"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.BytesType)
+		if b, err = wire.AppendMessageDirty(b, x.syncable{{.Name}}); err != nil {
+			return b, err
+		}
+{{- else if eq .TypeKind "enum"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.VarintType)
+		// FIXME: enum value
+		b = wire.AppendInt32(b, int32(x.syncable.{{.Name}}))
+{{- else if eq .Type "bool"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.VarintType)
+		b = wire.AppendBool(b, x.syncable.{{.Name}})
+{{- else if eq .Type "int32"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.VarintType)
+		b = wire.AppendInt32(b, x.syncable.{{.Name}})
+{{- else if eq .Type "sint32"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.VarintType)
+		b = wire.AppendSint32(b, x.syncable.{{.Name}})
+{{- else if eq .Type "uint32"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.VarintType)
+		b = wire.AppendUint32(b, x.syncable.{{.Name}})
+{{- else if eq .Type "int64"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.VarintType)
+		b = wire.AppendInt64(b, x.syncable.{{.Name}})
+{{- else if eq .Type "sint64"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.VarintType)
+		b = wire.AppendSint64(b, x.syncable.{{.Name}})
+{{- else if eq .Type "uint64"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.VarintType)
+		b = wire.AppendUint64(b, x.syncable.{{.Name}})
+{{- else if eq .Type "sfixed32"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.Fixed32Type)
+		b = wire.AppendSfixed32(b, x.syncable.{{.Name}})
+{{- else if eq .Type "fixed32"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.Fixed32Type)
+		b = wire.AppendFixed32(b, x.syncable.{{.Name}})
+{{- else if eq .Type "float"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.Fixed32Type)
+		b = wire.AppendFloat(b, x.syncable.{{.Name}})
+{{- else if eq .Type "sfixed64"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.Fixed64Type)
+		b = wire.AppendSfixed64(b, x.syncable.{{.Name}})
+{{- else if eq .Type "fixed64"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.Fixed64Type)
+		b = wire.AppendFixed64(b, x.syncable.{{.Name}})
+{{- else if eq .Type "double"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.Fixed64Type)
+		b = wire.AppendDouble(b, x.syncable.{{.Name}})
+{{- else if eq .Type "string"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.BytesType)
+		b = wire.AppendString(b, x.syncable.{{.Name}})
+{{- else if eq .Type "bytes"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.BytesType)
+		b = wire.AppendBytes(b, x.syncable.{{.Name}})
+{{- else if eq .Type "timestamp"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.BytesType)
+		b = wire.AppendTimestamp(b, x.syncable.{{.Name}})
+{{- else if eq .Type "duration"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.BytesType)
+		b = wire.AppendDuration(b, x.syncable.{{.Name}})
+{{- else if eq .Type "empty"}}
+		b = wire.AppendTag(b, {{.Number}}, wire.BytesType)
+		b = wire.AppendEmpty(b)
+{{- else}}
+	// FIXME: unknow type
+{{- end}}
+	}
+{{- end}}
+	return b, err
+}
+
+func (x *{{$MessageName}}) UnmarshalMessage(b []byte) error {
+	for len(b) > 0 {
+		num, wtyp, tagLen := wire.ConsumeTag(b)
+		if tagLen < 0 {
+			return wire.ErrDecode
+		}
+		if num > wire.MaxValidNumber {
+			return wire.ErrDecode
+		}
+
+		var err error = wire.ErrUnknown
+		var valLen int
+		switch num {
+{{- range .Fields}}
+		case {{.Number}}:
+{{- if .Repeated}}
+			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.syncable{{.Name}})
+{{- else if .Map}}
+			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.syncable{{.Name}})
+{{- else if eq .TypeKind "component"}}
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.syncable{{.Name}})
+{{- else if eq .TypeKind "enum"}}
+			// FIXME: enum value
+			valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp, (*int32)(&x.syncable.{{.Name}}))
+{{- else if eq .Type "bool"}}
+			valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "int32"}}
+			valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "sint32"}}
+			valLen, err = wire.UnmarshalSint32(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "uint32"}}
+			valLen, err = wire.UnmarshalUint32(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "int64"}}
+			valLen, err = wire.UnmarshalInt64(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "sint64"}}
+			valLen, err = wire.UnmarshalSint64(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "uint64"}}
+			valLen, err = wire.UnmarshalUint64(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "sfixed32"}}
+			valLen, err = wire.UnmarshalSfixed32(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "fixed32"}}
+			valLen, err = wire.UnmarshalFixed32(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "float"}}
+			valLen, err = wire.UnmarshalFloat(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "sfixed64"}}
+			valLen, err = wire.UnmarshalSfixed64(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "fixed64"}}
+			valLen, err = wire.UnmarshalFixed64(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "double"}}
+			valLen, err = wire.UnmarshalDouble(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "string"}}
+			valLen, err = wire.UnmarshalString(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "bytes"}}
+			valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "timestamp"}}
+			valLen, err = wire.UnmarshalTimestamp(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "duration"}}
+			valLen, err = wire.UnmarshalDuration(b[tagLen:], wtyp, &x.syncable.{{.Name}})
+{{- else if eq .Type "empty"}}
+			valLen, err = wire.UnmarshalEmpty(b[tagLen:], wtyp)
+{{- else}}
+			// err = errUnknown
+{{- end}}
+{{- end}}
+		}
+		if err == wire.ErrUnknown {
+			valLen = wire.ConsumeFieldValue(num, wtyp, b[tagLen:])
+			if valLen < 0 {
+				return wire.ErrDecode
+			}
+		} else if err != nil {
+			return err
+		}
+		b = b[tagLen+valLen:]
+	}
+	return nil
+}
+
 {{- end}}
 
 {{- /* ENTITY */ -}}
@@ -1113,7 +1486,7 @@ func (x *{{.Name}}) checkDirty(n uint64) bool {
 	return x.dirty & n != 0
 }
 
-func (x *{{.Name}}) clearDirty() {
+func (x *{{.Name}}) ClearDirty() {
 	if x.dirty == 0 {
 		return
 	}
@@ -1137,6 +1510,10 @@ func (x *{{.Name}}) clearDirty() {
 
 func (x *{{.Name}}) Marshal() ([]byte, error) {
 	return x.MarshalMessage(nil)
+}
+
+func (x *{{.Name}}) Unmarshal(b []byte) error {
+	return x.UnmarshalMessage(b)
 }
 {{- end}}
 
