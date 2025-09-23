@@ -36,7 +36,8 @@ mkdir -p kds
 rm -rf proto
 mkdir -p proto
 
-kdsc --go_out=kds --proto_out=proto *.kds
+#kdsc --go_out=kds --proto_out=proto *.kds
+kdsc --out=kds --tmpl=../template/kds.go.tmpl *.kds
 [[ $? -ne 0 ]] && exit 1
 
 rm -rf kdspb

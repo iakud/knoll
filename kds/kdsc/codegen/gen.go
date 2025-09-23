@@ -3,10 +3,12 @@ package codegen
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime/debug"
 	"slices"
+	"strings"
 	"text/template"
 
 	"github.com/antlr4-go/antlr/v4"
@@ -50,6 +52,27 @@ func WriteKdsGo(ctx *Context, out string) {
 		buf := bytes.NewBuffer(nil)
 		tpl.Execute(buf, kds)
 		outFile := filepath.Join(out, kds.Name+".kds.go")
+		os.WriteFile(outFile, buf.Bytes(), os.ModePerm)
+	}
+}
+
+func WriteTemplate(ctx *Context, filename string, out string) {
+	name := filepath.Base(filename)
+	ext := strings.TrimSuffix(name, filepath.Ext(name))
+
+	text, err := os.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	tpl, err := template.New("kds").Funcs(Funcs(ctx)).Parse(string(text))
+	slog.Info("write", "file", filename)
+	if err != nil {
+		panic(err)
+	}
+	for _, kds := range ctx.AllKds {
+		buf := bytes.NewBuffer(nil)
+		tpl.Execute(buf, kds)
+		outFile := filepath.Join(out, kds.Name+"."+ext)
 		os.WriteFile(outFile, buf.Bytes(), os.ModePerm)
 	}
 }
@@ -110,6 +133,10 @@ func formatKds(ctx *Context, kds *Kds) {
 	if importMaps {
 		kds.addGoImport("maps", "")
 		kds.addGoImport("iter", "")
+	}
+	if len(kds.Entities) > 0 || len(kds.Components) > 0 || len(kds.Types) > 0 {
+		kds.addGoImport("github.com/iakud/knoll/kds/wire", "")
+		// kds.addGoImport("google.golang.org/protobuf/encoding/protowire", "")
 	}
 
 	var importProtoTypes []string

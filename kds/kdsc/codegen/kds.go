@@ -227,3 +227,10 @@ func (m *MapType) TypeKind() string {
 	}
 	return Kind(m.Type)
 }
+
+func (m *MapType) KeyTypeKind() string {
+	if def, ok := m.ctx.Defs[m.KeyType]; ok {
+		return def.Kind()
+	}
+	return Kind(m.KeyType)
+}

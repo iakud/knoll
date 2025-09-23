@@ -2,7 +2,7 @@ package codegen
 
 func Kind(type_ string) string {
 	switch type_ {
-	case "double", "float", "int32", "int64", "sint32", "sint64", "fixed32", "fixed64", "sfixed32", "sfixed64", "bool", "string", "bytes":
+	case "bool", "int32", "sint32", "uint32", "int64", "sint64", "uint64", "sfixed32", "fixed32", "float", "sfixed64", "fixed64", "double", "string", "bytes":
 		return "primitive"
 	case "timestamp", "duration", "empty":
 		return "proto"
@@ -13,28 +13,32 @@ func Kind(type_ string) string {
 
 func GoType(type_ string) string {
 	switch type_ {
-	case "double":
-		return "float64"
-	case "float":
-		return "float32"
+	case "bool":
+		return "bool"
 	case "int32":
 		return "int32"
-	case "int64":
-		return "int64"
 	case "sint32":
 		return "int32"
+	case "uint32":
+		return "uint32"
+	case "int64":
+		return "int64"
 	case "sint64":
 		return "int64"
-	case "fixed32":
-		return "uint32"
-	case "fixed64":
+	case "uint64":
 		return "uint64"
 	case "sfixed32":
 		return "int32"
+	case "fixed32":
+		return "uint32"
+	case "float":
+		return "float32"
 	case "sfixed64":
 		return "int64"
-	case "bool":
-		return "bool"
+	case "fixed64":
+		return "uint64"
+	case "double":
+		return "float64"
 	case "string":
 		return "string"
 	case "bytes":
@@ -52,28 +56,32 @@ func GoType(type_ string) string {
 
 func GoProtoType(type_ string) string {
 	switch type_ {
-	case "double":
-		return "float64"
-	case "float":
-		return "float32"
+	case "bool":
+		return "bool"
 	case "int32":
 		return "int32"
-	case "int64":
-		return "int64"
 	case "sint32":
 		return "int32"
+	case "uint32":
+		return "uint32"
+	case "int64":
+		return "int64"
 	case "sint64":
 		return "int64"
-	case "fixed32":
-		return "uint32"
-	case "fixed64":
+	case "uint64":
 		return "uint64"
 	case "sfixed32":
 		return "int32"
+	case "fixed32":
+		return "uint32"
+	case "float":
+		return "float32"
 	case "sfixed64":
 		return "int64"
-	case "bool":
-		return "bool"
+	case "fixed64":
+		return "uint64"
+	case "double":
+		return "float64"
 	case "string":
 		return "string"
 	case "bytes":
