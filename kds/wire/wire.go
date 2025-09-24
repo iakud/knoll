@@ -88,9 +88,9 @@ func AppendBytes(b []byte, v []byte) []byte {
 }
 
 type Message interface {
-	MarshalMessage(b []byte) ([]byte, error)
-	MarshalMessageDirty(b []byte) ([]byte, error)
-	UnmarshalMessage(b []byte) error
+	Marshal(b []byte) ([]byte, error)
+	MarshalDirty(b []byte) ([]byte, error)
+	Unmarshal(b []byte) error
 }
 
 type List interface {
@@ -107,7 +107,7 @@ func AppendMessage(b []byte, v Message) ([]byte, error) {
 	var pos int
 	var err error
 	b, pos = AppendSpeculativeLength(b)
-	b, err = v.MarshalMessage(b)
+	b, err = v.Marshal(b)
 	if err != nil {
 		return b, err
 	}
@@ -119,7 +119,7 @@ func AppendMessageDirty(b []byte, v Message) ([]byte, error) {
 	var pos int
 	var err error
 	b, pos = AppendSpeculativeLength(b)
-	b, err = v.MarshalMessageDirty(b)
+	b, err = v.MarshalDirty(b)
 	if err != nil {
 		return b, err
 	}
@@ -157,8 +157,9 @@ func AppendTimestamp(b []byte, v time.Time) []byte {
 	b = protowire.AppendTag(b, 1, protowire.VarintType)
 	b = protowire.AppendVarint(b, uint64(v.Unix()))
 	b = protowire.AppendTag(b, 2, protowire.VarintType)
-	b = protowire.AppendVarint(b, uint64(int32(v.Nanosecond())))
-	return FinishSpeculativeLength(b, pos)
+	b = protowire.AppendVarint(b, uint64(v.Nanosecond()))
+	b = FinishSpeculativeLength(b, pos)
+	return b
 }
 func AppendDuration(b []byte, v time.Duration) []byte {
 	nanos := v.Nanoseconds()
@@ -170,10 +171,11 @@ func AppendDuration(b []byte, v time.Duration) []byte {
 	b = protowire.AppendVarint(b, uint64(secs))
 	b = protowire.AppendTag(b, 2, protowire.VarintType)
 	b = protowire.AppendVarint(b, uint64(nanos))
-	return FinishSpeculativeLength(b, pos)
+	b = FinishSpeculativeLength(b, pos)
+	return b
 }
 
-func AppendEmpty(b []byte) []byte {
+func AppendEmpty(b []byte, _ struct{}) []byte {
 	return protowire.AppendBytes(b, nil)
 }
 
@@ -254,7 +256,7 @@ func UnmarshalMessage(b []byte, wtyp Type, v Message) (int, error) {
 	if n < 0 {
 		return 0, ErrDecode
 	}
-	if err := v.UnmarshalMessage(b); err != nil {
+	if err := v.Unmarshal(b); err != nil {
 		return 0, err
 	}
 	return n, nil

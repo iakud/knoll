@@ -85,7 +85,7 @@ func TestMarshalMessage(t *testing.T) {
 	player.GetInfo().SetIsNew(true)
 	player.GetInfo().SetCreateTime(time.Now())
 
-	buf, err := player.Marshal()
+	buf, err := player.Marshal(nil)
 	if err != nil {
 		panic(err)
 	}
@@ -117,12 +117,12 @@ func TestMarshalMessage(t *testing.T) {
 	}
 	slog.Info("proto", "pb1", len(buf1), "pb2", len(buf2), "compare", bytes.Compare(buf1, buf2), "equ", proto.Equal(pb1, pb2), "buf", buf)
 
-	bufDirty, err := player.MarshalMessageDirty(nil)
+	bufDirty, err := player.MarshalDirty(nil)
 	if err != nil {
 		panic(err)
 	}
 	player2 = kds.NewPlayer()
-	err = player2.UnmarshalMessage(bufDirty)
+	err = player2.Unmarshal(bufDirty)
 	if err != nil {
 		panic(err)
 	}
@@ -151,11 +151,11 @@ func TestMarshalMessage(t *testing.T) {
 	slog.Info("proto", "pb1", len(buf1), "pb2", len(buf2), "compare", bytes.Compare(buf1, buf2), "equ", proto.Equal(pb1, pb2), "buf", bufDirty)
 	player.ClearDirty()
 	player.GetInfo().SetName("IF")
-	bufDirty, err = player.MarshalMessageDirty(nil)
+	bufDirty, err = player.MarshalDirty(nil)
 	if err != nil {
 		panic(err)
 	}
-	err = player2.UnmarshalMessage(bufDirty)
+	err = player2.Unmarshal(bufDirty)
 	if err != nil {
 		panic(err)
 	}

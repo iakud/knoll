@@ -140,11 +140,12 @@ func (x *Int32_Empty_Map) MarshalMap(b []byte) ([]byte, error) {
 	for k, v := range x.syncable {
 		b = wire.AppendTag(b, 3, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		b = wire.AppendTag(b, 1, wire.VarintType)
-		b = wire.AppendInt32(b, k)
-		b = wire.AppendTag(b, 2, wire.BytesType)
-		b = wire.AppendEmpty(b)
-		_ = v
+		if b, err = wire.MarshalInt32(b, 1, k); err != nil {
+			return b, err
+		}
+		if b, err = wire.MarshalEmpty(b, 2, v); err != nil {
+			return b, err
+		}
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	return b, err
@@ -350,10 +351,12 @@ func (x *Int32_Int32_Map) MarshalMap(b []byte) ([]byte, error) {
 	for k, v := range x.syncable {
 		b = wire.AppendTag(b, 3, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		b = wire.AppendTag(b, 1, wire.VarintType)
-		b = wire.AppendInt32(b, k)
-		b = wire.AppendTag(b, 2, wire.VarintType)
-		b = wire.AppendInt32(b, v)
+		if b, err = wire.MarshalInt32(b, 1, k); err != nil {
+			return b, err
+		}
+		if b, err = wire.MarshalInt32(b, 2, v); err != nil {
+			return b, err
+		}
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	return b, err

@@ -144,50 +144,44 @@ func (x *Player) Load(m *kdspb.Player) {
 	x.syncableBag.Load(m.GetBag())
 }
 
-func (x *Player) MarshalMessage(b []byte) ([]byte, error) {
+func (x *Player) Marshal(b []byte) ([]byte, error) {
 	var err error
-	b = wire.AppendTag(b, 1, wire.BytesType)
-	if b, err = wire.AppendMessage(b, x.syncableInfo); err != nil {
+	if b, err = wire.MarshalMessage(b, 1, x.syncableInfo); err != nil {
 		return b, err
 	}
-	b = wire.AppendTag(b, 2, wire.BytesType)
-	if b, err = wire.AppendMessage(b, x.syncableHero); err != nil {
+	if b, err = wire.MarshalMessage(b, 2, x.syncableHero); err != nil {
 		return b, err
 	}
-	b = wire.AppendTag(b, 3, wire.BytesType)
-	if b, err = wire.AppendMessage(b, x.syncableBag); err != nil {
+	if b, err = wire.MarshalMessage(b, 3, x.syncableBag); err != nil {
 		return b, err
 	}
 	return b, err
 }
 
-func (x *Player) MarshalMessageDirty(b []byte) ([]byte, error) {
+func (x *Player) MarshalDirty(b []byte) ([]byte, error) {
 	if x.checkDirty(uint64(0x01)) {
-		return x.MarshalMessage(b)
+		return x.Marshal(b)
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		b = wire.AppendTag(b, 1, wire.BytesType)
-		if b, err = wire.AppendMessageDirty(b, x.syncableInfo); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 1, x.syncableInfo); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		b = wire.AppendTag(b, 2, wire.BytesType)
-		if b, err = wire.AppendMessageDirty(b, x.syncableHero); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 2, x.syncableHero); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		b = wire.AppendTag(b, 3, wire.BytesType)
-		if b, err = wire.AppendMessageDirty(b, x.syncableBag); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 3, x.syncableBag); err != nil {
 			return b, err
 		}
 	}
 	return b, err
 }
 
-func (x *Player) UnmarshalMessage(b []byte) error {
+func (x *Player) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, wtyp, tagLen := wire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -249,14 +243,6 @@ func (x *Player) ClearDirty() {
 		x.syncableBag.clearDirty()
 	}
 	x.dirty = 0
-}
-
-func (x *Player) Marshal() ([]byte, error) {
-	return x.MarshalMessage(nil)
-}
-
-func (x *Player) Unmarshal(b []byte) error {
-	return x.UnmarshalMessage(b)
 }
 
 type syncablePlayerBasicInfo struct {
@@ -354,38 +340,44 @@ func (x *PlayerBasicInfo) Load(m *kdspb.PlayerBasicInfo) {
 	x.syncable.CreateTime = m.GetCreateTime().AsTime()
 }
 
-func (x *PlayerBasicInfo) MarshalMessage(b []byte) ([]byte, error) {
+func (x *PlayerBasicInfo) Marshal(b []byte) ([]byte, error) {
 	var err error
-	b = wire.AppendTag(b, 1, wire.BytesType)
-	b = wire.AppendString(b, x.syncable.Name)
-	b = wire.AppendTag(b, 3, wire.VarintType)
-	b = wire.AppendBool(b, x.syncable.IsNew)
-	b = wire.AppendTag(b, 5, wire.BytesType)
-	b = wire.AppendTimestamp(b, x.syncable.CreateTime)
+	if b, err = wire.MarshalString(b, 1, x.syncable.Name); err != nil {
+		return b, err
+	}
+	if b, err = wire.MarshalBool(b, 3, x.syncable.IsNew); err != nil {
+		return b, err
+	}
+	if b, err = wire.MarshalTimestamp(b, 5, x.syncable.CreateTime); err != nil {
+		return b, err
+	}
 	return b, err
 }
 
-func (x *PlayerBasicInfo) MarshalMessageDirty(b []byte) ([]byte, error) {
+func (x *PlayerBasicInfo) MarshalDirty(b []byte) ([]byte, error) {
 	if x.checkDirty(uint64(0x01)) {
-		return x.MarshalMessage(b)
+		return x.Marshal(b)
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		b = wire.AppendTag(b, 1, wire.BytesType)
-		b = wire.AppendString(b, x.syncable.Name)
+		if b, err = wire.MarshalString(b, 1, x.syncable.Name); err != nil {
+			return b, err
+		}
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		b = wire.AppendTag(b, 3, wire.VarintType)
-		b = wire.AppendBool(b, x.syncable.IsNew)
+		if b, err = wire.MarshalBool(b, 3, x.syncable.IsNew); err != nil {
+			return b, err
+		}
 	}
 	if x.checkDirty(uint64(0x01) << 5) {
-		b = wire.AppendTag(b, 5, wire.BytesType)
-		b = wire.AppendTimestamp(b, x.syncable.CreateTime)
+		if b, err = wire.MarshalTimestamp(b, 5, x.syncable.CreateTime); err != nil {
+			return b, err
+		}
 	}
 	return b, err
 }
 
-func (x *PlayerBasicInfo) UnmarshalMessage(b []byte) error {
+func (x *PlayerBasicInfo) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, wtyp, tagLen := wire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -502,30 +494,28 @@ func (x *PlayerHero) Load(m *kdspb.PlayerHero) {
 	x.syncableHeroes.Load(m.GetHeroes())
 }
 
-func (x *PlayerHero) MarshalMessage(b []byte) ([]byte, error) {
+func (x *PlayerHero) Marshal(b []byte) ([]byte, error) {
 	var err error
-	b = wire.AppendTag(b, 1, wire.BytesType)
-	if b, err = wire.AppendMap(b, &x.syncableHeroes); err != nil {
+	if b, err = wire.MarshalMap(b, 1, &x.syncableHeroes); err != nil {
 		return b, err
 	}
 	return b, err
 }
 
-func (x *PlayerHero) MarshalMessageDirty(b []byte) ([]byte, error) {
+func (x *PlayerHero) MarshalDirty(b []byte) ([]byte, error) {
 	if x.checkDirty(uint64(0x01)) {
-		return x.MarshalMessage(b)
+		return x.Marshal(b)
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		b = wire.AppendTag(b, 1, wire.BytesType)
-		if b, err = wire.AppendMap(b, &x.syncableHeroes); err != nil {
+		if b, err = wire.MarshalMap(b, 1, &x.syncableHeroes); err != nil {
 			return b, err
 		}
 	}
 	return b, err
 }
 
-func (x *PlayerHero) UnmarshalMessage(b []byte) error {
+func (x *PlayerHero) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, wtyp, tagLen := wire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -641,30 +631,28 @@ func (x *PlayerBag) Load(m *kdspb.PlayerBag) {
 	x.syncableResources.Load(m.GetResources())
 }
 
-func (x *PlayerBag) MarshalMessage(b []byte) ([]byte, error) {
+func (x *PlayerBag) Marshal(b []byte) ([]byte, error) {
 	var err error
-	b = wire.AppendTag(b, 1, wire.BytesType)
-	if b, err = wire.AppendMap(b, &x.syncableResources); err != nil {
+	if b, err = wire.MarshalMap(b, 1, &x.syncableResources); err != nil {
 		return b, err
 	}
 	return b, err
 }
 
-func (x *PlayerBag) MarshalMessageDirty(b []byte) ([]byte, error) {
+func (x *PlayerBag) MarshalDirty(b []byte) ([]byte, error) {
 	if x.checkDirty(uint64(0x01)) {
-		return x.MarshalMessage(b)
+		return x.Marshal(b)
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		b = wire.AppendTag(b, 1, wire.BytesType)
-		if b, err = wire.AppendMap(b, &x.syncableResources); err != nil {
+		if b, err = wire.MarshalMap(b, 1, &x.syncableResources); err != nil {
 			return b, err
 		}
 	}
 	return b, err
 }
 
-func (x *PlayerBag) UnmarshalMessage(b []byte) error {
+func (x *PlayerBag) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, wtyp, tagLen := wire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -832,46 +820,54 @@ func (x *Hero) Load(m *kdspb.Hero) {
 	x.syncable.NeedTime = m.GetNeedTime().AsDuration()
 }
 
-func (x *Hero) MarshalMessage(b []byte) ([]byte, error) {
+func (x *Hero) Marshal(b []byte) ([]byte, error) {
 	var err error
-	b = wire.AppendTag(b, 1, wire.VarintType)
-	b = wire.AppendInt32(b, x.syncable.HeroId)
-	b = wire.AppendTag(b, 2, wire.VarintType)
-	b = wire.AppendInt32(b, x.syncable.HeroLevel)
-	b = wire.AppendTag(b, 3, wire.VarintType)
+	if b, err = wire.MarshalInt32(b, 1, x.syncable.HeroId); err != nil {
+		return b, err
+	}
+	if b, err = wire.MarshalInt32(b, 2, x.syncable.HeroLevel); err != nil {
+		return b, err
+	}
 	// FIXME: enum value
-	b = wire.AppendInt32(b, int32(x.syncable.Type))
-	b = wire.AppendTag(b, 4, wire.BytesType)
-	b = wire.AppendDuration(b, x.syncable.NeedTime)
+	if b, err = wire.MarshalInt32(b, 3, int32(x.syncable.Type)); err != nil {
+		return b, err
+	}
+	if b, err = wire.MarshalDuration(b, 4, x.syncable.NeedTime); err != nil {
+		return b, err
+	}
 	return b, err
 }
 
-func (x *Hero) MarshalMessageDirty(b []byte) ([]byte, error) {
+func (x *Hero) MarshalDirty(b []byte) ([]byte, error) {
 	if x.checkDirty(uint64(0x01)) {
-		return x.MarshalMessage(b)
+		return x.Marshal(b)
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		b = wire.AppendTag(b, 1, wire.VarintType)
-		b = wire.AppendInt32(b, x.syncable.HeroId)
+		if b, err = wire.MarshalInt32(b, 1, x.syncable.HeroId); err != nil {
+			return b, err
+		}
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		b = wire.AppendTag(b, 2, wire.VarintType)
-		b = wire.AppendInt32(b, x.syncable.HeroLevel)
+		if b, err = wire.MarshalInt32(b, 2, x.syncable.HeroLevel); err != nil {
+			return b, err
+		}
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		b = wire.AppendTag(b, 3, wire.VarintType)
 		// FIXME: enum value
-		b = wire.AppendInt32(b, int32(x.syncable.Type))
+		if b, err = wire.MarshalInt32(b, 3, int32(x.syncable.Type)); err != nil {
+			return b, err
+		}
 	}
 	if x.checkDirty(uint64(0x01) << 4) {
-		b = wire.AppendTag(b, 4, wire.BytesType)
-		b = wire.AppendDuration(b, x.syncable.NeedTime)
+		if b, err = wire.MarshalDuration(b, 4, x.syncable.NeedTime); err != nil {
+			return b, err
+		}
 	}
 	return b, err
 }
 
-func (x *Hero) UnmarshalMessage(b []byte) error {
+func (x *Hero) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, wtyp, tagLen := wire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1088,10 +1084,10 @@ func (x *Int64_Hero_Map) MarshalMap(b []byte) ([]byte, error) {
 	for k, v := range x.syncable {
 		b = wire.AppendTag(b, 3, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		b = wire.AppendTag(b, 1, wire.VarintType)
-		b = wire.AppendInt64(b, k)
-		b = wire.AppendTag(b, 2, wire.BytesType)
-		if b, err = wire.AppendMessage(b, v); err != nil {
+		if b, err = wire.MarshalInt64(b, 1, k); err != nil {
+			return b, err
+		}
+		if b, err = wire.MarshalMessage(b, 2, v); err != nil {
 			return b, err
 		}
 		b = wire.FinishSpeculativeLength(b, pos)
