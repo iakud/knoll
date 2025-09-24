@@ -12,7 +12,7 @@ func MarshalList(b []byte, num Number, v List) ([]byte, error) {
 	var pos int
 	var err error
 	b, pos = AppendSpeculativeLength(b)
-	b, err = v.MarshalList(b)
+	b, err = v.Marshal(b)
 	if err != nil {
 		return b, err
 	}
@@ -25,7 +25,7 @@ func MarshalMap(b []byte, num Number, v Map) ([]byte, error) {
 	var pos int
 	var err error
 	b, pos = AppendSpeculativeLength(b)
-	b, err = v.MarshalMap(b)
+	b, err = v.Marshal(b)
 	if err != nil {
 		return b, err
 	}

@@ -183,16 +183,12 @@ func (x *Player) MarshalDirty(b []byte) ([]byte, error) {
 
 func (x *Player) Unmarshal(b []byte) error {
 	for len(b) > 0 {
-		num, wtyp, tagLen := wire.ConsumeTag(b)
-		if tagLen < 0 {
-			return wire.ErrDecode
+		num, wtyp, tagLen, err := wire.ConsumeTag(b)
+		if err != nil {
+			return err
 		}
-		if num > wire.MaxValidNumber {
-			return wire.ErrDecode
-		}
-
-		var err error = wire.ErrUnknown
 		var valLen int
+		err = wire.ErrUnknown
 		switch num {
 		case 1:
 			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.syncableInfo)
@@ -202,9 +198,8 @@ func (x *Player) Unmarshal(b []byte) error {
 			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.syncableBag)
 		}
 		if err == wire.ErrUnknown {
-			valLen = wire.ConsumeFieldValue(num, wtyp, b[tagLen:])
-			if valLen < 0 {
-				return wire.ErrDecode
+			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
+				return err
 			}
 		} else if err != nil {
 			return err
@@ -379,28 +374,23 @@ func (x *PlayerBasicInfo) MarshalDirty(b []byte) ([]byte, error) {
 
 func (x *PlayerBasicInfo) Unmarshal(b []byte) error {
 	for len(b) > 0 {
-		num, wtyp, tagLen := wire.ConsumeTag(b)
-		if tagLen < 0 {
-			return wire.ErrDecode
+		num, wtyp, tagLen, err := wire.ConsumeTag(b)
+		if err != nil {
+			return err
 		}
-		if num > wire.MaxValidNumber {
-			return wire.ErrDecode
-		}
-
-		var err error = wire.ErrUnknown
 		var valLen int
+		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			valLen, err = wire.UnmarshalString(b[tagLen:], wtyp, &x.syncable.Name)
+			x.syncable.Name, valLen, err = wire.UnmarshalString(b[tagLen:], wtyp)
 		case 3:
-			valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp, &x.syncable.IsNew)
+			x.syncable.IsNew, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
 		case 5:
-			valLen, err = wire.UnmarshalTimestamp(b[tagLen:], wtyp, &x.syncable.CreateTime)
+			x.syncable.CreateTime, valLen, err = wire.UnmarshalTimestamp(b[tagLen:], wtyp)
 		}
 		if err == wire.ErrUnknown {
-			valLen = wire.ConsumeFieldValue(num, wtyp, b[tagLen:])
-			if valLen < 0 {
-				return wire.ErrDecode
+			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
+				return err
 			}
 		} else if err != nil {
 			return err
@@ -517,24 +507,19 @@ func (x *PlayerHero) MarshalDirty(b []byte) ([]byte, error) {
 
 func (x *PlayerHero) Unmarshal(b []byte) error {
 	for len(b) > 0 {
-		num, wtyp, tagLen := wire.ConsumeTag(b)
-		if tagLen < 0 {
-			return wire.ErrDecode
+		num, wtyp, tagLen, err := wire.ConsumeTag(b)
+		if err != nil {
+			return err
 		}
-		if num > wire.MaxValidNumber {
-			return wire.ErrDecode
-		}
-
-		var err error = wire.ErrUnknown
 		var valLen int
+		err = wire.ErrUnknown
 		switch num {
 		case 1:
 			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.syncableHeroes)
 		}
 		if err == wire.ErrUnknown {
-			valLen = wire.ConsumeFieldValue(num, wtyp, b[tagLen:])
-			if valLen < 0 {
-				return wire.ErrDecode
+			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
+				return err
 			}
 		} else if err != nil {
 			return err
@@ -654,24 +639,19 @@ func (x *PlayerBag) MarshalDirty(b []byte) ([]byte, error) {
 
 func (x *PlayerBag) Unmarshal(b []byte) error {
 	for len(b) > 0 {
-		num, wtyp, tagLen := wire.ConsumeTag(b)
-		if tagLen < 0 {
-			return wire.ErrDecode
+		num, wtyp, tagLen, err := wire.ConsumeTag(b)
+		if err != nil {
+			return err
 		}
-		if num > wire.MaxValidNumber {
-			return wire.ErrDecode
-		}
-
-		var err error = wire.ErrUnknown
 		var valLen int
+		err = wire.ErrUnknown
 		switch num {
 		case 1:
 			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.syncableResources)
 		}
 		if err == wire.ErrUnknown {
-			valLen = wire.ConsumeFieldValue(num, wtyp, b[tagLen:])
-			if valLen < 0 {
-				return wire.ErrDecode
+			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
+				return err
 			}
 		} else if err != nil {
 			return err
@@ -869,31 +849,26 @@ func (x *Hero) MarshalDirty(b []byte) ([]byte, error) {
 
 func (x *Hero) Unmarshal(b []byte) error {
 	for len(b) > 0 {
-		num, wtyp, tagLen := wire.ConsumeTag(b)
-		if tagLen < 0 {
-			return wire.ErrDecode
+		num, wtyp, tagLen, err := wire.ConsumeTag(b)
+		if err != nil {
+			return err
 		}
-		if num > wire.MaxValidNumber {
-			return wire.ErrDecode
-		}
-
-		var err error = wire.ErrUnknown
 		var valLen int
+		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp, &x.syncable.HeroId)
+			x.syncable.HeroId, valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
 		case 2:
-			valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp, &x.syncable.HeroLevel)
+			x.syncable.HeroLevel, valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
 		case 3:
 			// FIXME: enum value
-			valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp, (*int32)(&x.syncable.Type))
+			*(*int32)(&x.syncable.Type), valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
 		case 4:
-			valLen, err = wire.UnmarshalDuration(b[tagLen:], wtyp, &x.syncable.NeedTime)
+			x.syncable.NeedTime, valLen, err = wire.UnmarshalDuration(b[tagLen:], wtyp)
 		}
 		if err == wire.ErrUnknown {
-			valLen = wire.ConsumeFieldValue(num, wtyp, b[tagLen:])
-			if valLen < 0 {
-				return wire.ErrDecode
+			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
+				return err
 			}
 		} else if err != nil {
 			return err
@@ -1075,7 +1050,7 @@ func (x *Int64_Hero_Map) clearDirty() {
 	x.dirty = false
 }
 
-func (x *Int64_Hero_Map) MarshalMap(b []byte) ([]byte, error) {
+func (x *Int64_Hero_Map) Marshal(b []byte) ([]byte, error) {
 	if len(x.syncable) == 0 {
 		return b, nil
 	}
@@ -1084,10 +1059,10 @@ func (x *Int64_Hero_Map) MarshalMap(b []byte) ([]byte, error) {
 	for k, v := range x.syncable {
 		b = wire.AppendTag(b, 3, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		if b, err = wire.MarshalInt64(b, 1, k); err != nil {
+		if b, err = wire.MarshalInt64(b, wire.MapEntryKeyFieldNumber, k); err != nil {
 			return b, err
 		}
-		if b, err = wire.MarshalMessage(b, 2, v); err != nil {
+		if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
 			return b, err
 		}
 		b = wire.FinishSpeculativeLength(b, pos)
@@ -1095,74 +1070,58 @@ func (x *Int64_Hero_Map) MarshalMap(b []byte) ([]byte, error) {
 	return b, err
 }
 
-func (x *Int64_Hero_Map) unmarshalMap(b []byte) error {
-	var key int64
-	value := NewHero()
+func (x *Int64_Hero_Map) Unmarshal(b []byte) error {
 	for len(b) > 0 {
-		num, wtyp, n := wire.ConsumeTag(b)
-		if n < 0 {
-			return wire.ErrDecode
-		}
-		if num > wire.MaxValidNumber {
-			return wire.ErrDecode
-		}
-		b = b[n:]
-
-		err := wire.ErrUnknown
-		switch num {
-		case 1:
-			n, err = wire.UnmarshalInt64(b, wtyp, &key)
-		case 2:
-			n, err = wire.UnmarshalMessage(b, wtyp, value)
-		}
-		if err == wire.ErrUnknown {
-			n = wire.ConsumeFieldValue(num, wtyp, b)
-			if n < 0 {
-				return wire.ErrDecode
-			}
-		} else if err != nil {
+		num, wtyp, tagLen, err := wire.ConsumeTag(b)
+		if err != nil {
 			return err
 		}
-		b = b[n:]
-	}
-	x.syncable[key] = value
-	return nil
-}
-
-func (x *Int64_Hero_Map) UnmarshalMap(b []byte) error {
-	for len(b) > 0 {
-		num, wtyp, n := wire.ConsumeTag(b)
-		if n < 0 {
-			return wire.ErrDecode
-		}
-		if num > wire.MaxValidNumber {
-			return wire.ErrDecode
-		}
-		b = b[n:]
-		err := wire.ErrUnknown
+		var valLen int
+		err = wire.ErrUnknown
 		switch num {
 		case 3:
-			if wtyp != wire.BytesType {
+			var buf []byte
+			buf, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
+			if err != nil {
 				break
 			}
-			v, n := wire.ConsumeBytes(b)
-			if n < 0 {
-				return wire.ErrDecode
+			var k int64
+			v := NewHero()
+			v.dirtyParent = func() {
+				x.markDirty()
 			}
-			if err := x.unmarshalMap(v); err != nil {
-				return err
+			for len(buf) > 0 {
+				num, wtyp, n, err := wire.ConsumeTag(buf)
+				if err != nil {
+					return err
+				}
+				buf = buf[n:]
+				err = wire.ErrUnknown
+				switch num {
+				case wire.MapEntryKeyFieldNumber:
+					k, n, err = wire.UnmarshalInt64(buf, wtyp)
+				case wire.MapEntryValueFieldNumber:
+					n, err = wire.UnmarshalMessage(buf, wtyp, v)
+				}
+				if err == wire.ErrUnknown {
+					if n, err = wire.ConsumeFieldValue(num, wtyp, buf); err != nil {
+						return err
+					}
+				} else if err != nil {
+					return err
+				}
+				buf = buf[n:]
 			}
-			err = nil
+			x.syncable[k] = v
 		}
 		if err == wire.ErrUnknown {
-			n = wire.ConsumeFieldValue(num, wtyp, b)
-			if n < 0 {
-				return wire.ErrDecode
+			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b); err != nil {
+				return err
 			}
 		} else if err != nil {
 			return err
 		}
-		b = b[n:]
+		b = b[tagLen+valLen:]
 	}
 	return nil
 }

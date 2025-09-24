@@ -14,6 +14,11 @@ const (
 	MaxValidNumber Number = 1<<29 - 1
 )
 
+const (
+	MapEntryKeyFieldNumber   Number = 1
+	MapEntryValueFieldNumber Number = 2
+)
+
 type Type = protowire.Type
 
 const (
@@ -94,13 +99,13 @@ type Message interface {
 }
 
 type List interface {
-	MarshalList(b []byte) ([]byte, error)
-	UnmarshalList(b []byte) error
+	Marshal(b []byte) ([]byte, error)
+	Unmarshal(b []byte) error
 }
 
 type Map interface {
-	MarshalMap(b []byte) ([]byte, error)
-	UnmarshalMap(b []byte) error
+	Marshal(b []byte) ([]byte, error)
+	Unmarshal(b []byte) error
 }
 
 func AppendMessage(b []byte, v Message) ([]byte, error) {
@@ -131,7 +136,7 @@ func AppendList(b []byte, v List) ([]byte, error) {
 	var pos int
 	var err error
 	b, pos = AppendSpeculativeLength(b)
-	b, err = v.MarshalList(b)
+	b, err = v.Marshal(b)
 	if err != nil {
 		return b, err
 	}
@@ -143,7 +148,7 @@ func AppendMap(b []byte, v Map) ([]byte, error) {
 	var pos int
 	var err error
 	b, pos = AppendSpeculativeLength(b)
-	b, err = v.MarshalMap(b)
+	b, err = v.Marshal(b)
 	if err != nil {
 		return b, err
 	}
@@ -204,315 +209,218 @@ func FinishSpeculativeLength(b []byte, pos int) []byte {
 	return b
 }
 
-// decode
-func ConsumeTag(b []byte) (Number, Type, int) {
-	return protowire.ConsumeTag(b)
-}
-
-func ConsumeBytes(b []byte) ([]byte, int) {
-	return protowire.ConsumeBytes(b)
-}
-
-func ConsumeFieldValue(num Number, wtyp Type, b []byte) int {
-	return protowire.ConsumeFieldValue(num, wtyp, b)
-}
-
-func UnmarshalList(b []byte, wtyp Type, v List) (int, error) {
-	if wtyp != BytesType {
-		return 0, ErrUnknown
+func ConsumeTag(b []byte) (Number, Type, int, error) {
+	num, wtyp, n := protowire.ConsumeTag(b)
+	if n < 0 || num > protowire.MaxValidNumber {
+		return num, wtyp, n, ErrDecode
 	}
-	var n int
-	b, n = protowire.ConsumeBytes(b)
+	return num, wtyp, n, nil
+}
+
+func ConsumeFieldValue(num Number, wtyp Type, b []byte) (int, error) {
+	n := protowire.ConsumeFieldValue(num, wtyp, b)
 	if n < 0 {
-		return 0, ErrDecode
-	}
-	if err := v.UnmarshalList(b); err != nil {
-		return 0, err
+		return n, ErrDecode
 	}
 	return n, nil
 }
 
-func UnmarshalMap(b []byte, wtyp Type, v Map) (int, error) {
-	if wtyp != BytesType {
-		return 0, ErrUnknown
-	}
-	var n int
-	b, n = protowire.ConsumeBytes(b)
-	if n < 0 {
-		return 0, ErrDecode
-	}
-	if err := v.UnmarshalMap(b); err != nil {
-		return 0, err
-	}
-	return n, nil
-}
-
-func UnmarshalMessage(b []byte, wtyp Type, v Message) (int, error) {
-	if wtyp != BytesType {
-		return 0, ErrUnknown
-	}
-	var n int
-	b, n = protowire.ConsumeBytes(b)
-	if n < 0 {
-		return 0, ErrDecode
-	}
-	if err := v.Unmarshal(b); err != nil {
-		return 0, err
-	}
-	return n, nil
-}
-
-func UnmarshalBool(b []byte, wtyp Type, m *bool) (int, error) {
-	if wtyp != VarintType {
-		return 0, ErrUnknown
-	}
+func ConsumeBool(b []byte) (bool, int, error) {
 	v, n := protowire.ConsumeVarint(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return false, 0, ErrDecode
 	}
-	*m = protowire.DecodeBool(v)
-	return n, nil
+	return protowire.DecodeBool(v), n, nil
 }
 
-func UnmarshalInt32(b []byte, wtyp Type, m *int32) (int, error) {
-	if wtyp != VarintType {
-		return 0, ErrUnknown
-	}
+func ConsumeInt32(b []byte) (int32, int, error) {
 	v, n := protowire.ConsumeVarint(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return 0, 0, ErrDecode
 	}
-	*m = int32(v)
-	return n, nil
+	return int32(v), n, nil
 }
 
-func UnmarshalSint32(b []byte, wtyp Type, m *int32) (int, error) {
-	if wtyp != VarintType {
-		return 0, ErrUnknown
-	}
+func ConsumeSint32(b []byte) (int32, int, error) {
 	v, n := protowire.ConsumeVarint(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return 0, 0, ErrDecode
 	}
-	*m = int32(protowire.DecodeZigZag(v & math.MaxUint32))
-	return n, nil
+	return int32(protowire.DecodeZigZag(v & math.MaxUint32)), n, nil
 }
 
-func UnmarshalUint32(b []byte, wtyp Type, m *uint32) (int, error) {
-	if wtyp != VarintType {
-		return 0, ErrUnknown
-	}
+func ConsumeUint32(b []byte) (uint32, int, error) {
 	v, n := protowire.ConsumeVarint(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return 0, 0, ErrDecode
 	}
-	*m = uint32(v)
-	return n, nil
+	return uint32(v), n, nil
 }
 
-func UnmarshalInt64(b []byte, wtyp Type, m *int64) (int, error) {
-	if wtyp != VarintType {
-		return 0, ErrUnknown
-	}
+func ConsumeInt64(b []byte) (int64, int, error) {
 	v, n := protowire.ConsumeVarint(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return 0, 0, ErrDecode
 	}
-	*m = int64(v)
-	return n, nil
+	return int64(v), n, nil
 }
 
-func UnmarshalSint64(b []byte, wtyp Type, m *int64) (int, error) {
-	if wtyp != VarintType {
-		return 0, ErrUnknown
-	}
+func ConsumeSint64(b []byte) (int64, int, error) {
 	v, n := protowire.ConsumeVarint(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return 0, 0, ErrDecode
 	}
-	*m = protowire.DecodeZigZag(v & math.MaxUint64)
-	return n, nil
+	return int64(protowire.DecodeZigZag(v & math.MaxUint32)), n, nil
 }
 
-func UnmarshalUint64(b []byte, wtyp Type, m *uint64) (int, error) {
-	if wtyp != VarintType {
-		return 0, ErrUnknown
-	}
+func ConsumeUint64(b []byte) (uint64, int, error) {
 	v, n := protowire.ConsumeVarint(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return 0, 0, ErrDecode
 	}
-	*m = v
-	return n, nil
+	return v, n, nil
 }
 
-func UnmarshalSfixed32(b []byte, wtyp Type, m *int32) (int, error) {
-	if wtyp != Fixed32Type {
-		return 0, ErrUnknown
-	}
+func ConsumeSfixed32(b []byte) (int32, int, error) {
 	v, n := protowire.ConsumeFixed32(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return 0, 0, ErrDecode
 	}
-	*m = int32(v)
-	return n, nil
+	return int32(v), n, nil
 }
 
-func UnmarshalFixed32(b []byte, wtyp Type, m *uint32) (int, error) {
-	if wtyp != Fixed32Type {
-		return 0, ErrUnknown
-	}
+func ConsumeFixed32(b []byte) (uint32, int, error) {
 	v, n := protowire.ConsumeFixed32(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return 0, 0, ErrDecode
 	}
-	*m = v
-	return n, nil
+	return v, n, nil
 }
 
-func UnmarshalFloat(b []byte, wtyp Type, m *float32) (int, error) {
-	if wtyp != Fixed32Type {
-		return 0, ErrUnknown
-	}
+func ConsumeFloat(b []byte) (float32, int, error) {
 	v, n := protowire.ConsumeFixed32(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return 0, 0, ErrDecode
 	}
-	*m = math.Float32frombits(v)
-	return n, nil
+	return math.Float32frombits(v), n, nil
 }
 
-func UnmarshalSfixed64(b []byte, wtyp Type, m *int64) (int, error) {
-	if wtyp != Fixed64Type {
-		return 0, ErrUnknown
-	}
+func ConsumeSfixed64(b []byte) (int64, int, error) {
 	v, n := protowire.ConsumeFixed64(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return 0, 0, ErrDecode
 	}
-	*m = int64(v)
-	return n, nil
+	return int64(v), n, nil
 }
 
-func UnmarshalFixed64(b []byte, wtyp Type, m *uint64) (int, error) {
-	if wtyp != Fixed64Type {
-		return 0, ErrUnknown
-	}
+func ConsumeFixed64(b []byte) (uint64, int, error) {
 	v, n := protowire.ConsumeFixed64(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return 0, 0, ErrDecode
 	}
-	*m = v
-	return n, nil
+	return v, n, nil
 }
 
-func UnmarshalDouble(b []byte, wtyp Type, m *float64) (int, error) {
-	if wtyp != Fixed64Type {
-		return 0, ErrUnknown
-	}
+func ConsumeDouble(b []byte) (float64, int, error) {
 	v, n := protowire.ConsumeFixed64(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return 0, 0, ErrDecode
 	}
-	*m = math.Float64frombits(v)
-	return n, nil
+	return math.Float64frombits(v), n, nil
 }
 
-func UnmarshalString(b []byte, wtyp Type, m *string) (int, error) {
-	if wtyp != BytesType {
-		return 0, ErrUnknown
-	}
+func ConsumeString(b []byte) (string, int, error) {
 	v, n := protowire.ConsumeString(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return v, 0, ErrDecode
 	}
-	*m = v
-	return n, nil
+	return v, n, nil
 }
 
-func UnmarshalBytes(b []byte, wtyp Type, m *[]byte) (int, error) {
-	if wtyp != BytesType {
-		return 0, ErrUnknown
-	}
+func ConsumeBytes(b []byte) ([]byte, int, error) {
 	v, n := protowire.ConsumeBytes(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return v, 0, ErrDecode
 	}
-	*m = v
-	return n, nil
+	return v, n, nil
 }
 
-func UnmarshalTimestamp(b []byte, wtyp Type, m *time.Time) (int, error) {
-	if wtyp != BytesType {
-		return 0, ErrUnknown
-	}
-	v, n := protowire.ConsumeBytes(b)
-	if n < 0 {
-		return 0, ErrDecode
-	}
+func ConsumeTimestamp(b []byte) (time.Time, int, error) {
 	var sec, nsec int64
+	v, n := protowire.ConsumeBytes(b)
+	if n < 0 {
+		return time.Time{}, 0, ErrDecode
+	}
 	for len(v) > 0 {
 		num, wtyp, n := protowire.ConsumeTag(v)
 		if n < 0 {
-			return 0, ErrDecode
+			return time.Time{}, 0, ErrDecode
 		}
 		if num > protowire.MaxValidNumber {
-			return 0, ErrDecode
+			return time.Time{}, 0, ErrDecode
 		}
 		v = v[n:]
-		var err error = ErrUnknown
+		err := ErrUnknown
 		switch num {
 		case 1:
-			n, err = UnmarshalInt64(v, wtyp, &sec)
+			if wtyp != protowire.VarintType {
+				break
+			}
+			sec, n, err = ConsumeInt64(v)
 		case 2:
-			n, err = UnmarshalInt64(v, wtyp, &nsec)
+			if wtyp != protowire.VarintType {
+				break
+			}
+			nsec, n, err = ConsumeInt64(v)
 		}
 		if err == ErrUnknown {
 			n = protowire.ConsumeFieldValue(num, wtyp, v)
 			if n < 0 {
-				return 0, ErrDecode
+				return time.Time{}, 0, ErrDecode
 			}
 		} else if err != nil {
-			return 0, err
+			return time.Time{}, 0, err
 		}
 		v = v[n:]
 	}
-	*m = time.Unix(sec, nsec)
-	return n, nil
+	return time.Unix(sec, nsec), n, nil
 }
 
-func UnmarshalDuration(b []byte, wtyp Type, m *time.Duration) (int, error) {
-	if wtyp != BytesType {
-		return 0, ErrUnknown
-	}
+func ConsumeDuration(b []byte) (time.Duration, int, error) {
 	v, n := protowire.ConsumeBytes(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return time.Duration(0), 0, ErrDecode
 	}
 	var secs, nanos int64
 	for len(v) > 0 {
 		num, wtyp, n := protowire.ConsumeTag(v)
 		if n < 0 {
-			return 0, ErrDecode
+			return 0, 0, ErrDecode
 		}
 		if num > protowire.MaxValidNumber {
-			return 0, ErrDecode
+			return 0, 0, ErrDecode
 		}
 		v = v[n:]
-		var err error = ErrUnknown
+		err := ErrUnknown
 		switch num {
 		case 1:
-			n, err = UnmarshalInt64(v, wtyp, &secs)
+			if wtyp != protowire.VarintType {
+				break
+			}
+			secs, n, err = ConsumeInt64(v)
 		case 2:
-			n, err = UnmarshalInt64(v, wtyp, &nanos)
+			if wtyp != protowire.VarintType {
+				break
+			}
+			nanos, n, err = ConsumeInt64(v)
 		}
 		if err == ErrUnknown {
 			n := protowire.ConsumeFieldValue(num, wtyp, v)
 			if n < 0 {
-				return 0, ErrDecode
+				return 0, 0, ErrDecode
 			}
 		} else if err != nil {
-			return 0, err
+			return 0, 0, err
 		}
 		v = v[n:]
 	}
@@ -524,25 +432,20 @@ func UnmarshalDuration(b []byte, wtyp Type, m *time.Duration) (int, error) {
 	if overflow {
 		switch {
 		case secs < 0:
-			*m = time.Duration(math.MinInt64)
+			return time.Duration(math.MinInt64), n, nil
 		case secs > 0:
-			*m = time.Duration(math.MaxInt64)
+			return time.Duration(math.MaxInt64), n, nil
 		}
-	} else {
-		*m = d
 	}
-	return n, nil
+	return d, n, nil
 }
 
-func UnmarshalEmpty(b []byte, wtyp Type) (int, error) {
-	if wtyp != BytesType {
-		return 0, ErrUnknown
-	}
+func ConsumeEmpty(b []byte) (struct{}, int, error) {
 	_, n := protowire.ConsumeBytes(b)
 	if n < 0 {
-		return 0, ErrDecode
+		return struct{}{}, 0, ErrDecode
 	}
-	return n, nil
+	return struct{}{}, n, nil
 }
 
 // errUnknown is used internally to indicate fields which should be added

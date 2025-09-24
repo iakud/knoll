@@ -192,19 +192,15 @@ func (x *City) MarshalDirty(b []byte) ([]byte, error) {
 
 func (x *City) Unmarshal(b []byte) error {
 	for len(b) > 0 {
-		num, wtyp, tagLen := wire.ConsumeTag(b)
-		if tagLen < 0 {
-			return wire.ErrDecode
+		num, wtyp, tagLen, err := wire.ConsumeTag(b)
+		if err != nil {
+			return err
 		}
-		if num > wire.MaxValidNumber {
-			return wire.ErrDecode
-		}
-
-		var err error = wire.ErrUnknown
 		var valLen int
+		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			valLen, err = wire.UnmarshalInt64(b[tagLen:], wtyp, &x.syncable.PlayerId)
+			x.syncable.PlayerId, valLen, err = wire.UnmarshalInt64(b[tagLen:], wtyp)
 		case 2:
 			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.syncablePlayerBasicInfo)
 		case 3:
@@ -213,9 +209,8 @@ func (x *City) Unmarshal(b []byte) error {
 			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.syncableTroops)
 		}
 		if err == wire.ErrUnknown {
-			valLen = wire.ConsumeFieldValue(num, wtyp, b[tagLen:])
-			if valLen < 0 {
-				return wire.ErrDecode
+			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
+				return err
 			}
 		} else if err != nil {
 			return err
@@ -391,28 +386,23 @@ func (x *CityBaseInfo) MarshalDirty(b []byte) ([]byte, error) {
 
 func (x *CityBaseInfo) Unmarshal(b []byte) error {
 	for len(b) > 0 {
-		num, wtyp, tagLen := wire.ConsumeTag(b)
-		if tagLen < 0 {
-			return wire.ErrDecode
+		num, wtyp, tagLen, err := wire.ConsumeTag(b)
+		if err != nil {
+			return err
 		}
-		if num > wire.MaxValidNumber {
-			return wire.ErrDecode
-		}
-
-		var err error = wire.ErrUnknown
 		var valLen int
+		err = wire.ErrUnknown
 		switch num {
 		case 1:
 			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.syncablePositions)
 		case 2:
 			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.syncableTroops)
 		case 3:
-			valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp, &x.syncable.BuildInfo)
+			x.syncable.BuildInfo, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
 		}
 		if err == wire.ErrUnknown {
-			valLen = wire.ConsumeFieldValue(num, wtyp, b[tagLen:])
-			if valLen < 0 {
-				return wire.ErrDecode
+			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
+				return err
 			}
 		} else if err != nil {
 			return err
@@ -559,26 +549,21 @@ func (x *Vector) MarshalDirty(b []byte) ([]byte, error) {
 
 func (x *Vector) Unmarshal(b []byte) error {
 	for len(b) > 0 {
-		num, wtyp, tagLen := wire.ConsumeTag(b)
-		if tagLen < 0 {
-			return wire.ErrDecode
+		num, wtyp, tagLen, err := wire.ConsumeTag(b)
+		if err != nil {
+			return err
 		}
-		if num > wire.MaxValidNumber {
-			return wire.ErrDecode
-		}
-
-		var err error = wire.ErrUnknown
 		var valLen int
+		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp, &x.syncable.X)
+			x.syncable.X, valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
 		case 2:
-			valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp, &x.syncable.Y)
+			x.syncable.Y, valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
 		}
 		if err == wire.ErrUnknown {
-			valLen = wire.ConsumeFieldValue(num, wtyp, b[tagLen:])
-			if valLen < 0 {
-				return wire.ErrDecode
+			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
+				return err
 			}
 		} else if err != nil {
 			return err
@@ -855,28 +840,38 @@ func (x *Vector_List) clearDirty() {
 	x.dirty = false
 }
 
-func (x *Vector_List) MarshalList(b []byte) ([]byte, error) {
+func (x *Vector_List) Marshal(b []byte) ([]byte, error) {
 	if len(x.syncable) == 0 {
 		return b, nil
 	}
+	var pos int
 	var err error
 	for _, v := range x.syncable {
-		if b, err = wire.AppendMessage(b, v); err != nil {
+		b, pos = wire.AppendSpeculativeLength(b)
+		b, err = v.Marshal(b)
+		if err != nil {
 			return b, err
 		}
+		b = wire.FinishSpeculativeLength(b, pos)
 	}
-	return b, err
+	return b, nil
 }
 
-func (x *Vector_List) UnmarshalList(b []byte) error {
+func (x *Vector_List) Unmarshal(b []byte) error {
 	for len(b) > 0 {
-		value := NewVector()
-		n, err := wire.UnmarshalMessage(b, wire.BytesType, value)
+		v, n, err := wire.ConsumeBytes(b)
 		if err != nil {
 			return err
 		}
 		b = b[n:]
-		x.syncable = append(x.syncable, value)
+		c := NewVector()
+		if err = c.Unmarshal(v); err != nil {
+			return err
+		}
+		c.dirtyParent = func() {
+			x.markDirty()
+		}
+		x.syncable = append(x.syncable, c)
 	}
 	return nil
 }
