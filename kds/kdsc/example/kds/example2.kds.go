@@ -301,8 +301,7 @@ func (x *CityBaseInfo) GetBuildInfo() []byte {
 }
 
 func (x *CityBaseInfo) SetBuildInfo(v []byte) {
-	// FIXME: why???
-	if v != nil || x.xxx_hidden_BuildInfo != nil {
+	if v == nil && x.xxx_hidden_BuildInfo == nil {
 		return
 	}
 	x.xxx_hidden_BuildInfo = v

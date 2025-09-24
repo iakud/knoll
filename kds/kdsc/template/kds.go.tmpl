@@ -824,8 +824,7 @@ func (x *{{$MessageName}}) Get{{.Name}}() {{template "FieldType" .}} {
 
 func (x *{{$MessageName}}) Set{{.Name}}(v {{template "FieldType" .}}) {
 {{- if eq .Type "bytes"}}
-	// FIXME: why???
-	if v != nil || x.xxx_hidden_{{.Name}} != nil {
+	if v == nil && x.xxx_hidden_{{.Name}} == nil {
 		return
 	}
 {{- else if eq .Type "timestamp"}}
