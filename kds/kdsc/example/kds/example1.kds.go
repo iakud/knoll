@@ -210,27 +210,27 @@ func (x *Player) markAll() {
 }
 
 func (x *Player) markDirty(n uint64) {
-	if x.dirty & n == n {
+	if x.dirty&n == n {
 		return
 	}
 	x.dirty |= n
 }
 
 func (x *Player) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
+	return x.dirty&n != 0
 }
 
 func (x *Player) ClearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 1 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<1 != 0 {
 		x.xxx_hidden_Info.clearDirty()
 	}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 2 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<2 != 0 {
 		x.xxx_hidden_Hero.clearDirty()
 	}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 3 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<3 != 0 {
 		x.xxx_hidden_Bag.clearDirty()
 	}
 	x.dirty = 0
@@ -397,7 +397,7 @@ func (x *PlayerBasicInfo) markAll() {
 }
 
 func (x *PlayerBasicInfo) markDirty(n uint64) {
-	if x.dirty & n == n {
+	if x.dirty&n == n {
 		return
 	}
 	x.dirty |= n
@@ -405,7 +405,7 @@ func (x *PlayerBasicInfo) markDirty(n uint64) {
 }
 
 func (x *PlayerBasicInfo) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
+	return x.dirty&n != 0
 }
 
 func (x *PlayerBasicInfo) clearDirty() {
@@ -522,7 +522,7 @@ func (x *PlayerHero) markAll() {
 }
 
 func (x *PlayerHero) markDirty(n uint64) {
-	if x.dirty & n == n {
+	if x.dirty&n == n {
 		return
 	}
 	x.dirty |= n
@@ -530,14 +530,14 @@ func (x *PlayerHero) markDirty(n uint64) {
 }
 
 func (x *PlayerHero) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
+	return x.dirty&n != 0
 }
 
 func (x *PlayerHero) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 1 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<1 != 0 {
 		x.xxx_hidden_Heroes.clearDirty()
 	}
 	x.dirty = 0
@@ -650,7 +650,7 @@ func (x *PlayerBag) markAll() {
 }
 
 func (x *PlayerBag) markDirty(n uint64) {
-	if x.dirty & n == n {
+	if x.dirty&n == n {
 		return
 	}
 	x.dirty |= n
@@ -658,14 +658,14 @@ func (x *PlayerBag) markDirty(n uint64) {
 }
 
 func (x *PlayerBag) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
+	return x.dirty&n != 0
 }
 
 func (x *PlayerBag) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 1 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<1 != 0 {
 		x.xxx_hidden_Resources.clearDirty()
 	}
 	x.dirty = 0
@@ -863,7 +863,7 @@ func (x *Hero) markAll() {
 }
 
 func (x *Hero) markDirty(n uint64) {
-	if x.dirty & n == n {
+	if x.dirty&n == n {
 		return
 	}
 	x.dirty |= n
@@ -871,7 +871,7 @@ func (x *Hero) markDirty(n uint64) {
 }
 
 func (x *Hero) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
+	return x.dirty&n != 0
 }
 
 func (x *Hero) clearDirty() {

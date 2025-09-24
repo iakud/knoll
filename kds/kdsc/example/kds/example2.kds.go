@@ -221,27 +221,27 @@ func (x *City) markAll() {
 }
 
 func (x *City) markDirty(n uint64) {
-	if x.dirty & n == n {
+	if x.dirty&n == n {
 		return
 	}
 	x.dirty |= n
 }
 
 func (x *City) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
+	return x.dirty&n != 0
 }
 
 func (x *City) ClearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 2 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<2 != 0 {
 		x.xxx_hidden_PlayerBasicInfo.clearDirty()
 	}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 3 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<3 != 0 {
 		x.xxx_hidden_CityInfo.clearDirty()
 	}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 4 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<4 != 0 {
 		x.xxx_hidden_Troops.clearDirty()
 	}
 	x.dirty = 0
@@ -410,7 +410,7 @@ func (x *CityBaseInfo) markAll() {
 }
 
 func (x *CityBaseInfo) markDirty(n uint64) {
-	if x.dirty & n == n {
+	if x.dirty&n == n {
 		return
 	}
 	x.dirty |= n
@@ -418,17 +418,17 @@ func (x *CityBaseInfo) markDirty(n uint64) {
 }
 
 func (x *CityBaseInfo) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
+	return x.dirty&n != 0
 }
 
 func (x *CityBaseInfo) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 1 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<1 != 0 {
 		x.xxx_hidden_Positions.clearDirty()
 	}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 2 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<2 != 0 {
 		x.xxx_hidden_Troops.clearDirty()
 	}
 	x.dirty = 0
@@ -567,7 +567,7 @@ func (x *Vector) markAll() {
 }
 
 func (x *Vector) markDirty(n uint64) {
-	if x.dirty & n == n {
+	if x.dirty&n == n {
 		return
 	}
 	x.dirty |= n
@@ -575,7 +575,7 @@ func (x *Vector) markDirty(n uint64) {
 }
 
 func (x *Vector) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
+	return x.dirty&n != 0
 }
 
 func (x *Vector) clearDirty() {

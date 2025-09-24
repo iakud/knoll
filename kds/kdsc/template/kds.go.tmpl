@@ -1060,14 +1060,14 @@ func (x *{{.Name}}) markAll() {
 }
 
 func (x *{{.Name}}) markDirty(n uint64) {
-	if x.dirty & n == n {
+	if x.dirty&n == n {
 		return
 	}
 	x.dirty |= n
 }
 
 func (x *{{.Name}}) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
+	return x.dirty&n != 0
 }
 
 func (x *{{.Name}}) ClearDirty() {
@@ -1076,15 +1076,15 @@ func (x *{{.Name}}) ClearDirty() {
 	}
 {{- range .Fields}}
 {{- if .Repeated}}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << {{.Number}} != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<{{.Number}} != 0 {
 		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- else if .Map}}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << {{.Number}} != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<{{.Number}} != 0 {
 		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- else if eq .TypeKind "component"}}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << {{.Number}} != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<{{.Number}} != 0 {
 		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- end}}
@@ -1142,7 +1142,7 @@ func (x *{{.Name}}) markAll() {
 }
 
 func (x *{{.Name}}) markDirty(n uint64) {
-	if x.dirty & n == n {
+	if x.dirty&n == n {
 		return
 	}
 	x.dirty |= n
@@ -1150,7 +1150,7 @@ func (x *{{.Name}}) markDirty(n uint64) {
 }
 
 func (x *{{.Name}}) checkDirty(n uint64) bool {
-	return x.dirty & n != 0
+	return x.dirty&n != 0
 }
 
 func (x *{{.Name}}) clearDirty() {
@@ -1159,15 +1159,15 @@ func (x *{{.Name}}) clearDirty() {
 	}
 {{- range .Fields}}
 {{- if .Repeated}}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << {{.Number}} != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<{{.Number}} != 0 {
 		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- else if .Map}}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << {{.Number}} != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<{{.Number}} != 0 {
 		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- else if eq .TypeKind "component"}}
-	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << {{.Number}} != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<{{.Number}} != 0 {
 		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- end}}
@@ -1242,4 +1242,5 @@ import (
 {{- end}}
 
 {{- end}}
+{{/* EMPTY LINE */}}
 {{- /* END GO */ -}}
