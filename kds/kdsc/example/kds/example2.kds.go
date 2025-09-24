@@ -11,16 +11,12 @@ import (
 	"github.com/iakud/knoll/kds/wire"
 )
 
-type syncableCity struct {
-	PlayerId int64
-}
-
 type City struct {
 	id int64
-	syncable syncableCity
-	syncablePlayerBasicInfo *PlayerBasicInfo
-	syncableCityInfo *CityBaseInfo
-	syncableTroops Int64_List
+	xxx_hidden_PlayerId int64
+	xxx_hidden_PlayerBasicInfo *PlayerBasicInfo
+	xxx_hidden_CityInfo *CityBaseInfo
+	xxx_hidden_Troops Int64_List
 
 	dirty uint64
 }
@@ -40,32 +36,32 @@ func (x *City) Id() int64 {
 }
 
 func (x *City) GetPlayerId() int64 {
-	return x.syncable.PlayerId
+	return x.xxx_hidden_PlayerId
 }
 
 func (x *City) SetPlayerId(v int64) {
-	if v == x.syncable.PlayerId {
+	if v == x.xxx_hidden_PlayerId {
 		return
 	}
-	x.syncable.PlayerId = v
+	x.xxx_hidden_PlayerId = v
 	x.markDirty(uint64(0x01) << 1)
 }
 
 func (x *City) GetPlayerBasicInfo() *PlayerBasicInfo {
-	return x.syncablePlayerBasicInfo
+	return x.xxx_hidden_PlayerBasicInfo
 }
 
 func (x *City) setPlayerBasicInfo(v *PlayerBasicInfo) {
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed from its original place first")
 	}
-	if v == x.syncablePlayerBasicInfo {
+	if v == x.xxx_hidden_PlayerBasicInfo {
 		return
 	}
-	if x.syncablePlayerBasicInfo != nil {
-		x.syncablePlayerBasicInfo.dirtyParent = nil
+	if x.xxx_hidden_PlayerBasicInfo != nil {
+		x.xxx_hidden_PlayerBasicInfo.dirtyParent = nil
 	}
-	x.syncablePlayerBasicInfo = v
+	x.xxx_hidden_PlayerBasicInfo = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 2)
 	}
@@ -76,20 +72,20 @@ func (x *City) setPlayerBasicInfo(v *PlayerBasicInfo) {
 }
 
 func (x *City) GetCityInfo() *CityBaseInfo {
-	return x.syncableCityInfo
+	return x.xxx_hidden_CityInfo
 }
 
 func (x *City) setCityInfo(v *CityBaseInfo) {
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed from its original place first")
 	}
-	if v == x.syncableCityInfo {
+	if v == x.xxx_hidden_CityInfo {
 		return
 	}
-	if x.syncableCityInfo != nil {
-		x.syncableCityInfo.dirtyParent = nil
+	if x.xxx_hidden_CityInfo != nil {
+		x.xxx_hidden_CityInfo.dirtyParent = nil
 	}
-	x.syncableCityInfo = v
+	x.xxx_hidden_CityInfo = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 3)
 	}
@@ -100,11 +96,11 @@ func (x *City) setCityInfo(v *CityBaseInfo) {
 }
 
 func (x *City) GetTroops() *Int64_List {
-	return &x.syncableTroops
+	return &x.xxx_hidden_Troops
 }
 
 func (x *City) initTroops() {
-	x.syncableTroops.dirtyParent = func() {
+	x.xxx_hidden_Troops.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 4)
 	}
 }
@@ -115,48 +111,48 @@ func (x *City) DumpChange() *kdspb.City {
 	}
 	m := new(kdspb.City)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.SetPlayerId(x.syncable.PlayerId)
+		m.SetPlayerId(x.xxx_hidden_PlayerId)
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.SetPlayerBasicInfo(x.syncablePlayerBasicInfo.DumpChange())
+		m.SetPlayerBasicInfo(x.xxx_hidden_PlayerBasicInfo.DumpChange())
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.SetCityInfo(x.syncableCityInfo.DumpChange())
+		m.SetCityInfo(x.xxx_hidden_CityInfo.DumpChange())
 	}
 	if x.checkDirty(uint64(0x01) << 4) {
-		m.SetTroops(x.syncableTroops.DumpChange())
+		m.SetTroops(x.xxx_hidden_Troops.DumpChange())
 	}
 	return m
 }
 
 func (x *City) DumpFull() *kdspb.City {
 	m := new(kdspb.City)
-	m.SetPlayerId(x.syncable.PlayerId)
-	m.SetPlayerBasicInfo(x.syncablePlayerBasicInfo.DumpFull())
-	m.SetCityInfo(x.syncableCityInfo.DumpFull())
-	m.SetTroops(x.syncableTroops.DumpFull())
+	m.SetPlayerId(x.xxx_hidden_PlayerId)
+	m.SetPlayerBasicInfo(x.xxx_hidden_PlayerBasicInfo.DumpFull())
+	m.SetCityInfo(x.xxx_hidden_CityInfo.DumpFull())
+	m.SetTroops(x.xxx_hidden_Troops.DumpFull())
 	return m
 }
 
 func (x *City) Load(m *kdspb.City) {
-	x.syncable.PlayerId = m.GetPlayerId()
-	x.syncablePlayerBasicInfo.Load(m.GetPlayerBasicInfo())
-	x.syncableCityInfo.Load(m.GetCityInfo())
-	x.syncableTroops.Load(m.GetTroops())
+	x.xxx_hidden_PlayerId = m.GetPlayerId()
+	x.xxx_hidden_PlayerBasicInfo.Load(m.GetPlayerBasicInfo())
+	x.xxx_hidden_CityInfo.Load(m.GetCityInfo())
+	x.xxx_hidden_Troops.Load(m.GetTroops())
 }
 
 func (x *City) Marshal(b []byte) ([]byte, error) {
 	var err error
-	if b, err = wire.MarshalInt64(b, 1, x.syncable.PlayerId); err != nil {
+	if b, err = wire.MarshalInt64(b, 1, x.xxx_hidden_PlayerId); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 2, x.syncablePlayerBasicInfo); err != nil {
+	if b, err = wire.MarshalMessage(b, 2, x.xxx_hidden_PlayerBasicInfo); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 3, x.syncableCityInfo); err != nil {
+	if b, err = wire.MarshalMessage(b, 3, x.xxx_hidden_CityInfo); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalList(b, 4, &x.syncableTroops); err != nil {
+	if b, err = wire.MarshalList(b, 4, &x.xxx_hidden_Troops); err != nil {
 		return b, err
 	}
 	return b, err
@@ -168,22 +164,22 @@ func (x *City) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalInt64(b, 1, x.syncable.PlayerId); err != nil {
+		if b, err = wire.MarshalInt64(b, 1, x.xxx_hidden_PlayerId); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		if b, err = wire.MarshalMessageDirty(b, 2, x.syncablePlayerBasicInfo); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 2, x.xxx_hidden_PlayerBasicInfo); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		if b, err = wire.MarshalMessageDirty(b, 3, x.syncableCityInfo); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 3, x.xxx_hidden_CityInfo); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 4) {
-		if b, err = wire.MarshalList(b, 4, &x.syncableTroops); err != nil {
+		if b, err = wire.MarshalList(b, 4, &x.xxx_hidden_Troops); err != nil {
 			return b, err
 		}
 	}
@@ -200,13 +196,13 @@ func (x *City) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			x.syncable.PlayerId, valLen, err = wire.UnmarshalInt64(b[tagLen:], wtyp)
+			x.xxx_hidden_PlayerId, valLen, err = wire.UnmarshalInt64(b[tagLen:], wtyp)
 		case 2:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.syncablePlayerBasicInfo)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.xxx_hidden_PlayerBasicInfo)
 		case 3:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.syncableCityInfo)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.xxx_hidden_CityInfo)
 		case 4:
-			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.syncableTroops)
+			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.xxx_hidden_Troops)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -240,19 +236,15 @@ func (x *City) ClearDirty() {
 		return
 	}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 2 != 0 {
-		x.syncablePlayerBasicInfo.clearDirty()
+		x.xxx_hidden_PlayerBasicInfo.clearDirty()
 	}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 3 != 0 {
-		x.syncableCityInfo.clearDirty()
+		x.xxx_hidden_CityInfo.clearDirty()
 	}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 4 != 0 {
-		x.syncableTroops.clearDirty()
+		x.xxx_hidden_Troops.clearDirty()
 	}
 	x.dirty = 0
-}
-
-type syncableCityBaseInfo struct {
-	BuildInfo []byte
 }
 
 type dirtyParentFunc_CityBaseInfo func()
@@ -265,9 +257,9 @@ func (f dirtyParentFunc_CityBaseInfo) invoke() {
 }
 
 type CityBaseInfo struct {
-	syncable syncableCityBaseInfo
-	syncablePositions Vector_List
-	syncableTroops Int32_Empty_Map
+	xxx_hidden_Positions Vector_List
+	xxx_hidden_Troops Int32_Empty_Map
+	xxx_hidden_BuildInfo []byte
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_CityBaseInfo
@@ -282,37 +274,38 @@ func NewCityBaseInfo() *CityBaseInfo {
 }
 
 func (x *CityBaseInfo) GetPositions() *Vector_List {
-	return &x.syncablePositions
+	return &x.xxx_hidden_Positions
 }
 
 func (x *CityBaseInfo) initPositions() {
-	x.syncablePositions.dirtyParent = func() {
+	x.xxx_hidden_Positions.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
 }
 
 func (x *CityBaseInfo) GetTroops() *Int32_Empty_Map {
-	return &x.syncableTroops
+	return &x.xxx_hidden_Troops
 }
 
 func (x *CityBaseInfo) initTroops() {
-	x.syncableTroops.syncable = make(map[int32]struct{})
-	x.syncableTroops.update = make(map[int32]struct{})
-	x.syncableTroops.deleteKey = make(map[int32]struct{})
-	x.syncableTroops.dirtyParent = func() {
+	x.xxx_hidden_Troops.syncable = make(map[int32]struct{})
+	x.xxx_hidden_Troops.update = make(map[int32]struct{})
+	x.xxx_hidden_Troops.deleteKey = make(map[int32]struct{})
+	x.xxx_hidden_Troops.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 2)
 	}
 }
 
 func (x *CityBaseInfo) GetBuildInfo() []byte {
-	return x.syncable.BuildInfo
+	return x.xxx_hidden_BuildInfo
 }
 
 func (x *CityBaseInfo) SetBuildInfo(v []byte) {
-	if v != nil || x.syncable.BuildInfo != nil {
+	// FIXME: why???
+	if v != nil || x.xxx_hidden_BuildInfo != nil {
 		return
 	}
-	x.syncable.BuildInfo = v
+	x.xxx_hidden_BuildInfo = v
 	x.markDirty(uint64(0x01) << 3)
 }
 
@@ -322,40 +315,40 @@ func (x *CityBaseInfo) DumpChange() *kdspb.CityBaseInfo {
 	}
 	m := new(kdspb.CityBaseInfo)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.SetPositions(x.syncablePositions.DumpChange())
+		m.SetPositions(x.xxx_hidden_Positions.DumpChange())
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.SetTroops(x.syncableTroops.DumpChange())
+		m.SetTroops(x.xxx_hidden_Troops.DumpChange())
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.SetBuildInfo(x.syncable.BuildInfo)
+		m.SetBuildInfo(x.xxx_hidden_BuildInfo)
 	}
 	return m
 }
 
 func (x *CityBaseInfo) DumpFull() *kdspb.CityBaseInfo {
 	m := new(kdspb.CityBaseInfo)
-	m.SetPositions(x.syncablePositions.DumpFull())
-	m.SetTroops(x.syncableTroops.DumpFull())
-	m.SetBuildInfo(x.syncable.BuildInfo)
+	m.SetPositions(x.xxx_hidden_Positions.DumpFull())
+	m.SetTroops(x.xxx_hidden_Troops.DumpFull())
+	m.SetBuildInfo(x.xxx_hidden_BuildInfo)
 	return m
 }
 
 func (x *CityBaseInfo) Load(m *kdspb.CityBaseInfo) {
-	x.syncablePositions.Load(m.GetPositions())
-	x.syncableTroops.Load(m.GetTroops())
-	x.syncable.BuildInfo = m.GetBuildInfo()
+	x.xxx_hidden_Positions.Load(m.GetPositions())
+	x.xxx_hidden_Troops.Load(m.GetTroops())
+	x.xxx_hidden_BuildInfo = m.GetBuildInfo()
 }
 
 func (x *CityBaseInfo) Marshal(b []byte) ([]byte, error) {
 	var err error
-	if b, err = wire.MarshalList(b, 1, &x.syncablePositions); err != nil {
+	if b, err = wire.MarshalList(b, 1, &x.xxx_hidden_Positions); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMap(b, 2, &x.syncableTroops); err != nil {
+	if b, err = wire.MarshalMap(b, 2, &x.xxx_hidden_Troops); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalBytes(b, 3, x.syncable.BuildInfo); err != nil {
+	if b, err = wire.MarshalBytes(b, 3, x.xxx_hidden_BuildInfo); err != nil {
 		return b, err
 	}
 	return b, err
@@ -367,17 +360,17 @@ func (x *CityBaseInfo) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalList(b, 1, &x.syncablePositions); err != nil {
+		if b, err = wire.MarshalList(b, 1, &x.xxx_hidden_Positions); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		if b, err = wire.MarshalMap(b, 2, &x.syncableTroops); err != nil {
+		if b, err = wire.MarshalMap(b, 2, &x.xxx_hidden_Troops); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		if b, err = wire.MarshalBytes(b, 3, x.syncable.BuildInfo); err != nil {
+		if b, err = wire.MarshalBytes(b, 3, x.xxx_hidden_BuildInfo); err != nil {
 			return b, err
 		}
 	}
@@ -394,11 +387,11 @@ func (x *CityBaseInfo) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.syncablePositions)
+			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.xxx_hidden_Positions)
 		case 2:
-			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.syncableTroops)
+			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.xxx_hidden_Troops)
 		case 3:
-			x.syncable.BuildInfo, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
+			x.xxx_hidden_BuildInfo, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -433,17 +426,12 @@ func (x *CityBaseInfo) clearDirty() {
 		return
 	}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 1 != 0 {
-		x.syncablePositions.clearDirty()
+		x.xxx_hidden_Positions.clearDirty()
 	}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 2 != 0 {
-		x.syncableTroops.clearDirty()
+		x.xxx_hidden_Troops.clearDirty()
 	}
 	x.dirty = 0
-}
-
-type syncableVector struct {
-	X int32
-	Y int32
 }
 
 type dirtyParentFunc_Vector func()
@@ -456,7 +444,8 @@ func (f dirtyParentFunc_Vector) invoke() {
 }
 
 type Vector struct {
-	syncable syncableVector
+	xxx_hidden_X int32
+	xxx_hidden_Y int32
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_Vector
@@ -469,26 +458,26 @@ func NewVector() *Vector {
 }
 
 func (x *Vector) GetX() int32 {
-	return x.syncable.X
+	return x.xxx_hidden_X
 }
 
 func (x *Vector) SetX(v int32) {
-	if v == x.syncable.X {
+	if v == x.xxx_hidden_X {
 		return
 	}
-	x.syncable.X = v
+	x.xxx_hidden_X = v
 	x.markDirty(uint64(0x01) << 1)
 }
 
 func (x *Vector) GetY() int32 {
-	return x.syncable.Y
+	return x.xxx_hidden_Y
 }
 
 func (x *Vector) SetY(v int32) {
-	if v == x.syncable.Y {
+	if v == x.xxx_hidden_Y {
 		return
 	}
-	x.syncable.Y = v
+	x.xxx_hidden_Y = v
 	x.markDirty(uint64(0x01) << 2)
 }
 
@@ -498,32 +487,32 @@ func (x *Vector) DumpChange() *kdspb.Vector {
 	}
 	m := new(kdspb.Vector)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.SetX(x.syncable.X)
+		m.SetX(x.xxx_hidden_X)
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.SetY(x.syncable.Y)
+		m.SetY(x.xxx_hidden_Y)
 	}
 	return m
 }
 
 func (x *Vector) DumpFull() *kdspb.Vector {
 	m := new(kdspb.Vector)
-	m.SetX(x.syncable.X)
-	m.SetY(x.syncable.Y)
+	m.SetX(x.xxx_hidden_X)
+	m.SetY(x.xxx_hidden_Y)
 	return m
 }
 
 func (x *Vector) Load(m *kdspb.Vector) {
-	x.syncable.X = m.GetX()
-	x.syncable.Y = m.GetY()
+	x.xxx_hidden_X = m.GetX()
+	x.xxx_hidden_Y = m.GetY()
 }
 
 func (x *Vector) Marshal(b []byte) ([]byte, error) {
 	var err error
-	if b, err = wire.MarshalInt32(b, 1, x.syncable.X); err != nil {
+	if b, err = wire.MarshalInt32(b, 1, x.xxx_hidden_X); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalInt32(b, 2, x.syncable.Y); err != nil {
+	if b, err = wire.MarshalInt32(b, 2, x.xxx_hidden_Y); err != nil {
 		return b, err
 	}
 	return b, err
@@ -535,12 +524,12 @@ func (x *Vector) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalInt32(b, 1, x.syncable.X); err != nil {
+		if b, err = wire.MarshalInt32(b, 1, x.xxx_hidden_X); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		if b, err = wire.MarshalInt32(b, 2, x.syncable.Y); err != nil {
+		if b, err = wire.MarshalInt32(b, 2, x.xxx_hidden_Y); err != nil {
 			return b, err
 		}
 	}
@@ -557,9 +546,9 @@ func (x *Vector) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			x.syncable.X, valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
+			x.xxx_hidden_X, valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
 		case 2:
-			x.syncable.Y, valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
+			x.xxx_hidden_Y, valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {

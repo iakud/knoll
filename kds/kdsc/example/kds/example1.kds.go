@@ -14,15 +14,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type syncablePlayer struct {
-}
-
 type Player struct {
 	id int64
-	syncable syncablePlayer
-	syncableInfo *PlayerBasicInfo
-	syncableHero *PlayerHero
-	syncableBag *PlayerBag
+	xxx_hidden_Info *PlayerBasicInfo
+	xxx_hidden_Hero *PlayerHero
+	xxx_hidden_Bag *PlayerBag
 
 	dirty uint64
 }
@@ -42,20 +38,20 @@ func (x *Player) Id() int64 {
 }
 
 func (x *Player) GetInfo() *PlayerBasicInfo {
-	return x.syncableInfo
+	return x.xxx_hidden_Info
 }
 
 func (x *Player) setInfo(v *PlayerBasicInfo) {
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed from its original place first")
 	}
-	if v == x.syncableInfo {
+	if v == x.xxx_hidden_Info {
 		return
 	}
-	if x.syncableInfo != nil {
-		x.syncableInfo.dirtyParent = nil
+	if x.xxx_hidden_Info != nil {
+		x.xxx_hidden_Info.dirtyParent = nil
 	}
-	x.syncableInfo = v
+	x.xxx_hidden_Info = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
@@ -66,20 +62,20 @@ func (x *Player) setInfo(v *PlayerBasicInfo) {
 }
 
 func (x *Player) GetHero() *PlayerHero {
-	return x.syncableHero
+	return x.xxx_hidden_Hero
 }
 
 func (x *Player) setHero(v *PlayerHero) {
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed from its original place first")
 	}
-	if v == x.syncableHero {
+	if v == x.xxx_hidden_Hero {
 		return
 	}
-	if x.syncableHero != nil {
-		x.syncableHero.dirtyParent = nil
+	if x.xxx_hidden_Hero != nil {
+		x.xxx_hidden_Hero.dirtyParent = nil
 	}
-	x.syncableHero = v
+	x.xxx_hidden_Hero = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 2)
 	}
@@ -90,20 +86,20 @@ func (x *Player) setHero(v *PlayerHero) {
 }
 
 func (x *Player) GetBag() *PlayerBag {
-	return x.syncableBag
+	return x.xxx_hidden_Bag
 }
 
 func (x *Player) setBag(v *PlayerBag) {
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed from its original place first")
 	}
-	if v == x.syncableBag {
+	if v == x.xxx_hidden_Bag {
 		return
 	}
-	if x.syncableBag != nil {
-		x.syncableBag.dirtyParent = nil
+	if x.xxx_hidden_Bag != nil {
+		x.xxx_hidden_Bag.dirtyParent = nil
 	}
-	x.syncableBag = v
+	x.xxx_hidden_Bag = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 3)
 	}
@@ -119,40 +115,40 @@ func (x *Player) DumpChange() *kdspb.Player {
 	}
 	m := new(kdspb.Player)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.SetInfo(x.syncableInfo.DumpChange())
+		m.SetInfo(x.xxx_hidden_Info.DumpChange())
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.SetHero(x.syncableHero.DumpChange())
+		m.SetHero(x.xxx_hidden_Hero.DumpChange())
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.SetBag(x.syncableBag.DumpChange())
+		m.SetBag(x.xxx_hidden_Bag.DumpChange())
 	}
 	return m
 }
 
 func (x *Player) DumpFull() *kdspb.Player {
 	m := new(kdspb.Player)
-	m.SetInfo(x.syncableInfo.DumpFull())
-	m.SetHero(x.syncableHero.DumpFull())
-	m.SetBag(x.syncableBag.DumpFull())
+	m.SetInfo(x.xxx_hidden_Info.DumpFull())
+	m.SetHero(x.xxx_hidden_Hero.DumpFull())
+	m.SetBag(x.xxx_hidden_Bag.DumpFull())
 	return m
 }
 
 func (x *Player) Load(m *kdspb.Player) {
-	x.syncableInfo.Load(m.GetInfo())
-	x.syncableHero.Load(m.GetHero())
-	x.syncableBag.Load(m.GetBag())
+	x.xxx_hidden_Info.Load(m.GetInfo())
+	x.xxx_hidden_Hero.Load(m.GetHero())
+	x.xxx_hidden_Bag.Load(m.GetBag())
 }
 
 func (x *Player) Marshal(b []byte) ([]byte, error) {
 	var err error
-	if b, err = wire.MarshalMessage(b, 1, x.syncableInfo); err != nil {
+	if b, err = wire.MarshalMessage(b, 1, x.xxx_hidden_Info); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 2, x.syncableHero); err != nil {
+	if b, err = wire.MarshalMessage(b, 2, x.xxx_hidden_Hero); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 3, x.syncableBag); err != nil {
+	if b, err = wire.MarshalMessage(b, 3, x.xxx_hidden_Bag); err != nil {
 		return b, err
 	}
 	return b, err
@@ -164,17 +160,17 @@ func (x *Player) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalMessageDirty(b, 1, x.syncableInfo); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 1, x.xxx_hidden_Info); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		if b, err = wire.MarshalMessageDirty(b, 2, x.syncableHero); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 2, x.xxx_hidden_Hero); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		if b, err = wire.MarshalMessageDirty(b, 3, x.syncableBag); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 3, x.xxx_hidden_Bag); err != nil {
 			return b, err
 		}
 	}
@@ -191,11 +187,11 @@ func (x *Player) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.syncableInfo)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.xxx_hidden_Info)
 		case 2:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.syncableHero)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.xxx_hidden_Hero)
 		case 3:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.syncableBag)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.xxx_hidden_Bag)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -229,21 +225,15 @@ func (x *Player) ClearDirty() {
 		return
 	}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 1 != 0 {
-		x.syncableInfo.clearDirty()
+		x.xxx_hidden_Info.clearDirty()
 	}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 2 != 0 {
-		x.syncableHero.clearDirty()
+		x.xxx_hidden_Hero.clearDirty()
 	}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 3 != 0 {
-		x.syncableBag.clearDirty()
+		x.xxx_hidden_Bag.clearDirty()
 	}
 	x.dirty = 0
-}
-
-type syncablePlayerBasicInfo struct {
-	Name string
-	IsNew bool
-	CreateTime time.Time
 }
 
 type dirtyParentFunc_PlayerBasicInfo func()
@@ -256,7 +246,9 @@ func (f dirtyParentFunc_PlayerBasicInfo) invoke() {
 }
 
 type PlayerBasicInfo struct {
-	syncable syncablePlayerBasicInfo
+	xxx_hidden_Name string
+	xxx_hidden_IsNew bool
+	xxx_hidden_CreateTime time.Time
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_PlayerBasicInfo
@@ -269,38 +261,38 @@ func NewPlayerBasicInfo() *PlayerBasicInfo {
 }
 
 func (x *PlayerBasicInfo) GetName() string {
-	return x.syncable.Name
+	return x.xxx_hidden_Name
 }
 
 func (x *PlayerBasicInfo) SetName(v string) {
-	if v == x.syncable.Name {
+	if v == x.xxx_hidden_Name {
 		return
 	}
-	x.syncable.Name = v
+	x.xxx_hidden_Name = v
 	x.markDirty(uint64(0x01) << 1)
 }
 
 func (x *PlayerBasicInfo) GetIsNew() bool {
-	return x.syncable.IsNew
+	return x.xxx_hidden_IsNew
 }
 
 func (x *PlayerBasicInfo) SetIsNew(v bool) {
-	if v == x.syncable.IsNew {
+	if v == x.xxx_hidden_IsNew {
 		return
 	}
-	x.syncable.IsNew = v
+	x.xxx_hidden_IsNew = v
 	x.markDirty(uint64(0x01) << 3)
 }
 
 func (x *PlayerBasicInfo) GetCreateTime() time.Time {
-	return x.syncable.CreateTime
+	return x.xxx_hidden_CreateTime
 }
 
 func (x *PlayerBasicInfo) SetCreateTime(v time.Time) {
-	if v.Equal(x.syncable.CreateTime) {
+	if v.Equal(x.xxx_hidden_CreateTime) {
 		return
 	}
-	x.syncable.CreateTime = v
+	x.xxx_hidden_CreateTime = v
 	x.markDirty(uint64(0x01) << 5)
 }
 
@@ -310,40 +302,40 @@ func (x *PlayerBasicInfo) DumpChange() *kdspb.PlayerBasicInfo {
 	}
 	m := new(kdspb.PlayerBasicInfo)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.SetName(x.syncable.Name)
+		m.SetName(x.xxx_hidden_Name)
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.SetIsNew(x.syncable.IsNew)
+		m.SetIsNew(x.xxx_hidden_IsNew)
 	}
 	if x.checkDirty(uint64(0x01) << 5) {
-		m.SetCreateTime(timestamppb.New(x.syncable.CreateTime))
+		m.SetCreateTime(timestamppb.New(x.xxx_hidden_CreateTime))
 	}
 	return m
 }
 
 func (x *PlayerBasicInfo) DumpFull() *kdspb.PlayerBasicInfo {
 	m := new(kdspb.PlayerBasicInfo)
-	m.SetName(x.syncable.Name)
-	m.SetIsNew(x.syncable.IsNew)
-	m.SetCreateTime(timestamppb.New(x.syncable.CreateTime))
+	m.SetName(x.xxx_hidden_Name)
+	m.SetIsNew(x.xxx_hidden_IsNew)
+	m.SetCreateTime(timestamppb.New(x.xxx_hidden_CreateTime))
 	return m
 }
 
 func (x *PlayerBasicInfo) Load(m *kdspb.PlayerBasicInfo) {
-	x.syncable.Name = m.GetName()
-	x.syncable.IsNew = m.GetIsNew()
-	x.syncable.CreateTime = m.GetCreateTime().AsTime()
+	x.xxx_hidden_Name = m.GetName()
+	x.xxx_hidden_IsNew = m.GetIsNew()
+	x.xxx_hidden_CreateTime = m.GetCreateTime().AsTime()
 }
 
 func (x *PlayerBasicInfo) Marshal(b []byte) ([]byte, error) {
 	var err error
-	if b, err = wire.MarshalString(b, 1, x.syncable.Name); err != nil {
+	if b, err = wire.MarshalString(b, 1, x.xxx_hidden_Name); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalBool(b, 3, x.syncable.IsNew); err != nil {
+	if b, err = wire.MarshalBool(b, 3, x.xxx_hidden_IsNew); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalTimestamp(b, 5, x.syncable.CreateTime); err != nil {
+	if b, err = wire.MarshalTimestamp(b, 5, x.xxx_hidden_CreateTime); err != nil {
 		return b, err
 	}
 	return b, err
@@ -355,17 +347,17 @@ func (x *PlayerBasicInfo) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalString(b, 1, x.syncable.Name); err != nil {
+		if b, err = wire.MarshalString(b, 1, x.xxx_hidden_Name); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		if b, err = wire.MarshalBool(b, 3, x.syncable.IsNew); err != nil {
+		if b, err = wire.MarshalBool(b, 3, x.xxx_hidden_IsNew); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 5) {
-		if b, err = wire.MarshalTimestamp(b, 5, x.syncable.CreateTime); err != nil {
+		if b, err = wire.MarshalTimestamp(b, 5, x.xxx_hidden_CreateTime); err != nil {
 			return b, err
 		}
 	}
@@ -382,11 +374,11 @@ func (x *PlayerBasicInfo) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			x.syncable.Name, valLen, err = wire.UnmarshalString(b[tagLen:], wtyp)
+			x.xxx_hidden_Name, valLen, err = wire.UnmarshalString(b[tagLen:], wtyp)
 		case 3:
-			x.syncable.IsNew, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
+			x.xxx_hidden_IsNew, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
 		case 5:
-			x.syncable.CreateTime, valLen, err = wire.UnmarshalTimestamp(b[tagLen:], wtyp)
+			x.xxx_hidden_CreateTime, valLen, err = wire.UnmarshalTimestamp(b[tagLen:], wtyp)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -423,9 +415,6 @@ func (x *PlayerBasicInfo) clearDirty() {
 	x.dirty = 0
 }
 
-type syncablePlayerHero struct {
-}
-
 type dirtyParentFunc_PlayerHero func()
 
 func (f dirtyParentFunc_PlayerHero) invoke() {
@@ -436,8 +425,7 @@ func (f dirtyParentFunc_PlayerHero) invoke() {
 }
 
 type PlayerHero struct {
-	syncable syncablePlayerHero
-	syncableHeroes Int64_Hero_Map
+	xxx_hidden_Heroes Int64_Hero_Map
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_PlayerHero
@@ -451,14 +439,14 @@ func NewPlayerHero() *PlayerHero {
 }
 
 func (x *PlayerHero) GetHeroes() *Int64_Hero_Map {
-	return &x.syncableHeroes
+	return &x.xxx_hidden_Heroes
 }
 
 func (x *PlayerHero) initHeroes() {
-	x.syncableHeroes.syncable = make(map[int64]*Hero)
-	x.syncableHeroes.update = make(map[int64]*Hero)
-	x.syncableHeroes.deleteKey = make(map[int64]struct{})
-	x.syncableHeroes.dirtyParent = func() {
+	x.xxx_hidden_Heroes.syncable = make(map[int64]*Hero)
+	x.xxx_hidden_Heroes.update = make(map[int64]*Hero)
+	x.xxx_hidden_Heroes.deleteKey = make(map[int64]struct{})
+	x.xxx_hidden_Heroes.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
 }
@@ -469,24 +457,24 @@ func (x *PlayerHero) DumpChange() *kdspb.PlayerHero {
 	}
 	m := new(kdspb.PlayerHero)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.SetHeroes(x.syncableHeroes.DumpChange())
+		m.SetHeroes(x.xxx_hidden_Heroes.DumpChange())
 	}
 	return m
 }
 
 func (x *PlayerHero) DumpFull() *kdspb.PlayerHero {
 	m := new(kdspb.PlayerHero)
-	m.SetHeroes(x.syncableHeroes.DumpFull())
+	m.SetHeroes(x.xxx_hidden_Heroes.DumpFull())
 	return m
 }
 
 func (x *PlayerHero) Load(m *kdspb.PlayerHero) {
-	x.syncableHeroes.Load(m.GetHeroes())
+	x.xxx_hidden_Heroes.Load(m.GetHeroes())
 }
 
 func (x *PlayerHero) Marshal(b []byte) ([]byte, error) {
 	var err error
-	if b, err = wire.MarshalMap(b, 1, &x.syncableHeroes); err != nil {
+	if b, err = wire.MarshalMap(b, 1, &x.xxx_hidden_Heroes); err != nil {
 		return b, err
 	}
 	return b, err
@@ -498,7 +486,7 @@ func (x *PlayerHero) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalMap(b, 1, &x.syncableHeroes); err != nil {
+		if b, err = wire.MarshalMap(b, 1, &x.xxx_hidden_Heroes); err != nil {
 			return b, err
 		}
 	}
@@ -515,7 +503,7 @@ func (x *PlayerHero) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.syncableHeroes)
+			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.xxx_hidden_Heroes)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -550,12 +538,9 @@ func (x *PlayerHero) clearDirty() {
 		return
 	}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 1 != 0 {
-		x.syncableHeroes.clearDirty()
+		x.xxx_hidden_Heroes.clearDirty()
 	}
 	x.dirty = 0
-}
-
-type syncablePlayerBag struct {
 }
 
 type dirtyParentFunc_PlayerBag func()
@@ -568,8 +553,7 @@ func (f dirtyParentFunc_PlayerBag) invoke() {
 }
 
 type PlayerBag struct {
-	syncable syncablePlayerBag
-	syncableResources Int32_Int32_Map
+	xxx_hidden_Resources Int32_Int32_Map
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_PlayerBag
@@ -583,14 +567,14 @@ func NewPlayerBag() *PlayerBag {
 }
 
 func (x *PlayerBag) GetResources() *Int32_Int32_Map {
-	return &x.syncableResources
+	return &x.xxx_hidden_Resources
 }
 
 func (x *PlayerBag) initResources() {
-	x.syncableResources.syncable = make(map[int32]int32)
-	x.syncableResources.update = make(map[int32]int32)
-	x.syncableResources.deleteKey = make(map[int32]struct{})
-	x.syncableResources.dirtyParent = func() {
+	x.xxx_hidden_Resources.syncable = make(map[int32]int32)
+	x.xxx_hidden_Resources.update = make(map[int32]int32)
+	x.xxx_hidden_Resources.deleteKey = make(map[int32]struct{})
+	x.xxx_hidden_Resources.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
 }
@@ -601,24 +585,24 @@ func (x *PlayerBag) DumpChange() *kdspb.PlayerBag {
 	}
 	m := new(kdspb.PlayerBag)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.SetResources(x.syncableResources.DumpChange())
+		m.SetResources(x.xxx_hidden_Resources.DumpChange())
 	}
 	return m
 }
 
 func (x *PlayerBag) DumpFull() *kdspb.PlayerBag {
 	m := new(kdspb.PlayerBag)
-	m.SetResources(x.syncableResources.DumpFull())
+	m.SetResources(x.xxx_hidden_Resources.DumpFull())
 	return m
 }
 
 func (x *PlayerBag) Load(m *kdspb.PlayerBag) {
-	x.syncableResources.Load(m.GetResources())
+	x.xxx_hidden_Resources.Load(m.GetResources())
 }
 
 func (x *PlayerBag) Marshal(b []byte) ([]byte, error) {
 	var err error
-	if b, err = wire.MarshalMap(b, 1, &x.syncableResources); err != nil {
+	if b, err = wire.MarshalMap(b, 1, &x.xxx_hidden_Resources); err != nil {
 		return b, err
 	}
 	return b, err
@@ -630,7 +614,7 @@ func (x *PlayerBag) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalMap(b, 1, &x.syncableResources); err != nil {
+		if b, err = wire.MarshalMap(b, 1, &x.xxx_hidden_Resources); err != nil {
 			return b, err
 		}
 	}
@@ -647,7 +631,7 @@ func (x *PlayerBag) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.syncableResources)
+			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.xxx_hidden_Resources)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -682,16 +666,9 @@ func (x *PlayerBag) clearDirty() {
 		return
 	}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << 1 != 0 {
-		x.syncableResources.clearDirty()
+		x.xxx_hidden_Resources.clearDirty()
 	}
 	x.dirty = 0
-}
-
-type syncableHero struct {
-	HeroId int32
-	HeroLevel int32
-	Type HeroType
-	NeedTime time.Duration
 }
 
 type dirtyParentFunc_Hero func()
@@ -704,7 +681,10 @@ func (f dirtyParentFunc_Hero) invoke() {
 }
 
 type Hero struct {
-	syncable syncableHero
+	xxx_hidden_HeroId int32
+	xxx_hidden_HeroLevel int32
+	xxx_hidden_Type HeroType
+	xxx_hidden_NeedTime time.Duration
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_Hero
@@ -717,50 +697,50 @@ func NewHero() *Hero {
 }
 
 func (x *Hero) GetHeroId() int32 {
-	return x.syncable.HeroId
+	return x.xxx_hidden_HeroId
 }
 
 func (x *Hero) SetHeroId(v int32) {
-	if v == x.syncable.HeroId {
+	if v == x.xxx_hidden_HeroId {
 		return
 	}
-	x.syncable.HeroId = v
+	x.xxx_hidden_HeroId = v
 	x.markDirty(uint64(0x01) << 1)
 }
 
 func (x *Hero) GetHeroLevel() int32 {
-	return x.syncable.HeroLevel
+	return x.xxx_hidden_HeroLevel
 }
 
 func (x *Hero) SetHeroLevel(v int32) {
-	if v == x.syncable.HeroLevel {
+	if v == x.xxx_hidden_HeroLevel {
 		return
 	}
-	x.syncable.HeroLevel = v
+	x.xxx_hidden_HeroLevel = v
 	x.markDirty(uint64(0x01) << 2)
 }
 
 func (x *Hero) GetType() HeroType {
-	return x.syncable.Type
+	return x.xxx_hidden_Type
 }
 
 func (x *Hero) SetType(v HeroType) {
-	if v == x.syncable.Type {
+	if v == x.xxx_hidden_Type {
 		return
 	}
-	x.syncable.Type = v
+	x.xxx_hidden_Type = v
 	x.markDirty(uint64(0x01) << 3)
 }
 
 func (x *Hero) GetNeedTime() time.Duration {
-	return x.syncable.NeedTime
+	return x.xxx_hidden_NeedTime
 }
 
 func (x *Hero) SetNeedTime(v time.Duration) {
-	if v == x.syncable.NeedTime {
+	if v == x.xxx_hidden_NeedTime {
 		return
 	}
-	x.syncable.NeedTime = v
+	x.xxx_hidden_NeedTime = v
 	x.markDirty(uint64(0x01) << 4)
 }
 
@@ -770,49 +750,49 @@ func (x *Hero) DumpChange() *kdspb.Hero {
 	}
 	m := new(kdspb.Hero)
 	if x.checkDirty(uint64(0x01) << 1) {
-		m.SetHeroId(x.syncable.HeroId)
+		m.SetHeroId(x.xxx_hidden_HeroId)
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		m.SetHeroLevel(x.syncable.HeroLevel)
+		m.SetHeroLevel(x.xxx_hidden_HeroLevel)
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
-		m.SetType(x.syncable.Type)
+		m.SetType(x.xxx_hidden_Type)
 	}
 	if x.checkDirty(uint64(0x01) << 4) {
-		m.SetNeedTime(durationpb.New(x.syncable.NeedTime))
+		m.SetNeedTime(durationpb.New(x.xxx_hidden_NeedTime))
 	}
 	return m
 }
 
 func (x *Hero) DumpFull() *kdspb.Hero {
 	m := new(kdspb.Hero)
-	m.SetHeroId(x.syncable.HeroId)
-	m.SetHeroLevel(x.syncable.HeroLevel)
-	m.SetType(x.syncable.Type)
-	m.SetNeedTime(durationpb.New(x.syncable.NeedTime))
+	m.SetHeroId(x.xxx_hidden_HeroId)
+	m.SetHeroLevel(x.xxx_hidden_HeroLevel)
+	m.SetType(x.xxx_hidden_Type)
+	m.SetNeedTime(durationpb.New(x.xxx_hidden_NeedTime))
 	return m
 }
 
 func (x *Hero) Load(m *kdspb.Hero) {
-	x.syncable.HeroId = m.GetHeroId()
-	x.syncable.HeroLevel = m.GetHeroLevel()
-	x.syncable.Type = m.GetType()
-	x.syncable.NeedTime = m.GetNeedTime().AsDuration()
+	x.xxx_hidden_HeroId = m.GetHeroId()
+	x.xxx_hidden_HeroLevel = m.GetHeroLevel()
+	x.xxx_hidden_Type = m.GetType()
+	x.xxx_hidden_NeedTime = m.GetNeedTime().AsDuration()
 }
 
 func (x *Hero) Marshal(b []byte) ([]byte, error) {
 	var err error
-	if b, err = wire.MarshalInt32(b, 1, x.syncable.HeroId); err != nil {
+	if b, err = wire.MarshalInt32(b, 1, x.xxx_hidden_HeroId); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalInt32(b, 2, x.syncable.HeroLevel); err != nil {
+	if b, err = wire.MarshalInt32(b, 2, x.xxx_hidden_HeroLevel); err != nil {
 		return b, err
 	}
 	// FIXME: enum value
-	if b, err = wire.MarshalInt32(b, 3, int32(x.syncable.Type)); err != nil {
+	if b, err = wire.MarshalInt32(b, 3, int32(x.xxx_hidden_Type)); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalDuration(b, 4, x.syncable.NeedTime); err != nil {
+	if b, err = wire.MarshalDuration(b, 4, x.xxx_hidden_NeedTime); err != nil {
 		return b, err
 	}
 	return b, err
@@ -824,23 +804,23 @@ func (x *Hero) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalInt32(b, 1, x.syncable.HeroId); err != nil {
+		if b, err = wire.MarshalInt32(b, 1, x.xxx_hidden_HeroId); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		if b, err = wire.MarshalInt32(b, 2, x.syncable.HeroLevel); err != nil {
+		if b, err = wire.MarshalInt32(b, 2, x.xxx_hidden_HeroLevel); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 3) {
 		// FIXME: enum value
-		if b, err = wire.MarshalInt32(b, 3, int32(x.syncable.Type)); err != nil {
+		if b, err = wire.MarshalInt32(b, 3, int32(x.xxx_hidden_Type)); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 4) {
-		if b, err = wire.MarshalDuration(b, 4, x.syncable.NeedTime); err != nil {
+		if b, err = wire.MarshalDuration(b, 4, x.xxx_hidden_NeedTime); err != nil {
 			return b, err
 		}
 	}
@@ -857,14 +837,14 @@ func (x *Hero) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			x.syncable.HeroId, valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
+			x.xxx_hidden_HeroId, valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
 		case 2:
-			x.syncable.HeroLevel, valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
+			x.xxx_hidden_HeroLevel, valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
 		case 3:
 			// FIXME: enum value
-			*(*int32)(&x.syncable.Type), valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
+			*(*int32)(&x.xxx_hidden_Type), valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
 		case 4:
-			x.syncable.NeedTime, valLen, err = wire.UnmarshalDuration(b[tagLen:], wtyp)
+			x.xxx_hidden_NeedTime, valLen, err = wire.UnmarshalDuration(b[tagLen:], wtyp)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {

@@ -764,17 +764,6 @@ const (
 )
 {{- end}}
 
-{{- /* SYNCABLE */ -}}
-{{- define "Syncable"}}
-type syncable{{.Name}} struct {
-{{- range .Fields}}
-{{- if not (or .Repeated .Map (eq .TypeKind "component"))}}
-	{{.Name}} {{template "FieldType" .}}
-{{- end}}
-{{- end}}
-}
-{{- end}}
-
 {{- /* MESSAGE */ -}}
 {{- define "Message"}}
 {{- $MessageName := .Name}}
@@ -783,43 +772,43 @@ type syncable{{.Name}} struct {
 {{/* EMPTY LINE */}}
 {{- if .Repeated}}
 func (x *{{$MessageName}}) Get{{.Name}}() *{{.ListType}} {
-	return &x.syncable{{.Name}}
+	return &x.xxx_hidden_{{.Name}}
 }
 
 func (x *{{$MessageName}}) init{{.Name}}() {
-	x.syncable{{.Name}}.dirtyParent = func() {
+	x.xxx_hidden_{{.Name}}.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
 {{- else if .Map}}
 func (x *{{$MessageName}}) Get{{.Name}}() *{{.MapType}} {
-	return &x.syncable{{.Name}}
+	return &x.xxx_hidden_{{.Name}}
 }
 
 func (x *{{$MessageName}}) init{{.Name}}() {
-	x.syncable{{.Name}}.syncable = make(map[{{goType .KeyType}}]{{template "FieldType" .}})
-	x.syncable{{.Name}}.update = make(map[{{goType .KeyType}}]{{template "FieldType" .}})
-	x.syncable{{.Name}}.deleteKey = make(map[{{goType .KeyType}}]struct{})
-	x.syncable{{.Name}}.dirtyParent = func() {
+	x.xxx_hidden_{{.Name}}.syncable = make(map[{{goType .KeyType}}]{{template "FieldType" .}})
+	x.xxx_hidden_{{.Name}}.update = make(map[{{goType .KeyType}}]{{template "FieldType" .}})
+	x.xxx_hidden_{{.Name}}.deleteKey = make(map[{{goType .KeyType}}]struct{})
+	x.xxx_hidden_{{.Name}}.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
 }
 {{- else if eq .TypeKind "component"}}
 func (x *{{$MessageName}}) Get{{.Name}}() {{template "FieldType" .}} {
-	return x.syncable{{.Name}}
+	return x.xxx_hidden_{{.Name}}
 }
 
 func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed from its original place first")
 	}
-	if v == x.syncable{{.Name}} {
+	if v == x.xxx_hidden_{{.Name}} {
 		return
 	}
-	if x.syncable{{.Name}} != nil {
-		x.syncable{{.Name}}.dirtyParent = nil
+	if x.xxx_hidden_{{.Name}} != nil {
+		x.xxx_hidden_{{.Name}}.dirtyParent = nil
 	}
-	x.syncable{{.Name}} = v
+	x.xxx_hidden_{{.Name}} = v
 	v.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
@@ -830,24 +819,25 @@ func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
 }
 {{- else}}
 func (x *{{$MessageName}}) Get{{.Name}}() {{template "FieldType" .}} {
-	return x.syncable.{{.Name}}
+	return x.xxx_hidden_{{.Name}}
 }
 
 func (x *{{$MessageName}}) Set{{.Name}}(v {{template "FieldType" .}}) {
 {{- if eq .Type "bytes"}}
-	if v != nil || x.syncable.{{.Name}} != nil {
+	// FIXME: why???
+	if v != nil || x.xxx_hidden_{{.Name}} != nil {
 		return
 	}
 {{- else if eq .Type "timestamp"}}
-	if v.Equal(x.syncable.{{.Name}}) {
+	if v.Equal(x.xxx_hidden_{{.Name}}) {
 		return
 	}
 {{- else}}
-	if v == x.syncable.{{.Name}} {
+	if v == x.xxx_hidden_{{.Name}} {
 		return
 	}
 {{- end}}
-	x.syncable.{{.Name}} = v
+	x.xxx_hidden_{{.Name}} = v
 	x.markDirty(uint64(0x01) << {{.Number}})
 }
 {{- end}}
@@ -861,19 +851,19 @@ func (x *{{$MessageName}}) DumpChange() *{{.GoProtoPackage}}.{{.Name}} {
 {{- range .Fields}}
 	if x.checkDirty(uint64(0x01) << {{.Number}}) {
 {{- if .Repeated}}
-		m.Set{{.Name}}(x.syncable{{.Name}}.DumpChange())
+		m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpChange())
 {{- else if .Map}}
-		m.Set{{.Name}}(x.syncable{{.Name}}.DumpChange())
+		m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpChange())
 {{- else if eq .TypeKind "component"}}
-		m.Set{{.Name}}(x.syncable{{.Name}}.DumpChange())
+		m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpChange())
 {{- else if eq .Type "timestamp"}}
-		m.Set{{.Name}}(timestamppb.New(x.syncable.{{.Name}}))
+		m.Set{{.Name}}(timestamppb.New(x.xxx_hidden_{{.Name}}))
 {{- else if eq .Type "duration"}}
-		m.Set{{.Name}}(durationpb.New(x.syncable.{{.Name}}))
+		m.Set{{.Name}}(durationpb.New(x.xxx_hidden_{{.Name}}))
 {{- else if eq .Type "empty"}}
 		m.Set{{.Name}}(new(emptypb.Empty))
 {{- else}}
-		m.Set{{.Name}}(x.syncable.{{.Name}})
+		m.Set{{.Name}}(x.xxx_hidden_{{.Name}})
 {{- end}}
 	}
 {{- end}}
@@ -884,19 +874,19 @@ func (x *{{$MessageName}}) DumpFull() *{{.GoProtoPackage}}.{{.Name}} {
 	m := new({{.GoProtoPackage}}.{{.Name}})
 {{- range .Fields}}
 {{- if .Repeated}}
-	m.Set{{.Name}}(x.syncable{{.Name}}.DumpFull())
+	m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpFull())
 {{- else if .Map}}
-	m.Set{{.Name}}(x.syncable{{.Name}}.DumpFull())
+	m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpFull())
 {{- else if eq .TypeKind "component"}}
-	m.Set{{.Name}}(x.syncable{{.Name}}.DumpFull())
+	m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpFull())
 {{- else if eq .Type "timestamp"}}
-	m.Set{{.Name}}(timestamppb.New(x.syncable.{{.Name}}))
+	m.Set{{.Name}}(timestamppb.New(x.xxx_hidden_{{.Name}}))
 {{- else if eq .Type "duration"}}
-	m.Set{{.Name}}(durationpb.New(x.syncable.{{.Name}}))
+	m.Set{{.Name}}(durationpb.New(x.xxx_hidden_{{.Name}}))
 {{- else if eq .Type "empty"}}
 	m.Set{{.Name}}(new(emptypb.Empty))
 {{- else}}
-	m.Set{{.Name}}(x.syncable.{{.Name}})
+	m.Set{{.Name}}(x.xxx_hidden_{{.Name}})
 {{- end}}
 {{- end}}
 	return m
@@ -905,19 +895,19 @@ func (x *{{$MessageName}}) DumpFull() *{{.GoProtoPackage}}.{{.Name}} {
 func (x *{{$MessageName}}) Load(m *{{.GoProtoPackage}}.{{.Name}}) {
 {{- range .Fields}}
 {{- if .Repeated}}
-	x.syncable{{.Name}}.Load(m.Get{{.Name}}())
+	x.xxx_hidden_{{.Name}}.Load(m.Get{{.Name}}())
 {{- else if .Map}}
-	x.syncable{{.Name}}.Load(m.Get{{.Name}}())
+	x.xxx_hidden_{{.Name}}.Load(m.Get{{.Name}}())
 {{- else if eq .TypeKind "component"}}
-	x.syncable{{.Name}}.Load(m.Get{{.Name}}())
+	x.xxx_hidden_{{.Name}}.Load(m.Get{{.Name}}())
 {{- else if eq .Type "timestamp"}}
-	x.syncable.{{.Name}} = m.Get{{.Name}}().AsTime()
+	x.xxx_hidden_{{.Name}} = m.Get{{.Name}}().AsTime()
 {{- else if eq .Type "duration"}}
-	x.syncable.{{.Name}} = m.Get{{.Name}}().AsDuration()
+	x.xxx_hidden_{{.Name}} = m.Get{{.Name}}().AsDuration()
 {{- else if eq .Type "empty"}}
-	x.syncable.{{.Name}} = struct{}{}
+	x.xxx_hidden_{{.Name}} = struct{}{}
 {{- else}}
-	x.syncable.{{.Name}} = m.Get{{.Name}}()
+	x.xxx_hidden_{{.Name}} = m.Get{{.Name}}()
 {{- end}}
 {{- end}}
 }
@@ -926,24 +916,24 @@ func (x *{{$MessageName}}) Marshal(b []byte) ([]byte, error) {
 	var err error
 {{- range .Fields}}
 {{- if .Repeated}}
-	if b, err = wire.MarshalList(b, {{.Number}}, &x.syncable{{.Name}}); err != nil {
+	if b, err = wire.MarshalList(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 		return b, err
 	}
 {{- else if .Map}}
-	if b, err = wire.MarshalMap(b, {{.Number}}, &x.syncable{{.Name}}); err != nil {
+	if b, err = wire.MarshalMap(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 		return b, err
 	}
 {{- else if eq .TypeKind "component"}}
-	if b, err = wire.MarshalMessage(b, {{.Number}}, x.syncable{{.Name}}); err != nil {
+	if b, err = wire.MarshalMessage(b, {{.Number}}, x.xxx_hidden_{{.Name}}); err != nil {
 		return b, err
 	}
 {{- else if eq .TypeKind "enum"}}
 	// FIXME: enum value
-	if b, err = wire.MarshalInt32(b, {{.Number}}, int32(x.syncable.{{.Name}})); err != nil {
+	if b, err = wire.MarshalInt32(b, {{.Number}}, int32(x.xxx_hidden_{{.Name}})); err != nil {
 		return b, err
 	}
 {{- else}}
-	if b, err = wire.Marshal{{ucFirst .Type}}(b, {{.Number}}, x.syncable.{{.Name}}); err != nil {
+	if b, err = wire.Marshal{{ucFirst .Type}}(b, {{.Number}}, x.xxx_hidden_{{.Name}}); err != nil {
 		return b, err
 	}
 {{- end}}
@@ -959,24 +949,24 @@ func (x *{{$MessageName}}) MarshalDirty(b []byte) ([]byte, error) {
 {{- range .Fields}}
 	if x.checkDirty(uint64(0x01) << {{.Number}}) {
 {{- if .Repeated}}
-		if b, err = wire.MarshalList(b, {{.Number}}, &x.syncable{{.Name}}); err != nil {
+		if b, err = wire.MarshalList(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
 		}
 {{- else if .Map}}
-		if b, err = wire.MarshalMap(b, {{.Number}}, &x.syncable{{.Name}}); err != nil {
+		if b, err = wire.MarshalMap(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
 		}
 {{- else if eq .TypeKind "component"}}
-		if b, err = wire.MarshalMessageDirty(b, {{.Number}}, x.syncable{{.Name}}); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, {{.Number}}, x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
 		}
 {{- else if eq .TypeKind "enum"}}
 		// FIXME: enum value
-		if b, err = wire.MarshalInt32(b, {{.Number}}, int32(x.syncable.{{.Name}})); err != nil {
+		if b, err = wire.MarshalInt32(b, {{.Number}}, int32(x.xxx_hidden_{{.Name}})); err != nil {
 			return b, err
 		}
 {{- else}}
-		if b, err = wire.Marshal{{ucFirst .Type}}(b, {{.Number}}, x.syncable.{{.Name}}); err != nil {
+		if b, err = wire.Marshal{{ucFirst .Type}}(b, {{.Number}}, x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
 		}
 {{- end}}
@@ -997,16 +987,16 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 {{- range .Fields}}
 		case {{.Number}}:
 {{- if .Repeated}}
-			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.syncable{{.Name}})
+			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.xxx_hidden_{{.Name}})
 {{- else if .Map}}
-			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.syncable{{.Name}})
+			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.xxx_hidden_{{.Name}})
 {{- else if eq .TypeKind "component"}}
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.syncable{{.Name}})
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.xxx_hidden_{{.Name}})
 {{- else if eq .TypeKind "enum"}}
 			// FIXME: enum value
-			*(*int32)(&x.syncable.{{.Name}}), valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
+			*(*int32)(&x.xxx_hidden_{{.Name}}), valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
 {{- else}}
-			x.syncable.{{.Name}}, valLen, err = wire.Unmarshal{{ucFirst .Type}}(b[tagLen:], wtyp)
+			x.xxx_hidden_{{.Name}}, valLen, err = wire.Unmarshal{{ucFirst .Type}}(b[tagLen:], wtyp)
 {{- end}}
 {{- end}}
 		}
@@ -1026,18 +1016,18 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 
 {{- /* ENTITY */ -}}
 {{- define "Entity"}}
-{{- template "Syncable" .}}
-
 type {{.Name}} struct {
 	id int64
-	syncable syncable{{.Name}}
+
 {{- range .Fields}}
 {{- if .Repeated}}
-	syncable{{.Name}} {{.ListType}}
+	xxx_hidden_{{.Name}} {{.ListType}}
 {{- else if .Map}}
-	syncable{{.Name}} {{.MapType}}
+	xxx_hidden_{{.Name}} {{.MapType}}
 {{- else if eq .TypeKind "component"}}
-	syncable{{.Name}} *{{.Type}}
+	xxx_hidden_{{.Name}} *{{.Type}}
+{{- else}}
+	xxx_hidden_{{.Name}} {{template "FieldType" .}}
 {{- end}}
 {{- end}}
 
@@ -1087,15 +1077,15 @@ func (x *{{.Name}}) ClearDirty() {
 {{- range .Fields}}
 {{- if .Repeated}}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << {{.Number}} != 0 {
-		x.syncable{{.Name}}.clearDirty()
+		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- else if .Map}}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << {{.Number}} != 0 {
-		x.syncable{{.Name}}.clearDirty()
+		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- else if eq .TypeKind "component"}}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << {{.Number}} != 0 {
-		x.syncable{{.Name}}.clearDirty()
+		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- end}}
 {{- end}}
@@ -1105,8 +1095,6 @@ func (x *{{.Name}}) ClearDirty() {
 
 {{- /* COMPONENT */ -}}
 {{- define "Component"}}
-{{- template "Syncable" .}}
-
 type dirtyParentFunc_{{.Name}} func()
 
 func (f dirtyParentFunc_{{.Name}}) invoke() {
@@ -1117,14 +1105,15 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 }
 
 type {{.Name}} struct {
-	syncable syncable{{.Name}}
 {{- range .Fields}}
 {{- if .Repeated}}
-	syncable{{.Name}} {{.ListType}}
+	xxx_hidden_{{.Name}} {{.ListType}}
 {{- else if .Map}}
-	syncable{{.Name}} {{.MapType}}
+	xxx_hidden_{{.Name}} {{.MapType}}
 {{- else if eq .TypeKind "component"}}
-	syncable{{.Name}} *{{.Type}}
+	xxx_hidden_{{.Name}} *{{.Type}}
+{{- else}}
+	xxx_hidden_{{.Name}} {{template "FieldType" .}}
 {{- end}}
 {{- end}}
 
@@ -1171,15 +1160,15 @@ func (x *{{.Name}}) clearDirty() {
 {{- range .Fields}}
 {{- if .Repeated}}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << {{.Number}} != 0 {
-		x.syncable{{.Name}}.clearDirty()
+		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- else if .Map}}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << {{.Number}} != 0 {
-		x.syncable{{.Name}}.clearDirty()
+		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- else if eq .TypeKind "component"}}
 	if x.dirty & uint64(0x01) != 0 || x.dirty & uint64(0x01) << {{.Number}} != 0 {
-		x.syncable{{.Name}}.clearDirty()
+		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- end}}
 {{- end}}
