@@ -364,15 +364,11 @@ func (x *{{.Name}}) Marshal(b []byte) ([]byte, error) {
 		return b, nil
 	}
 {{- if eq .TypeKind "component"}}
-	var pos int
 	var err error
 	for _, v := range x.syncable {
-		b, pos = wire.AppendSpeculativeLength(b)
-		b, err = v.Marshal(b)
-		if err != nil {
+		if b, err = wire.AppendMessage(b, v); err != nil {
 			return b, err
 		}
-		b = wire.FinishSpeculativeLength(b, pos)
 	}
 {{- else if eq .TypeKind "enum"}}
 	for _, v := range x.syncable {
@@ -386,22 +382,23 @@ func (x *{{.Name}}) Marshal(b []byte) ([]byte, error) {
 	return b, nil
 }
 
+func (x *{{.Name}}) MarshalDirty(b []byte) ([]byte, error) {
+	return x.Marshal(b)
+}
+
 func (x *{{.Name}}) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 {{- if eq .TypeKind "component"}}
-		v, n, err := wire.ConsumeBytes(b)
+		v := New{{.Type}}()
+		n, err := wire.ConsumeMessage(b, v)
 		if err != nil {
 			return err
 		}
 		b = b[n:]
-		c := New{{.Type}}()
-		if err = c.Unmarshal(v); err != nil {
-			return err
-		}
-		c.dirtyParent = func() {
+		v.dirtyParent = func() {
 			x.markDirty()
 		}
-		x.syncable = append(x.syncable, c)
+		x.syncable = append(x.syncable, v)
 {{- else if eq .TypeKind "enum"}}
 		v, n, err := wire.ConsumeInt32(b)
 		if err != nil {
@@ -659,30 +656,34 @@ func (x *{{.Name}}) Marshal(b []byte) ([]byte, error) {
 	if len(x.syncable) == 0 {
 		return b, nil
 	}
-	var pos int
 	var err error
 	for k, v := range x.syncable {
-		b = wire.AppendTag(b, 3, wire.BytesType)
-		b, pos = wire.AppendSpeculativeLength(b)
-		if b, err = wire.Marshal{{ucFirst .KeyType}}(b, wire.MapEntryKeyFieldNumber, k); err != nil {
-			return b, err
-		}
-{{- if eq .TypeKind "component"}}
-		if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
-			return b, err
-		}
-{{- else if eq .TypeKind "enum"}}
-		if b, err = wire.MarshalInt32(b, wire.MapEntryValueFieldNumber, int32(v)); err != nil {
-			return b, err
-		}
-{{- else}}
-		if b, err = wire.Marshal{{ucFirst .Type}}(b, wire.MapEntryValueFieldNumber, v); err != nil {
-			return b, err
-		}
-{{- end}}
-		b = wire.FinishSpeculativeLength(b, pos)
+		b, err = wire.MarshalMessageFunc(b, 3, func(b []byte) ([]byte, error) {
+			var err error
+			if b, err = wire.Marshal{{ucFirst .KeyType}}(b, wire.MapEntryKeyFieldNumber, k); err != nil {
+				return b, err
+			}
+	{{- if eq .TypeKind "component"}}
+			if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
+				return b, err
+			}
+	{{- else if eq .TypeKind "enum"}}
+			if b, err = wire.MarshalInt32(b, wire.MapEntryValueFieldNumber, int32(v)); err != nil {
+				return b, err
+			}
+	{{- else}}
+			if b, err = wire.Marshal{{ucFirst .Type}}(b, wire.MapEntryValueFieldNumber, v); err != nil {
+				return b, err
+			}
+	{{- end}}
+			return b, nil
+		})
 	}
 	return b, err
+}
+
+func (x *{{.Name}}) MarshalDirty(b []byte) ([]byte, error) {
+	return x.Marshal(b)
 }
 
 func (x *{{.Name}}) Unmarshal(b []byte) error {
@@ -695,49 +696,49 @@ func (x *{{.Name}}) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 3:
-			var buf []byte
-			buf, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
-			if err != nil {
-				break
-			}
-			var k {{goType .KeyType}}
+			valLen, err = wire.UnmarshalMessageFunc(b[tagLen:], wtyp, func(b []byte) error {
+				var k {{goType .KeyType}}
 {{- if eq .TypeKind "component"}}
-			v := New{{.Type}}()
-			v.dirtyParent = func() {
-				x.markDirty()
-			}
+				v := New{{.Type}}()
 {{- else}}
-			var v {{template "MapValueType" .}}
+				var v {{template "MapValueType" .}}
 {{- end}}
-			for len(buf) > 0 {
-				num, wtyp, n, err := wire.ConsumeTag(buf)
-				if err != nil {
-					return err
-				}
-				buf = buf[n:]
-				err = wire.ErrUnknown
-				switch num {
-				case wire.MapEntryKeyFieldNumber:
-					k, n, err = wire.Unmarshal{{ucFirst .KeyType}}(buf, wtyp)
-				case wire.MapEntryValueFieldNumber:
-{{- if eq .TypeKind "component"}}
-					n, err = wire.UnmarshalMessage(buf, wtyp, v)
-{{- else if eq .TypeKind "enum"}}
-					*(*int32)(&v), n, err = wire.UnmarshalInt32(buf, wtyp)
-{{- else}}
-					v, n, err = wire.Unmarshal{{ucFirst .Type}}(buf, wtyp)
-{{- end}}
-				}
-				if err == wire.ErrUnknown {
-					if n, err = wire.ConsumeFieldValue(num, wtyp, buf); err != nil {
+				for len(b) > 0 {
+					num, wtyp, n, err := wire.ConsumeTag(b)
+					if err != nil {
 						return err
 					}
-				} else if err != nil {
-					return err
+					b = b[n:]
+					err = wire.ErrUnknown
+					switch num {
+					case wire.MapEntryKeyFieldNumber:
+						k, n, err = wire.Unmarshal{{ucFirst .KeyType}}(b, wtyp)
+					case wire.MapEntryValueFieldNumber:
+{{- if eq .TypeKind "component"}}
+						n, err = wire.UnmarshalMessage(b, wtyp, v)
+{{- else if eq .TypeKind "enum"}}
+						*(*int32)(&v), n, err = wire.UnmarshalInt32(b, wtyp)
+{{- else}}
+						v, n, err = wire.Unmarshal{{ucFirst .Type}}(b, wtyp)
+{{- end}}
+					}
+					if err == wire.ErrUnknown {
+						if n, err = wire.ConsumeFieldValue(num, wtyp, b); err != nil {
+							return err
+						}
+					} else if err != nil {
+						return err
+					}
+					b = b[n:]
 				}
-				buf = buf[n:]
-			}
-			x.syncable[k] = v
+{{- if eq .TypeKind "component"}}
+				v.dirtyParent = func() {
+					x.markDirty()
+				}
+{{- end}}
+				x.syncable[k] = v
+				return nil
+			})
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b); err != nil {
@@ -809,13 +810,13 @@ func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
 		x.xxx_hidden_{{.Name}}.dirtyParent = nil
 	}
 	x.xxx_hidden_{{.Name}} = v
-	x.markDirty(uint64(0x01) << {{.Number}})
 	if v != nil {
 		v.dirtyParent = func() {
 			x.markDirty(uint64(0x01) << {{.Number}})
 		}
 		v.dirty |= uint64(0x01)
 	}
+	x.markDirty(uint64(0x01) << {{.Number}})
 }
 {{- else}}
 func (x *{{$MessageName}}) Get{{.Name}}() {{template "FieldType" .}} {
@@ -915,11 +916,11 @@ func (x *{{$MessageName}}) Marshal(b []byte) ([]byte, error) {
 	var err error
 {{- range .Fields}}
 {{- if .Repeated}}
-	if b, err = wire.MarshalList(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
+	if b, err = wire.MarshalMessage(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 		return b, err
 	}
 {{- else if .Map}}
-	if b, err = wire.MarshalMap(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
+	if b, err = wire.MarshalMessage(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 		return b, err
 	}
 {{- else if eq .TypeKind "component"}}
@@ -948,11 +949,11 @@ func (x *{{$MessageName}}) MarshalDirty(b []byte) ([]byte, error) {
 {{- range .Fields}}
 	if x.checkDirty(uint64(0x01) << {{.Number}}) {
 {{- if .Repeated}}
-		if b, err = wire.MarshalList(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
+		if b, err = wire.MarshalMessage(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
 		}
 {{- else if .Map}}
-		if b, err = wire.MarshalMap(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
+		if b, err = wire.MarshalMessage(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
 		}
 {{- else if eq .TypeKind "component"}}
@@ -986,9 +987,9 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 {{- range .Fields}}
 		case {{.Number}}:
 {{- if .Repeated}}
-			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.xxx_hidden_{{.Name}})
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_{{.Name}})
 {{- else if .Map}}
-			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.xxx_hidden_{{.Name}})
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_{{.Name}})
 {{- else if eq .TypeKind "component"}}
 			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.xxx_hidden_{{.Name}})
 {{- else if eq .TypeKind "enum"}}

@@ -52,13 +52,13 @@ func (x *Player) setInfo(v *PlayerBasicInfo) {
 		x.xxx_hidden_Info.dirtyParent = nil
 	}
 	x.xxx_hidden_Info = v
-	x.markDirty(uint64(0x01) << 1)
 	if v != nil {
 		v.dirtyParent = func() {
 			x.markDirty(uint64(0x01) << 1)
 		}
 		v.dirty |= uint64(0x01)
 	}
+	x.markDirty(uint64(0x01) << 1)
 }
 
 func (x *Player) GetHero() *PlayerHero {
@@ -76,13 +76,13 @@ func (x *Player) setHero(v *PlayerHero) {
 		x.xxx_hidden_Hero.dirtyParent = nil
 	}
 	x.xxx_hidden_Hero = v
-	x.markDirty(uint64(0x01) << 2)
 	if v != nil {
 		v.dirtyParent = func() {
 			x.markDirty(uint64(0x01) << 2)
 		}
 		v.dirty |= uint64(0x01)
 	}
+	x.markDirty(uint64(0x01) << 2)
 }
 
 func (x *Player) GetBag() *PlayerBag {
@@ -100,13 +100,13 @@ func (x *Player) setBag(v *PlayerBag) {
 		x.xxx_hidden_Bag.dirtyParent = nil
 	}
 	x.xxx_hidden_Bag = v
-	x.markDirty(uint64(0x01) << 3)
 	if v != nil {
 		v.dirtyParent = func() {
 			x.markDirty(uint64(0x01) << 3)
 		}
 		v.dirty |= uint64(0x01)
 	}
+	x.markDirty(uint64(0x01) << 3)
 }
 
 func (x *Player) DumpChange() *kdspb.Player {
@@ -474,7 +474,7 @@ func (x *PlayerHero) Load(m *kdspb.PlayerHero) {
 
 func (x *PlayerHero) Marshal(b []byte) ([]byte, error) {
 	var err error
-	if b, err = wire.MarshalMap(b, 1, &x.xxx_hidden_Heroes); err != nil {
+	if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Heroes); err != nil {
 		return b, err
 	}
 	return b, err
@@ -486,7 +486,7 @@ func (x *PlayerHero) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalMap(b, 1, &x.xxx_hidden_Heroes); err != nil {
+		if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Heroes); err != nil {
 			return b, err
 		}
 	}
@@ -503,7 +503,7 @@ func (x *PlayerHero) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.xxx_hidden_Heroes)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Heroes)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -602,7 +602,7 @@ func (x *PlayerBag) Load(m *kdspb.PlayerBag) {
 
 func (x *PlayerBag) Marshal(b []byte) ([]byte, error) {
 	var err error
-	if b, err = wire.MarshalMap(b, 1, &x.xxx_hidden_Resources); err != nil {
+	if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Resources); err != nil {
 		return b, err
 	}
 	return b, err
@@ -614,7 +614,7 @@ func (x *PlayerBag) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalMap(b, 1, &x.xxx_hidden_Resources); err != nil {
+		if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Resources); err != nil {
 			return b, err
 		}
 	}
@@ -631,7 +631,7 @@ func (x *PlayerBag) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.xxx_hidden_Resources)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Resources)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -1034,20 +1034,24 @@ func (x *Int64_Hero_Map) Marshal(b []byte) ([]byte, error) {
 	if len(x.syncable) == 0 {
 		return b, nil
 	}
-	var pos int
 	var err error
 	for k, v := range x.syncable {
-		b = wire.AppendTag(b, 3, wire.BytesType)
-		b, pos = wire.AppendSpeculativeLength(b)
-		if b, err = wire.MarshalInt64(b, wire.MapEntryKeyFieldNumber, k); err != nil {
-			return b, err
-		}
-		if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
-			return b, err
-		}
-		b = wire.FinishSpeculativeLength(b, pos)
+		b, err = wire.MarshalMessageFunc(b, 3, func(b []byte) ([]byte, error) {
+			var err error
+			if b, err = wire.MarshalInt64(b, wire.MapEntryKeyFieldNumber, k); err != nil {
+				return b, err
+			}
+			if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
+				return b, err
+			}
+			return b, nil
+		})
 	}
 	return b, err
+}
+
+func (x *Int64_Hero_Map) MarshalDirty(b []byte) ([]byte, error) {
+	return x.Marshal(b)
 }
 
 func (x *Int64_Hero_Map) Unmarshal(b []byte) error {
@@ -1060,39 +1064,37 @@ func (x *Int64_Hero_Map) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 3:
-			var buf []byte
-			buf, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
-			if err != nil {
-				break
-			}
-			var k int64
-			v := NewHero()
-			v.dirtyParent = func() {
-				x.markDirty()
-			}
-			for len(buf) > 0 {
-				num, wtyp, n, err := wire.ConsumeTag(buf)
-				if err != nil {
-					return err
-				}
-				buf = buf[n:]
-				err = wire.ErrUnknown
-				switch num {
-				case wire.MapEntryKeyFieldNumber:
-					k, n, err = wire.UnmarshalInt64(buf, wtyp)
-				case wire.MapEntryValueFieldNumber:
-					n, err = wire.UnmarshalMessage(buf, wtyp, v)
-				}
-				if err == wire.ErrUnknown {
-					if n, err = wire.ConsumeFieldValue(num, wtyp, buf); err != nil {
+			valLen, err = wire.UnmarshalMessageFunc(b[tagLen:], wtyp, func(b []byte) error {
+				var k int64
+				v := NewHero()
+				for len(b) > 0 {
+					num, wtyp, n, err := wire.ConsumeTag(b)
+					if err != nil {
 						return err
 					}
-				} else if err != nil {
-					return err
+					b = b[n:]
+					err = wire.ErrUnknown
+					switch num {
+					case wire.MapEntryKeyFieldNumber:
+						k, n, err = wire.UnmarshalInt64(b, wtyp)
+					case wire.MapEntryValueFieldNumber:
+						n, err = wire.UnmarshalMessage(b, wtyp, v)
+					}
+					if err == wire.ErrUnknown {
+						if n, err = wire.ConsumeFieldValue(num, wtyp, b); err != nil {
+							return err
+						}
+					} else if err != nil {
+						return err
+					}
+					b = b[n:]
 				}
-				buf = buf[n:]
-			}
-			x.syncable[k] = v
+				v.dirtyParent = func() {
+					x.markDirty()
+				}
+				x.syncable[k] = v
+				return nil
+			})
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b); err != nil {

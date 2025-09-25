@@ -7,40 +7,19 @@ import (
 	"google.golang.org/protobuf/encoding/protowire"
 )
 
-func MarshalList(b []byte, num Number, v List) ([]byte, error) {
+func MarshalMessage(b []byte, num Number, m Marshaler) ([]byte, error) {
 	b = protowire.AppendTag(b, num, protowire.BytesType)
-	var pos int
-	var err error
-	b, pos = AppendSpeculativeLength(b)
-	b, err = v.Marshal(b)
-	if err != nil {
-		return b, err
-	}
-	b = FinishSpeculativeLength(b, pos)
-	return b, nil
+	return AppendMessage(b, m)
 }
 
-func MarshalMap(b []byte, num Number, v Map) ([]byte, error) {
+func MarshalMessageDirty(b []byte, num Number, m Marshaler) ([]byte, error) {
 	b = protowire.AppendTag(b, num, protowire.BytesType)
-	var pos int
-	var err error
-	b, pos = AppendSpeculativeLength(b)
-	b, err = v.Marshal(b)
-	if err != nil {
-		return b, err
-	}
-	b = FinishSpeculativeLength(b, pos)
-	return b, nil
+	return AppendMessageDirty(b, m)
 }
 
-func MarshalMessage(b []byte, num Number, v Message) ([]byte, error) {
+func MarshalMessageFunc(b []byte, num Number, f MarshalFunc) ([]byte, error) {
 	b = protowire.AppendTag(b, num, protowire.BytesType)
-	return AppendMessage(b, v)
-}
-
-func MarshalMessageDirty(b []byte, num Number, v Message) ([]byte, error) {
-	b = protowire.AppendTag(b, num, protowire.BytesType)
-	return AppendMessageDirty(b, v)
+	return AppendMessageFunc(b, f)
 }
 
 func MarshalTimestamp(b []byte, num Number, v time.Time) ([]byte, error) {

@@ -2,53 +2,20 @@ package wire
 
 import (
 	"time"
-
-	"google.golang.org/protobuf/encoding/protowire"
 )
 
-func UnmarshalList(b []byte, wtyp Type, v List) (int, error) {
+func UnmarshalMessage(b []byte, wtyp Type, m Unmarshaler) (int, error) {
 	if wtyp != BytesType {
 		return 0, ErrUnknown
 	}
-	var n int
-	b, n = protowire.ConsumeBytes(b)
-	if n < 0 {
-		return 0, ErrDecode
-	}
-	if err := v.Unmarshal(b); err != nil {
-		return 0, err
-	}
-	return n, nil
+	return ConsumeMessage(b, m)
 }
 
-func UnmarshalMap(b []byte, wtyp Type, v Map) (int, error) {
+func UnmarshalMessageFunc(b []byte, wtyp Type, f UnmarshalFunc) (int, error) {
 	if wtyp != BytesType {
 		return 0, ErrUnknown
 	}
-	var n int
-	b, n = protowire.ConsumeBytes(b)
-	if n < 0 {
-		return 0, ErrDecode
-	}
-	if err := v.Unmarshal(b); err != nil {
-		return 0, err
-	}
-	return n, nil
-}
-
-func UnmarshalMessage(b []byte, wtyp Type, v Message) (int, error) {
-	if wtyp != BytesType {
-		return 0, ErrUnknown
-	}
-	var n int
-	b, n = protowire.ConsumeBytes(b)
-	if n < 0 {
-		return 0, ErrDecode
-	}
-	if err := v.Unmarshal(b); err != nil {
-		return 0, err
-	}
-	return n, nil
+	return ConsumeMessageFunc(b, f)
 }
 
 func UnmarshalBool(b []byte, wtyp Type) (bool, int, error) {

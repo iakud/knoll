@@ -28,6 +28,18 @@ const (
 	BytesType   Type = protowire.BytesType
 )
 
+type MarshalFunc func(b []byte) ([]byte, error)
+type UnmarshalFunc func(b []byte) error
+
+type Marshaler interface {
+	Marshal(b []byte) ([]byte, error)
+	MarshalDirty(b []byte) ([]byte, error)
+}
+
+type Unmarshaler interface {
+	Unmarshal(b []byte) error
+}
+
 func AppendTag(b []byte, num Number, typ Type) []byte {
 	return protowire.AppendTag(b, num, typ)
 }
@@ -92,78 +104,50 @@ func AppendBytes(b []byte, v []byte) []byte {
 	return protowire.AppendBytes(b, v)
 }
 
-type Message interface {
-	Marshal(b []byte) ([]byte, error)
-	MarshalDirty(b []byte) ([]byte, error)
-	Unmarshal(b []byte) error
-}
-
-type List interface {
-	Marshal(b []byte) ([]byte, error)
-	Unmarshal(b []byte) error
-}
-
-type Map interface {
-	Marshal(b []byte) ([]byte, error)
-	Unmarshal(b []byte) error
-}
-
-func AppendMessage(b []byte, v Message) ([]byte, error) {
+func AppendMessage(b []byte, m Marshaler) ([]byte, error) {
 	var pos int
 	var err error
-	b, pos = AppendSpeculativeLength(b)
-	b, err = v.Marshal(b)
+	b, pos = appendSpeculativeLength(b)
+	b, err = m.Marshal(b)
 	if err != nil {
 		return b, err
 	}
-	b = FinishSpeculativeLength(b, pos)
+	b = finishSpeculativeLength(b, pos)
 	return b, nil
 }
 
-func AppendMessageDirty(b []byte, v Message) ([]byte, error) {
+func AppendMessageDirty(b []byte, m Marshaler) ([]byte, error) {
 	var pos int
 	var err error
-	b, pos = AppendSpeculativeLength(b)
-	b, err = v.MarshalDirty(b)
+	b, pos = appendSpeculativeLength(b)
+	b, err = m.MarshalDirty(b)
 	if err != nil {
 		return b, err
 	}
-	b = FinishSpeculativeLength(b, pos)
+	b = finishSpeculativeLength(b, pos)
 	return b, nil
 }
 
-func AppendList(b []byte, v List) ([]byte, error) {
+func AppendMessageFunc(b []byte, f MarshalFunc) ([]byte, error) {
 	var pos int
 	var err error
-	b, pos = AppendSpeculativeLength(b)
-	b, err = v.Marshal(b)
+	b, pos = appendSpeculativeLength(b)
+	b, err = f(b)
 	if err != nil {
 		return b, err
 	}
-	b = FinishSpeculativeLength(b, pos)
-	return b, nil
-}
-
-func AppendMap(b []byte, v Map) ([]byte, error) {
-	var pos int
-	var err error
-	b, pos = AppendSpeculativeLength(b)
-	b, err = v.Marshal(b)
-	if err != nil {
-		return b, err
-	}
-	b = FinishSpeculativeLength(b, pos)
+	b = finishSpeculativeLength(b, pos)
 	return b, nil
 }
 
 func AppendTimestamp(b []byte, v time.Time) []byte {
 	var pos int
-	b, pos = AppendSpeculativeLength(b)
+	b, pos = appendSpeculativeLength(b)
 	b = protowire.AppendTag(b, 1, protowire.VarintType)
 	b = protowire.AppendVarint(b, uint64(v.Unix()))
 	b = protowire.AppendTag(b, 2, protowire.VarintType)
 	b = protowire.AppendVarint(b, uint64(v.Nanosecond()))
-	b = FinishSpeculativeLength(b, pos)
+	b = finishSpeculativeLength(b, pos)
 	return b
 }
 func AppendDuration(b []byte, v time.Duration) []byte {
@@ -171,12 +155,12 @@ func AppendDuration(b []byte, v time.Duration) []byte {
 	secs := nanos / 1e9
 	nanos -= secs * 1e9
 	var pos int
-	b, pos = AppendSpeculativeLength(b)
+	b, pos = appendSpeculativeLength(b)
 	b = protowire.AppendTag(b, 1, protowire.VarintType)
 	b = protowire.AppendVarint(b, uint64(secs))
 	b = protowire.AppendTag(b, 2, protowire.VarintType)
 	b = protowire.AppendVarint(b, uint64(nanos))
-	b = FinishSpeculativeLength(b, pos)
+	b = finishSpeculativeLength(b, pos)
 	return b
 }
 
@@ -189,13 +173,13 @@ func AppendEmpty(b []byte, _ struct{}) []byte {
 // to make room).
 const speculativeLength = 1
 
-func AppendSpeculativeLength(b []byte) ([]byte, int) {
+func appendSpeculativeLength(b []byte) ([]byte, int) {
 	pos := len(b)
 	b = append(b, "\x00\x00\x00\x00"[:speculativeLength]...)
 	return b, pos
 }
 
-func FinishSpeculativeLength(b []byte, pos int) []byte {
+func finishSpeculativeLength(b []byte, pos int) []byte {
 	mlen := len(b) - pos - speculativeLength
 	msiz := protowire.SizeVarint(uint64(mlen))
 	if msiz != speculativeLength {
@@ -446,6 +430,28 @@ func ConsumeEmpty(b []byte) (struct{}, int, error) {
 		return struct{}{}, 0, ErrDecode
 	}
 	return struct{}{}, n, nil
+}
+
+func ConsumeMessage(b []byte, m Unmarshaler) (int, error) {
+	b, n := protowire.ConsumeBytes(b)
+	if n < 0 {
+		return 0, ErrDecode
+	}
+	if err := m.Unmarshal(b); err != nil {
+		return 0, err
+	}
+	return n, nil
+}
+
+func ConsumeMessageFunc(b []byte, f UnmarshalFunc) (int, error) {
+	b, n := protowire.ConsumeBytes(b)
+	if n < 0 {
+		return 0, ErrDecode
+	}
+	if err := f(b); err != nil {
+		return 0, err
+	}
+	return n, nil
 }
 
 // errUnknown is used internally to indicate fields which should be added

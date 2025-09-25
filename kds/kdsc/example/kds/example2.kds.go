@@ -62,13 +62,13 @@ func (x *City) setPlayerBasicInfo(v *PlayerBasicInfo) {
 		x.xxx_hidden_PlayerBasicInfo.dirtyParent = nil
 	}
 	x.xxx_hidden_PlayerBasicInfo = v
-	x.markDirty(uint64(0x01) << 2)
 	if v != nil {
 		v.dirtyParent = func() {
 			x.markDirty(uint64(0x01) << 2)
 		}
 		v.dirty |= uint64(0x01)
 	}
+	x.markDirty(uint64(0x01) << 2)
 }
 
 func (x *City) GetCityInfo() *CityBaseInfo {
@@ -86,13 +86,13 @@ func (x *City) setCityInfo(v *CityBaseInfo) {
 		x.xxx_hidden_CityInfo.dirtyParent = nil
 	}
 	x.xxx_hidden_CityInfo = v
-	x.markDirty(uint64(0x01) << 3)
 	if v != nil {
 		v.dirtyParent = func() {
 			x.markDirty(uint64(0x01) << 3)
 		}
 		v.dirty |= uint64(0x01)
 	}
+	x.markDirty(uint64(0x01) << 3)
 }
 
 func (x *City) GetTroops() *Int64_List {
@@ -152,7 +152,7 @@ func (x *City) Marshal(b []byte) ([]byte, error) {
 	if b, err = wire.MarshalMessage(b, 3, x.xxx_hidden_CityInfo); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalList(b, 4, &x.xxx_hidden_Troops); err != nil {
+	if b, err = wire.MarshalMessage(b, 4, &x.xxx_hidden_Troops); err != nil {
 		return b, err
 	}
 	return b, err
@@ -179,7 +179,7 @@ func (x *City) MarshalDirty(b []byte) ([]byte, error) {
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 4) {
-		if b, err = wire.MarshalList(b, 4, &x.xxx_hidden_Troops); err != nil {
+		if b, err = wire.MarshalMessage(b, 4, &x.xxx_hidden_Troops); err != nil {
 			return b, err
 		}
 	}
@@ -202,7 +202,7 @@ func (x *City) Unmarshal(b []byte) error {
 		case 3:
 			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.xxx_hidden_CityInfo)
 		case 4:
-			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.xxx_hidden_Troops)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Troops)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -341,10 +341,10 @@ func (x *CityBaseInfo) Load(m *kdspb.CityBaseInfo) {
 
 func (x *CityBaseInfo) Marshal(b []byte) ([]byte, error) {
 	var err error
-	if b, err = wire.MarshalList(b, 1, &x.xxx_hidden_Positions); err != nil {
+	if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Positions); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMap(b, 2, &x.xxx_hidden_Troops); err != nil {
+	if b, err = wire.MarshalMessage(b, 2, &x.xxx_hidden_Troops); err != nil {
 		return b, err
 	}
 	if b, err = wire.MarshalBytes(b, 3, x.xxx_hidden_BuildInfo); err != nil {
@@ -359,12 +359,12 @@ func (x *CityBaseInfo) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalList(b, 1, &x.xxx_hidden_Positions); err != nil {
+		if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Positions); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		if b, err = wire.MarshalMap(b, 2, &x.xxx_hidden_Troops); err != nil {
+		if b, err = wire.MarshalMessage(b, 2, &x.xxx_hidden_Troops); err != nil {
 			return b, err
 		}
 	}
@@ -386,9 +386,9 @@ func (x *CityBaseInfo) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			valLen, err = wire.UnmarshalList(b[tagLen:], wtyp, &x.xxx_hidden_Positions)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Positions)
 		case 2:
-			valLen, err = wire.UnmarshalMap(b[tagLen:], wtyp, &x.xxx_hidden_Troops)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Troops)
 		case 3:
 			x.xxx_hidden_BuildInfo, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
 		}
@@ -832,34 +832,31 @@ func (x *Vector_List) Marshal(b []byte) ([]byte, error) {
 	if len(x.syncable) == 0 {
 		return b, nil
 	}
-	var pos int
 	var err error
 	for _, v := range x.syncable {
-		b, pos = wire.AppendSpeculativeLength(b)
-		b, err = v.Marshal(b)
-		if err != nil {
+		if b, err = wire.AppendMessage(b, v); err != nil {
 			return b, err
 		}
-		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	return b, nil
 }
 
+func (x *Vector_List) MarshalDirty(b []byte) ([]byte, error) {
+	return x.Marshal(b)
+}
+
 func (x *Vector_List) Unmarshal(b []byte) error {
 	for len(b) > 0 {
-		v, n, err := wire.ConsumeBytes(b)
+		v := NewVector()
+		n, err := wire.ConsumeMessage(b, v)
 		if err != nil {
 			return err
 		}
 		b = b[n:]
-		c := NewVector()
-		if err = c.Unmarshal(v); err != nil {
-			return err
-		}
-		c.dirtyParent = func() {
+		v.dirtyParent = func() {
 			x.markDirty()
 		}
-		x.syncable = append(x.syncable, c)
+		x.syncable = append(x.syncable, v)
 	}
 	return nil
 }
