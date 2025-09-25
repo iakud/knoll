@@ -330,36 +330,32 @@ func ConsumeTimestamp(b []byte) (time.Time, int, error) {
 		return time.Time{}, 0, ErrDecode
 	}
 	for len(v) > 0 {
-		num, wtyp, n := protowire.ConsumeTag(v)
-		if n < 0 {
+		num, wtyp, tagLen := protowire.ConsumeTag(v)
+		if n < 0 || num > protowire.MaxValidNumber {
 			return time.Time{}, 0, ErrDecode
 		}
-		if num > protowire.MaxValidNumber {
-			return time.Time{}, 0, ErrDecode
-		}
-		v = v[n:]
+		var valLen int
 		err := ErrUnknown
 		switch num {
 		case 1:
 			if wtyp != protowire.VarintType {
 				break
 			}
-			sec, n, err = ConsumeInt64(v)
+			sec, valLen, err = ConsumeInt64(v[tagLen:])
 		case 2:
 			if wtyp != protowire.VarintType {
 				break
 			}
-			nsec, n, err = ConsumeInt64(v)
+			nsec, valLen, err = ConsumeInt64(v[tagLen:])
 		}
 		if err == ErrUnknown {
-			n = protowire.ConsumeFieldValue(num, wtyp, v)
-			if n < 0 {
+			if valLen = protowire.ConsumeFieldValue(num, wtyp, v[tagLen:]); valLen < 0 {
 				return time.Time{}, 0, ErrDecode
 			}
 		} else if err != nil {
 			return time.Time{}, 0, err
 		}
-		v = v[n:]
+		v = v[tagLen+valLen:]
 	}
 	return time.Unix(sec, nsec), n, nil
 }
@@ -371,36 +367,32 @@ func ConsumeDuration(b []byte) (time.Duration, int, error) {
 	}
 	var secs, nanos int64
 	for len(v) > 0 {
-		num, wtyp, n := protowire.ConsumeTag(v)
-		if n < 0 {
+		num, wtyp, tagLen := protowire.ConsumeTag(v)
+		if n < 0 || num > protowire.MaxValidNumber {
 			return 0, 0, ErrDecode
 		}
-		if num > protowire.MaxValidNumber {
-			return 0, 0, ErrDecode
-		}
-		v = v[n:]
+		var valLen int
 		err := ErrUnknown
 		switch num {
 		case 1:
 			if wtyp != protowire.VarintType {
 				break
 			}
-			secs, n, err = ConsumeInt64(v)
+			secs, valLen, err = ConsumeInt64(v[tagLen:])
 		case 2:
 			if wtyp != protowire.VarintType {
 				break
 			}
-			nanos, n, err = ConsumeInt64(v)
+			nanos, valLen, err = ConsumeInt64(v[tagLen:])
 		}
 		if err == ErrUnknown {
-			n := protowire.ConsumeFieldValue(num, wtyp, v)
-			if n < 0 {
+			if valLen = protowire.ConsumeFieldValue(num, wtyp, v[tagLen:]); valLen < 0 {
 				return 0, 0, ErrDecode
 			}
 		} else if err != nil {
 			return 0, 0, err
 		}
-		v = v[n:]
+		v = v[tagLen+valLen:]
 	}
 	d := time.Duration(secs) * time.Second
 	overflow := d/time.Second != time.Duration(secs)
