@@ -432,7 +432,6 @@ func ConsumeMessage(b []byte, m Unmarshaler) (int, error) {
 		return 0, ErrDecode
 	}
 	if err := m.Unmarshal(b); err != nil {
-		panic(err)
 		return 0, err
 	}
 	return n, nil
