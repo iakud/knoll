@@ -1031,21 +1031,22 @@ func (x *Int64Hero_map) clearDirty() {
 }
 
 func (x *Int64Hero_map) Marshal(b []byte) ([]byte, error) {
-	if len(x.syncable) == 0 {
-		return b, nil
-	}
 	var err error
+	if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
+		return b, err
+	}
 	for k, v := range x.syncable {
-		b, err = wire.MarshalMessageFunc(b, 3, func(b []byte) ([]byte, error) {
-			var err error
-			if b, err = wire.MarshalInt64(b, wire.MapEntryKeyFieldNumber, k); err != nil {
-				return b, err
-			}
-			if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
-				return b, err
-			}
-			return b, nil
-		})
+		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
+		var pos int
+		var err error
+		b, pos = wire.AppendSpeculativeLength(b)
+		if b, err = wire.MarshalInt64(b, wire.MapEntryKeyFieldNumber, k); err != nil {
+			return b, err
+		}
+		if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
+			return b, err
+		}
+		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	return b, err
 }
@@ -1055,6 +1056,8 @@ func (x *Int64Hero_map) MarshalDirty(b []byte) ([]byte, error) {
 }
 
 func (x *Int64Hero_map) Unmarshal(b []byte) error {
+	var clear bool
+	var entries [][]byte
 	for len(b) > 0 {
 		num, wtyp, tagLen, err := wire.ConsumeTag(b)
 		if err != nil {
@@ -1063,47 +1066,60 @@ func (x *Int64Hero_map) Unmarshal(b []byte) error {
 		var valLen int
 		err = wire.ErrUnknown
 		switch num {
-		case 3:
-			valLen, err = wire.UnmarshalMessageFunc(b[tagLen:], wtyp, func(b []byte) error {
-				var k int64
-				v := NewHero()
-				for len(b) > 0 {
-					num, wtyp, n, err := wire.ConsumeTag(b)
-					if err != nil {
-						return err
-					}
-					b = b[n:]
-					err = wire.ErrUnknown
-					switch num {
-					case wire.MapEntryKeyFieldNumber:
-						k, n, err = wire.UnmarshalInt64(b, wtyp)
-					case wire.MapEntryValueFieldNumber:
-						n, err = wire.UnmarshalMessage(b, wtyp, v)
-					}
-					if err == wire.ErrUnknown {
-						if n, err = wire.ConsumeFieldValue(num, wtyp, b); err != nil {
-							return err
-						}
-					} else if err != nil {
-						return err
-					}
-					b = b[n:]
-				}
-				v.dirtyParent = func() {
-					x.markDirty()
-				}
-				x.syncable[k] = v
-				return nil
-			})
+		case wire.MapClearFieldNumber:
+			clear, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
+		case wire.MapEntryFieldNumber:
+			var entry []byte
+			if entry, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp); err != nil {
+				break
+			}
+			entries = append(entries, entry)
 		}
 		if err == wire.ErrUnknown {
-			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b); err != nil {
+			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
 				return err
 			}
 		} else if err != nil {
 			return err
 		}
 		b = b[tagLen+valLen:]
+	}
+	if clear {
+		x.Clear()
+	}
+	for _, b := range entries {
+		var k int64
+		var v []byte
+		for len(b) > 0 {
+			num, wtyp, tagLen, err := wire.ConsumeTag(b)
+			if err != nil {
+				return err
+			}
+			var valLen int
+			err = wire.ErrUnknown
+			switch num {
+			case wire.MapEntryKeyFieldNumber:
+				k, valLen, err = wire.UnmarshalInt64(b[tagLen:], wtyp)
+			case wire.MapEntryValueFieldNumber:
+				v, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
+			}
+			if err == wire.ErrUnknown {
+				if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
+					return err
+				}
+			} else if err != nil {
+				return err
+			}
+			b = b[tagLen+valLen:]
+		}
+		c, ok := x.syncable[k]
+		if !ok {
+			c = NewHero()
+		}
+		if err := c.Unmarshal(v); err != nil {
+			return err
+		}
+		x.Set(k, c)
 	}
 	return nil
 }

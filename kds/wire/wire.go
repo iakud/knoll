@@ -15,6 +15,12 @@ const (
 )
 
 const (
+	MapClearFieldNumber  Number = 1
+	MapDeleteFieldNumber Number = 2
+	MapEntryFieldNumber  Number = 3
+)
+
+const (
 	MapEntryKeyFieldNumber   Number = 1
 	MapEntryValueFieldNumber Number = 2
 )
@@ -107,47 +113,35 @@ func AppendBytes(b []byte, v []byte) []byte {
 func AppendMessage(b []byte, m Marshaler) ([]byte, error) {
 	var pos int
 	var err error
-	b, pos = appendSpeculativeLength(b)
+	b, pos = AppendSpeculativeLength(b)
 	b, err = m.Marshal(b)
 	if err != nil {
 		return b, err
 	}
-	b = finishSpeculativeLength(b, pos)
+	b = FinishSpeculativeLength(b, pos)
 	return b, nil
 }
 
 func AppendMessageDirty(b []byte, m Marshaler) ([]byte, error) {
 	var pos int
 	var err error
-	b, pos = appendSpeculativeLength(b)
+	b, pos = AppendSpeculativeLength(b)
 	b, err = m.MarshalDirty(b)
 	if err != nil {
 		return b, err
 	}
-	b = finishSpeculativeLength(b, pos)
-	return b, nil
-}
-
-func AppendMessageFunc(b []byte, f MarshalFunc) ([]byte, error) {
-	var pos int
-	var err error
-	b, pos = appendSpeculativeLength(b)
-	b, err = f(b)
-	if err != nil {
-		return b, err
-	}
-	b = finishSpeculativeLength(b, pos)
+	b = FinishSpeculativeLength(b, pos)
 	return b, nil
 }
 
 func AppendTimestamp(b []byte, v time.Time) []byte {
 	var pos int
-	b, pos = appendSpeculativeLength(b)
+	b, pos = AppendSpeculativeLength(b)
 	b = protowire.AppendTag(b, 1, protowire.VarintType)
 	b = protowire.AppendVarint(b, uint64(v.Unix()))
 	b = protowire.AppendTag(b, 2, protowire.VarintType)
 	b = protowire.AppendVarint(b, uint64(v.Nanosecond()))
-	b = finishSpeculativeLength(b, pos)
+	b = FinishSpeculativeLength(b, pos)
 	return b
 }
 func AppendDuration(b []byte, v time.Duration) []byte {
@@ -155,12 +149,12 @@ func AppendDuration(b []byte, v time.Duration) []byte {
 	secs := nanos / 1e9
 	nanos -= secs * 1e9
 	var pos int
-	b, pos = appendSpeculativeLength(b)
+	b, pos = AppendSpeculativeLength(b)
 	b = protowire.AppendTag(b, 1, protowire.VarintType)
 	b = protowire.AppendVarint(b, uint64(secs))
 	b = protowire.AppendTag(b, 2, protowire.VarintType)
 	b = protowire.AppendVarint(b, uint64(nanos))
-	b = finishSpeculativeLength(b, pos)
+	b = FinishSpeculativeLength(b, pos)
 	return b
 }
 
@@ -173,13 +167,13 @@ func AppendEmpty(b []byte, _ struct{}) []byte {
 // to make room).
 const speculativeLength = 1
 
-func appendSpeculativeLength(b []byte) ([]byte, int) {
+func AppendSpeculativeLength(b []byte) ([]byte, int) {
 	pos := len(b)
 	b = append(b, "\x00\x00\x00\x00"[:speculativeLength]...)
 	return b, pos
 }
 
-func finishSpeculativeLength(b []byte, pos int) []byte {
+func FinishSpeculativeLength(b []byte, pos int) []byte {
 	mlen := len(b) - pos - speculativeLength
 	msiz := protowire.SizeVarint(uint64(mlen))
 	if msiz != speculativeLength {
@@ -438,17 +432,7 @@ func ConsumeMessage(b []byte, m Unmarshaler) (int, error) {
 		return 0, ErrDecode
 	}
 	if err := m.Unmarshal(b); err != nil {
-		return 0, err
-	}
-	return n, nil
-}
-
-func ConsumeMessageFunc(b []byte, f UnmarshalFunc) (int, error) {
-	b, n := protowire.ConsumeBytes(b)
-	if n < 0 {
-		return 0, ErrDecode
-	}
-	if err := f(b); err != nil {
+		panic(err)
 		return 0, err
 	}
 	return n, nil

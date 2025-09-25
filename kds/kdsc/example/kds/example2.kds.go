@@ -846,6 +846,7 @@ func (x *Vector_list) MarshalDirty(b []byte) ([]byte, error) {
 }
 
 func (x *Vector_list) Unmarshal(b []byte) error {
+	x.Clear()
 	for len(b) > 0 {
 		v := NewVector()
 		n, err := wire.ConsumeMessage(b, v)
@@ -853,10 +854,7 @@ func (x *Vector_list) Unmarshal(b []byte) error {
 			return err
 		}
 		b = b[n:]
-		v.dirtyParent = func() {
-			x.markDirty()
-		}
-		x.syncable = append(x.syncable, v)
+		x.Append(v)
 	}
 	return nil
 }

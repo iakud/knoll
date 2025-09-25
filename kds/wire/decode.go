@@ -11,13 +11,6 @@ func UnmarshalMessage(b []byte, wtyp Type, m Unmarshaler) (int, error) {
 	return ConsumeMessage(b, m)
 }
 
-func UnmarshalMessageFunc(b []byte, wtyp Type, f UnmarshalFunc) (int, error) {
-	if wtyp != BytesType {
-		return 0, ErrUnknown
-	}
-	return ConsumeMessageFunc(b, f)
-}
-
 func UnmarshalBool(b []byte, wtyp Type) (bool, int, error) {
 	if wtyp != VarintType {
 		return false, 0, ErrUnknown

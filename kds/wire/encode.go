@@ -17,11 +17,6 @@ func MarshalMessageDirty(b []byte, num Number, m Marshaler) ([]byte, error) {
 	return AppendMessageDirty(b, m)
 }
 
-func MarshalMessageFunc(b []byte, num Number, f MarshalFunc) ([]byte, error) {
-	b = protowire.AppendTag(b, num, protowire.BytesType)
-	return AppendMessageFunc(b, f)
-}
-
 func MarshalTimestamp(b []byte, num Number, v time.Time) ([]byte, error) {
 	b = protowire.AppendTag(b, num, protowire.BytesType)
 	return AppendTimestamp(b, v), nil
