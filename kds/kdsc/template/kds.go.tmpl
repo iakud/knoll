@@ -809,12 +809,12 @@ func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
 		x.xxx_hidden_{{.Name}}.dirtyParent = nil
 	}
 	x.xxx_hidden_{{.Name}} = v
-	v.dirtyParent = func() {
-		x.markDirty(uint64(0x01) << {{.Number}})
-	}
 	x.markDirty(uint64(0x01) << {{.Number}})
 	if v != nil {
-		v.markDirty(uint64(0x01))
+		v.dirtyParent = func() {
+			x.markDirty(uint64(0x01) << {{.Number}})
+		}
+		v.dirty |= uint64(0x01)
 	}
 }
 {{- else}}

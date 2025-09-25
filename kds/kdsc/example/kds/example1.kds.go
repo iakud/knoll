@@ -52,12 +52,12 @@ func (x *Player) setInfo(v *PlayerBasicInfo) {
 		x.xxx_hidden_Info.dirtyParent = nil
 	}
 	x.xxx_hidden_Info = v
-	v.dirtyParent = func() {
-		x.markDirty(uint64(0x01) << 1)
-	}
 	x.markDirty(uint64(0x01) << 1)
 	if v != nil {
-		v.markDirty(uint64(0x01))
+		v.dirtyParent = func() {
+			x.markDirty(uint64(0x01) << 1)
+		}
+		v.dirty |= uint64(0x01)
 	}
 }
 
@@ -76,12 +76,12 @@ func (x *Player) setHero(v *PlayerHero) {
 		x.xxx_hidden_Hero.dirtyParent = nil
 	}
 	x.xxx_hidden_Hero = v
-	v.dirtyParent = func() {
-		x.markDirty(uint64(0x01) << 2)
-	}
 	x.markDirty(uint64(0x01) << 2)
 	if v != nil {
-		v.markDirty(uint64(0x01))
+		v.dirtyParent = func() {
+			x.markDirty(uint64(0x01) << 2)
+		}
+		v.dirty |= uint64(0x01)
 	}
 }
 
@@ -100,12 +100,12 @@ func (x *Player) setBag(v *PlayerBag) {
 		x.xxx_hidden_Bag.dirtyParent = nil
 	}
 	x.xxx_hidden_Bag = v
-	v.dirtyParent = func() {
-		x.markDirty(uint64(0x01) << 3)
-	}
 	x.markDirty(uint64(0x01) << 3)
 	if v != nil {
-		v.markDirty(uint64(0x01))
+		v.dirtyParent = func() {
+			x.markDirty(uint64(0x01) << 3)
+		}
+		v.dirty |= uint64(0x01)
 	}
 }
 

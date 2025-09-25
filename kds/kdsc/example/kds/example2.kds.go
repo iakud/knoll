@@ -62,12 +62,12 @@ func (x *City) setPlayerBasicInfo(v *PlayerBasicInfo) {
 		x.xxx_hidden_PlayerBasicInfo.dirtyParent = nil
 	}
 	x.xxx_hidden_PlayerBasicInfo = v
-	v.dirtyParent = func() {
-		x.markDirty(uint64(0x01) << 2)
-	}
 	x.markDirty(uint64(0x01) << 2)
 	if v != nil {
-		v.markDirty(uint64(0x01))
+		v.dirtyParent = func() {
+			x.markDirty(uint64(0x01) << 2)
+		}
+		v.dirty |= uint64(0x01)
 	}
 }
 
@@ -86,12 +86,12 @@ func (x *City) setCityInfo(v *CityBaseInfo) {
 		x.xxx_hidden_CityInfo.dirtyParent = nil
 	}
 	x.xxx_hidden_CityInfo = v
-	v.dirtyParent = func() {
-		x.markDirty(uint64(0x01) << 3)
-	}
 	x.markDirty(uint64(0x01) << 3)
 	if v != nil {
-		v.markDirty(uint64(0x01))
+		v.dirtyParent = func() {
+			x.markDirty(uint64(0x01) << 3)
+		}
+		v.dirty |= uint64(0x01)
 	}
 }
 
