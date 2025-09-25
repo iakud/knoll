@@ -12,30 +12,30 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type dirtyParentFunc_Int32_Empty_Map func()
+type dirtyParentFunc_Int32Empty_map func()
 
-func (f dirtyParentFunc_Int32_Empty_Map) invoke() {
+func (f dirtyParentFunc_Int32Empty_map) invoke() {
 	if f == nil {
 		return
 	}
 	f()
 }
 
-type Int32_Empty_Map struct {
+type Int32Empty_map struct {
 	syncable map[int32]struct{}
 
 	update map[int32]struct{}
 	deleteKey map[int32]struct{}
 	clear bool
 	dirty bool
-	dirtyParent dirtyParentFunc_Int32_Empty_Map
+	dirtyParent dirtyParentFunc_Int32Empty_map
 }
 
-func (x *Int32_Empty_Map) Len() int {
+func (x *Int32Empty_map) Len() int {
 	return len(x.syncable)
 }
 
-func (x *Int32_Empty_Map) Clear() {
+func (x *Int32Empty_map) Clear() {
 	if len(x.syncable) == 0 && len(x.deleteKey) == 0 {
 		return
 	}
@@ -46,12 +46,12 @@ func (x *Int32_Empty_Map) Clear() {
 	x.markDirty()
 }
 
-func (x *Int32_Empty_Map) Get(k int32) (struct{}, bool) {
+func (x *Int32Empty_map) Get(k int32) (struct{}, bool) {
 	v, ok := x.syncable[k]
 	return v, ok
 }
 
-func (x *Int32_Empty_Map) Set(k int32, v struct{}) {
+func (x *Int32Empty_map) Set(k int32, v struct{}) {
 	if e, ok := x.syncable[k]; ok {
 		if e == v {
 			return
@@ -63,7 +63,7 @@ func (x *Int32_Empty_Map) Set(k int32, v struct{}) {
 	x.markDirty()
 }
 
-func (x *Int32_Empty_Map) Delete(k int32) {
+func (x *Int32Empty_map) Delete(k int32) {
 	if _, ok := x.syncable[k]; !ok {
 		return
 	}
@@ -73,19 +73,19 @@ func (x *Int32_Empty_Map) Delete(k int32) {
 	x.markDirty()
 }
 
-func (x *Int32_Empty_Map) All() iter.Seq2[int32, struct{}] {
+func (x *Int32Empty_map) All() iter.Seq2[int32, struct{}] {
 	return maps.All(x.syncable)
 }
 
-func (x *Int32_Empty_Map) Keys() iter.Seq[int32] {
+func (x *Int32Empty_map) Keys() iter.Seq[int32] {
 	return maps.Keys(x.syncable)
 }
 
-func (x *Int32_Empty_Map) Values() iter.Seq[struct{}] {
+func (x *Int32Empty_map) Values() iter.Seq[struct{}] {
 	return maps.Values(x.syncable)
 }
 
-func (x *Int32_Empty_Map) DumpChange() map[int32]*emptypb.Empty {
+func (x *Int32Empty_map) DumpChange() map[int32]*emptypb.Empty {
 	if x.clear {
 		return x.DumpFull()
 	}
@@ -99,7 +99,7 @@ func (x *Int32_Empty_Map) DumpChange() map[int32]*emptypb.Empty {
 	return m
 }
 
-func (x *Int32_Empty_Map) DumpFull() map[int32]*emptypb.Empty {
+func (x *Int32Empty_map) DumpFull() map[int32]*emptypb.Empty {
 	m := make(map[int32]*emptypb.Empty)
 	for k := range x.syncable {
 		m[k] = new(emptypb.Empty)
@@ -107,13 +107,13 @@ func (x *Int32_Empty_Map) DumpFull() map[int32]*emptypb.Empty {
 	return m
 }
 
-func (x *Int32_Empty_Map) Load(m map[int32]*emptypb.Empty) {
+func (x *Int32Empty_map) Load(m map[int32]*emptypb.Empty) {
 	for k := range m {
 		x.syncable[k] = struct{}{}
 	}
 }
 
-func (x *Int32_Empty_Map) markDirty() {
+func (x *Int32Empty_map) markDirty() {
 	if x.dirty {
 		return
 	}
@@ -121,7 +121,7 @@ func (x *Int32_Empty_Map) markDirty() {
 	x.dirtyParent.invoke()
 }
 
-func (x *Int32_Empty_Map) clearDirty() {
+func (x *Int32Empty_map) clearDirty() {
 	if !x.dirty {
 		return
 	}
@@ -131,7 +131,7 @@ func (x *Int32_Empty_Map) clearDirty() {
 	x.dirty = false
 }
 
-func (x *Int32_Empty_Map) Marshal(b []byte) ([]byte, error) {
+func (x *Int32Empty_map) Marshal(b []byte) ([]byte, error) {
 	if len(x.syncable) == 0 {
 		return b, nil
 	}
@@ -151,11 +151,11 @@ func (x *Int32_Empty_Map) Marshal(b []byte) ([]byte, error) {
 	return b, err
 }
 
-func (x *Int32_Empty_Map) MarshalDirty(b []byte) ([]byte, error) {
+func (x *Int32Empty_map) MarshalDirty(b []byte) ([]byte, error) {
 	return x.Marshal(b)
 }
 
-func (x *Int32_Empty_Map) Unmarshal(b []byte) error {
+func (x *Int32Empty_map) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, wtyp, tagLen, err := wire.ConsumeTag(b)
 		if err != nil {
@@ -206,30 +206,30 @@ func (x *Int32_Empty_Map) Unmarshal(b []byte) error {
 	return nil
 }
 
-type dirtyParentFunc_Int32_Int32_Map func()
+type dirtyParentFunc_Int32Int32_map func()
 
-func (f dirtyParentFunc_Int32_Int32_Map) invoke() {
+func (f dirtyParentFunc_Int32Int32_map) invoke() {
 	if f == nil {
 		return
 	}
 	f()
 }
 
-type Int32_Int32_Map struct {
+type Int32Int32_map struct {
 	syncable map[int32]int32
 
 	update map[int32]int32
 	deleteKey map[int32]struct{}
 	clear bool
 	dirty bool
-	dirtyParent dirtyParentFunc_Int32_Int32_Map
+	dirtyParent dirtyParentFunc_Int32Int32_map
 }
 
-func (x *Int32_Int32_Map) Len() int {
+func (x *Int32Int32_map) Len() int {
 	return len(x.syncable)
 }
 
-func (x *Int32_Int32_Map) Clear() {
+func (x *Int32Int32_map) Clear() {
 	if len(x.syncable) == 0 && len(x.deleteKey) == 0 {
 		return
 	}
@@ -240,12 +240,12 @@ func (x *Int32_Int32_Map) Clear() {
 	x.markDirty()
 }
 
-func (x *Int32_Int32_Map) Get(k int32) (int32, bool) {
+func (x *Int32Int32_map) Get(k int32) (int32, bool) {
 	v, ok := x.syncable[k]
 	return v, ok
 }
 
-func (x *Int32_Int32_Map) Set(k int32, v int32) {
+func (x *Int32Int32_map) Set(k int32, v int32) {
 	if e, ok := x.syncable[k]; ok {
 		if e == v {
 			return
@@ -257,7 +257,7 @@ func (x *Int32_Int32_Map) Set(k int32, v int32) {
 	x.markDirty()
 }
 
-func (x *Int32_Int32_Map) Delete(k int32) {
+func (x *Int32Int32_map) Delete(k int32) {
 	if _, ok := x.syncable[k]; !ok {
 		return
 	}
@@ -267,19 +267,19 @@ func (x *Int32_Int32_Map) Delete(k int32) {
 	x.markDirty()
 }
 
-func (x *Int32_Int32_Map) All() iter.Seq2[int32, int32] {
+func (x *Int32Int32_map) All() iter.Seq2[int32, int32] {
 	return maps.All(x.syncable)
 }
 
-func (x *Int32_Int32_Map) Keys() iter.Seq[int32] {
+func (x *Int32Int32_map) Keys() iter.Seq[int32] {
 	return maps.Keys(x.syncable)
 }
 
-func (x *Int32_Int32_Map) Values() iter.Seq[int32] {
+func (x *Int32Int32_map) Values() iter.Seq[int32] {
 	return maps.Values(x.syncable)
 }
 
-func (x *Int32_Int32_Map) DumpChange() map[int32]int32 {
+func (x *Int32Int32_map) DumpChange() map[int32]int32 {
 	if x.clear {
 		return x.DumpFull()
 	}
@@ -293,7 +293,7 @@ func (x *Int32_Int32_Map) DumpChange() map[int32]int32 {
 	return m
 }
 
-func (x *Int32_Int32_Map) DumpFull() map[int32]int32 {
+func (x *Int32Int32_map) DumpFull() map[int32]int32 {
 	m := make(map[int32]int32)
 	for k, v := range x.syncable {
 		m[k] = v
@@ -301,13 +301,13 @@ func (x *Int32_Int32_Map) DumpFull() map[int32]int32 {
 	return m
 }
 
-func (x *Int32_Int32_Map) Load(m map[int32]int32) {
+func (x *Int32Int32_map) Load(m map[int32]int32) {
 	for k, v := range m {
 		x.syncable[k] = v
 	}
 }
 
-func (x *Int32_Int32_Map) markDirty() {
+func (x *Int32Int32_map) markDirty() {
 	if x.dirty {
 		return
 	}
@@ -315,7 +315,7 @@ func (x *Int32_Int32_Map) markDirty() {
 	x.dirtyParent.invoke()
 }
 
-func (x *Int32_Int32_Map) clearDirty() {
+func (x *Int32Int32_map) clearDirty() {
 	if !x.dirty {
 		return
 	}
@@ -325,7 +325,7 @@ func (x *Int32_Int32_Map) clearDirty() {
 	x.dirty = false
 }
 
-func (x *Int32_Int32_Map) Marshal(b []byte) ([]byte, error) {
+func (x *Int32Int32_map) Marshal(b []byte) ([]byte, error) {
 	if len(x.syncable) == 0 {
 		return b, nil
 	}
@@ -345,11 +345,11 @@ func (x *Int32_Int32_Map) Marshal(b []byte) ([]byte, error) {
 	return b, err
 }
 
-func (x *Int32_Int32_Map) MarshalDirty(b []byte) ([]byte, error) {
+func (x *Int32Int32_map) MarshalDirty(b []byte) ([]byte, error) {
 	return x.Marshal(b)
 }
 
-func (x *Int32_Int32_Map) Unmarshal(b []byte) error {
+func (x *Int32Int32_map) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, wtyp, tagLen, err := wire.ConsumeTag(b)
 		if err != nil {
@@ -400,27 +400,27 @@ func (x *Int32_Int32_Map) Unmarshal(b []byte) error {
 	return nil
 }
 
-type dirtyParentFunc_Int64_List func()
+type dirtyParentFunc_Int64_list func()
 
-func (f dirtyParentFunc_Int64_List) invoke() {
+func (f dirtyParentFunc_Int64_list) invoke() {
 	if f == nil {
 		return
 	}
 	f()
 }
 
-type Int64_List struct {
+type Int64_list struct {
 	syncable []int64
 
 	dirty bool
-	dirtyParent dirtyParentFunc_Int64_List
+	dirtyParent dirtyParentFunc_Int64_list
 }
 
-func (x *Int64_List) Len() int {
+func (x *Int64_list) Len() int {
 	return len(x.syncable)
 }
 
-func (x *Int64_List) Clear() {
+func (x *Int64_list) Clear() {
 	if len(x.syncable) == 0 {
 		return
 	}
@@ -429,11 +429,11 @@ func (x *Int64_List) Clear() {
 	x.markDirty()
 }
 
-func (x *Int64_List) Get(i int) int64 {
+func (x *Int64_list) Get(i int) int64 {
 	return x.syncable[i]
 }
 
-func (x *Int64_List) Set(i int, v int64) {
+func (x *Int64_list) Set(i int, v int64) {
 	if v == x.syncable[i] {
 		return
 	}
@@ -441,7 +441,7 @@ func (x *Int64_List) Set(i int, v int64) {
 	x.markDirty()
 }
 
-func (x *Int64_List) Append(v ...int64) {
+func (x *Int64_list) Append(v ...int64) {
 	if len(v) == 0 {
 		return
 	}
@@ -449,7 +449,7 @@ func (x *Int64_List) Append(v ...int64) {
 	x.markDirty()
 }
 
-func (x *Int64_List) Index(v int64) int {
+func (x *Int64_list) Index(v int64) int {
 	for i := range x.syncable {
 		if v == x.syncable[i] {
 			return i
@@ -458,7 +458,7 @@ func (x *Int64_List) Index(v int64) int {
 	return -1
 }
 
-func (x *Int64_List) IndexFunc(f func(int64) bool) int {
+func (x *Int64_list) IndexFunc(f func(int64) bool) int {
 	for i := range x.syncable {
 		if f(x.syncable[i]) {
 			return i
@@ -467,15 +467,15 @@ func (x *Int64_List) IndexFunc(f func(int64) bool) int {
 	return -1
 }
 
-func (x *Int64_List) Contains(v int64) bool {
+func (x *Int64_list) Contains(v int64) bool {
 	return x.Index(v) >= 0
 }
 
-func (x *Int64_List) ContainsFunc(f func(int64) bool) bool {
+func (x *Int64_list) ContainsFunc(f func(int64) bool) bool {
 	return x.IndexFunc(f) >= 0
 }
 
-func (x *Int64_List) Insert(i int, v ...int64) {
+func (x *Int64_list) Insert(i int, v ...int64) {
 	if len(v) == 0 {
 		return
 	}
@@ -483,7 +483,7 @@ func (x *Int64_List) Insert(i int, v ...int64) {
 	x.markDirty()
 }
 
-func (x *Int64_List) Delete(i, j int) {
+func (x *Int64_list) Delete(i, j int) {
 	if i == j {
 		return
 	}
@@ -491,7 +491,7 @@ func (x *Int64_List) Delete(i, j int) {
 	x.markDirty()
 }
 
-func (x *Int64_List) DeleteFunc(del func(int64) bool) {
+func (x *Int64_list) DeleteFunc(del func(int64) bool) {
 	i := x.IndexFunc(del)
 	if i == -1 {
 		return
@@ -509,7 +509,7 @@ func (x *Int64_List) DeleteFunc(del func(int64) bool) {
 	x.markDirty()
 }
 
-func (x *Int64_List) Replace(i, j int, v ...int64) {
+func (x *Int64_list) Replace(i, j int, v ...int64) {
 	if i == j && len(v) == 0 {
 		return
 	}
@@ -517,7 +517,7 @@ func (x *Int64_List) Replace(i, j int, v ...int64) {
 	x.markDirty()
 }
 
-func (x *Int64_List) Reverse() {
+func (x *Int64_list) Reverse() {
 	if len(x.syncable) < 2 {
 		return
 	}
@@ -525,23 +525,23 @@ func (x *Int64_List) Reverse() {
 	x.markDirty()
 }
 
-func (x *Int64_List) All() iter.Seq2[int, int64] {
+func (x *Int64_list) All() iter.Seq2[int, int64] {
 	return slices.All(x.syncable)
 }
 
-func (x *Int64_List) Backward() iter.Seq2[int, int64] {
+func (x *Int64_list) Backward() iter.Seq2[int, int64] {
 	return slices.Backward(x.syncable)
 }
 
-func (x *Int64_List) Values() iter.Seq[int64] {
+func (x *Int64_list) Values() iter.Seq[int64] {
 	return slices.Values(x.syncable)
 }
 
-func (x *Int64_List) DumpChange() []int64 {
+func (x *Int64_list) DumpChange() []int64 {
 	return x.DumpFull()
 }
 
-func (x *Int64_List) DumpFull() []int64 {
+func (x *Int64_list) DumpFull() []int64 {
 	var m []int64
 	for _, v := range x.syncable {
 		m = append(m, v)
@@ -549,13 +549,13 @@ func (x *Int64_List) DumpFull() []int64 {
 	return m
 }
 
-func (x *Int64_List) Load(m []int64) {
+func (x *Int64_list) Load(m []int64) {
 	for _, v := range m {
 		x.syncable = append(x.syncable, v)
 	}
 }
 
-func (x *Int64_List) markDirty() {
+func (x *Int64_list) markDirty() {
 	if x.dirty {
 		return
 	}
@@ -563,11 +563,11 @@ func (x *Int64_List) markDirty() {
 	x.dirtyParent.invoke()
 }
 
-func (x *Int64_List) clearDirty() {
+func (x *Int64_list) clearDirty() {
 	x.dirty = false
 }
 
-func (x *Int64_List) Marshal(b []byte) ([]byte, error) {
+func (x *Int64_list) Marshal(b []byte) ([]byte, error) {
 	if len(x.syncable) == 0 {
 		return b, nil
 	}
@@ -577,11 +577,11 @@ func (x *Int64_List) Marshal(b []byte) ([]byte, error) {
 	return b, nil
 }
 
-func (x *Int64_List) MarshalDirty(b []byte) ([]byte, error) {
+func (x *Int64_list) MarshalDirty(b []byte) ([]byte, error) {
 	return x.Marshal(b)
 }
 
-func (x *Int64_List) Unmarshal(b []byte) error {
+func (x *Int64_list) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		v, n, err := wire.ConsumeInt64(b)
 		if err != nil {

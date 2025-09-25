@@ -425,7 +425,7 @@ func (f dirtyParentFunc_PlayerHero) invoke() {
 }
 
 type PlayerHero struct {
-	xxx_hidden_Heroes Int64_Hero_Map
+	xxx_hidden_Heroes Int64Hero_map
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_PlayerHero
@@ -438,7 +438,7 @@ func NewPlayerHero() *PlayerHero {
 	return x
 }
 
-func (x *PlayerHero) GetHeroes() *Int64_Hero_Map {
+func (x *PlayerHero) GetHeroes() *Int64Hero_map {
 	return &x.xxx_hidden_Heroes
 }
 
@@ -553,7 +553,7 @@ func (f dirtyParentFunc_PlayerBag) invoke() {
 }
 
 type PlayerBag struct {
-	xxx_hidden_Resources Int32_Int32_Map
+	xxx_hidden_Resources Int32Int32_map
 
 	dirty uint64
 	dirtyParent dirtyParentFunc_PlayerBag
@@ -566,7 +566,7 @@ func NewPlayerBag() *PlayerBag {
 	return x
 }
 
-func (x *PlayerBag) GetResources() *Int32_Int32_Map {
+func (x *PlayerBag) GetResources() *Int32Int32_map {
 	return &x.xxx_hidden_Resources
 }
 
@@ -881,30 +881,30 @@ func (x *Hero) clearDirty() {
 	x.dirty = 0
 }
 
-type dirtyParentFunc_Int64_Hero_Map func()
+type dirtyParentFunc_Int64Hero_map func()
 
-func (f dirtyParentFunc_Int64_Hero_Map) invoke() {
+func (f dirtyParentFunc_Int64Hero_map) invoke() {
 	if f == nil {
 		return
 	}
 	f()
 }
 
-type Int64_Hero_Map struct {
+type Int64Hero_map struct {
 	syncable map[int64]*Hero
 
 	update map[int64]*Hero
 	deleteKey map[int64]struct{}
 	clear bool
 	dirty bool
-	dirtyParent dirtyParentFunc_Int64_Hero_Map
+	dirtyParent dirtyParentFunc_Int64Hero_map
 }
 
-func (x *Int64_Hero_Map) Len() int {
+func (x *Int64Hero_map) Len() int {
 	return len(x.syncable)
 }
 
-func (x *Int64_Hero_Map) Clear() {
+func (x *Int64Hero_map) Clear() {
 	if len(x.syncable) == 0 && len(x.deleteKey) == 0 {
 		return
 	}
@@ -920,12 +920,12 @@ func (x *Int64_Hero_Map) Clear() {
 	x.markDirty()
 }
 
-func (x *Int64_Hero_Map) Get(k int64) (*Hero, bool) {
+func (x *Int64Hero_map) Get(k int64) (*Hero, bool) {
 	v, ok := x.syncable[k]
 	return v, ok
 }
 
-func (x *Int64_Hero_Map) Set(k int64, v *Hero) {
+func (x *Int64Hero_map) Set(k int64, v *Hero) {
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed from its original place first")
 	}
@@ -953,7 +953,7 @@ func (x *Int64_Hero_Map) Set(k int64, v *Hero) {
 	x.markDirty()
 }
 
-func (x *Int64_Hero_Map) Delete(k int64) {
+func (x *Int64Hero_map) Delete(k int64) {
 	if v, ok := x.syncable[k]; !ok {
 		return
 	} else if v != nil {
@@ -965,19 +965,19 @@ func (x *Int64_Hero_Map) Delete(k int64) {
 	x.markDirty()
 }
 
-func (x *Int64_Hero_Map) All() iter.Seq2[int64, *Hero] {
+func (x *Int64Hero_map) All() iter.Seq2[int64, *Hero] {
 	return maps.All(x.syncable)
 }
 
-func (x *Int64_Hero_Map) Keys() iter.Seq[int64] {
+func (x *Int64Hero_map) Keys() iter.Seq[int64] {
 	return maps.Keys(x.syncable)
 }
 
-func (x *Int64_Hero_Map) Values() iter.Seq[*Hero] {
+func (x *Int64Hero_map) Values() iter.Seq[*Hero] {
 	return maps.Values(x.syncable)
 }
 
-func (x *Int64_Hero_Map) DumpChange() map[int64]*kdspb.Hero {
+func (x *Int64Hero_map) DumpChange() map[int64]*kdspb.Hero {
 	if x.clear {
 		return x.DumpFull()
 	}
@@ -991,7 +991,7 @@ func (x *Int64_Hero_Map) DumpChange() map[int64]*kdspb.Hero {
 	return m
 }
 
-func (x *Int64_Hero_Map) DumpFull() map[int64]*kdspb.Hero {
+func (x *Int64Hero_map) DumpFull() map[int64]*kdspb.Hero {
 	m := make(map[int64]*kdspb.Hero)
 	for k, v := range x.syncable {
 		m[k] = v.DumpFull()
@@ -999,7 +999,7 @@ func (x *Int64_Hero_Map) DumpFull() map[int64]*kdspb.Hero {
 	return m
 }
 
-func (x *Int64_Hero_Map) Load(m map[int64]*kdspb.Hero) {
+func (x *Int64Hero_map) Load(m map[int64]*kdspb.Hero) {
 	for k, v := range m {
 		c := NewHero()
 		c.Load(v)
@@ -1007,7 +1007,7 @@ func (x *Int64_Hero_Map) Load(m map[int64]*kdspb.Hero) {
 	}
 }
 
-func (x *Int64_Hero_Map) markDirty() {
+func (x *Int64Hero_map) markDirty() {
 	if x.dirty {
 		return
 	}
@@ -1015,7 +1015,7 @@ func (x *Int64_Hero_Map) markDirty() {
 	x.dirtyParent.invoke()
 }
 
-func (x *Int64_Hero_Map) clearDirty() {
+func (x *Int64Hero_map) clearDirty() {
 	if !x.dirty {
 		return
 	}
@@ -1030,7 +1030,7 @@ func (x *Int64_Hero_Map) clearDirty() {
 	x.dirty = false
 }
 
-func (x *Int64_Hero_Map) Marshal(b []byte) ([]byte, error) {
+func (x *Int64Hero_map) Marshal(b []byte) ([]byte, error) {
 	if len(x.syncable) == 0 {
 		return b, nil
 	}
@@ -1050,11 +1050,11 @@ func (x *Int64_Hero_Map) Marshal(b []byte) ([]byte, error) {
 	return b, err
 }
 
-func (x *Int64_Hero_Map) MarshalDirty(b []byte) ([]byte, error) {
+func (x *Int64Hero_map) MarshalDirty(b []byte) ([]byte, error) {
 	return x.Marshal(b)
 }
 
-func (x *Int64_Hero_Map) Unmarshal(b []byte) error {
+func (x *Int64Hero_map) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, wtyp, tagLen, err := wire.ConsumeTag(b)
 		if err != nil {

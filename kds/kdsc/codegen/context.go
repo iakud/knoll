@@ -40,7 +40,7 @@ func (ctx *Context) addListType(name string) string {
 	}
 	listType := new(ListType)
 	listType.ctx = ctx
-	listType.Name = GoCamelCase(name) + "_List"
+	listType.Name = GoCamelCase(name) + "_list"
 	listType.Type = name
 	ctx.TypeList[name] = listType
 	return listType.Name
@@ -56,7 +56,7 @@ func (ctx *Context) addMapType(name string, keyType string) string {
 	}
 	mapType := new(MapType)
 	mapType.ctx = ctx
-	mapType.Name = GoCamelCase(keyType) + "_" + GoCamelCase(name) + "_Map"
+	mapType.Name = GoCamelCase(keyType) + GoCamelCase(name) + "_map"
 	mapType.Type = name
 	mapType.KeyType = keyType
 	ctx.TypeMap[name] = append(mapTypes, mapType)
