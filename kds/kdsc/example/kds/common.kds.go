@@ -22,67 +22,67 @@ func (f dirtyParentFunc_Int32Empty_map) invoke() {
 }
 
 type Int32Empty_map struct {
-	syncable map[int32]struct{}
+	data map[int32]struct{}
 
-	update map[int32]struct{}
-	deleteKey map[int32]struct{}
-	clear bool
-	dirty bool
+	clear       bool
+	updates     map[int32]struct{}
+	deletes     map[int32]struct{}
+	dirty       bool
 	dirtyParent dirtyParentFunc_Int32Empty_map
 }
 
 func (x *Int32Empty_map) Len() int {
-	return len(x.syncable)
+	return len(x.data)
 }
 
 func (x *Int32Empty_map) Clear() {
-	if len(x.syncable) == 0 && len(x.deleteKey) == 0 {
+	if len(x.data) == 0 && len(x.deletes) == 0 {
 		return
 	}
-	clear(x.syncable)
-	clear(x.update)
-	clear(x.deleteKey)
+	clear(x.data)
 	x.clear = true
+	clear(x.updates)
+	clear(x.deletes)
 	x.markDirty()
 }
 
 func (x *Int32Empty_map) Get(k int32) (struct{}, bool) {
-	v, ok := x.syncable[k]
+	v, ok := x.data[k]
 	return v, ok
 }
 
 func (x *Int32Empty_map) Set(k int32, v struct{}) {
-	if e, ok := x.syncable[k]; ok {
+	if e, ok := x.data[k]; ok {
 		if e == v {
 			return
 		}
 	}
-	x.syncable[k] = v
-	x.update[k] = v
-	delete(x.deleteKey, k)
+	x.data[k] = v
+	x.updates[k] = v
+	delete(x.deletes, k)
 	x.markDirty()
 }
 
 func (x *Int32Empty_map) Delete(k int32) {
-	if _, ok := x.syncable[k]; !ok {
+	if _, ok := x.data[k]; !ok {
 		return
 	}
-	delete(x.syncable, k)
-	x.deleteKey[k] = struct{}{}
-	delete(x.update, k)
+	delete(x.data, k)
+	delete(x.updates, k)
+	x.deletes[k] = struct{}{}
 	x.markDirty()
 }
 
 func (x *Int32Empty_map) All() iter.Seq2[int32, struct{}] {
-	return maps.All(x.syncable)
+	return maps.All(x.data)
 }
 
 func (x *Int32Empty_map) Keys() iter.Seq[int32] {
-	return maps.Keys(x.syncable)
+	return maps.Keys(x.data)
 }
 
 func (x *Int32Empty_map) Values() iter.Seq[struct{}] {
-	return maps.Values(x.syncable)
+	return maps.Values(x.data)
 }
 
 func (x *Int32Empty_map) DumpChange() map[int32]*emptypb.Empty {
@@ -90,10 +90,10 @@ func (x *Int32Empty_map) DumpChange() map[int32]*emptypb.Empty {
 		return x.DumpFull()
 	}
 	m := make(map[int32]*emptypb.Empty)
-	for k := range x.update {
+	for k := range x.updates {
 		m[k] = new(emptypb.Empty)
 	}
-	for k, _ := range x.deleteKey {
+	for k, _ := range x.deletes {
 		_ = k // deleteKeys
 	}
 	return m
@@ -101,7 +101,7 @@ func (x *Int32Empty_map) DumpChange() map[int32]*emptypb.Empty {
 
 func (x *Int32Empty_map) DumpFull() map[int32]*emptypb.Empty {
 	m := make(map[int32]*emptypb.Empty)
-	for k := range x.syncable {
+	for k := range x.data {
 		m[k] = new(emptypb.Empty)
 	}
 	return m
@@ -109,7 +109,7 @@ func (x *Int32Empty_map) DumpFull() map[int32]*emptypb.Empty {
 
 func (x *Int32Empty_map) Load(m map[int32]*emptypb.Empty) {
 	for k := range m {
-		x.syncable[k] = struct{}{}
+		x.data[k] = struct{}{}
 	}
 }
 
@@ -125,21 +125,20 @@ func (x *Int32Empty_map) clearDirty() {
 	if !x.dirty {
 		return
 	}
-	clear(x.update)
-	clear(x.deleteKey)
 	x.clear = false
+	clear(x.updates)
+	clear(x.deletes)
 	x.dirty = false
 }
 
 func (x *Int32Empty_map) Marshal(b []byte) ([]byte, error) {
+	var pos int
 	var err error
 	if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
 		return b, err
 	}
-	for k, v := range x.syncable {
+	for k, v := range x.data {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
-		var pos int
-		var err error
 		b, pos = wire.AppendSpeculativeLength(b)
 		if b, err = wire.MarshalInt32(b, wire.MapEntryKeyFieldNumber, k); err != nil {
 			return b, err
@@ -153,11 +152,38 @@ func (x *Int32Empty_map) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *Int32Empty_map) MarshalDirty(b []byte) ([]byte, error) {
-	return x.Marshal(b)
+	var pos int
+	var err error
+	if x.clear {
+		if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
+			return b, err
+		}
+	}
+	if len(x.deletes) > 0 {
+		b = wire.AppendTag(b, wire.MapDeleteFieldNumber, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
+		for k, _ := range x.deletes {
+			b = wire.AppendInt32(b, k)
+		}
+		b = wire.FinishSpeculativeLength(b, pos)
+	}
+	for k, v := range x.updates {
+		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
+		if b, err = wire.MarshalInt32(b, wire.MapEntryKeyFieldNumber, k); err != nil {
+			return b, err
+		}
+		if b, err = wire.MarshalEmpty(b, wire.MapEntryValueFieldNumber, v); err != nil {
+			return b, err
+		}
+		b = wire.FinishSpeculativeLength(b, pos)
+	}
+	return b, err
 }
 
 func (x *Int32Empty_map) Unmarshal(b []byte) error {
 	var clear bool
+	var deletes []byte
 	var entries [][]byte
 	for len(b) > 0 {
 		num, wtyp, tagLen, err := wire.ConsumeTag(b)
@@ -169,6 +195,8 @@ func (x *Int32Empty_map) Unmarshal(b []byte) error {
 		switch num {
 		case wire.MapClearFieldNumber:
 			clear, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
+		case wire.MapDeleteFieldNumber:
+			deletes, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
 		case wire.MapEntryFieldNumber:
 			var entry []byte
 			if entry, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp); err != nil {
@@ -187,6 +215,14 @@ func (x *Int32Empty_map) Unmarshal(b []byte) error {
 	}
 	if clear {
 		x.Clear()
+	}
+	for b := deletes; len(b) > 0; {
+		k, n, err := wire.ConsumeInt32(b)
+		if err != nil {
+			return err
+		}
+		b = b[n:]
+		x.Delete(k)
 	}
 	for _, b := range entries {
 		var k int32
@@ -228,67 +264,67 @@ func (f dirtyParentFunc_Int32Int32_map) invoke() {
 }
 
 type Int32Int32_map struct {
-	syncable map[int32]int32
+	data map[int32]int32
 
-	update map[int32]int32
-	deleteKey map[int32]struct{}
-	clear bool
-	dirty bool
+	clear       bool
+	updates     map[int32]int32
+	deletes     map[int32]struct{}
+	dirty       bool
 	dirtyParent dirtyParentFunc_Int32Int32_map
 }
 
 func (x *Int32Int32_map) Len() int {
-	return len(x.syncable)
+	return len(x.data)
 }
 
 func (x *Int32Int32_map) Clear() {
-	if len(x.syncable) == 0 && len(x.deleteKey) == 0 {
+	if len(x.data) == 0 && len(x.deletes) == 0 {
 		return
 	}
-	clear(x.syncable)
-	clear(x.update)
-	clear(x.deleteKey)
+	clear(x.data)
 	x.clear = true
+	clear(x.updates)
+	clear(x.deletes)
 	x.markDirty()
 }
 
 func (x *Int32Int32_map) Get(k int32) (int32, bool) {
-	v, ok := x.syncable[k]
+	v, ok := x.data[k]
 	return v, ok
 }
 
 func (x *Int32Int32_map) Set(k int32, v int32) {
-	if e, ok := x.syncable[k]; ok {
+	if e, ok := x.data[k]; ok {
 		if e == v {
 			return
 		}
 	}
-	x.syncable[k] = v
-	x.update[k] = v
-	delete(x.deleteKey, k)
+	x.data[k] = v
+	x.updates[k] = v
+	delete(x.deletes, k)
 	x.markDirty()
 }
 
 func (x *Int32Int32_map) Delete(k int32) {
-	if _, ok := x.syncable[k]; !ok {
+	if _, ok := x.data[k]; !ok {
 		return
 	}
-	delete(x.syncable, k)
-	x.deleteKey[k] = struct{}{}
-	delete(x.update, k)
+	delete(x.data, k)
+	delete(x.updates, k)
+	x.deletes[k] = struct{}{}
 	x.markDirty()
 }
 
 func (x *Int32Int32_map) All() iter.Seq2[int32, int32] {
-	return maps.All(x.syncable)
+	return maps.All(x.data)
 }
 
 func (x *Int32Int32_map) Keys() iter.Seq[int32] {
-	return maps.Keys(x.syncable)
+	return maps.Keys(x.data)
 }
 
 func (x *Int32Int32_map) Values() iter.Seq[int32] {
-	return maps.Values(x.syncable)
+	return maps.Values(x.data)
 }
 
 func (x *Int32Int32_map) DumpChange() map[int32]int32 {
@@ -296,10 +332,10 @@ func (x *Int32Int32_map) DumpChange() map[int32]int32 {
 		return x.DumpFull()
 	}
 	m := make(map[int32]int32)
-	for k, v := range x.update {
+	for k, v := range x.updates {
 		m[k] = v
 	}
-	for k, _ := range x.deleteKey {
+	for k, _ := range x.deletes {
 		_ = k // deleteKeys
 	}
 	return m
@@ -307,7 +343,7 @@ func (x *Int32Int32_map) DumpChange() map[int32]int32 {
 
 func (x *Int32Int32_map) DumpFull() map[int32]int32 {
 	m := make(map[int32]int32)
-	for k, v := range x.syncable {
+	for k, v := range x.data {
 		m[k] = v
 	}
 	return m
@@ -315,7 +351,7 @@ func (x *Int32Int32_map) DumpFull() map[int32]int32 {
 
 func (x *Int32Int32_map) Load(m map[int32]int32) {
 	for k, v := range m {
-		x.syncable[k] = v
+		x.data[k] = v
 	}
 }
 
@@ -331,21 +367,20 @@ func (x *Int32Int32_map) clearDirty() {
 	if !x.dirty {
 		return
 	}
-	clear(x.update)
-	clear(x.deleteKey)
 	x.clear = false
+	clear(x.updates)
+	clear(x.deletes)
 	x.dirty = false
 }
 
 func (x *Int32Int32_map) Marshal(b []byte) ([]byte, error) {
+	var pos int
 	var err error
 	if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
 		return b, err
 	}
-	for k, v := range x.syncable {
+	for k, v := range x.data {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
-		var pos int
-		var err error
 		b, pos = wire.AppendSpeculativeLength(b)
 		if b, err = wire.MarshalInt32(b, wire.MapEntryKeyFieldNumber, k); err != nil {
 			return b, err
@@ -359,11 +394,38 @@ func (x *Int32Int32_map) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *Int32Int32_map) MarshalDirty(b []byte) ([]byte, error) {
-	return x.Marshal(b)
+	var pos int
+	var err error
+	if x.clear {
+		if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
+			return b, err
+		}
+	}
+	if len(x.deletes) > 0 {
+		b = wire.AppendTag(b, wire.MapDeleteFieldNumber, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
+		for k, _ := range x.deletes {
+			b = wire.AppendInt32(b, k)
+		}
+		b = wire.FinishSpeculativeLength(b, pos)
+	}
+	for k, v := range x.updates {
+		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
+		if b, err = wire.MarshalInt32(b, wire.MapEntryKeyFieldNumber, k); err != nil {
+			return b, err
+		}
+		if b, err = wire.MarshalInt32(b, wire.MapEntryValueFieldNumber, v); err != nil {
+			return b, err
+		}
+		b = wire.FinishSpeculativeLength(b, pos)
+	}
+	return b, err
 }
 
 func (x *Int32Int32_map) Unmarshal(b []byte) error {
 	var clear bool
+	var deletes []byte
 	var entries [][]byte
 	for len(b) > 0 {
 		num, wtyp, tagLen, err := wire.ConsumeTag(b)
@@ -375,6 +437,8 @@ func (x *Int32Int32_map) Unmarshal(b []byte) error {
 		switch num {
 		case wire.MapClearFieldNumber:
 			clear, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
+		case wire.MapDeleteFieldNumber:
+			deletes, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
 		case wire.MapEntryFieldNumber:
 			var entry []byte
 			if entry, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp); err != nil {
@@ -393,6 +457,14 @@ func (x *Int32Int32_map) Unmarshal(b []byte) error {
 	}
 	if clear {
 		x.Clear()
+	}
+	for b := deletes; len(b) > 0; {
+		k, n, err := wire.ConsumeInt32(b)
+		if err != nil {
+			return err
+		}
+		b = b[n:]
+		x.Delete(k)
 	}
 	for _, b := range entries {
 		var k int32
@@ -434,34 +506,34 @@ func (f dirtyParentFunc_Int64_list) invoke() {
 }
 
 type Int64_list struct {
-	syncable []int64
+	data []int64
 
-	dirty bool
+	dirty       bool
 	dirtyParent dirtyParentFunc_Int64_list
 }
 
 func (x *Int64_list) Len() int {
-	return len(x.syncable)
+	return len(x.data)
 }
 
 func (x *Int64_list) Clear() {
-	if len(x.syncable) == 0 {
+	if len(x.data) == 0 {
 		return
 	}
-	clear(x.syncable)
-	x.syncable = x.syncable[:0]
+	clear(x.data)
+	x.data = x.data[:0]
 	x.markDirty()
 }
 
 func (x *Int64_list) Get(i int) int64 {
-	return x.syncable[i]
+	return x.data[i]
 }
 
 func (x *Int64_list) Set(i int, v int64) {
-	if v == x.syncable[i] {
+	if v == x.data[i] {
 		return
 	}
-	x.syncable[i] = v
+	x.data[i] = v
 	x.markDirty()
 }
 
@@ -469,13 +541,13 @@ func (x *Int64_list) Append(v ...int64) {
 	if len(v) == 0 {
 		return
 	}
-	x.syncable = append(x.syncable, v...)
+	x.data = append(x.data, v...)
 	x.markDirty()
 }
 
 func (x *Int64_list) Index(v int64) int {
-	for i := range x.syncable {
-		if v == x.syncable[i] {
+	for i := range x.data {
+		if v == x.data[i] {
 			return i
 		}
 	}
@@ -483,8 +555,8 @@ func (x *Int64_list) Index(v int64) int {
 }
 
 func (x *Int64_list) IndexFunc(f func(int64) bool) int {
-	for i := range x.syncable {
-		if f(x.syncable[i]) {
+	for i := range x.data {
+		if f(x.data[i]) {
 			return i
 		}
 	}
@@ -503,7 +575,7 @@ func (x *Int64_list) Insert(i int, v ...int64) {
 	if len(v) == 0 {
 		return
 	}
-	x.syncable = slices.Insert(x.syncable, i, v...)
+	x.data = slices.Insert(x.data, i, v...)
 	x.markDirty()
 }
 
@@ -511,7 +583,7 @@ func (x *Int64_list) Delete(i, j int) {
 	if i == j {
 		return
 	}
-	x.syncable = slices.Delete(x.syncable, i, j)
+	x.data = slices.Delete(x.data, i, j)
 	x.markDirty()
 }
 
@@ -520,16 +592,16 @@ func (x *Int64_list) DeleteFunc(del func(int64) bool) {
 	if i == -1 {
 		return
 	}
-	for j := i + 1; j < len(x.syncable); j++ {
-		v := x.syncable[j]
+	for j := i + 1; j < len(x.data); j++ {
+		v := x.data[j]
 		if del(v) {
 			continue
 		}
-		x.syncable[i] = v
+		x.data[i] = v
 		i++
 	}
-	clear(x.syncable[i:])
-	x.syncable = x.syncable[:i]
+	clear(x.data[i:])
+	x.data = x.data[:i]
 	x.markDirty()
 }
 
@@ -537,28 +609,28 @@ func (x *Int64_list) Replace(i, j int, v ...int64) {
 	if i == j && len(v) == 0 {
 		return
 	}
-	x.syncable = slices.Replace(x.syncable, i, j, v...)
+	x.data = slices.Replace(x.data, i, j, v...)
 	x.markDirty()
 }
 
 func (x *Int64_list) Reverse() {
-	if len(x.syncable) < 2 {
+	if len(x.data) < 2 {
 		return
 	}
-	slices.Reverse(x.syncable)
+	slices.Reverse(x.data)
 	x.markDirty()
 }
 
 func (x *Int64_list) All() iter.Seq2[int, int64] {
-	return slices.All(x.syncable)
+	return slices.All(x.data)
 }
 
 func (x *Int64_list) Backward() iter.Seq2[int, int64] {
-	return slices.Backward(x.syncable)
+	return slices.Backward(x.data)
 }
 
 func (x *Int64_list) Values() iter.Seq[int64] {
-	return slices.Values(x.syncable)
+	return slices.Values(x.data)
 }
 
 func (x *Int64_list) DumpChange() []int64 {
@@ -567,7 +639,7 @@ func (x *Int64_list) DumpChange() []int64 {
 
 func (x *Int64_list) DumpFull() []int64 {
 	var m []int64
-	for _, v := range x.syncable {
+	for _, v := range x.data {
 		m = append(m, v)
 	}
 	return m
@@ -575,7 +647,7 @@ func (x *Int64_list) DumpFull() []int64 {
 
 func (x *Int64_list) Load(m []int64) {
 	for _, v := range m {
-		x.syncable = append(x.syncable, v)
+		x.data = append(x.data, v)
 	}
 }
 
@@ -592,10 +664,10 @@ func (x *Int64_list) clearDirty() {
 }
 
 func (x *Int64_list) Marshal(b []byte) ([]byte, error) {
-	if len(x.syncable) == 0 {
+	if len(x.data) == 0 {
 		return b, nil
 	}
-	for _, v := range x.syncable {
+	for _, v := range x.data {
 		b = wire.AppendInt64(b, v)
 	}
 	return b, nil

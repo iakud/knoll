@@ -179,7 +179,7 @@ func (x *City) MarshalDirty(b []byte) ([]byte, error) {
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 4) {
-		if b, err = wire.MarshalMessage(b, 4, &x.xxx_hidden_Troops); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 4, &x.xxx_hidden_Troops); err != nil {
 			return b, err
 		}
 	}
@@ -288,9 +288,9 @@ func (x *CityBaseInfo) GetTroops() *Int32Empty_map {
 }
 
 func (x *CityBaseInfo) initTroops() {
-	x.xxx_hidden_Troops.syncable = make(map[int32]struct{})
-	x.xxx_hidden_Troops.update = make(map[int32]struct{})
-	x.xxx_hidden_Troops.deleteKey = make(map[int32]struct{})
+	x.xxx_hidden_Troops.data = make(map[int32]struct{})
+	x.xxx_hidden_Troops.updates = make(map[int32]struct{})
+	x.xxx_hidden_Troops.deletes = make(map[int32]struct{})
 	x.xxx_hidden_Troops.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 2)
 	}
@@ -359,12 +359,12 @@ func (x *CityBaseInfo) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Positions); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 1, &x.xxx_hidden_Positions); err != nil {
 			return b, err
 		}
 	}
 	if x.checkDirty(uint64(0x01) << 2) {
-		if b, err = wire.MarshalMessage(b, 2, &x.xxx_hidden_Troops); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 2, &x.xxx_hidden_Troops); err != nil {
 			return b, err
 		}
 	}
@@ -594,45 +594,45 @@ func (f dirtyParentFunc_Vector_list) invoke() {
 }
 
 type Vector_list struct {
-	syncable []*Vector
+	data []*Vector
 
-	dirty bool
+	dirty       bool
 	dirtyParent dirtyParentFunc_Vector_list
 }
 
 func (x *Vector_list) Len() int {
-	return len(x.syncable)
+	return len(x.data)
 }
 
 func (x *Vector_list) Clear() {
-	if len(x.syncable) == 0 {
+	if len(x.data) == 0 {
 		return
 	}
-	for _, v := range x.syncable {
+	for _, v := range x.data {
 		if v != nil {
 			v.dirtyParent = nil
 		}
 	}
-	clear(x.syncable)
-	x.syncable = x.syncable[:0]
+	clear(x.data)
+	x.data = x.data[:0]
 	x.markDirty()
 }
 
 func (x *Vector_list) Get(i int) *Vector {
-	return x.syncable[i]
+	return x.data[i]
 }
 
 func (x *Vector_list) Set(i int, v *Vector) {
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed from its original place first")
 	}
-	if v == x.syncable[i] {
+	if v == x.data[i] {
 		return
 	}
-	if x.syncable[i] != nil {
-		x.syncable[i].dirtyParent = nil
+	if x.data[i] != nil {
+		x.data[i].dirtyParent = nil
 	}
-	x.syncable[i] = v
+	x.data[i] = v
 	if v != nil {
 		v.dirtyParent = func() {
 			x.markDirty()
@@ -651,7 +651,7 @@ func (x *Vector_list) Append(v ...*Vector) {
 	if len(v) == 0 {
 		return
 	}
-	x.syncable = append(x.syncable, v...)
+	x.data = append(x.data, v...)
 	for i := range v {
 		if v[i] != nil {
 			v[i].dirtyParent = func() {
@@ -664,8 +664,8 @@ func (x *Vector_list) Append(v ...*Vector) {
 }
 
 func (x *Vector_list) Index(v *Vector) int {
-	for i := range x.syncable {
-		if v == x.syncable[i] {
+	for i := range x.data {
+		if v == x.data[i] {
 			return i
 		}
 	}
@@ -673,8 +673,8 @@ func (x *Vector_list) Index(v *Vector) int {
 }
 
 func (x *Vector_list) IndexFunc(f func(*Vector) bool) int {
-	for i := range x.syncable {
-		if f(x.syncable[i]) {
+	for i := range x.data {
+		if f(x.data[i]) {
 			return i
 		}
 	}
@@ -698,7 +698,7 @@ func (x *Vector_list) Insert(i int, v ...*Vector) {
 	if len(v) == 0 {
 		return
 	}
-	x.syncable = slices.Insert(x.syncable, i, v...)
+	x.data = slices.Insert(x.data, i, v...)
 	for j := range v {
 		if v[j] != nil {
 			v[j].dirtyParent = func() {
@@ -711,7 +711,7 @@ func (x *Vector_list) Insert(i int, v ...*Vector) {
 }
 
 func (x *Vector_list) Delete(i, j int) {
-	r := x.syncable[i:j:len(x.syncable)]
+	r := x.data[i:j:len(x.data)]
 	for k := range r {
 		if r[k] != nil {
 			r[k].dirtyParent = nil
@@ -720,7 +720,7 @@ func (x *Vector_list) Delete(i, j int) {
 	if i == j {
 		return
 	}
-	x.syncable = slices.Delete(x.syncable, i, j)
+	x.data = slices.Delete(x.data, i, j)
 	x.markDirty()
 }
 
@@ -729,18 +729,18 @@ func (x *Vector_list) DeleteFunc(del func(*Vector) bool) {
 	if i == -1 {
 		return
 	}
-	x.syncable[i].dirtyParent = nil
-	for j := i + 1; j < len(x.syncable); j++ {
-		v := x.syncable[j]
+	x.data[i].dirtyParent = nil
+	for j := i + 1; j < len(x.data); j++ {
+		v := x.data[j]
 		if del(v) {
 			v.dirtyParent = nil
 			continue
 		}
-		x.syncable[i] = v
+		x.data[i] = v
 		i++
 	}
-	clear(x.syncable[i:])
-	x.syncable = x.syncable[:i]
+	clear(x.data[i:])
+	x.data = x.data[:i]
 	x.markDirty()
 }
 
@@ -750,7 +750,7 @@ func (x *Vector_list) Replace(i, j int, v ...*Vector) {
 			panic("the component should be removed from its original place first")
 		}
 	}
-	r := x.syncable[i:j:len(x.syncable)]
+	r := x.data[i:j:len(x.data)]
 	for k := range r {
 		if r[k] != nil {
 			r[k].dirtyParent = nil
@@ -759,7 +759,7 @@ func (x *Vector_list) Replace(i, j int, v ...*Vector) {
 	if i == j && len(v) == 0 {
 		return
 	}
-	x.syncable = slices.Replace(x.syncable, i, j, v...)
+	x.data = slices.Replace(x.data, i, j, v...)
 	for k := range v {
 		if v[k] != nil {
 			v[k].dirtyParent = func() {
@@ -772,23 +772,23 @@ func (x *Vector_list) Replace(i, j int, v ...*Vector) {
 }
 
 func (x *Vector_list) Reverse() {
-	if len(x.syncable) < 2 {
+	if len(x.data) < 2 {
 		return
 	}
-	slices.Reverse(x.syncable)
+	slices.Reverse(x.data)
 	x.markDirty()
 }
 
 func (x *Vector_list) All() iter.Seq2[int, *Vector] {
-	return slices.All(x.syncable)
+	return slices.All(x.data)
 }
 
 func (x *Vector_list) Backward() iter.Seq2[int, *Vector] {
-	return slices.Backward(x.syncable)
+	return slices.Backward(x.data)
 }
 
 func (x *Vector_list) Values() iter.Seq[*Vector] {
-	return slices.Values(x.syncable)
+	return slices.Values(x.data)
 }
 
 func (x *Vector_list) DumpChange() []*kdspb.Vector {
@@ -797,7 +797,7 @@ func (x *Vector_list) DumpChange() []*kdspb.Vector {
 
 func (x *Vector_list) DumpFull() []*kdspb.Vector {
 	var m []*kdspb.Vector
-	for _, v := range x.syncable {
+	for _, v := range x.data {
 		m = append(m, v.DumpChange())
 	}
 	return m
@@ -807,7 +807,7 @@ func (x *Vector_list) Load(m []*kdspb.Vector) {
 	for _, v := range m {
 		c := NewVector()
 		c.Load(v)
-		x.syncable = append(x.syncable, c)
+		x.data = append(x.data, c)
 	}
 }
 
@@ -820,20 +820,20 @@ func (x *Vector_list) markDirty() {
 }
 
 func (x *Vector_list) clearDirty() {
-	for k := range x.syncable {
-		if x.syncable[k] != nil {
-			x.syncable[k].clearDirty()
+	for k := range x.data {
+		if x.data[k] != nil {
+			x.data[k].clearDirty()
 		}
 	}
 	x.dirty = false
 }
 
 func (x *Vector_list) Marshal(b []byte) ([]byte, error) {
-	if len(x.syncable) == 0 {
+	if len(x.data) == 0 {
 		return b, nil
 	}
-	var err error
-	for _, v := range x.syncable {
+	for _, v := range x.data {
+		var err error
 		if b, err = wire.AppendMessage(b, v); err != nil {
 			return b, err
 		}

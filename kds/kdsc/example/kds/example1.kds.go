@@ -443,9 +443,9 @@ func (x *PlayerHero) GetHeroes() *Int64Hero_map {
 }
 
 func (x *PlayerHero) initHeroes() {
-	x.xxx_hidden_Heroes.syncable = make(map[int64]*Hero)
-	x.xxx_hidden_Heroes.update = make(map[int64]*Hero)
-	x.xxx_hidden_Heroes.deleteKey = make(map[int64]struct{})
+	x.xxx_hidden_Heroes.data = make(map[int64]*Hero)
+	x.xxx_hidden_Heroes.updates = make(map[int64]*Hero)
+	x.xxx_hidden_Heroes.deletes = make(map[int64]struct{})
 	x.xxx_hidden_Heroes.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
@@ -486,7 +486,7 @@ func (x *PlayerHero) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Heroes); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 1, &x.xxx_hidden_Heroes); err != nil {
 			return b, err
 		}
 	}
@@ -571,9 +571,9 @@ func (x *PlayerBag) GetResources() *Int32Int32_map {
 }
 
 func (x *PlayerBag) initResources() {
-	x.xxx_hidden_Resources.syncable = make(map[int32]int32)
-	x.xxx_hidden_Resources.update = make(map[int32]int32)
-	x.xxx_hidden_Resources.deleteKey = make(map[int32]struct{})
+	x.xxx_hidden_Resources.data = make(map[int32]int32)
+	x.xxx_hidden_Resources.updates = make(map[int32]int32)
+	x.xxx_hidden_Resources.deletes = make(map[int32]struct{})
 	x.xxx_hidden_Resources.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
@@ -614,7 +614,7 @@ func (x *PlayerBag) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.checkDirty(uint64(0x01) << 1) {
-		if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Resources); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, 1, &x.xxx_hidden_Resources); err != nil {
 			return b, err
 		}
 	}
@@ -891,37 +891,37 @@ func (f dirtyParentFunc_Int64Hero_map) invoke() {
 }
 
 type Int64Hero_map struct {
-	syncable map[int64]*Hero
+	data map[int64]*Hero
 
-	update map[int64]*Hero
-	deleteKey map[int64]struct{}
-	clear bool
-	dirty bool
+	clear       bool
+	updates     map[int64]*Hero
+	deletes     map[int64]struct{}
+	dirty       bool
 	dirtyParent dirtyParentFunc_Int64Hero_map
 }
 
 func (x *Int64Hero_map) Len() int {
-	return len(x.syncable)
+	return len(x.data)
 }
 
 func (x *Int64Hero_map) Clear() {
-	if len(x.syncable) == 0 && len(x.deleteKey) == 0 {
+	if len(x.data) == 0 && len(x.deletes) == 0 {
 		return
 	}
-	for _, v := range x.syncable {
+	for _, v := range x.data {
 		if v != nil {
 			v.dirtyParent = nil
 		}
 	}
-	clear(x.syncable)
-	clear(x.update)
-	clear(x.deleteKey)
+	clear(x.data)
 	x.clear = true
+	clear(x.updates)
+	clear(x.deletes)
 	x.markDirty()
 }
 
 func (x *Int64Hero_map) Get(k int64) (*Hero, bool) {
-	v, ok := x.syncable[k]
+	v, ok := x.data[k]
 	return v, ok
 }
 
@@ -929,7 +929,7 @@ func (x *Int64Hero_map) Set(k int64, v *Hero) {
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed from its original place first")
 	}
-	if e, ok := x.syncable[k]; ok {
+	if e, ok := x.data[k]; ok {
 		if e == v {
 			return
 		}
@@ -937,44 +937,44 @@ func (x *Int64Hero_map) Set(k int64, v *Hero) {
 			e.dirtyParent = nil
 		}
 	}
-	x.syncable[k] = v
 	if v != nil {
 		v.dirtyParent = func() {
-			if _, ok := x.update[k]; ok {
+			if _, ok := x.updates[k]; ok {
 				return
 			}
-			x.update[k] = v
+			x.updates[k] = v
 			x.markDirty()
 		}
 		v.dirty |= uint64(0x01)
 	}
-	x.update[k] = v
-	delete(x.deleteKey, k)
+	x.data[k] = v
+	x.updates[k] = v
+	delete(x.deletes, k)
 	x.markDirty()
 }
 
 func (x *Int64Hero_map) Delete(k int64) {
-	if v, ok := x.syncable[k]; !ok {
+	if v, ok := x.data[k]; !ok {
 		return
 	} else if v != nil {
 		v.dirtyParent = nil
 	}
-	delete(x.syncable, k)
-	x.deleteKey[k] = struct{}{}
-	delete(x.update, k)
+	delete(x.data, k)
+	delete(x.updates, k)
+	x.deletes[k] = struct{}{}
 	x.markDirty()
 }
 
 func (x *Int64Hero_map) All() iter.Seq2[int64, *Hero] {
-	return maps.All(x.syncable)
+	return maps.All(x.data)
 }
 
 func (x *Int64Hero_map) Keys() iter.Seq[int64] {
-	return maps.Keys(x.syncable)
+	return maps.Keys(x.data)
 }
 
 func (x *Int64Hero_map) Values() iter.Seq[*Hero] {
-	return maps.Values(x.syncable)
+	return maps.Values(x.data)
 }
 
 func (x *Int64Hero_map) DumpChange() map[int64]*kdspb.Hero {
@@ -982,10 +982,10 @@ func (x *Int64Hero_map) DumpChange() map[int64]*kdspb.Hero {
 		return x.DumpFull()
 	}
 	m := make(map[int64]*kdspb.Hero)
-	for k, v := range x.update {
+	for k, v := range x.updates {
 		m[k] = v.DumpFull()
 	}
-	for k, _ := range x.deleteKey {
+	for k, _ := range x.deletes {
 		_ = k // deleteKeys
 	}
 	return m
@@ -993,7 +993,7 @@ func (x *Int64Hero_map) DumpChange() map[int64]*kdspb.Hero {
 
 func (x *Int64Hero_map) DumpFull() map[int64]*kdspb.Hero {
 	m := make(map[int64]*kdspb.Hero)
-	for k, v := range x.syncable {
+	for k, v := range x.data {
 		m[k] = v.DumpFull()
 	}
 	return m
@@ -1003,7 +1003,7 @@ func (x *Int64Hero_map) Load(m map[int64]*kdspb.Hero) {
 	for k, v := range m {
 		c := NewHero()
 		c.Load(v)
-		x.syncable[k] = c
+		x.data[k] = c
 	}
 }
 
@@ -1019,26 +1019,25 @@ func (x *Int64Hero_map) clearDirty() {
 	if !x.dirty {
 		return
 	}
-	for _, v := range x.update {
+	for _, v := range x.updates {
 		if v != nil {
 			v.clearDirty()
 		}
 	}
-	clear(x.update)
-	clear(x.deleteKey)
 	x.clear = false
+	clear(x.updates)
+	clear(x.deletes)
 	x.dirty = false
 }
 
 func (x *Int64Hero_map) Marshal(b []byte) ([]byte, error) {
+	var pos int
 	var err error
 	if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
 		return b, err
 	}
-	for k, v := range x.syncable {
+	for k, v := range x.data {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
-		var pos int
-		var err error
 		b, pos = wire.AppendSpeculativeLength(b)
 		if b, err = wire.MarshalInt64(b, wire.MapEntryKeyFieldNumber, k); err != nil {
 			return b, err
@@ -1052,11 +1051,38 @@ func (x *Int64Hero_map) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *Int64Hero_map) MarshalDirty(b []byte) ([]byte, error) {
-	return x.Marshal(b)
+	var pos int
+	var err error
+	if x.clear {
+		if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
+			return b, err
+		}
+	}
+	if len(x.deletes) > 0 {
+		b = wire.AppendTag(b, wire.MapDeleteFieldNumber, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
+		for k, _ := range x.deletes {
+			b = wire.AppendInt64(b, k)
+		}
+		b = wire.FinishSpeculativeLength(b, pos)
+	}
+	for k, v := range x.updates {
+		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
+		if b, err = wire.MarshalInt64(b, wire.MapEntryKeyFieldNumber, k); err != nil {
+			return b, err
+		}
+		if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
+			return b, err
+		}
+		b = wire.FinishSpeculativeLength(b, pos)
+	}
+	return b, err
 }
 
 func (x *Int64Hero_map) Unmarshal(b []byte) error {
 	var clear bool
+	var deletes []byte
 	var entries [][]byte
 	for len(b) > 0 {
 		num, wtyp, tagLen, err := wire.ConsumeTag(b)
@@ -1068,6 +1094,8 @@ func (x *Int64Hero_map) Unmarshal(b []byte) error {
 		switch num {
 		case wire.MapClearFieldNumber:
 			clear, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
+		case wire.MapDeleteFieldNumber:
+			deletes, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
 		case wire.MapEntryFieldNumber:
 			var entry []byte
 			if entry, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp); err != nil {
@@ -1086,6 +1114,14 @@ func (x *Int64Hero_map) Unmarshal(b []byte) error {
 	}
 	if clear {
 		x.Clear()
+	}
+	for b := deletes; len(b) > 0; {
+		k, n, err := wire.ConsumeInt64(b)
+		if err != nil {
+			return err
+		}
+		b = b[n:]
+		x.Delete(k)
 	}
 	for _, b := range entries {
 		var k int64
@@ -1112,14 +1148,15 @@ func (x *Int64Hero_map) Unmarshal(b []byte) error {
 			}
 			b = b[tagLen+valLen:]
 		}
-		c, ok := x.syncable[k]
-		if !ok {
+		if c, ok := x.data[k]; !ok {
 			c = NewHero()
-		}
-		if err := c.Unmarshal(v); err != nil {
+			if err := c.Unmarshal(v); err != nil {
+				return err
+			}
+			x.Set(k, c)
+		} else if err := c.Unmarshal(v); err != nil {
 			return err
 		}
-		x.Set(k, c)
 	}
 	return nil
 }
