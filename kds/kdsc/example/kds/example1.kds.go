@@ -23,13 +23,13 @@ type Player struct {
 	dirty uint64
 }
 
-func NewPlayer() *Player {
+func NewPlayer(id int64) *Player {
 	x := new(Player)
-	x.dirty = 1
-	x.id = 0 // FIXME: gen nextId()
+	x.id = id
 	x.setInfo(NewPlayerBasicInfo())
 	x.setHero(NewPlayerHero())
 	x.setBag(NewPlayerBag())
+	x.dirty = 1
 	return x
 }
 
@@ -250,7 +250,7 @@ type PlayerBasicInfo struct {
 	xxx_hidden_IsNew bool
 	xxx_hidden_CreateTime time.Time
 
-	dirty uint64
+	dirty       uint64
 	dirtyParent dirtyParentFunc_PlayerBasicInfo
 }
 
@@ -427,7 +427,7 @@ func (f dirtyParentFunc_PlayerHero) invoke() {
 type PlayerHero struct {
 	xxx_hidden_Heroes Int64Hero_map
 
-	dirty uint64
+	dirty       uint64
 	dirtyParent dirtyParentFunc_PlayerHero
 }
 
@@ -555,7 +555,7 @@ func (f dirtyParentFunc_PlayerBag) invoke() {
 type PlayerBag struct {
 	xxx_hidden_Resources Int32Int32_map
 
-	dirty uint64
+	dirty       uint64
 	dirtyParent dirtyParentFunc_PlayerBag
 }
 
@@ -686,7 +686,7 @@ type Hero struct {
 	xxx_hidden_Type HeroType
 	xxx_hidden_NeedTime time.Duration
 
-	dirty uint64
+	dirty       uint64
 	dirtyParent dirtyParentFunc_Hero
 }
 

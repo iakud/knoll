@@ -72,7 +72,7 @@ import (
 	}
 */
 func TestMarshalMessage(t *testing.T) {
-	player := kds.NewPlayer()
+	player := kds.NewPlayer(1)
 	player.GetBag().GetResources().Set(1, 1001)
 	player.GetBag().GetResources().Set(2, 1005)
 	hero := kds.NewHero()
@@ -89,7 +89,7 @@ func TestMarshalMessage(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	player2 := kds.NewPlayer()
+	player2 := kds.NewPlayer(1)
 	err = player2.Unmarshal(buf)
 	if err != nil {
 		panic(err)
@@ -121,7 +121,7 @@ func TestMarshalMessage(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	player2 = kds.NewPlayer()
+	player2 = kds.NewPlayer(1)
 	err = player2.Unmarshal(bufDirty)
 	if err != nil {
 		panic(err)

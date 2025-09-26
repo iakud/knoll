@@ -1079,7 +1079,6 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 {{- define "Entity"}}
 type {{.Name}} struct {
 	id int64
-
 {{- range .Fields}}
 {{- if .Repeated}}
 	xxx_hidden_{{.Name}} {{.ListType}}
@@ -1095,10 +1094,9 @@ type {{.Name}} struct {
 	dirty uint64
 }
 
-func New{{.Name}}() *{{.Name}} {
+func New{{.Name}}(id int64) *{{.Name}} {
 	x := new({{.Name}})
-	x.dirty = 1
-	x.id = 0 // FIXME: gen nextId()
+	x.id = id
 {{- range .Fields}}
 {{- if .Repeated}}
 	x.init{{.Name}}()
@@ -1108,6 +1106,7 @@ func New{{.Name}}() *{{.Name}} {
 	x.set{{.Name}}(New{{.Type}}())
 {{- end}}
 {{- end}}
+	x.dirty = 1
 	return x
 }
 
@@ -1178,7 +1177,7 @@ type {{.Name}} struct {
 {{- end}}
 {{- end}}
 
-	dirty uint64
+	dirty       uint64
 	dirtyParent dirtyParentFunc_{{.Name}}
 }
 

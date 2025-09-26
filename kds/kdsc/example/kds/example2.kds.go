@@ -21,13 +21,13 @@ type City struct {
 	dirty uint64
 }
 
-func NewCity() *City {
+func NewCity(id int64) *City {
 	x := new(City)
-	x.dirty = 1
-	x.id = 0 // FIXME: gen nextId()
+	x.id = id
 	x.setPlayerBasicInfo(NewPlayerBasicInfo())
 	x.setCityInfo(NewCityBaseInfo())
 	x.initTroops()
+	x.dirty = 1
 	return x
 }
 
@@ -261,7 +261,7 @@ type CityBaseInfo struct {
 	xxx_hidden_Troops Int32Empty_map
 	xxx_hidden_BuildInfo []byte
 
-	dirty uint64
+	dirty       uint64
 	dirtyParent dirtyParentFunc_CityBaseInfo
 }
 
@@ -446,7 +446,7 @@ type Vector struct {
 	xxx_hidden_X int32
 	xxx_hidden_Y int32
 
-	dirty uint64
+	dirty       uint64
 	dirtyParent dirtyParentFunc_Vector
 }
 
