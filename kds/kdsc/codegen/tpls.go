@@ -130,34 +130,34 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 }
 
 type {{.Name}} struct {
-	syncable []{{template "ListValueType" .}}
+	data []{{template "ListValueType" .}}
 
-	dirty bool
+	dirty       bool
 	dirtyParent dirtyParentFunc_{{.Name}}
 }
 
 func (x *{{.Name}}) Len() int {
-	return len(x.syncable)
+	return len(x.data)
 }
 
 func (x *{{.Name}}) Clear() {
-	if len(x.syncable) == 0 {
+	if len(x.data) == 0 {
 		return
 	}
 {{- if eq .TypeKind "component"}}
-	for _, v := range x.syncable {
+	for _, v := range x.data {
 		if v != nil {
 			v.dirtyParent = nil
 		}
 	}
 {{- end}}
-	clear(x.syncable)
-	x.syncable = x.syncable[:0]
+	clear(x.data)
+	x.data = x.data[:0]
 	x.markDirty()
 }
 
 func (x *{{.Name}}) Get(i int) {{template "ListValueType" .}} {
-	return x.syncable[i]
+	return x.data[i]
 }
 
 func (x *{{.Name}}) Set(i int, v {{template "ListValueType" .}}) {
@@ -166,15 +166,15 @@ func (x *{{.Name}}) Set(i int, v {{template "ListValueType" .}}) {
 		panic("the component should be removed from its original place first")
 	}
 {{- end}}
-	if v == x.syncable[i] {
+	if v == x.data[i] {
 		return
 	}
 {{- if eq .TypeKind "component"}}
-	if x.syncable[i] != nil {
-		x.syncable[i].dirtyParent = nil
+	if x.data[i] != nil {
+		x.data[i].dirtyParent = nil
 	}
 {{- end}}
-	x.syncable[i] = v
+	x.data[i] = v
 {{- if eq .TypeKind "component"}}
 	if v != nil {
 		v.dirtyParent = func() {
@@ -197,7 +197,7 @@ func (x *{{.Name}}) Append(v ...{{template "ListValueType" .}}) {
 	if len(v) == 0 {
 		return
 	}
-	x.syncable = append(x.syncable, v...)
+	x.data = append(x.data, v...)
 {{- if eq .TypeKind "component"}}
 	for i := range v {
 		if v[i] != nil {
@@ -212,8 +212,8 @@ func (x *{{.Name}}) Append(v ...{{template "ListValueType" .}}) {
 }
 
 func (x *{{.Name}}) Index(v {{template "ListValueType" .}}) int {
-	for i := range x.syncable {
-		if v == x.syncable[i] {
+	for i := range x.data {
+		if v == x.data[i] {
 			return i
 		}
 	}
@@ -221,8 +221,8 @@ func (x *{{.Name}}) Index(v {{template "ListValueType" .}}) int {
 }
 
 func (x *{{.Name}}) IndexFunc(f func({{template "ListValueType" .}}) bool) int {
-	for i := range x.syncable {
-		if f(x.syncable[i]) {
+	for i := range x.data {
+		if f(x.data[i]) {
 			return i
 		}
 	}
@@ -248,7 +248,7 @@ func (x *{{.Name}}) Insert(i int, v ...{{template "ListValueType" .}}) {
 	if len(v) == 0 {
 		return
 	}
-	x.syncable = slices.Insert(x.syncable, i, v...)
+	x.data = slices.Insert(x.data, i, v...)
 {{- if eq .TypeKind "component"}}
 	for j := range v {
 		if v[j] != nil {
@@ -264,7 +264,7 @@ func (x *{{.Name}}) Insert(i int, v ...{{template "ListValueType" .}}) {
 
 func (x *{{.Name}}) Delete(i, j int) {
 {{- if eq .TypeKind "component"}}
-	r := x.syncable[i:j:len(x.syncable)]
+	r := x.data[i:j:len(x.data)]
 	for k := range r {
 		if r[k] != nil {
 			r[k].dirtyParent = nil
@@ -274,7 +274,7 @@ func (x *{{.Name}}) Delete(i, j int) {
 	if i == j {
 		return
 	}
-	x.syncable = slices.Delete(x.syncable, i, j)
+	x.data = slices.Delete(x.data, i, j)
 	x.markDirty()
 }
 
@@ -284,21 +284,21 @@ func (x *{{.Name}}) DeleteFunc(del func({{template "ListValueType" .}}) bool) {
 		return
 	}
 {{- if eq .TypeKind "component"}}
-	x.syncable[i].dirtyParent = nil
+	x.data[i].dirtyParent = nil
 {{- end}}
-	for j := i + 1; j < len(x.syncable); j++ {
-		v := x.syncable[j]
+	for j := i + 1; j < len(x.data); j++ {
+		v := x.data[j]
 		if del(v) {
 {{- if eq .TypeKind "component"}}
 			v.dirtyParent = nil
 {{- end}}
 			continue
 		}
-		x.syncable[i] = v
+		x.data[i] = v
 		i++
 	}
-	clear(x.syncable[i:])
-	x.syncable = x.syncable[:i]
+	clear(x.data[i:])
+	x.data = x.data[:i]
 	x.markDirty()
 }
 
@@ -309,7 +309,7 @@ func (x *{{.Name}}) Replace(i, j int, v ...{{template "ListValueType" .}}) {
 			panic("the component should be removed from its original place first")
 		}
 	}
-	r := x.syncable[i:j:len(x.syncable)]
+	r := x.data[i:j:len(x.data)]
 	for k := range r {
 		if r[k] != nil {
 			r[k].dirtyParent = nil
@@ -319,7 +319,7 @@ func (x *{{.Name}}) Replace(i, j int, v ...{{template "ListValueType" .}}) {
 	if i == j && len(v) == 0 {
 		return
 	}
-	x.syncable = slices.Replace(x.syncable, i, j, v...)
+	x.data = slices.Replace(x.data, i, j, v...)
 {{- if eq .TypeKind "component"}}
 	for k := range v {
 		if v[k] != nil {
@@ -334,23 +334,23 @@ func (x *{{.Name}}) Replace(i, j int, v ...{{template "ListValueType" .}}) {
 }
 
 func (x *{{.Name}}) Reverse() {
-	if len(x.syncable) < 2 {
+	if len(x.data) < 2 {
 		return
 	}
-	slices.Reverse(x.syncable)
+	slices.Reverse(x.data)
 	x.markDirty()
 }
 
 func (x *{{.Name}}) All() iter.Seq2[int, {{template "ListValueType" .}}] {
-	return slices.All(x.syncable)
+	return slices.All(x.data)
 }
 
 func (x *{{.Name}}) Backward() iter.Seq2[int, {{template "ListValueType" .}}] {
-	return slices.Backward(x.syncable)
+	return slices.Backward(x.data)
 }
 
 func (x *{{.Name}}) Values() iter.Seq[{{template "ListValueType" .}}] {
-	return slices.Values(x.syncable)
+	return slices.Values(x.data)
 }
 
 func (x *{{.Name}}) DumpChange() []{{template "ListValueProtoType" .}} {
@@ -360,27 +360,27 @@ func (x *{{.Name}}) DumpChange() []{{template "ListValueProtoType" .}} {
 func (x *{{.Name}}) DumpFull() []{{template "ListValueProtoType" .}} {
 	var m []{{template "ListValueProtoType" .}}
 {{- if eq .TypeKind "component"}}
-	for _, v := range x.syncable {
+	for _, v := range x.data {
 		m = append(m, v.DumpChange())
 	}
 {{- else if eq .TypeKind "enum"}}
-	for _, v := range x.syncable {
+	for _, v := range x.data {
 		m = append(m, v)
 	}
 {{- else if eq .Type "timestamp"}}
-	for _, v := range x.syncable {
+	for _, v := range x.data {
 		m = append(m, timestamppb.New(v))
 	}
 {{- else if eq .Type "duration"}}
-	for _, v := range x.syncable {
+	for _, v := range x.data {
 		m = append(m, durationpb.New(v))
 	}
 {{- else if eq .Type "empty"}}
-	for range x.syncable {
+	for range x.data {
 		m = append(m, new(emptypb.Empty))
 	}
 {{- else}}
-	for _, v := range x.syncable {
+	for _, v := range x.data {
 		m = append(m, v)
 	}
 {{- end}}
@@ -392,27 +392,27 @@ func (x *{{.Name}}) Load(m []{{template "ListValueProtoType" .}}) {
 	for _, v := range m {
 		c := New{{.Type}}()
 		c.Load(v)
-		x.syncable = append(x.syncable, c)
+		x.data = append(x.data, c)
 	}
 {{- else if eq .TypeKind "enum"}}
 	for _, v := range m {
-		x.syncable = append(x.syncable, v)
+		x.data = append(x.data, v)
 	}
 {{- else if eq .Type "timestamp"}}
 	for _, v := range m {
-		x.syncable = append(x.syncable, v.AsTime())
+		x.data = append(x.data, v.AsTime())
 	}
 {{- else if eq .Type "duration"}}
 	for _, v := range m {
-		x.syncable = append(x.syncable, v.AsDuration())
+		x.data = append(x.data, v.AsDuration())
 	}
 {{- else if eq .Type "empty"}}
 	for range m {
-		x.syncable = append(x.syncable, struct{}{})
+		x.data = append(x.data, struct{}{})
 	}
 {{- else}}
 	for _, v := range m {
-		x.syncable = append(x.syncable, v)
+		x.data = append(x.data, v)
 	}
 {{- end}}
 }
@@ -427,9 +427,9 @@ func (x *{{.Name}}) markDirty() {
 
 func (x *{{.Name}}) clearDirty() {
 {{- if eq .TypeKind "component"}}
-	for k := range x.syncable {
-		if x.syncable[k] != nil {
-			x.syncable[k].clearDirty()
+	for k := range x.data {
+		if x.data[k] != nil {
+			x.data[k].clearDirty()
 		}
 	}
 {{- end}}
@@ -437,25 +437,21 @@ func (x *{{.Name}}) clearDirty() {
 }
 
 func (x *{{.Name}}) Marshal(b []byte) ([]byte, error) {
-	if len(x.syncable) == 0 {
+	if len(x.data) == 0 {
 		return b, nil
 	}
+	for _, v := range x.data {
 {{- if eq .TypeKind "component"}}
-	var err error
-	for _, v := range x.syncable {
+		var err error
 		if b, err = wire.AppendMessage(b, v); err != nil {
 			return b, err
 		}
-	}
 {{- else if eq .TypeKind "enum"}}
-	for _, v := range x.syncable {
 		b = wire.AppendInt32(b, int32(v))
-	}
 {{- else}}
-	for _, v := range x.syncable {
 		b = wire.Append{{ucFirst .Type}}(b, v)
-	}
 {{- end}}
+	}
 	return b, nil
 }
 
@@ -506,39 +502,39 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 }
 
 type {{.Name}} struct {
-	syncable map[{{goType .KeyType}}]{{template "MapValueType" .}}
+	data map[{{goType .KeyType}}]{{template "MapValueType" .}}
 
-	update map[{{goType .KeyType}}]{{template "MapValueType" .}}
-	deleteKey map[{{goType .KeyType}}]struct{}
-	clear bool
-	dirty bool
+	clear       bool
+	updates     map[{{goType .KeyType}}]{{template "MapValueType" .}}
+	deletes     map[{{goType .KeyType}}]struct{}
+	dirty       bool
 	dirtyParent dirtyParentFunc_{{.Name}}
 }
 
 func (x *{{.Name}}) Len() int {
-	return len(x.syncable)
+	return len(x.data)
 }
 
 func (x *{{.Name}}) Clear() {
-	if len(x.syncable) == 0 && len(x.deleteKey) == 0 {
+	if len(x.data) == 0 && len(x.deletes) == 0 {
 		return
 	}
 {{- if eq .TypeKind "component"}}
-	for _, v := range x.syncable {
+	for _, v := range x.data {
 		if v != nil {
 			v.dirtyParent = nil
 		}
 	}
 {{- end}}
-	clear(x.syncable)
-	clear(x.update)
-	clear(x.deleteKey)
+	clear(x.data)
 	x.clear = true
+	clear(x.updates)
+	clear(x.deletes)
 	x.markDirty()
 }
 
 func (x *{{.Name}}) Get(k {{goType .KeyType}}) ({{template "MapValueType" .}}, bool) {
-	v, ok := x.syncable[k]
+	v, ok := x.data[k]
 	return v, ok
 }
 
@@ -548,7 +544,7 @@ func (x *{{.Name}}) Set(k {{goType .KeyType}}, v {{template "MapValueType" .}}) 
 		panic("the component should be removed from its original place first")
 	}
 {{- end}}
-	if e, ok := x.syncable[k]; ok {
+	if e, ok := x.data[k]; ok {
 		if e == v {
 			return
 		}
@@ -558,52 +554,52 @@ func (x *{{.Name}}) Set(k {{goType .KeyType}}, v {{template "MapValueType" .}}) 
 		}
 {{- end}}
 	}
-	x.syncable[k] = v
 {{- if eq .TypeKind "component"}}
 	if v != nil {
 		v.dirtyParent = func() {
-			if _, ok := x.update[k]; ok {
+			if _, ok := x.updates[k]; ok {
 				return
 			}
-			x.update[k] = v
+			x.updates[k] = v
 			x.markDirty()
 		}
 		v.dirty |= uint64(0x01)
 	}
 {{- end}}
-	x.update[k] = v
-	delete(x.deleteKey, k)
+	x.data[k] = v
+	x.updates[k] = v
+	delete(x.deletes, k)
 	x.markDirty()
 }
 
 func (x *{{.Name}}) Delete(k {{goType .KeyType}}) {
 {{- if eq .TypeKind "component"}}
-	if v, ok := x.syncable[k]; !ok {
+	if v, ok := x.data[k]; !ok {
 		return
 	} else if v != nil {
 		v.dirtyParent = nil
 	}
 {{- else}}
-	if _, ok := x.syncable[k]; !ok {
+	if _, ok := x.data[k]; !ok {
 		return
 	}
 {{- end}}
-	delete(x.syncable, k)
-	x.deleteKey[k] = struct{}{}
-	delete(x.update, k)
+	delete(x.data, k)
+	delete(x.updates, k)
+	x.deletes[k] = struct{}{}
 	x.markDirty()
 }
 
 func (x *{{.Name}}) All() iter.Seq2[{{goType .KeyType}}, {{template "MapValueType" .}}] {
-	return maps.All(x.syncable)
+	return maps.All(x.data)
 }
 
 func (x *{{.Name}}) Keys() iter.Seq[{{goType .KeyType}}] {
-	return maps.Keys(x.syncable)
+	return maps.Keys(x.data)
 }
 
 func (x *{{.Name}}) Values() iter.Seq[{{template "MapValueType" .}}] {
-	return maps.Values(x.syncable)
+	return maps.Values(x.data)
 }
 
 func (x *{{.Name}}) DumpChange() map[{{goType .KeyType}}]{{template "MapValueProtoType" .}} {
@@ -612,31 +608,31 @@ func (x *{{.Name}}) DumpChange() map[{{goType .KeyType}}]{{template "MapValuePro
 	}
 	m := make(map[{{goType .KeyType}}]{{template "MapValueProtoType" .}})
 {{- if eq .TypeKind "component"}}
-	for k, v := range x.update {
+	for k, v := range x.updates {
 		m[k] = v.DumpFull()
 	}
 {{- else if eq .TypeKind "enum"}}
-	for k, v := range x.update {
+	for k, v := range x.updates {
 		m[k] = v
 	}
 {{- else if eq .Type "timestamp"}}
-	for k, v := range x.update {
+	for k, v := range x.updates {
 		m[k] = timestamppb.New(v)
 	}
 {{- else if eq .Type "duration"}}
-	for k, v := range x.update {
+	for k, v := range x.updates {
 		m[k] = durationpb.New(v)
 	}
 {{- else if eq .Type "empty"}}
-	for k := range x.update {
+	for k := range x.updates {
 		m[k] = new(emptypb.Empty)
 	}
 {{- else}}
-	for k, v := range x.update {
+	for k, v := range x.updates {
 		m[k] = v
 	}
 {{- end}}
-	for k, _ := range x.deleteKey {
+	for k, _ := range x.deletes {
 		_ = k // deleteKeys
 	}
 	return m
@@ -645,27 +641,27 @@ func (x *{{.Name}}) DumpChange() map[{{goType .KeyType}}]{{template "MapValuePro
 func (x *{{.Name}}) DumpFull() map[{{goType .KeyType}}]{{template "MapValueProtoType" .}} {
 	m := make(map[{{goType .KeyType}}]{{template "MapValueProtoType" .}})
 {{- if eq .TypeKind "component"}}
-	for k, v := range x.syncable {
+	for k, v := range x.data {
 		m[k] = v.DumpFull()
 	}
 {{- else if eq .TypeKind "enum"}}
-	for k, v := range x.syncable {
+	for k, v := range x.data {
 		m[k] = v
 	}
 {{- else if eq .Type "timestamp"}}
-	for k, v := range x.syncable {
+	for k, v := range x.data {
 		m[k] = timestamppb.New(v)
 	}
 {{- else if eq .Type "duration"}}
-	for k, v := range x.syncable {
+	for k, v := range x.data {
 		m[k] = durationpb.New(v)
 	}
 {{- else if eq .Type "empty"}}
-	for k := range x.syncable {
+	for k := range x.data {
 		m[k] = new(emptypb.Empty)
 	}
 {{- else}}
-	for k, v := range x.syncable {
+	for k, v := range x.data {
 		m[k] = v
 	}
 {{- end}}
@@ -677,27 +673,27 @@ func (x *{{.Name}}) Load(m map[{{goType .KeyType}}]{{template "MapValueProtoType
 	for k, v := range m {
 		c := New{{.Type}}()
 		c.Load(v)
-		x.syncable[k] = c
+		x.data[k] = c
 	}
 {{- else if eq .TypeKind "enum"}}
 	for k, v := range m {
-		x.syncable[k] = v
+		x.data[k] = v
 	}
 {{- else if eq .Type "timestamp"}}
 	for k, v := range m {
-		x.syncable[k] = v.AsTime()
+		x.data[k] = v.AsTime()
 	}
 {{- else if eq .Type "duration"}}
 	for k, v := range m {
-		x.syncable[k] = v.AsDuration()
+		x.data[k] = v.AsDuration()
 	}
 {{- else if eq .Type "empty"}}
 	for k := range m {
-		x.syncable[k] = struct{}{}
+		x.data[k] = struct{}{}
 	}
 {{- else}}
 	for k, v := range m {
-		x.syncable[k] = v
+		x.data[k] = v
 	}
 {{- end}}
 }
@@ -715,27 +711,26 @@ func (x *{{.Name}}) clearDirty() {
 		return
 	}
 {{- if eq .TypeKind "component"}}
-	for _, v := range x.update {
+	for _, v := range x.updates {
 		if v != nil {
 			v.clearDirty()
 		}
 	}
 {{- end}}
-	clear(x.update)
-	clear(x.deleteKey)
 	x.clear = false
+	clear(x.updates)
+	clear(x.deletes)
 	x.dirty = false
 }
 
 func (x *{{.Name}}) Marshal(b []byte) ([]byte, error) {
+	var pos int
 	var err error
 	if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
 		return b, err
 	}
-	for k, v := range x.syncable {
+	for k, v := range x.data {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
-		var pos int
-		var err error
 		b, pos = wire.AppendSpeculativeLength(b)
 		if b, err = wire.Marshal{{ucFirst .KeyType}}(b, wire.MapEntryKeyFieldNumber, k); err != nil {
 			return b, err
@@ -759,11 +754,48 @@ func (x *{{.Name}}) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *{{.Name}}) MarshalDirty(b []byte) ([]byte, error) {
-	return x.Marshal(b)
+	var pos int
+	var err error
+	if x.clear {
+		if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
+			return b, err
+		}
+	}
+	if len(x.deletes) > 0 {
+		b = wire.AppendTag(b, wire.MapDeleteFieldNumber, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
+		for k, _ := range x.deletes {
+			b = wire.Append{{ucFirst .KeyType}}(b, k)
+		}
+		b = wire.FinishSpeculativeLength(b, pos)
+	}
+	for k, v := range x.updates {
+		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
+		if b, err = wire.Marshal{{ucFirst .KeyType}}(b, wire.MapEntryKeyFieldNumber, k); err != nil {
+			return b, err
+		}
+{{- if eq .TypeKind "component"}}
+		if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
+			return b, err
+		}
+{{- else if eq .TypeKind "enum"}}
+		if b, err = wire.MarshalInt32(b, wire.MapEntryValueFieldNumber, int32(v)); err != nil {
+			return b, err
+		}
+{{- else}}
+		if b, err = wire.Marshal{{ucFirst .Type}}(b, wire.MapEntryValueFieldNumber, v); err != nil {
+			return b, err
+		}
+{{- end}}
+		b = wire.FinishSpeculativeLength(b, pos)
+	}
+	return b, err
 }
 
 func (x *{{.Name}}) Unmarshal(b []byte) error {
 	var clear bool
+	var deletes []byte
 	var entries [][]byte
 	for len(b) > 0 {
 		num, wtyp, tagLen, err := wire.ConsumeTag(b)
@@ -775,6 +807,8 @@ func (x *{{.Name}}) Unmarshal(b []byte) error {
 		switch num {
 		case wire.MapClearFieldNumber:
 			clear, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
+		case wire.MapDeleteFieldNumber:
+			deletes, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
 		case wire.MapEntryFieldNumber:
 			var entry []byte
 			if entry, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp); err != nil {
@@ -793,6 +827,14 @@ func (x *{{.Name}}) Unmarshal(b []byte) error {
 	}
 	if clear {
 		x.Clear()
+	}
+	for b := deletes; len(b) > 0; {
+		k, n, err := wire.Consume{{ucFirst .KeyType}}(b)
+		if err != nil {
+			return err
+		}
+		b = b[n:]
+		x.Delete(k)
 	}
 	for _, b := range entries {
 		var k {{goType .KeyType}}
@@ -830,14 +872,15 @@ func (x *{{.Name}}) Unmarshal(b []byte) error {
 			b = b[tagLen+valLen:]
 		}
 {{- if eq .TypeKind "component"}}
-		c, ok := x.syncable[k]
-		if !ok {
+		if c, ok := x.data[k]; !ok {
 			c = New{{.Type}}()
-		}
-		if err := c.Unmarshal(v); err != nil {
+			if err := c.Unmarshal(v); err != nil {
+				return err
+			}
+			x.Set(k, c)
+		} else if err := c.Unmarshal(v); err != nil {
 			return err
 		}
-		x.Set(k, c)
 {{- else if eq .TypeKind "enum"}}
 		x.Set(k, v)
 {{- else}}
@@ -882,9 +925,9 @@ func (x *{{$MessageName}}) Get{{.Name}}() *{{.MapType}} {
 }
 
 func (x *{{$MessageName}}) init{{.Name}}() {
-	x.xxx_hidden_{{.Name}}.syncable = make(map[{{goType .KeyType}}]{{template "FieldType" .}})
-	x.xxx_hidden_{{.Name}}.update = make(map[{{goType .KeyType}}]{{template "FieldType" .}})
-	x.xxx_hidden_{{.Name}}.deleteKey = make(map[{{goType .KeyType}}]struct{})
+	x.xxx_hidden_{{.Name}}.data = make(map[{{goType .KeyType}}]{{template "FieldType" .}})
+	x.xxx_hidden_{{.Name}}.updates = make(map[{{goType .KeyType}}]{{template "FieldType" .}})
+	x.xxx_hidden_{{.Name}}.deletes = make(map[{{goType .KeyType}}]struct{})
 	x.xxx_hidden_{{.Name}}.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
@@ -1044,11 +1087,11 @@ func (x *{{$MessageName}}) MarshalDirty(b []byte) ([]byte, error) {
 {{- range .Fields}}
 	if x.checkDirty(uint64(0x01) << {{.Number}}) {
 {{- if .Repeated}}
-		if b, err = wire.MarshalMessage(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
 		}
 {{- else if .Map}}
-		if b, err = wire.MarshalMessage(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
 		}
 {{- else if eq .TypeKind "component"}}
@@ -1113,7 +1156,6 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 {{- define "Entity"}}
 type {{.Name}} struct {
 	id int64
-
 {{- range .Fields}}
 {{- if .Repeated}}
 	xxx_hidden_{{.Name}} {{.ListType}}
@@ -1129,10 +1171,9 @@ type {{.Name}} struct {
 	dirty uint64
 }
 
-func New{{.Name}}() *{{.Name}} {
+func New{{.Name}}(id int64) *{{.Name}} {
 	x := new({{.Name}})
-	x.dirty = 1
-	x.id = 0 // FIXME: gen nextId()
+	x.id = id
 {{- range .Fields}}
 {{- if .Repeated}}
 	x.init{{.Name}}()
@@ -1142,6 +1183,7 @@ func New{{.Name}}() *{{.Name}} {
 	x.set{{.Name}}(New{{.Type}}())
 {{- end}}
 {{- end}}
+	x.dirty = 1
 	return x
 }
 
@@ -1212,7 +1254,7 @@ type {{.Name}} struct {
 {{- end}}
 {{- end}}
 
-	dirty uint64
+	dirty       uint64
 	dirtyParent dirtyParentFunc_{{.Name}}
 }
 
