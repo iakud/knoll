@@ -987,7 +987,7 @@ func (x *{{$MessageName}}) DumpChange() *{{.GoProtoPackage}}.{{.Name}} {
 	}
 	m := new({{.GoProtoPackage}}.{{.Name}})
 {{- range .Fields}}
-	if x.dirty&(uint64(0x01) << {{.Number}}) != 0 {
+	if x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 {{- if .Repeated}}
 		m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpChange())
 {{- else if .Map}}
@@ -1085,7 +1085,7 @@ func (x *{{$MessageName}}) MarshalDirty(b []byte) ([]byte, error) {
 	}
 	var err error
 {{- range .Fields}}
-	if x.dirty&(uint64(0x01) << {{.Number}}) != 0 {
+	if x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 {{- if .Repeated}}
 		if b, err = wire.MarshalMessageDirty(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err

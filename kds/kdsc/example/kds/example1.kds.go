@@ -114,13 +114,13 @@ func (x *Player) DumpChange() *kdspb.Player {
 		return x.DumpFull()
 	}
 	m := new(kdspb.Player)
-	if x.dirty&(uint64(0x01) << 1) != 0 {
+	if x.dirty&(uint64(0x01)<<1) != 0 {
 		m.SetInfo(x.xxx_hidden_Info.DumpChange())
 	}
-	if x.dirty&(uint64(0x01) << 2) != 0 {
+	if x.dirty&(uint64(0x01)<<2) != 0 {
 		m.SetHero(x.xxx_hidden_Hero.DumpChange())
 	}
-	if x.dirty&(uint64(0x01) << 3) != 0 {
+	if x.dirty&(uint64(0x01)<<3) != 0 {
 		m.SetBag(x.xxx_hidden_Bag.DumpChange())
 	}
 	return m
@@ -159,17 +159,17 @@ func (x *Player) MarshalDirty(b []byte) ([]byte, error) {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.dirty&(uint64(0x01) << 1) != 0 {
+	if x.dirty&(uint64(0x01)<<1) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 1, x.xxx_hidden_Info); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01) << 2) != 0 {
+	if x.dirty&(uint64(0x01)<<2) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 2, x.xxx_hidden_Hero); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01) << 3) != 0 {
+	if x.dirty&(uint64(0x01)<<3) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 3, x.xxx_hidden_Bag); err != nil {
 			return b, err
 		}
@@ -305,13 +305,13 @@ func (x *PlayerBasicInfo) DumpChange() *kdspb.PlayerBasicInfo {
 		return x.DumpFull()
 	}
 	m := new(kdspb.PlayerBasicInfo)
-	if x.dirty&(uint64(0x01) << 1) != 0 {
+	if x.dirty&(uint64(0x01)<<1) != 0 {
 		m.SetName(x.xxx_hidden_Name)
 	}
-	if x.dirty&(uint64(0x01) << 3) != 0 {
+	if x.dirty&(uint64(0x01)<<3) != 0 {
 		m.SetIsNew(x.xxx_hidden_IsNew)
 	}
-	if x.dirty&(uint64(0x01) << 5) != 0 {
+	if x.dirty&(uint64(0x01)<<5) != 0 {
 		m.SetCreateTime(timestamppb.New(x.xxx_hidden_CreateTime))
 	}
 	return m
@@ -350,17 +350,17 @@ func (x *PlayerBasicInfo) MarshalDirty(b []byte) ([]byte, error) {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.dirty&(uint64(0x01) << 1) != 0 {
+	if x.dirty&(uint64(0x01)<<1) != 0 {
 		if b, err = wire.MarshalString(b, 1, x.xxx_hidden_Name); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01) << 3) != 0 {
+	if x.dirty&(uint64(0x01)<<3) != 0 {
 		if b, err = wire.MarshalBool(b, 3, x.xxx_hidden_IsNew); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01) << 5) != 0 {
+	if x.dirty&(uint64(0x01)<<5) != 0 {
 		if b, err = wire.MarshalTimestamp(b, 5, x.xxx_hidden_CreateTime); err != nil {
 			return b, err
 		}
@@ -460,7 +460,7 @@ func (x *PlayerHero) DumpChange() *kdspb.PlayerHero {
 		return x.DumpFull()
 	}
 	m := new(kdspb.PlayerHero)
-	if x.dirty&(uint64(0x01) << 1) != 0 {
+	if x.dirty&(uint64(0x01)<<1) != 0 {
 		m.SetHeroes(x.xxx_hidden_Heroes.DumpChange())
 	}
 	return m
@@ -489,7 +489,7 @@ func (x *PlayerHero) MarshalDirty(b []byte) ([]byte, error) {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.dirty&(uint64(0x01) << 1) != 0 {
+	if x.dirty&(uint64(0x01)<<1) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 1, &x.xxx_hidden_Heroes); err != nil {
 			return b, err
 		}
@@ -588,7 +588,7 @@ func (x *PlayerBag) DumpChange() *kdspb.PlayerBag {
 		return x.DumpFull()
 	}
 	m := new(kdspb.PlayerBag)
-	if x.dirty&(uint64(0x01) << 1) != 0 {
+	if x.dirty&(uint64(0x01)<<1) != 0 {
 		m.SetResources(x.xxx_hidden_Resources.DumpChange())
 	}
 	return m
@@ -617,7 +617,7 @@ func (x *PlayerBag) MarshalDirty(b []byte) ([]byte, error) {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.dirty&(uint64(0x01) << 1) != 0 {
+	if x.dirty&(uint64(0x01)<<1) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 1, &x.xxx_hidden_Resources); err != nil {
 			return b, err
 		}
@@ -753,16 +753,16 @@ func (x *Hero) DumpChange() *kdspb.Hero {
 		return x.DumpFull()
 	}
 	m := new(kdspb.Hero)
-	if x.dirty&(uint64(0x01) << 1) != 0 {
+	if x.dirty&(uint64(0x01)<<1) != 0 {
 		m.SetHeroId(x.xxx_hidden_HeroId)
 	}
-	if x.dirty&(uint64(0x01) << 2) != 0 {
+	if x.dirty&(uint64(0x01)<<2) != 0 {
 		m.SetHeroLevel(x.xxx_hidden_HeroLevel)
 	}
-	if x.dirty&(uint64(0x01) << 3) != 0 {
+	if x.dirty&(uint64(0x01)<<3) != 0 {
 		m.SetType(x.xxx_hidden_Type)
 	}
-	if x.dirty&(uint64(0x01) << 4) != 0 {
+	if x.dirty&(uint64(0x01)<<4) != 0 {
 		m.SetNeedTime(durationpb.New(x.xxx_hidden_NeedTime))
 	}
 	return m
@@ -807,23 +807,23 @@ func (x *Hero) MarshalDirty(b []byte) ([]byte, error) {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.dirty&(uint64(0x01) << 1) != 0 {
+	if x.dirty&(uint64(0x01)<<1) != 0 {
 		if b, err = wire.MarshalInt32(b, 1, x.xxx_hidden_HeroId); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01) << 2) != 0 {
+	if x.dirty&(uint64(0x01)<<2) != 0 {
 		if b, err = wire.MarshalInt32(b, 2, x.xxx_hidden_HeroLevel); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01) << 3) != 0 {
+	if x.dirty&(uint64(0x01)<<3) != 0 {
 		// FIXME: enum value
 		if b, err = wire.MarshalInt32(b, 3, int32(x.xxx_hidden_Type)); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01) << 4) != 0 {
+	if x.dirty&(uint64(0x01)<<4) != 0 {
 		if b, err = wire.MarshalDuration(b, 4, x.xxx_hidden_NeedTime); err != nil {
 			return b, err
 		}
