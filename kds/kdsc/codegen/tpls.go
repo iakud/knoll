@@ -982,12 +982,12 @@ func (x *{{$MessageName}}) Set{{.Name}}(v {{template "FieldType" .}}) {
 {{- end}}
 
 func (x *{{$MessageName}}) DumpChange() *{{.GoProtoPackage}}.{{.Name}} {
-	if x.checkDirty(uint64(0x01)) {
+	if x.dirty&uint64(0x01) != 0 {
 		return x.DumpFull()
 	}
 	m := new({{.GoProtoPackage}}.{{.Name}})
 {{- range .Fields}}
-	if x.checkDirty(uint64(0x01) << {{.Number}}) {
+	if x.dirty&(uint64(0x01) << {{.Number}}) != 0 {
 {{- if .Repeated}}
 		m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpChange())
 {{- else if .Map}}
@@ -1080,12 +1080,12 @@ func (x *{{$MessageName}}) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *{{$MessageName}}) MarshalDirty(b []byte) ([]byte, error) {
-	if x.checkDirty(uint64(0x01)) {
+	if x.dirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
 {{- range .Fields}}
-	if x.checkDirty(uint64(0x01) << {{.Number}}) {
+	if x.dirty&(uint64(0x01) << {{.Number}}) != 0 {
 {{- if .Repeated}}
 		if b, err = wire.MarshalMessageDirty(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
@@ -1207,21 +1207,25 @@ func (x *{{.Name}}) checkDirty(n uint64) bool {
 	return x.dirty&n != 0
 }
 
+func (x *{{.Name}}) CheckDirty() bool {
+	return x.dirty != 0
+}
+
 func (x *{{.Name}}) ClearDirty() {
 	if x.dirty == 0 {
 		return
 	}
 {{- range .Fields}}
 {{- if .Repeated}}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<{{.Number}} != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- else if .Map}}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<{{.Number}} != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- else if eq .TypeKind "component"}}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<{{.Number}} != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- end}}
@@ -1296,15 +1300,15 @@ func (x *{{.Name}}) clearDirty() {
 	}
 {{- range .Fields}}
 {{- if .Repeated}}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<{{.Number}} != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- else if .Map}}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<{{.Number}} != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- else if eq .TypeKind "component"}}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<{{.Number}} != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 		x.xxx_hidden_{{.Name}}.clearDirty()
 	}
 {{- end}}

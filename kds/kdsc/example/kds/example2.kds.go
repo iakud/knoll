@@ -106,20 +106,20 @@ func (x *City) initTroops() {
 }
 
 func (x *City) DumpChange() *kdspb.City {
-	if x.checkDirty(uint64(0x01)) {
+	if x.dirty&uint64(0x01) != 0 {
 		return x.DumpFull()
 	}
 	m := new(kdspb.City)
-	if x.checkDirty(uint64(0x01) << 1) {
+	if x.dirty&(uint64(0x01) << 1) != 0 {
 		m.SetPlayerId(x.xxx_hidden_PlayerId)
 	}
-	if x.checkDirty(uint64(0x01) << 2) {
+	if x.dirty&(uint64(0x01) << 2) != 0 {
 		m.SetPlayerBasicInfo(x.xxx_hidden_PlayerBasicInfo.DumpChange())
 	}
-	if x.checkDirty(uint64(0x01) << 3) {
+	if x.dirty&(uint64(0x01) << 3) != 0 {
 		m.SetCityInfo(x.xxx_hidden_CityInfo.DumpChange())
 	}
-	if x.checkDirty(uint64(0x01) << 4) {
+	if x.dirty&(uint64(0x01) << 4) != 0 {
 		m.SetTroops(x.xxx_hidden_Troops.DumpChange())
 	}
 	return m
@@ -159,26 +159,26 @@ func (x *City) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *City) MarshalDirty(b []byte) ([]byte, error) {
-	if x.checkDirty(uint64(0x01)) {
+	if x.dirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.checkDirty(uint64(0x01) << 1) {
+	if x.dirty&(uint64(0x01) << 1) != 0 {
 		if b, err = wire.MarshalInt64(b, 1, x.xxx_hidden_PlayerId); err != nil {
 			return b, err
 		}
 	}
-	if x.checkDirty(uint64(0x01) << 2) {
+	if x.dirty&(uint64(0x01) << 2) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 2, x.xxx_hidden_PlayerBasicInfo); err != nil {
 			return b, err
 		}
 	}
-	if x.checkDirty(uint64(0x01) << 3) {
+	if x.dirty&(uint64(0x01) << 3) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 3, x.xxx_hidden_CityInfo); err != nil {
 			return b, err
 		}
 	}
-	if x.checkDirty(uint64(0x01) << 4) {
+	if x.dirty&(uint64(0x01) << 4) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 4, &x.xxx_hidden_Troops); err != nil {
 			return b, err
 		}
@@ -231,17 +231,21 @@ func (x *City) checkDirty(n uint64) bool {
 	return x.dirty&n != 0
 }
 
+func (x *City) CheckDirty() bool {
+	return x.dirty != 0
+}
+
 func (x *City) ClearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<2 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<2) != 0 {
 		x.xxx_hidden_PlayerBasicInfo.clearDirty()
 	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<3 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<3) != 0 {
 		x.xxx_hidden_CityInfo.clearDirty()
 	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<4 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<4) != 0 {
 		x.xxx_hidden_Troops.clearDirty()
 	}
 	x.dirty = 0
@@ -309,17 +313,17 @@ func (x *CityBaseInfo) SetBuildInfo(v []byte) {
 }
 
 func (x *CityBaseInfo) DumpChange() *kdspb.CityBaseInfo {
-	if x.checkDirty(uint64(0x01)) {
+	if x.dirty&uint64(0x01) != 0 {
 		return x.DumpFull()
 	}
 	m := new(kdspb.CityBaseInfo)
-	if x.checkDirty(uint64(0x01) << 1) {
+	if x.dirty&(uint64(0x01) << 1) != 0 {
 		m.SetPositions(x.xxx_hidden_Positions.DumpChange())
 	}
-	if x.checkDirty(uint64(0x01) << 2) {
+	if x.dirty&(uint64(0x01) << 2) != 0 {
 		m.SetTroops(x.xxx_hidden_Troops.DumpChange())
 	}
-	if x.checkDirty(uint64(0x01) << 3) {
+	if x.dirty&(uint64(0x01) << 3) != 0 {
 		m.SetBuildInfo(x.xxx_hidden_BuildInfo)
 	}
 	return m
@@ -354,21 +358,21 @@ func (x *CityBaseInfo) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *CityBaseInfo) MarshalDirty(b []byte) ([]byte, error) {
-	if x.checkDirty(uint64(0x01)) {
+	if x.dirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.checkDirty(uint64(0x01) << 1) {
+	if x.dirty&(uint64(0x01) << 1) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 1, &x.xxx_hidden_Positions); err != nil {
 			return b, err
 		}
 	}
-	if x.checkDirty(uint64(0x01) << 2) {
+	if x.dirty&(uint64(0x01) << 2) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 2, &x.xxx_hidden_Troops); err != nil {
 			return b, err
 		}
 	}
-	if x.checkDirty(uint64(0x01) << 3) {
+	if x.dirty&(uint64(0x01) << 3) != 0 {
 		if b, err = wire.MarshalBytes(b, 3, x.xxx_hidden_BuildInfo); err != nil {
 			return b, err
 		}
@@ -424,10 +428,10 @@ func (x *CityBaseInfo) clearDirty() {
 	if x.dirty == 0 {
 		return
 	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<1 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<1) != 0 {
 		x.xxx_hidden_Positions.clearDirty()
 	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&uint64(0x01)<<2 != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<2) != 0 {
 		x.xxx_hidden_Troops.clearDirty()
 	}
 	x.dirty = 0
@@ -481,14 +485,14 @@ func (x *Vector) SetY(v int32) {
 }
 
 func (x *Vector) DumpChange() *kdspb.Vector {
-	if x.checkDirty(uint64(0x01)) {
+	if x.dirty&uint64(0x01) != 0 {
 		return x.DumpFull()
 	}
 	m := new(kdspb.Vector)
-	if x.checkDirty(uint64(0x01) << 1) {
+	if x.dirty&(uint64(0x01) << 1) != 0 {
 		m.SetX(x.xxx_hidden_X)
 	}
-	if x.checkDirty(uint64(0x01) << 2) {
+	if x.dirty&(uint64(0x01) << 2) != 0 {
 		m.SetY(x.xxx_hidden_Y)
 	}
 	return m
@@ -518,16 +522,16 @@ func (x *Vector) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *Vector) MarshalDirty(b []byte) ([]byte, error) {
-	if x.checkDirty(uint64(0x01)) {
+	if x.dirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.checkDirty(uint64(0x01) << 1) {
+	if x.dirty&(uint64(0x01) << 1) != 0 {
 		if b, err = wire.MarshalInt32(b, 1, x.xxx_hidden_X); err != nil {
 			return b, err
 		}
 	}
-	if x.checkDirty(uint64(0x01) << 2) {
+	if x.dirty&(uint64(0x01) << 2) != 0 {
 		if b, err = wire.MarshalInt32(b, 2, x.xxx_hidden_Y); err != nil {
 			return b, err
 		}
