@@ -284,7 +284,7 @@ func (x *{{.Name}}) DumpFull() []{{template "ListValueProtoType" .}} {
 	var m []{{template "ListValueProtoType" .}}
 {{- if eq .TypeKind "component"}}
 	for _, v := range x.data {
-		m = append(m, v.DumpChange())
+		m = append(m, v.DumpFull())
 	}
 {{- else if eq .TypeKind "enum"}}
 	for _, v := range x.data {
