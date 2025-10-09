@@ -894,7 +894,7 @@ func (x *{{.Name}}) Unmarshal(b []byte) error {
 {{- /* ENUM */ -}}
 {{- define "Enum"}}
 {{- $EnumType := .Name}}
-type {{.Name}} = {{.GoProtoPackage}}.{{.Name}}
+type {{.Name}} int32
 
 const (
 {{- range .EnumFields}}
@@ -986,12 +986,15 @@ func (x *{{$MessageName}}) DumpChange() *{{.GoProtoPackage}}.{{.Name}} {
 		return x.DumpFull()
 	}
 	m := new({{.GoProtoPackage}}.{{.Name}})
+{{- $ProtoPackage := .GoProtoPackage}}
 {{- range .Fields}}
 	if x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 {{- if .Repeated}}
 		m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpChange())
 {{- else if .Map}}
 		m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpChange())
+{{- else if eq .TypeKind "enum"}}
+		m.Set{{.Name}}({{$ProtoPackage}}.{{.Type}}(x.xxx_hidden_{{.Name}}))
 {{- else if eq .TypeKind "component"}}
 		m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpChange())
 {{- else if eq .Type "timestamp"}}
@@ -1010,11 +1013,14 @@ func (x *{{$MessageName}}) DumpChange() *{{.GoProtoPackage}}.{{.Name}} {
 
 func (x *{{$MessageName}}) DumpFull() *{{.GoProtoPackage}}.{{.Name}} {
 	m := new({{.GoProtoPackage}}.{{.Name}})
+{{- $ProtoPackage := .GoProtoPackage}}
 {{- range .Fields}}
 {{- if .Repeated}}
 	m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpFull())
 {{- else if .Map}}
 	m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpFull())
+{{- else if eq .TypeKind "enum"}}
+	m.Set{{.Name}}({{$ProtoPackage}}.{{.Type}}(x.xxx_hidden_{{.Name}}))
 {{- else if eq .TypeKind "component"}}
 	m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpFull())
 {{- else if eq .Type "timestamp"}}
@@ -1036,6 +1042,8 @@ func (x *{{$MessageName}}) Load(m *{{.GoProtoPackage}}.{{.Name}}) {
 	x.xxx_hidden_{{.Name}}.Load(m.Get{{.Name}}())
 {{- else if .Map}}
 	x.xxx_hidden_{{.Name}}.Load(m.Get{{.Name}}())
+{{- else if eq .TypeKind "enum"}}
+	x.xxx_hidden_{{.Name}} = {{.Type}}(m.Get{{.Name}}())
 {{- else if eq .TypeKind "component"}}
 	x.xxx_hidden_{{.Name}}.Load(m.Get{{.Name}}())
 {{- else if eq .Type "timestamp"}}
@@ -1323,6 +1331,36 @@ func (x *{{.Name}}) clearDirty() {
 
 package {{.Package}}
 {{- /* IMPORTS */ -}}
+{{- if or (len .Entities) (len .Components) (len .Types)}}
+{{/* EMPTY LINE */}}
+import (
+{{- $SpacesBefore := false}}
+{{- if or (len .MapTypes) (len .ListTypes)}}
+	"iter"
+{{- if len .MapTypes}}
+	"maps"
+{{- end}}
+{{- if len .ListTypes}}
+	"slices"
+{{- end}}
+{{- $SpacesBefore = true}}
+{{- end}}
+{{- $ImportTime := false}}
+{{- range .FieldTypes}}
+{{- if eq . "timestamp" "duration"}}
+{{- $ImportTime = true}}
+{{- end}}
+{{- end}}
+{{- if $ImportTime}}
+	"time"
+{{- $SpacesBefore = true}}
+{{- end}}
+{{- if $SpacesBefore}}
+{{/* EMPTY LINE */}}
+{{- end}}
+	"github.com/iakud/knoll/kds/wire"
+)
+{{- end}}
 {{- if len .GoImportSpecs}}
 {{/* EMPTY LINE */}}
 import (
