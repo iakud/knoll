@@ -19,6 +19,10 @@ type Kds struct {
 	Enums      []*Enum
 	Entities   []*Entity
 	Components []*Component
+
+	FieldTypes []string
+	ListTypes  []*ListType
+	MapTypes   []*MapType
 }
 
 func (k *Kds) addProtoImport(path string) {
@@ -52,10 +56,10 @@ func (k *Kds) addProtoImportByType(type_ string) {
 func (k *Kds) addGoImportByType(type_ string) {
 	switch type_ {
 	case "timestamp":
-		k.addGoImport("time", "")
+		// k.addGoImport("time", "")
 		k.addGoImport("google.golang.org/protobuf/types/known/timestamppb", "")
 	case "duration":
-		k.addGoImport("time", "")
+		// k.addGoImport("time", "")
 		k.addGoImport("google.golang.org/protobuf/types/known/durationpb", "")
 	case "empty":
 		k.addGoImport("google.golang.org/protobuf/types/known/emptypb", "")
@@ -106,6 +110,7 @@ type TopLevelDef interface {
 	GetName() string
 	GoProtoPackage() string
 	Kind() string
+	GetFields() []*Field
 }
 
 type Enum struct {
@@ -121,6 +126,10 @@ func (e *Enum) GetName() string {
 
 func (e *Enum) GoProtoPackage() string {
 	return e.kds.ProtoPackage
+}
+
+func (m *Enum) GetFields() []*Field {
+	return nil
 }
 
 func (e *Enum) Kind() string {
@@ -147,6 +156,10 @@ func (m *Message) GetName() string {
 
 func (m *Message) GoProtoPackage() string {
 	return m.kds.ProtoPackage
+}
+
+func (m *Message) GetFields() []*Field {
+	return m.Fields
 }
 
 type Entity struct {

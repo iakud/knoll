@@ -97,46 +97,36 @@ func parseKds(ctx *Context, filePath string) *Kds {
 }
 
 func formatKds(ctx *Context, kds *Kds) {
-	var importSlices, importMaps bool
 	if kds.Name == "common" {
-		for type_ := range ctx.TypeList {
-			if _, ok := ctx.Defs[type_]; ok {
+		for typ, listType := range ctx.TypeList {
+			if _, ok := ctx.Defs[typ]; ok {
 				continue
 			}
-			kds.addType(type_)
-			importSlices = true
+			kds.addType(typ)
+			kds.ListTypes = append(kds.ListTypes, listType)
 		}
-		for type_ := range ctx.TypeMap {
-			if _, ok := ctx.Defs[type_]; ok {
+		for typ, mapTypes := range ctx.TypeMap {
+			if _, ok := ctx.Defs[typ]; ok {
 				continue
 			}
-			kds.addType(type_)
-			importMaps = true
+			kds.addType(typ)
+			kds.MapTypes = append(kds.MapTypes, mapTypes...)
 		}
 	}
-	importSlices = importSlices || slices.ContainsFunc(kds.Defs, func(def TopLevelDef) bool {
-		if _, ok := ctx.TypeList[def.GetName()]; ok {
-			return true
+
+	for _, def := range kds.Defs {
+		if listType, ok := ctx.TypeList[def.GetName()]; ok {
+			kds.ListTypes = append(kds.ListTypes, listType)
 		}
-		return false
-	})
-	importMaps = importMaps || slices.ContainsFunc(kds.Defs, func(def TopLevelDef) bool {
-		if _, ok := ctx.TypeMap[def.GetName()]; ok {
-			return true
+		if mapTypes, ok := ctx.TypeMap[def.GetName()]; ok {
+			kds.MapTypes = append(kds.MapTypes, mapTypes...)
 		}
-		return false
-	})
-	if importSlices {
-		kds.addGoImport("slices", "")
-		kds.addGoImport("iter", "")
-	}
-	if importMaps {
-		kds.addGoImport("maps", "")
-		kds.addGoImport("iter", "")
-	}
-	if len(kds.Entities) > 0 || len(kds.Components) > 0 || len(kds.Types) > 0 {
-		kds.addGoImport("github.com/iakud/knoll/kds/wire", "")
-		// kds.addGoImport("google.golang.org/protobuf/encoding/protowire", "")
+		for _, field := range def.GetFields() {
+			if slices.Contains(kds.FieldTypes, field.Type) {
+				continue
+			}
+			kds.FieldTypes = append(kds.FieldTypes, field.Type)
+		}
 	}
 
 	var importProtoTypes []string
