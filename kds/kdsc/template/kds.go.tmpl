@@ -276,70 +276,6 @@ func (x *{{.Name}}) Values() iter.Seq[{{template "ListValueType" .}}] {
 	return slices.Values(x.data)
 }
 
-func (x *{{.Name}}) DumpChange() []{{template "ListValueProtoType" .}} {
-	return x.DumpFull()
-}
-
-func (x *{{.Name}}) DumpFull() []{{template "ListValueProtoType" .}} {
-	var m []{{template "ListValueProtoType" .}}
-{{- if eq .TypeKind "component"}}
-	for _, v := range x.data {
-		m = append(m, v.DumpFull())
-	}
-{{- else if eq .TypeKind "enum"}}
-	for _, v := range x.data {
-		m = append(m, v)
-	}
-{{- else if eq .Type "timestamp"}}
-	for _, v := range x.data {
-		m = append(m, timestamppb.New(v))
-	}
-{{- else if eq .Type "duration"}}
-	for _, v := range x.data {
-		m = append(m, durationpb.New(v))
-	}
-{{- else if eq .Type "empty"}}
-	for range x.data {
-		m = append(m, new(emptypb.Empty))
-	}
-{{- else}}
-	for _, v := range x.data {
-		m = append(m, v)
-	}
-{{- end}}
-	return m
-}
-
-func (x *{{.Name}}) Load(m []{{template "ListValueProtoType" .}}) {
-{{- if eq .TypeKind "component"}}
-	for _, v := range m {
-		c := New{{.Type}}()
-		c.Load(v)
-		x.data = append(x.data, c)
-	}
-{{- else if eq .TypeKind "enum"}}
-	for _, v := range m {
-		x.data = append(x.data, v)
-	}
-{{- else if eq .Type "timestamp"}}
-	for _, v := range m {
-		x.data = append(x.data, v.AsTime())
-	}
-{{- else if eq .Type "duration"}}
-	for _, v := range m {
-		x.data = append(x.data, v.AsDuration())
-	}
-{{- else if eq .Type "empty"}}
-	for range m {
-		x.data = append(x.data, struct{}{})
-	}
-{{- else}}
-	for _, v := range m {
-		x.data = append(x.data, v)
-	}
-{{- end}}
-}
-
 func (x *{{.Name}}) markDirty() {
 	if x.dirty {
 		return
@@ -523,102 +459,6 @@ func (x *{{.Name}}) Keys() iter.Seq[{{goType .KeyType}}] {
 
 func (x *{{.Name}}) Values() iter.Seq[{{template "MapValueType" .}}] {
 	return maps.Values(x.data)
-}
-
-func (x *{{.Name}}) DumpChange() map[{{goType .KeyType}}]{{template "MapValueProtoType" .}} {
-	if x.clear {
-		return x.DumpFull()
-	}
-	m := make(map[{{goType .KeyType}}]{{template "MapValueProtoType" .}})
-{{- if eq .TypeKind "component"}}
-	for k, v := range x.updates {
-		m[k] = v.DumpFull()
-	}
-{{- else if eq .TypeKind "enum"}}
-	for k, v := range x.updates {
-		m[k] = v
-	}
-{{- else if eq .Type "timestamp"}}
-	for k, v := range x.updates {
-		m[k] = timestamppb.New(v)
-	}
-{{- else if eq .Type "duration"}}
-	for k, v := range x.updates {
-		m[k] = durationpb.New(v)
-	}
-{{- else if eq .Type "empty"}}
-	for k := range x.updates {
-		m[k] = new(emptypb.Empty)
-	}
-{{- else}}
-	for k, v := range x.updates {
-		m[k] = v
-	}
-{{- end}}
-	for k, _ := range x.deletes {
-		_ = k // deleteKeys
-	}
-	return m
-}
-
-func (x *{{.Name}}) DumpFull() map[{{goType .KeyType}}]{{template "MapValueProtoType" .}} {
-	m := make(map[{{goType .KeyType}}]{{template "MapValueProtoType" .}})
-{{- if eq .TypeKind "component"}}
-	for k, v := range x.data {
-		m[k] = v.DumpFull()
-	}
-{{- else if eq .TypeKind "enum"}}
-	for k, v := range x.data {
-		m[k] = v
-	}
-{{- else if eq .Type "timestamp"}}
-	for k, v := range x.data {
-		m[k] = timestamppb.New(v)
-	}
-{{- else if eq .Type "duration"}}
-	for k, v := range x.data {
-		m[k] = durationpb.New(v)
-	}
-{{- else if eq .Type "empty"}}
-	for k := range x.data {
-		m[k] = new(emptypb.Empty)
-	}
-{{- else}}
-	for k, v := range x.data {
-		m[k] = v
-	}
-{{- end}}
-	return m
-}
-
-func (x *{{.Name}}) Load(m map[{{goType .KeyType}}]{{template "MapValueProtoType" .}}) {
-{{- if eq .TypeKind "component"}}
-	for k, v := range m {
-		c := New{{.Type}}()
-		c.Load(v)
-		x.data[k] = c
-	}
-{{- else if eq .TypeKind "enum"}}
-	for k, v := range m {
-		x.data[k] = v
-	}
-{{- else if eq .Type "timestamp"}}
-	for k, v := range m {
-		x.data[k] = v.AsTime()
-	}
-{{- else if eq .Type "duration"}}
-	for k, v := range m {
-		x.data[k] = v.AsDuration()
-	}
-{{- else if eq .Type "empty"}}
-	for k := range m {
-		x.data[k] = struct{}{}
-	}
-{{- else}}
-	for k, v := range m {
-		x.data[k] = v
-	}
-{{- end}}
 }
 
 func (x *{{.Name}}) markDirty() {
@@ -903,83 +743,6 @@ func (x *{{$MessageName}}) Set{{.Name}}(v {{template "FieldType" .}}) {
 }
 {{- end}}
 {{- end}}
-
-func (x *{{$MessageName}}) DumpChange() *{{.GoProtoPackage}}.{{.Name}} {
-	if x.dirty&uint64(0x01) != 0 {
-		return x.DumpFull()
-	}
-	m := new({{.GoProtoPackage}}.{{.Name}})
-{{- $ProtoPackage := .GoProtoPackage}}
-{{- range .Fields}}
-	if x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
-{{- if .Repeated}}
-		m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpChange())
-{{- else if .Map}}
-		m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpChange())
-{{- else if eq .TypeKind "enum"}}
-		m.Set{{.Name}}({{$ProtoPackage}}.{{.Type}}(x.xxx_hidden_{{.Name}}))
-{{- else if eq .TypeKind "component"}}
-		m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpChange())
-{{- else if eq .Type "timestamp"}}
-		m.Set{{.Name}}(timestamppb.New(x.xxx_hidden_{{.Name}}))
-{{- else if eq .Type "duration"}}
-		m.Set{{.Name}}(durationpb.New(x.xxx_hidden_{{.Name}}))
-{{- else if eq .Type "empty"}}
-		m.Set{{.Name}}(new(emptypb.Empty))
-{{- else}}
-		m.Set{{.Name}}(x.xxx_hidden_{{.Name}})
-{{- end}}
-	}
-{{- end}}
-	return m
-}
-
-func (x *{{$MessageName}}) DumpFull() *{{.GoProtoPackage}}.{{.Name}} {
-	m := new({{.GoProtoPackage}}.{{.Name}})
-{{- $ProtoPackage := .GoProtoPackage}}
-{{- range .Fields}}
-{{- if .Repeated}}
-	m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpFull())
-{{- else if .Map}}
-	m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpFull())
-{{- else if eq .TypeKind "enum"}}
-	m.Set{{.Name}}({{$ProtoPackage}}.{{.Type}}(x.xxx_hidden_{{.Name}}))
-{{- else if eq .TypeKind "component"}}
-	m.Set{{.Name}}(x.xxx_hidden_{{.Name}}.DumpFull())
-{{- else if eq .Type "timestamp"}}
-	m.Set{{.Name}}(timestamppb.New(x.xxx_hidden_{{.Name}}))
-{{- else if eq .Type "duration"}}
-	m.Set{{.Name}}(durationpb.New(x.xxx_hidden_{{.Name}}))
-{{- else if eq .Type "empty"}}
-	m.Set{{.Name}}(new(emptypb.Empty))
-{{- else}}
-	m.Set{{.Name}}(x.xxx_hidden_{{.Name}})
-{{- end}}
-{{- end}}
-	return m
-}
-
-func (x *{{$MessageName}}) Load(m *{{.GoProtoPackage}}.{{.Name}}) {
-{{- range .Fields}}
-{{- if .Repeated}}
-	x.xxx_hidden_{{.Name}}.Load(m.Get{{.Name}}())
-{{- else if .Map}}
-	x.xxx_hidden_{{.Name}}.Load(m.Get{{.Name}}())
-{{- else if eq .TypeKind "enum"}}
-	x.xxx_hidden_{{.Name}} = {{.Type}}(m.Get{{.Name}}())
-{{- else if eq .TypeKind "component"}}
-	x.xxx_hidden_{{.Name}}.Load(m.Get{{.Name}}())
-{{- else if eq .Type "timestamp"}}
-	x.xxx_hidden_{{.Name}} = m.Get{{.Name}}().AsTime()
-{{- else if eq .Type "duration"}}
-	x.xxx_hidden_{{.Name}} = m.Get{{.Name}}().AsDuration()
-{{- else if eq .Type "empty"}}
-	x.xxx_hidden_{{.Name}} = struct{}{}
-{{- else}}
-	x.xxx_hidden_{{.Name}} = m.Get{{.Name}}()
-{{- end}}
-{{- end}}
-}
 
 func (x *{{$MessageName}}) Marshal(b []byte) ([]byte, error) {
 	var err error
@@ -1282,17 +1045,6 @@ import (
 {{/* EMPTY LINE */}}
 {{- end}}
 	"github.com/iakud/knoll/kds/wire"
-)
-{{- end}}
-{{- if len .GoImportSpecs}}
-{{/* EMPTY LINE */}}
-import (
-{{- range .GoImportSpecs}}
-{{- if .SpacesBefore}}
-{{/* EMPTY LINE */}}
-{{- end}}
-	"{{.Path}}"
-{{- end}}
 )
 {{- end}}
 {{- /* COMMON TYPES */ -}}

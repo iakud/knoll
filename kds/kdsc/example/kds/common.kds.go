@@ -11,10 +11,6 @@ import (
 	"github.com/iakud/knoll/kds/wire"
 )
 
-import (
-	"google.golang.org/protobuf/types/known/emptypb"
-)
-
 type dirtyParentFunc_Int32Empty_map func()
 
 func (f dirtyParentFunc_Int32Empty_map) invoke() {
@@ -86,34 +82,6 @@ func (x *Int32Empty_map) Keys() iter.Seq[int32] {
 
 func (x *Int32Empty_map) Values() iter.Seq[struct{}] {
 	return maps.Values(x.data)
-}
-
-func (x *Int32Empty_map) DumpChange() map[int32]*emptypb.Empty {
-	if x.clear {
-		return x.DumpFull()
-	}
-	m := make(map[int32]*emptypb.Empty)
-	for k := range x.updates {
-		m[k] = new(emptypb.Empty)
-	}
-	for k, _ := range x.deletes {
-		_ = k // deleteKeys
-	}
-	return m
-}
-
-func (x *Int32Empty_map) DumpFull() map[int32]*emptypb.Empty {
-	m := make(map[int32]*emptypb.Empty)
-	for k := range x.data {
-		m[k] = new(emptypb.Empty)
-	}
-	return m
-}
-
-func (x *Int32Empty_map) Load(m map[int32]*emptypb.Empty) {
-	for k := range m {
-		x.data[k] = struct{}{}
-	}
 }
 
 func (x *Int32Empty_map) markDirty() {
@@ -328,34 +296,6 @@ func (x *Int32Int32_map) Keys() iter.Seq[int32] {
 
 func (x *Int32Int32_map) Values() iter.Seq[int32] {
 	return maps.Values(x.data)
-}
-
-func (x *Int32Int32_map) DumpChange() map[int32]int32 {
-	if x.clear {
-		return x.DumpFull()
-	}
-	m := make(map[int32]int32)
-	for k, v := range x.updates {
-		m[k] = v
-	}
-	for k, _ := range x.deletes {
-		_ = k // deleteKeys
-	}
-	return m
-}
-
-func (x *Int32Int32_map) DumpFull() map[int32]int32 {
-	m := make(map[int32]int32)
-	for k, v := range x.data {
-		m[k] = v
-	}
-	return m
-}
-
-func (x *Int32Int32_map) Load(m map[int32]int32) {
-	for k, v := range m {
-		x.data[k] = v
-	}
 }
 
 func (x *Int32Int32_map) markDirty() {
@@ -634,24 +574,6 @@ func (x *Int64_list) Backward() iter.Seq2[int, int64] {
 
 func (x *Int64_list) Values() iter.Seq[int64] {
 	return slices.Values(x.data)
-}
-
-func (x *Int64_list) DumpChange() []int64 {
-	return x.DumpFull()
-}
-
-func (x *Int64_list) DumpFull() []int64 {
-	var m []int64
-	for _, v := range x.data {
-		m = append(m, v)
-	}
-	return m
-}
-
-func (x *Int64_list) Load(m []int64) {
-	for _, v := range m {
-		x.data = append(x.data, v)
-	}
 }
 
 func (x *Int64_list) markDirty() {

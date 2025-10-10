@@ -11,12 +11,6 @@ import (
 	"github.com/iakud/knoll/kds/wire"
 )
 
-import (
-	"github.com/iakud/knoll/kds/kdsc/example/kdspb"
-	"google.golang.org/protobuf/types/known/durationpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
-)
-
 type Player struct {
 	id int64
 	xxx_hidden_Info *PlayerBasicInfo
@@ -110,37 +104,6 @@ func (x *Player) setBag(v *PlayerBag) {
 		v.dirty |= uint64(0x01)
 	}
 	x.markDirty(uint64(0x01) << 3)
-}
-
-func (x *Player) DumpChange() *kdspb.Player {
-	if x.dirty&uint64(0x01) != 0 {
-		return x.DumpFull()
-	}
-	m := new(kdspb.Player)
-	if x.dirty&(uint64(0x01)<<1) != 0 {
-		m.SetInfo(x.xxx_hidden_Info.DumpChange())
-	}
-	if x.dirty&(uint64(0x01)<<2) != 0 {
-		m.SetHero(x.xxx_hidden_Hero.DumpChange())
-	}
-	if x.dirty&(uint64(0x01)<<3) != 0 {
-		m.SetBag(x.xxx_hidden_Bag.DumpChange())
-	}
-	return m
-}
-
-func (x *Player) DumpFull() *kdspb.Player {
-	m := new(kdspb.Player)
-	m.SetInfo(x.xxx_hidden_Info.DumpFull())
-	m.SetHero(x.xxx_hidden_Hero.DumpFull())
-	m.SetBag(x.xxx_hidden_Bag.DumpFull())
-	return m
-}
-
-func (x *Player) Load(m *kdspb.Player) {
-	x.xxx_hidden_Info.Load(m.GetInfo())
-	x.xxx_hidden_Hero.Load(m.GetHero())
-	x.xxx_hidden_Bag.Load(m.GetBag())
 }
 
 func (x *Player) Marshal(b []byte) ([]byte, error) {
@@ -303,37 +266,6 @@ func (x *PlayerBasicInfo) SetCreateTime(v time.Time) {
 	x.markDirty(uint64(0x01) << 5)
 }
 
-func (x *PlayerBasicInfo) DumpChange() *kdspb.PlayerBasicInfo {
-	if x.dirty&uint64(0x01) != 0 {
-		return x.DumpFull()
-	}
-	m := new(kdspb.PlayerBasicInfo)
-	if x.dirty&(uint64(0x01)<<1) != 0 {
-		m.SetName(x.xxx_hidden_Name)
-	}
-	if x.dirty&(uint64(0x01)<<3) != 0 {
-		m.SetIsNew(x.xxx_hidden_IsNew)
-	}
-	if x.dirty&(uint64(0x01)<<5) != 0 {
-		m.SetCreateTime(timestamppb.New(x.xxx_hidden_CreateTime))
-	}
-	return m
-}
-
-func (x *PlayerBasicInfo) DumpFull() *kdspb.PlayerBasicInfo {
-	m := new(kdspb.PlayerBasicInfo)
-	m.SetName(x.xxx_hidden_Name)
-	m.SetIsNew(x.xxx_hidden_IsNew)
-	m.SetCreateTime(timestamppb.New(x.xxx_hidden_CreateTime))
-	return m
-}
-
-func (x *PlayerBasicInfo) Load(m *kdspb.PlayerBasicInfo) {
-	x.xxx_hidden_Name = m.GetName()
-	x.xxx_hidden_IsNew = m.GetIsNew()
-	x.xxx_hidden_CreateTime = m.GetCreateTime().AsTime()
-}
-
 func (x *PlayerBasicInfo) Marshal(b []byte) ([]byte, error) {
 	var err error
 	if b, err = wire.MarshalString(b, 1, x.xxx_hidden_Name); err != nil {
@@ -458,27 +390,6 @@ func (x *PlayerHero) initHeroes() {
 	}
 }
 
-func (x *PlayerHero) DumpChange() *kdspb.PlayerHero {
-	if x.dirty&uint64(0x01) != 0 {
-		return x.DumpFull()
-	}
-	m := new(kdspb.PlayerHero)
-	if x.dirty&(uint64(0x01)<<1) != 0 {
-		m.SetHeroes(x.xxx_hidden_Heroes.DumpChange())
-	}
-	return m
-}
-
-func (x *PlayerHero) DumpFull() *kdspb.PlayerHero {
-	m := new(kdspb.PlayerHero)
-	m.SetHeroes(x.xxx_hidden_Heroes.DumpFull())
-	return m
-}
-
-func (x *PlayerHero) Load(m *kdspb.PlayerHero) {
-	x.xxx_hidden_Heroes.Load(m.GetHeroes())
-}
-
 func (x *PlayerHero) Marshal(b []byte) ([]byte, error) {
 	var err error
 	if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Heroes); err != nil {
@@ -584,27 +495,6 @@ func (x *PlayerBag) initResources() {
 	x.xxx_hidden_Resources.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
-}
-
-func (x *PlayerBag) DumpChange() *kdspb.PlayerBag {
-	if x.dirty&uint64(0x01) != 0 {
-		return x.DumpFull()
-	}
-	m := new(kdspb.PlayerBag)
-	if x.dirty&(uint64(0x01)<<1) != 0 {
-		m.SetResources(x.xxx_hidden_Resources.DumpChange())
-	}
-	return m
-}
-
-func (x *PlayerBag) DumpFull() *kdspb.PlayerBag {
-	m := new(kdspb.PlayerBag)
-	m.SetResources(x.xxx_hidden_Resources.DumpFull())
-	return m
-}
-
-func (x *PlayerBag) Load(m *kdspb.PlayerBag) {
-	x.xxx_hidden_Resources.Load(m.GetResources())
 }
 
 func (x *PlayerBag) Marshal(b []byte) ([]byte, error) {
@@ -749,42 +639,6 @@ func (x *Hero) SetNeedTime(v time.Duration) {
 	}
 	x.xxx_hidden_NeedTime = v
 	x.markDirty(uint64(0x01) << 4)
-}
-
-func (x *Hero) DumpChange() *kdspb.Hero {
-	if x.dirty&uint64(0x01) != 0 {
-		return x.DumpFull()
-	}
-	m := new(kdspb.Hero)
-	if x.dirty&(uint64(0x01)<<1) != 0 {
-		m.SetHeroId(x.xxx_hidden_HeroId)
-	}
-	if x.dirty&(uint64(0x01)<<2) != 0 {
-		m.SetHeroLevel(x.xxx_hidden_HeroLevel)
-	}
-	if x.dirty&(uint64(0x01)<<3) != 0 {
-		m.SetType(kdspb.HeroType(x.xxx_hidden_Type))
-	}
-	if x.dirty&(uint64(0x01)<<4) != 0 {
-		m.SetNeedTime(durationpb.New(x.xxx_hidden_NeedTime))
-	}
-	return m
-}
-
-func (x *Hero) DumpFull() *kdspb.Hero {
-	m := new(kdspb.Hero)
-	m.SetHeroId(x.xxx_hidden_HeroId)
-	m.SetHeroLevel(x.xxx_hidden_HeroLevel)
-	m.SetType(kdspb.HeroType(x.xxx_hidden_Type))
-	m.SetNeedTime(durationpb.New(x.xxx_hidden_NeedTime))
-	return m
-}
-
-func (x *Hero) Load(m *kdspb.Hero) {
-	x.xxx_hidden_HeroId = m.GetHeroId()
-	x.xxx_hidden_HeroLevel = m.GetHeroLevel()
-	x.xxx_hidden_Type = HeroType(m.GetType())
-	x.xxx_hidden_NeedTime = m.GetNeedTime().AsDuration()
 }
 
 func (x *Hero) Marshal(b []byte) ([]byte, error) {
@@ -982,36 +836,6 @@ func (x *Int64Hero_map) Keys() iter.Seq[int64] {
 
 func (x *Int64Hero_map) Values() iter.Seq[*Hero] {
 	return maps.Values(x.data)
-}
-
-func (x *Int64Hero_map) DumpChange() map[int64]*kdspb.Hero {
-	if x.clear {
-		return x.DumpFull()
-	}
-	m := make(map[int64]*kdspb.Hero)
-	for k, v := range x.updates {
-		m[k] = v.DumpFull()
-	}
-	for k, _ := range x.deletes {
-		_ = k // deleteKeys
-	}
-	return m
-}
-
-func (x *Int64Hero_map) DumpFull() map[int64]*kdspb.Hero {
-	m := make(map[int64]*kdspb.Hero)
-	for k, v := range x.data {
-		m[k] = v.DumpFull()
-	}
-	return m
-}
-
-func (x *Int64Hero_map) Load(m map[int64]*kdspb.Hero) {
-	for k, v := range m {
-		c := NewHero()
-		c.Load(v)
-		x.data[k] = c
-	}
 }
 
 func (x *Int64Hero_map) markDirty() {

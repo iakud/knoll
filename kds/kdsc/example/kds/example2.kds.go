@@ -10,10 +10,6 @@ import (
 	"github.com/iakud/knoll/kds/wire"
 )
 
-import (
-	"github.com/iakud/knoll/kds/kdsc/example/kdspb"
-)
-
 type City struct {
 	id int64
 	xxx_hidden_PlayerId int64
@@ -106,42 +102,6 @@ func (x *City) initTroops() {
 	x.xxx_hidden_Troops.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << 4)
 	}
-}
-
-func (x *City) DumpChange() *kdspb.City {
-	if x.dirty&uint64(0x01) != 0 {
-		return x.DumpFull()
-	}
-	m := new(kdspb.City)
-	if x.dirty&(uint64(0x01)<<1) != 0 {
-		m.SetPlayerId(x.xxx_hidden_PlayerId)
-	}
-	if x.dirty&(uint64(0x01)<<2) != 0 {
-		m.SetPlayerBasicInfo(x.xxx_hidden_PlayerBasicInfo.DumpChange())
-	}
-	if x.dirty&(uint64(0x01)<<3) != 0 {
-		m.SetCityInfo(x.xxx_hidden_CityInfo.DumpChange())
-	}
-	if x.dirty&(uint64(0x01)<<4) != 0 {
-		m.SetTroops(x.xxx_hidden_Troops.DumpChange())
-	}
-	return m
-}
-
-func (x *City) DumpFull() *kdspb.City {
-	m := new(kdspb.City)
-	m.SetPlayerId(x.xxx_hidden_PlayerId)
-	m.SetPlayerBasicInfo(x.xxx_hidden_PlayerBasicInfo.DumpFull())
-	m.SetCityInfo(x.xxx_hidden_CityInfo.DumpFull())
-	m.SetTroops(x.xxx_hidden_Troops.DumpFull())
-	return m
-}
-
-func (x *City) Load(m *kdspb.City) {
-	x.xxx_hidden_PlayerId = m.GetPlayerId()
-	x.xxx_hidden_PlayerBasicInfo.Load(m.GetPlayerBasicInfo())
-	x.xxx_hidden_CityInfo.Load(m.GetCityInfo())
-	x.xxx_hidden_Troops.Load(m.GetTroops())
 }
 
 func (x *City) Marshal(b []byte) ([]byte, error) {
@@ -315,37 +275,6 @@ func (x *CityBaseInfo) SetBuildInfo(v []byte) {
 	x.markDirty(uint64(0x01) << 3)
 }
 
-func (x *CityBaseInfo) DumpChange() *kdspb.CityBaseInfo {
-	if x.dirty&uint64(0x01) != 0 {
-		return x.DumpFull()
-	}
-	m := new(kdspb.CityBaseInfo)
-	if x.dirty&(uint64(0x01)<<1) != 0 {
-		m.SetPositions(x.xxx_hidden_Positions.DumpChange())
-	}
-	if x.dirty&(uint64(0x01)<<2) != 0 {
-		m.SetTroops(x.xxx_hidden_Troops.DumpChange())
-	}
-	if x.dirty&(uint64(0x01)<<3) != 0 {
-		m.SetBuildInfo(x.xxx_hidden_BuildInfo)
-	}
-	return m
-}
-
-func (x *CityBaseInfo) DumpFull() *kdspb.CityBaseInfo {
-	m := new(kdspb.CityBaseInfo)
-	m.SetPositions(x.xxx_hidden_Positions.DumpFull())
-	m.SetTroops(x.xxx_hidden_Troops.DumpFull())
-	m.SetBuildInfo(x.xxx_hidden_BuildInfo)
-	return m
-}
-
-func (x *CityBaseInfo) Load(m *kdspb.CityBaseInfo) {
-	x.xxx_hidden_Positions.Load(m.GetPositions())
-	x.xxx_hidden_Troops.Load(m.GetTroops())
-	x.xxx_hidden_BuildInfo = m.GetBuildInfo()
-}
-
 func (x *CityBaseInfo) Marshal(b []byte) ([]byte, error) {
 	var err error
 	if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Positions); err != nil {
@@ -485,32 +414,6 @@ func (x *Vector) SetY(v int32) {
 	}
 	x.xxx_hidden_Y = v
 	x.markDirty(uint64(0x01) << 2)
-}
-
-func (x *Vector) DumpChange() *kdspb.Vector {
-	if x.dirty&uint64(0x01) != 0 {
-		return x.DumpFull()
-	}
-	m := new(kdspb.Vector)
-	if x.dirty&(uint64(0x01)<<1) != 0 {
-		m.SetX(x.xxx_hidden_X)
-	}
-	if x.dirty&(uint64(0x01)<<2) != 0 {
-		m.SetY(x.xxx_hidden_Y)
-	}
-	return m
-}
-
-func (x *Vector) DumpFull() *kdspb.Vector {
-	m := new(kdspb.Vector)
-	m.SetX(x.xxx_hidden_X)
-	m.SetY(x.xxx_hidden_Y)
-	return m
-}
-
-func (x *Vector) Load(m *kdspb.Vector) {
-	x.xxx_hidden_X = m.GetX()
-	x.xxx_hidden_Y = m.GetY()
 }
 
 func (x *Vector) Marshal(b []byte) ([]byte, error) {
@@ -796,26 +699,6 @@ func (x *Vector_list) Backward() iter.Seq2[int, *Vector] {
 
 func (x *Vector_list) Values() iter.Seq[*Vector] {
 	return slices.Values(x.data)
-}
-
-func (x *Vector_list) DumpChange() []*kdspb.Vector {
-	return x.DumpFull()
-}
-
-func (x *Vector_list) DumpFull() []*kdspb.Vector {
-	var m []*kdspb.Vector
-	for _, v := range x.data {
-		m = append(m, v.DumpFull())
-	}
-	return m
-}
-
-func (x *Vector_list) Load(m []*kdspb.Vector) {
-	for _, v := range m {
-		c := NewVector()
-		c.Load(v)
-		x.data = append(x.data, c)
-	}
 }
 
 func (x *Vector_list) markDirty() {
