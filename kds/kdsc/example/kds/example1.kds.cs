@@ -43,7 +43,6 @@ namespace kds
 
 	public class PlayerBasicInfo
 	{
-		private long _id;
 		private string _Name;
 		private bool _IsNew;
 		private DateTime _CreateTime;
@@ -52,8 +51,6 @@ namespace kds
 		{
 			_id = id;
 		}
-
-		public long Id => _id;
 
 		public string Name
 		{
@@ -73,7 +70,6 @@ namespace kds
 
 	public class PlayerHero
 	{
-		private long _id;
 		private Map<int64, Hero> _Heroes;
 
 		public PlayerHero(long id)
@@ -81,8 +77,6 @@ namespace kds
 			_id = id;
 			_Heroes = new Map<int64, Hero>();
 		}
-
-		public long Id => _id;
 
 		public Map<int64, Hero> Heroes
 		{
@@ -92,7 +86,6 @@ namespace kds
 
 	public class PlayerBag
 	{
-		private long _id;
 		private Map<int32, int> _Resources;
 
 		public PlayerBag(long id)
@@ -100,8 +93,6 @@ namespace kds
 			_id = id;
 			_Resources = new Map<int32, int>();
 		}
-
-		public long Id => _id;
 
 		public Map<int32, int> Resources
 		{
@@ -111,7 +102,6 @@ namespace kds
 
 	public class Hero
 	{
-		private long _id;
 		private int _HeroId;
 		private int _HeroLevel;
 		private HeroType _Type;
@@ -121,8 +111,6 @@ namespace kds
 		{
 			_id = id;
 		}
-
-		public long Id => _id;
 
 		public int HeroId
 		{

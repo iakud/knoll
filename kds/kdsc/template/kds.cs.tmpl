@@ -110,7 +110,6 @@
 {{- define "Component"}}
 	public class {{.Name}}
 	{
-		private long _id;
 {{- range .Fields}}
 {{- if .Repeated}}
 		private List<{{template "ListValueType" .}}> _{{.Name}};
@@ -137,8 +136,6 @@
 {{- end}}
 {{- end}}
 		}
-
-		public long Id => _id;
 {{- range .Fields}}
 {{/* EMPTY LINE */}}
 {{- if .Repeated}}
@@ -180,11 +177,11 @@ namespace {{.Package}}
 {{- range .Defs}}
 {{/* EMPTY LINE */}}
 {{- if eq .Kind "enum"}}
-	{{- template "Enum" .}}
+{{- template "Enum" .}}
 {{- else if eq .Kind "entity"}}
-	{{- template "Entity" .}}
+{{- template "Entity" .}}
 {{- else if eq .Kind "component"}}
-	{{- template "Component" .}}
+{{- template "Component" .}}
 {{- end}}
 {{- end}}
 }

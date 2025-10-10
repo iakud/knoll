@@ -49,7 +49,6 @@ namespace kds
 
 	public class CityBaseInfo
 	{
-		private long _id;
 		private List<Vector> _Positions;
 		private Map<int32, object> _Troops;
 		private byte[] _BuildInfo;
@@ -60,8 +59,6 @@ namespace kds
 			_Positions = new List<Vector>();
 			_Troops = new Map<int32, object>();
 		}
-
-		public long Id => _id;
 
 		public List<Vector> Positions
 		{
@@ -81,7 +78,6 @@ namespace kds
 
 	public class Vector
 	{
-		private long _id;
 		private int _X;
 		private int _Y;
 
@@ -89,8 +85,6 @@ namespace kds
 		{
 			_id = id;
 		}
-
-		public long Id => _id;
 
 		public int X
 		{
