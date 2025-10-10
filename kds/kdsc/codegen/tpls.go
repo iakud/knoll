@@ -937,7 +937,7 @@ type {{.Name}} struct {
 {{- else if eq .TypeKind "component"}}
 	xxx_hidden_{{.Name}} *{{.Type}}
 {{- else}}
-	xxx_hidden_{{.Name}} {{template "FieldType" .}}
+	xxx_hidden_{{.Name}} {{template "Type" .Type}}
 {{- end}}
 {{- end}}
 
@@ -1027,7 +1027,7 @@ type {{.Name}} struct {
 {{- else if eq .TypeKind "component"}}
 	xxx_hidden_{{.Name}} *{{.Type}}
 {{- else}}
-	xxx_hidden_{{.Name}} {{template "FieldType" .}}
+	xxx_hidden_{{.Name}} {{template "Type" .Type}}
 {{- end}}
 {{- end}}
 
