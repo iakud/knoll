@@ -43,6 +43,12 @@ func importGroup(localPrefix, importPath string) int {
 	return 0
 }
 
+type ImportSpec struct {
+	Path         string
+	Name         string
+	SpacesBefore bool
+}
+
 func sortImports(localPrefix string, importSpecs []*ImportSpec) {
 	sort.Sort(byImportSpec{localPrefix, importSpecs})
 }

@@ -13,9 +13,6 @@ type kdsListener interface {
 	// EnterPackageStatement is called when entering the packageStatement production.
 	EnterPackageStatement(c *PackageStatementContext)
 
-	// EnterProtoGoPackageStatement is called when entering the protoGoPackageStatement production.
-	EnterProtoGoPackageStatement(c *ProtoGoPackageStatementContext)
-
 	// EnterImportStatement is called when entering the importStatement production.
 	EnterImportStatement(c *ImportStatementContext)
 
@@ -126,9 +123,6 @@ type kdsListener interface {
 
 	// ExitPackageStatement is called when exiting the packageStatement production.
 	ExitPackageStatement(c *PackageStatementContext)
-
-	// ExitProtoGoPackageStatement is called when exiting the protoGoPackageStatement production.
-	ExitProtoGoPackageStatement(c *ProtoGoPackageStatementContext)
 
 	// ExitImportStatement is called when exiting the importStatement production.
 	ExitImportStatement(c *ImportStatementContext)

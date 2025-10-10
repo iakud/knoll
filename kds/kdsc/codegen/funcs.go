@@ -11,11 +11,6 @@ func Funcs(ctx *Context) template.FuncMap {
 		"lcFirst": lcFirst,
 		"ucFirst": ucFirst,
 
-		"protoType":      ProtoType,
-		"goType":         GoType,
-		"goProtoType":    GoProtoType,
-		"goProtoPackage": ctx.goProtoPackage,
-
 		"findEnum":      ctx.FindEnum,
 		"findEntity":    ctx.FindEntity,
 		"findComponent": ctx.FindComponent,
@@ -45,20 +40,6 @@ func ucFirst(s string) string {
 	return string(r)
 }
 
-/*
-	func toProtoType(type_ string) string {
-		switch type_ {
-		case "timestamp":
-			return "google.protobuf.Timestamp"
-		case "duration":
-			return "google.protobuf.Duration"
-		case "empty":
-			return "google.protobuf.Empty"
-		default:
-			return type_
-		}
-	}
-*/
 var enumType = reflect.TypeOf((*Enum)(nil))
 var entityType = reflect.TypeOf((*Entity)(nil))
 var componentType = reflect.TypeOf((*Component)(nil))
@@ -74,17 +55,3 @@ func IsEntity(def interface{}) bool {
 func IsComponent(def interface{}) bool {
 	return reflect.TypeOf(def) == componentType
 }
-
-/*
-func isTimestamp(name string) bool {
-	return "timestamp" == name
-}
-
-func isDuration(name string) bool {
-	return "duration" == name
-}
-
-func isEmpty(name string) bool {
-	return "empty" == name
-}
-*/

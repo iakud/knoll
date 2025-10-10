@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/iakud/knoll/kds/kdsc/example/kds"
-	"google.golang.org/protobuf/proto"
 )
 
 /*
@@ -105,17 +104,15 @@ func TestMarshalMessage(t *testing.T) {
 	slog.Info("player1", "hero", hero1)
 	slog.Info("player2", "hero", hero2)
 
-	pb1 := player.DumpFull()
-	buf1, err := proto.Marshal(pb1)
+	buf1, err := player.Marshal(nil)
 	if err != nil {
 		panic(err)
 	}
-	pb2 := player2.DumpFull()
-	buf2, err := proto.Marshal(pb2)
+	buf2, err := player2.Marshal(nil)
 	if err != nil {
 		panic(err)
 	}
-	slog.Info("proto", "pb1", len(buf1), "pb2", len(buf2), "compare", bytes.Compare(buf1, buf2), "equ", proto.Equal(pb1, pb2), "buf", buf)
+	slog.Info("proto", "pb1", len(buf1), "pb2", len(buf2), "equal", bytes.Equal(buf1, buf2), "buf", buf)
 
 	bufDirty, err := player.MarshalDirty(nil)
 	if err != nil {
@@ -137,18 +134,16 @@ func TestMarshalMessage(t *testing.T) {
 	slog.Info("player1", "hero", hero1)
 	slog.Info("player2", "hero", hero2)
 
-	pb1 = player.DumpFull()
-	buf1, err = proto.Marshal(pb1)
+	buf1, err = player.Marshal(nil)
 	if err != nil {
 		panic(err)
 	}
-	pb2 = player2.DumpFull()
-	buf2, err = proto.Marshal(pb2)
+	buf2, err = player2.Marshal(nil)
 	if err != nil {
 		panic(err)
 	}
 
-	slog.Info("proto", "pb1", len(buf1), "pb2", len(buf2), "compare", bytes.Compare(buf1, buf2), "equ", proto.Equal(pb1, pb2), "buf", bufDirty)
+	slog.Info("proto", "pb1", len(buf1), "pb2", len(buf2), "equal", bytes.Equal(buf1, buf2), "buf", bufDirty)
 	player.ClearDirty()
 	player.GetInfo().SetName("IF")
 	bufDirty, err = player.MarshalDirty(nil)
@@ -171,16 +166,14 @@ func TestMarshalMessage(t *testing.T) {
 	slog.Info("player1", "hero", hero1)
 	slog.Info("player2", "hero", hero2)
 
-	pb1 = player.DumpFull()
-	buf1, err = proto.Marshal(pb1)
+	buf1, err = player.Marshal(nil)
 	if err != nil {
 		panic(err)
 	}
-	pb2 = player2.DumpFull()
-	buf2, err = proto.Marshal(pb2)
+	buf2, err = player2.Marshal(nil)
 	if err != nil {
 		panic(err)
 	}
 
-	slog.Info("proto", "pb1", len(buf1), "pb2", len(buf2), "compare", bytes.Compare(buf1, buf2), "equ", proto.Equal(pb1, pb2), "buf", bufDirty)
+	slog.Info("proto", "pb1", len(buf1), "pb2", len(buf2), "equal", bytes.Equal(buf1, buf2), "buf", bufDirty)
 }

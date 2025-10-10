@@ -76,45 +76,47 @@ option go_package="{{.ProtoGoPackage}}";
 // Kds Go File
 const TemplateKdsGo = `
 {{- /* BEGIN DEFINE */ -}}
+{{- define "Type"}}
+{{- if eq . "bool"}}bool
+{{- else if eq . "int32"}}int32
+{{- else if eq . "sint32"}}int32
+{{- else if eq . "uint32"}}uint32
+{{- else if eq . "int64"}}int64
+{{- else if eq . "sint64"}}int64
+{{- else if eq . "uint64"}}uint64
+{{- else if eq . "sfixed32"}}int32
+{{- else if eq . "fixed32"}}uint32
+{{- else if eq . "float"}}float32
+{{- else if eq . "sfixed64"}}int64
+{{- else if eq . "fixed64"}}uint64
+{{- else if eq . "double"}}float64
+{{- else if eq . "string"}}string
+{{- else if eq . "bytes"}}[]byte
+{{- else if eq . "timestamp"}}time.Time
+{{- else if eq . "duration"}}time.Duration
+{{- else if eq . "empty"}}struct{}
+{{- else}}{{.}}
+{{- end}}
+{{- end}}
 {{- /* FIELD TYPE */ -}}
 {{- define "FieldType"}}
 {{- if eq .TypeKind "enum"}}{{.Type}}
 {{- else if eq .TypeKind "component"}}*{{.Type}}
-{{- else}}{{goType .Type}}
+{{- else}}{{template "Type" .Type}}
 {{- end}}
 {{- end}}
 {{- /* LIST TYPE */ -}}
 {{- define "ListValueType"}}
 {{- if eq .TypeKind "enum"}}{{.Type}}
 {{- else if eq .TypeKind "component"}}*{{.Type}}
-{{- else}}{{goType .Type}}
+{{- else}}{{template "Type" .Type}}
 {{- end}}
 {{- end}}
 {{- /* MAP TYPE */ -}}
 {{- define "MapValueType"}}
 {{- if eq .TypeKind "enum"}}{{.Type}}
 {{- else if eq .TypeKind "component"}}*{{.Type}}
-{{- else}}{{goType .Type}}
-{{- end}}
-{{- end}}
-{{- /* LIST PROTO TYPE */ -}}
-{{- define "ListValueProtoType"}}
-{{- if eq .TypeKind "enum"}}{{goProtoPackage .Type}}.{{.Type}}
-{{- else if eq .TypeKind "component"}}*{{goProtoPackage .Type}}.{{.Type}}
-{{- else if eq .Type "timestamp"}}*{{goProtoType .Type}}
-{{- else if eq .Type "duration"}}*{{goProtoType .Type}}
-{{- else if eq .Type "empty"}}*{{goProtoType .Type}}
-{{- else}}{{goProtoType .Type}}
-{{- end}}
-{{- end}}
-{{- /* MAP PROTO TYPE */ -}}
-{{- define "MapValueProtoType"}}
-{{- if eq .TypeKind "enum"}}{{goProtoPackage .Type}}.{{.Type}}
-{{- else if eq .TypeKind "component"}}*{{goProtoPackage .Type}}.{{.Type}}
-{{- else if eq .Type "timestamp"}}*{{goProtoType .Type}}
-{{- else if eq .Type "duration"}}*{{goProtoType .Type}}
-{{- else if eq .Type "empty"}}*{{goProtoType .Type}}
-{{- else}}{{goProtoType .Type}}
+{{- else}}{{template "Type" .Type}}
 {{- end}}
 {{- end}}
 
@@ -438,11 +440,11 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 }
 
 type {{.Name}} struct {
-	data map[{{goType .KeyType}}]{{template "MapValueType" .}}
+	data map[{{template "Type" .KeyType}}]{{template "MapValueType" .}}
 
 	clear       bool
-	updates     map[{{goType .KeyType}}]{{template "MapValueType" .}}
-	deletes     map[{{goType .KeyType}}]struct{}
+	updates     map[{{template "Type" .KeyType}}]{{template "MapValueType" .}}
+	deletes     map[{{template "Type" .KeyType}}]struct{}
 	dirty       bool
 	dirtyParent dirtyParentFunc_{{.Name}}
 }
@@ -469,12 +471,12 @@ func (x *{{.Name}}) Clear() {
 	x.markDirty()
 }
 
-func (x *{{.Name}}) Get(k {{goType .KeyType}}) ({{template "MapValueType" .}}, bool) {
+func (x *{{.Name}}) Get(k {{template "Type" .KeyType}}) ({{template "MapValueType" .}}, bool) {
 	v, ok := x.data[k]
 	return v, ok
 }
 
-func (x *{{.Name}}) Set(k {{goType .KeyType}}, v {{template "MapValueType" .}}) {
+func (x *{{.Name}}) Set(k {{template "Type" .KeyType}}, v {{template "MapValueType" .}}) {
 {{- if eq .TypeKind "component"}}
 	if v != nil && v.dirtyParent != nil {
 		panic("the component should be removed from its original place first")
@@ -508,7 +510,7 @@ func (x *{{.Name}}) Set(k {{goType .KeyType}}, v {{template "MapValueType" .}}) 
 	x.markDirty()
 }
 
-func (x *{{.Name}}) Delete(k {{goType .KeyType}}) {
+func (x *{{.Name}}) Delete(k {{template "Type" .KeyType}}) {
 {{- if eq .TypeKind "component"}}
 	if v, ok := x.data[k]; !ok {
 		return
@@ -526,11 +528,11 @@ func (x *{{.Name}}) Delete(k {{goType .KeyType}}) {
 	x.markDirty()
 }
 
-func (x *{{.Name}}) All() iter.Seq2[{{goType .KeyType}}, {{template "MapValueType" .}}] {
+func (x *{{.Name}}) All() iter.Seq2[{{template "Type" .KeyType}}, {{template "MapValueType" .}}] {
 	return maps.All(x.data)
 }
 
-func (x *{{.Name}}) Keys() iter.Seq[{{goType .KeyType}}] {
+func (x *{{.Name}}) Keys() iter.Seq[{{template "Type" .KeyType}}] {
 	return maps.Keys(x.data)
 }
 
@@ -677,7 +679,7 @@ func (x *{{.Name}}) Unmarshal(b []byte) error {
 		x.Delete(k)
 	}
 	for _, b := range entries {
-		var k {{goType .KeyType}}
+		var k {{template "Type" .KeyType}}
 {{- if eq .TypeKind "component"}}
 		var v []byte
 {{- else}}
@@ -765,9 +767,9 @@ func (x *{{$MessageName}}) Get{{.Name}}() *{{.MapType}} {
 }
 
 func (x *{{$MessageName}}) init{{.Name}}() {
-	x.xxx_hidden_{{.Name}}.data = make(map[{{goType .KeyType}}]{{template "FieldType" .}})
-	x.xxx_hidden_{{.Name}}.updates = make(map[{{goType .KeyType}}]{{template "FieldType" .}})
-	x.xxx_hidden_{{.Name}}.deletes = make(map[{{goType .KeyType}}]struct{})
+	x.xxx_hidden_{{.Name}}.data = make(map[{{template "Type" .KeyType}}]{{template "FieldType" .}})
+	x.xxx_hidden_{{.Name}}.updates = make(map[{{template "Type" .KeyType}}]{{template "FieldType" .}})
+	x.xxx_hidden_{{.Name}}.deletes = make(map[{{template "Type" .KeyType}}]struct{})
 	x.xxx_hidden_{{.Name}}.dirtyParent = func() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}

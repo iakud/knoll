@@ -20,8 +20,6 @@ func visitKds(ctx *Context, filePath string, kdsCtx parser.IKdsContext) *Kds {
 	for i := 0; i < len(kds.Imports); i++ {
 		kds.Imports[i] = strings.TrimSuffix(kds.Imports[i], ".kds")
 	}
-	kds.ProtoGoPackage = visitProtoGoPackage(kdsCtx.ProtoGoPackageStatement())
-	kds.ProtoPackage = filepath.Base(kds.ProtoGoPackage)
 
 	for _, topLevel := range kdsCtx.AllTopLevelDef() {
 		switch {
@@ -43,18 +41,7 @@ func visitKds(ctx *Context, filePath string, kdsCtx parser.IKdsContext) *Kds {
 		}
 	}
 
-	if len(kds.Defs) > 0 {
-		kds.addGoImport(kds.ProtoGoPackage, "")
-	}
-
 	return kds
-}
-
-func visitProtoGoPackage(protoGoPackageCtx parser.IProtoGoPackageStatementContext) string {
-	if protoGoPackageText, err := strconv.Unquote(protoGoPackageCtx.STR_LIT().GetText()); err == nil {
-		return protoGoPackageText
-	}
-	return protoGoPackageCtx.STR_LIT().GetText()
 }
 
 func visitImport(importCtx parser.IImportStatementContext) string {

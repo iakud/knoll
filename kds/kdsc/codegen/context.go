@@ -112,10 +112,3 @@ func (ctx *Context) FindMap(name string) []*MapType {
 	}
 	return nil
 }
-
-func (ctx *Context) goProtoPackage(name string) string {
-	if def, ok := ctx.Defs[name]; ok {
-		return def.GoProtoPackage()
-	}
-	return ""
-}
