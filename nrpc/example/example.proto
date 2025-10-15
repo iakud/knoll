@@ -1,0 +1,17 @@
+edition = "2023";
+
+package example;
+
+option go_package="github.com/iakud/knoll/nrpc/example";
+
+service Example {
+    rpc Test (TestRequest) returns (TestReply) {}
+}
+
+message TestRequest {
+
+}
+
+message TestReply {
+    
+}
