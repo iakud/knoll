@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -9,6 +10,7 @@ import (
 
 const (
 	contextPackage = protogen.GoImportPath("context")
+	natsPackage    = protogen.GoImportPath("github.com/nats-io/nats.go")
 )
 
 // FileDescriptorProto.package field number
@@ -65,6 +67,57 @@ func generateFileContent(gen *protogen.Plugin, file *protogen.File, g *protogen.
 }
 
 func genService(gen *protogen.Plugin, file *protogen.File, g *protogen.GeneratedFile, service *protogen.Service) {
+	clientName := service.GoName + "Client"
+	g.AnnotateSymbol(clientName, protogen.Annotation{Location: service.Location})
+	g.P("type ", clientName, " interface {")
+	for _, method := range service.Methods {
+		g.AnnotateSymbol(clientName+"."+method.GoName, protogen.Annotation{Location: method.Location})
+		g.P(method.Comments.Leading, clientSignature(g, method))
+	}
+	g.P("}")
+	g.P()
+
+	g.P("type ", unexport(clientName), " struct {")
+	g.P("nc *", natsPackage.Ident("Conn"))
+	g.P("}")
+	g.P()
+
+	g.P("func New", clientName, " (nc *", natsPackage.Ident("Conn"), ") ", clientName, " {")
+	g.P("return &", unexport(clientName), "{nc}")
+	g.P("}")
+	g.P()
+
+	var methodIndex, streamIndex int
+	// Client method implementations.
+	for _, method := range service.Methods {
+		if !method.Desc.IsStreamingServer() && !method.Desc.IsStreamingClient() {
+			// Unary RPC method
+			genClientMethod(gen, file, g, method, methodIndex)
+			methodIndex++
+		} else {
+			// Streaming RPC method
+			genClientMethod(gen, file, g, method, streamIndex)
+			streamIndex++
+		}
+	}
+}
+
+func clientSignature(g *protogen.GeneratedFile, method *protogen.Method) string {
+	s := method.GoName + "(ctx " + g.QualifiedGoIdent(contextPackage.Ident("Context"))
+	if !method.Desc.IsStreamingClient() {
+		s += ", in *" + g.QualifiedGoIdent(method.Input.GoIdent)
+	}
+	s += ") ("
+	if !method.Desc.IsStreamingClient() && !method.Desc.IsStreamingServer() {
+		s += "*" + g.QualifiedGoIdent(method.Output.GoIdent)
+	} else {
+		s += method.Parent.GoName + "_" + method.GoName + "Client"
+	}
+	s += ", error)"
+	return s
+}
+
+func genClientMethod(_ *protogen.Plugin, _ *protogen.File, g *protogen.GeneratedFile, method *protogen.Method, index int) {
 }
 
 func genLeadingComments(g *protogen.GeneratedFile, loc protoreflect.SourceLocation) {
@@ -77,3 +130,5 @@ func genLeadingComments(g *protogen.GeneratedFile, loc protoreflect.SourceLocati
 		g.P()
 	}
 }
+
+func unexport(s string) string { return strings.ToLower(s[:1]) + s[1:] }
