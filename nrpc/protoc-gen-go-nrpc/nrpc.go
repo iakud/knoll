@@ -10,8 +10,65 @@ import (
 
 const (
 	contextPackage = protogen.GoImportPath("context")
+	nrpcPackage    = protogen.GoImportPath("github.com/iakud/knoll/nrpc")
 	natsPackage    = protogen.GoImportPath("github.com/nats-io/nats.go")
 )
+
+type serviceGenerateHelperInterface interface {
+	formatFullMethodSymbol(service *protogen.Service, method *protogen.Method) string
+	genFullMethods(g *protogen.GeneratedFile, service *protogen.Service)
+	generateClientStruct(g *protogen.GeneratedFile, clientName string)
+	generateNewClientDefinitions(g *protogen.GeneratedFile, service *protogen.Service, clientName string)
+	generateUnimplementedServerType(gen *protogen.Plugin, file *protogen.File, g *protogen.GeneratedFile, service *protogen.Service)
+	generateServerFunctions(gen *protogen.Plugin, file *protogen.File, g *protogen.GeneratedFile, service *protogen.Service, serverType string, serviceDescVar string)
+	formatHandlerFuncName(service *protogen.Service, hname string) string
+}
+
+type serviceGenerateHelper struct{}
+
+func (serviceGenerateHelper) formatFullMethodSymbol(service *protogen.Service, method *protogen.Method) string {
+	return fmt.Sprintf("%s_%s_FullMethodName", service.GoName, method.GoName)
+}
+
+func (serviceGenerateHelper) genFullMethods(g *protogen.GeneratedFile, service *protogen.Service) {
+	if len(service.Methods) == 0 {
+		return
+	}
+
+	g.P("const (")
+	for _, method := range service.Methods {
+		fmSymbol := helper.formatFullMethodSymbol(service, method)
+		fmName := fmt.Sprintf("/%s/%s", service.Desc.FullName(), method.Desc.Name())
+		g.P(fmSymbol, ` = "`, fmName, `"`)
+	}
+	g.P(")")
+	g.P()
+}
+
+func (serviceGenerateHelper) generateClientStruct(g *protogen.GeneratedFile, clientName string) {
+	g.P("type ", unexport(clientName), " struct {")
+	g.P("cc *", natsPackage.Ident("Conn"))
+	g.P("}")
+	g.P()
+}
+
+func (serviceGenerateHelper) generateNewClientDefinitions(g *protogen.GeneratedFile, _ *protogen.Service, clientName string) {
+	g.P("return &", unexport(clientName), "{nc}")
+}
+
+func (serviceGenerateHelper) generateUnimplementedServerType(_ *protogen.Plugin, _ *protogen.File, g *protogen.GeneratedFile, service *protogen.Service) {
+
+}
+
+func (serviceGenerateHelper) generateServerFunctions(gen *protogen.Plugin, file *protogen.File, g *protogen.GeneratedFile, service *protogen.Service, serverType string, serviceDescVar string) {
+
+}
+
+func (serviceGenerateHelper) formatHandlerFuncName(_ *protogen.Service, hname string) string {
+	return hname
+}
+
+var helper serviceGenerateHelperInterface = serviceGenerateHelper{}
 
 // FileDescriptorProto.package field number
 const fileDescriptorProtoPackageFieldNumber = 2
@@ -77,13 +134,10 @@ func genService(gen *protogen.Plugin, file *protogen.File, g *protogen.Generated
 	g.P("}")
 	g.P()
 
-	g.P("type ", unexport(clientName), " struct {")
-	g.P("nc *", natsPackage.Ident("Conn"))
-	g.P("}")
-	g.P()
+	helper.generateClientStruct(g, clientName)
 
 	g.P("func New", clientName, " (nc *", natsPackage.Ident("Conn"), ") ", clientName, " {")
-	g.P("return &", unexport(clientName), "{nc}")
+	helper.generateNewClientDefinitions(g, service, clientName)
 	g.P("}")
 	g.P()
 
@@ -118,6 +172,19 @@ func clientSignature(g *protogen.GeneratedFile, method *protogen.Method) string 
 }
 
 func genClientMethod(_ *protogen.Plugin, _ *protogen.File, g *protogen.GeneratedFile, method *protogen.Method, index int) {
+	service := method.Parent
+	fmSymbol := helper.formatFullMethodSymbol(service, method)
+
+	g.P("func (c *", unexport(service.GoName), "Client) ", clientSignature(g, method), "{")
+	if !method.Desc.IsStreamingServer() && !method.Desc.IsStreamingClient() {
+		g.P("out := new(", method.Output.GoIdent, ")")
+		g.P("err := ", nrpcPackage.Ident("Call"), `(ctx, c.nc, `, fmSymbol, `, in, out)`)
+		g.P("if err != nil { return nil, err }")
+		g.P("return out, nil")
+		g.P("}")
+		g.P()
+		return
+	}
 }
 
 func genLeadingComments(g *protogen.GeneratedFile, loc protoreflect.SourceLocation) {
