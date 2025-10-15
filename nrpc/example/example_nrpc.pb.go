@@ -5,3 +5,35 @@
 // source: example.proto
 
 package example
+
+import (
+	context "context"
+	nrpc "github.com/iakud/knoll/nrpc"
+)
+
+const (
+	Example_ServiceName         = "example.Example"
+	Example_Test_MethodName     = "Test"
+	Example_Test_FullMethodName = "/example.Example/Test"
+)
+
+type ExampleClient interface {
+	Test(ctx context.Context, in *TestRequest) (*TestReply, error)
+}
+
+type exampleClient struct {
+	c *nrpc.Client
+}
+
+func NewExampleClient(c *nrpc.Client) ExampleClient {
+	return &exampleClient{c}
+}
+
+func (c *exampleClient) Test(ctx context.Context, in *TestRequest) (*TestReply, error) {
+	out := new(TestReply)
+	err := c.c.Call(ctx, Example_ServiceName, Example_Test_MethodName, in, out)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
