@@ -14,5 +14,5 @@ generate:
 kdsc:
 	GOBIN=$(shell pwd)/local/bin go install ./kds/kdsc
 
-nrpc:
+protoc-gen-go-nrpc:
 	GOBIN=$(shell pwd)/local/bin go install ./nrpc/protoc-gen-go-nrpc
