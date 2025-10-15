@@ -47,13 +47,13 @@ func (serviceGenerateHelper) genFullMethods(g *protogen.GeneratedFile, service *
 
 func (serviceGenerateHelper) generateClientStruct(g *protogen.GeneratedFile, clientName string) {
 	g.P("type ", unexport(clientName), " struct {")
-	g.P("cc *", natsPackage.Ident("Conn"))
+	g.P("c *", nrpcPackage.Ident("Client"))
 	g.P("}")
 	g.P()
 }
 
 func (serviceGenerateHelper) generateNewClientDefinitions(g *protogen.GeneratedFile, _ *protogen.Service, clientName string) {
-	g.P("return &", unexport(clientName), "{nc}")
+	g.P("return &", unexport(clientName), "{c}")
 }
 
 func (serviceGenerateHelper) generateUnimplementedServerType(_ *protogen.Plugin, _ *protogen.File, g *protogen.GeneratedFile, service *protogen.Service) {
@@ -124,6 +124,9 @@ func generateFileContent(gen *protogen.Plugin, file *protogen.File, g *protogen.
 }
 
 func genService(gen *protogen.Plugin, file *protogen.File, g *protogen.GeneratedFile, service *protogen.Service) {
+	// Full methods constants.
+	helper.genFullMethods(g, service)
+
 	clientName := service.GoName + "Client"
 	g.AnnotateSymbol(clientName, protogen.Annotation{Location: service.Location})
 	g.P("type ", clientName, " interface {")
@@ -136,7 +139,7 @@ func genService(gen *protogen.Plugin, file *protogen.File, g *protogen.Generated
 
 	helper.generateClientStruct(g, clientName)
 
-	g.P("func New", clientName, " (nc *", natsPackage.Ident("Conn"), ") ", clientName, " {")
+	g.P("func New", clientName, " (c *", nrpcPackage.Ident("Client"), ") ", clientName, " {")
 	helper.generateNewClientDefinitions(g, service, clientName)
 	g.P("}")
 	g.P()
@@ -173,12 +176,12 @@ func clientSignature(g *protogen.GeneratedFile, method *protogen.Method) string 
 
 func genClientMethod(_ *protogen.Plugin, _ *protogen.File, g *protogen.GeneratedFile, method *protogen.Method, index int) {
 	service := method.Parent
-	fmSymbol := helper.formatFullMethodSymbol(service, method)
+	// fmSymbol := helper.formatFullMethodSymbol(service, method)
 
 	g.P("func (c *", unexport(service.GoName), "Client) ", clientSignature(g, method), "{")
 	if !method.Desc.IsStreamingServer() && !method.Desc.IsStreamingClient() {
 		g.P("out := new(", method.Output.GoIdent, ")")
-		g.P("err := ", nrpcPackage.Ident("Call"), `(ctx, c.nc, `, fmSymbol, `, in, out)`)
+		g.P("err := ", nrpcPackage.Ident("Call"), `(ctx, c.c, "`, service.Desc.FullName(), `", "`, method.Desc.Name(), `", in, out)`)
 		g.P("if err != nil { return nil, err }")
 		g.P("return out, nil")
 		g.P("}")
