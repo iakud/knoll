@@ -15,4 +15,4 @@ kdsc:
 	GOBIN=$(shell pwd)/local/bin go install ./kds/kdsc
 
 nrpc:
-	GOBIN=$(shell pwd)/local/bin go install ./nrpc/protoc-gen-nrpc
+	GOBIN=$(shell pwd)/local/bin go install ./nrpc/protoc-gen-go-nrpc
