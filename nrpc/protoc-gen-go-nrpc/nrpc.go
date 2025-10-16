@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -76,7 +77,15 @@ func (serviceGenerateHelper) generateUnimplementedServerType(_ *protogen.Plugin,
 }
 
 func (serviceGenerateHelper) generateServerFunctions(gen *protogen.Plugin, file *protogen.File, g *protogen.GeneratedFile, service *protogen.Service, serverType string, serviceDescVar string) {
-
+	// Server handler implementations.
+	handlerNames := make([]string, 0, len(service.Methods))
+	for _, method := range service.Methods {
+		hname := genServerMethod(gen, file, g, method, func(hname string) string {
+			return hname
+		})
+		handlerNames = append(handlerNames, hname)
+	}
+	genServiceDesc(file, g, serviceDescVar, serverType, service, handlerNames)
 }
 
 func (serviceGenerateHelper) formatHandlerFuncName(_ *protogen.Service, hname string) string {
@@ -138,11 +147,22 @@ func generateFileContent(gen *protogen.Plugin, file *protogen.File, g *protogen.
 	}
 }
 
+func genServiceComments(g *protogen.GeneratedFile, service *protogen.Service) {
+	if service.Comments.Leading != "" {
+		g.P("//")
+		g.P(strings.TrimSpace(service.Comments.Leading.String()))
+	}
+}
+
 func genService(gen *protogen.Plugin, file *protogen.File, g *protogen.GeneratedFile, service *protogen.Service) {
 	// Full methods constants.
 	helper.genFullMethods(g, service)
 
+	// Client interface.
 	clientName := service.GoName + "Client"
+	// Copy comments from proto file.
+	genServiceComments(g, service)
+
 	g.AnnotateSymbol(clientName, protogen.Annotation{Location: service.Location})
 	g.P("type ", clientName, " interface {")
 	for _, method := range service.Methods {
@@ -151,9 +171,9 @@ func genService(gen *protogen.Plugin, file *protogen.File, g *protogen.Generated
 	}
 	g.P("}")
 	g.P()
-
+	// Client structure.
 	helper.generateClientStruct(g, clientName)
-
+	// NewClient factory.
 	g.P("func New", clientName, " (c *", nrpcPackage.Ident("Client"), ") ", clientName, " {")
 	helper.generateNewClientDefinitions(g, service, clientName)
 	g.P("}")
@@ -172,6 +192,29 @@ func genService(gen *protogen.Plugin, file *protogen.File, g *protogen.Generated
 			streamIndex++
 		}
 	}
+
+	// Server interface.
+	serverType := service.GoName + "Server"
+	// Copy comments from proto file.
+	genServiceComments(g, service)
+
+	g.AnnotateSymbol(serverType, protogen.Annotation{Location: service.Location})
+	g.P("type ", serverType, " interface {")
+	for _, method := range service.Methods {
+		g.AnnotateSymbol(serverType+"."+method.GoName, protogen.Annotation{Location: method.Location})
+		g.P(method.Comments.Leading, serverSignature(g, method))
+	}
+	g.P("}")
+	g.P()
+
+	// Server registration.
+	serviceDescVar := service.GoName + "_ServiceDesc"
+	g.P("func Register", service.GoName, "Server(s ", nrpcPackage.Ident("ServiceRegistrar"), ", srv ", serverType, ") {")
+	g.P("s.RegisterService(&", serviceDescVar, `, srv)`)
+	g.P("}")
+	g.P()
+
+	helper.generateServerFunctions(gen, file, g, service, serverType, serviceDescVar)
 }
 
 func clientSignature(g *protogen.GeneratedFile, method *protogen.Method) string {
@@ -204,6 +247,59 @@ func genClientMethod(_ *protogen.Plugin, _ *protogen.File, g *protogen.Generated
 		g.P()
 		return
 	}
+}
+
+func serverSignature(g *protogen.GeneratedFile, method *protogen.Method) string {
+	var reqArgs []string
+	ret := "error"
+	if !method.Desc.IsStreamingClient() && !method.Desc.IsStreamingServer() {
+		reqArgs = append(reqArgs, g.QualifiedGoIdent(contextPackage.Ident("Context")))
+		ret = "(*" + g.QualifiedGoIdent(method.Output.GoIdent) + ", error)"
+	}
+	if !method.Desc.IsStreamingClient() {
+		reqArgs = append(reqArgs, "*"+g.QualifiedGoIdent(method.Input.GoIdent))
+	}
+	if method.Desc.IsStreamingClient() || method.Desc.IsStreamingServer() {
+		reqArgs = append(reqArgs, method.Parent.GoName+"_"+method.GoName+"Server")
+	}
+	return method.GoName + "(" + strings.Join(reqArgs, ", ") + ") " + ret
+}
+
+func genServiceDesc(file *protogen.File, g *protogen.GeneratedFile, serviceDescVar string, serverType string, service *protogen.Service, handlerNames []string) {
+	// Service descriptor.
+	g.P("var ", serviceDescVar, " = ", nrpcPackage.Ident("ServiceDesc"), " {")
+	g.P("ServiceName: ", strconv.Quote(string(service.Desc.FullName())), ",")
+	g.P("HandlerType: (*", serverType, ")(nil),")
+	g.P("Methods: []", nrpcPackage.Ident("MethodDesc"), "{")
+	for i, method := range service.Methods {
+		if method.Desc.IsStreamingClient() || method.Desc.IsStreamingServer() {
+			continue
+		}
+		g.P("{")
+		g.P("MethodName: ", strconv.Quote(string(method.Desc.Name())), ",")
+		g.P("Handler: ", handlerNames[i], ",")
+		g.P("},")
+	}
+	g.P("},")
+	g.P("Metadata: \"", file.Desc.Path(), "\",")
+	g.P("}")
+	g.P()
+}
+
+func genServerMethod(_ *protogen.Plugin, _ *protogen.File, g *protogen.GeneratedFile, method *protogen.Method, hnameFuncNameFormatter func(string) string) string {
+	service := method.Parent
+	hname := fmt.Sprintf("_%s_%s_Handler", service.GoName, method.GoName)
+
+	if !method.Desc.IsStreamingClient() && !method.Desc.IsStreamingServer() {
+		g.P("func ", hnameFuncNameFormatter(hname), "(srv interface{}, ctx ", contextPackage.Ident("Context"), ", dec func(interface{}) error) (interface{}, error) {")
+		g.P("in := new(", method.Input.GoIdent, ")")
+		g.P("if err := dec(in); err != nil { return nil, err }")
+		g.P("return srv.(", service.GoName, "Server).", method.GoName, "(ctx, in)")
+		g.P("}")
+		g.P()
+		return hname
+	}
+	return hname
 }
 
 func genLeadingComments(g *protogen.GeneratedFile, loc protoreflect.SourceLocation) {
