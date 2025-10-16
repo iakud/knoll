@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	nc, err := nats.Connect(nats.DefaultURL)
+	nc, err := nats.Connect("nats://10.10.45.25:4222")
 	if err != nil {
 		panic(err)
 	}
