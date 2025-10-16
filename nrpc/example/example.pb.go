@@ -21,9 +21,12 @@ const (
 )
 
 type TestRequest struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                  protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Text        *string                `protobuf:"bytes,1,opt,name=Text"`
+	XXX_raceDetectHookData protoimpl.RaceDetectHookData
+	XXX_presence           [1]uint32
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *TestRequest) Reset() {
@@ -51,22 +54,58 @@ func (x *TestRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *TestRequest) GetText() string {
+	if x != nil {
+		if x.xxx_hidden_Text != nil {
+			return *x.xxx_hidden_Text
+		}
+		return ""
+	}
+	return ""
+}
+
+func (x *TestRequest) SetText(v string) {
+	x.xxx_hidden_Text = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
+}
+
+func (x *TestRequest) HasText() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *TestRequest) ClearText() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_Text = nil
+}
+
 type TestRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	Text *string
 }
 
 func (b0 TestRequest_builder) Build() *TestRequest {
 	m0 := &TestRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
+	if b.Text != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 1)
+		x.xxx_hidden_Text = b.Text
+	}
 	return m0
 }
 
 type TestReply struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                  protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Text        *string                `protobuf:"bytes,1,opt,name=Text"`
+	xxx_hidden_Num         int32                  `protobuf:"varint,2,opt,name=Num"`
+	XXX_raceDetectHookData protoimpl.RaceDetectHookData
+	XXX_presence           [1]uint32
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *TestReply) Reset() {
@@ -94,15 +133,76 @@ func (x *TestReply) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *TestReply) GetText() string {
+	if x != nil {
+		if x.xxx_hidden_Text != nil {
+			return *x.xxx_hidden_Text
+		}
+		return ""
+	}
+	return ""
+}
+
+func (x *TestReply) GetNum() int32 {
+	if x != nil {
+		return x.xxx_hidden_Num
+	}
+	return 0
+}
+
+func (x *TestReply) SetText(v string) {
+	x.xxx_hidden_Text = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 2)
+}
+
+func (x *TestReply) SetNum(v int32) {
+	x.xxx_hidden_Num = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 2)
+}
+
+func (x *TestReply) HasText() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *TestReply) HasNum() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
+}
+
+func (x *TestReply) ClearText() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_Text = nil
+}
+
+func (x *TestReply) ClearNum() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
+	x.xxx_hidden_Num = 0
+}
+
 type TestReply_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	Text *string
+	Num  *int32
 }
 
 func (b0 TestReply_builder) Build() *TestReply {
 	m0 := &TestReply{}
 	b, x := &b0, m0
 	_, _ = b, x
+	if b.Text != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 2)
+		x.xxx_hidden_Text = b.Text
+	}
+	if b.Num != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 2)
+		x.xxx_hidden_Num = *b.Num
+	}
 	return m0
 }
 
@@ -110,9 +210,12 @@ var File_example_proto protoreflect.FileDescriptor
 
 const file_example_proto_rawDesc = "" +
 	"\n" +
-	"\rexample.proto\x12\aexample\"\r\n" +
-	"\vTestRequest\"\v\n" +
-	"\tTestReply2=\n" +
+	"\rexample.proto\x12\aexample\"!\n" +
+	"\vTestRequest\x12\x12\n" +
+	"\x04Text\x18\x01 \x01(\tR\x04Text\"1\n" +
+	"\tTestReply\x12\x12\n" +
+	"\x04Text\x18\x01 \x01(\tR\x04Text\x12\x10\n" +
+	"\x03Num\x18\x02 \x01(\x05R\x03Num2=\n" +
 	"\aExample\x122\n" +
 	"\x04Test\x12\x14.example.TestRequest\x1a\x12.example.TestReply\"\x00B%Z#github.com/iakud/knoll/nrpc/exampleb\beditionsp\xe8\a"
 

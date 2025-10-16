@@ -8,13 +8,10 @@ package example
 
 import (
 	context "context"
-
 	nrpc "github.com/iakud/knoll/nrpc"
 )
 
 const (
-	Example_ServiceName         = "example.Example"
-	Example_Test_MethodName     = "Test"
 	Example_Test_FullMethodName = "/example.Example/Test"
 )
 
@@ -23,18 +20,46 @@ type ExampleClient interface {
 }
 
 type exampleClient struct {
-	c *nrpc.ClientConn
+	cc nrpc.ClientConnInterface
 }
 
-func NewExampleClient(c *nrpc.ClientConn) ExampleClient {
-	return &exampleClient{c}
+func NewExampleClient(cc nrpc.ClientConnInterface) ExampleClient {
+	return &exampleClient{cc}
 }
 
 func (c *exampleClient) Test(ctx context.Context, in *TestRequest) (*TestReply, error) {
 	out := new(TestReply)
-	err := c.c.Call(ctx, Example_ServiceName, Example_Test_MethodName, in, out)
+	err := c.cc.Invoke(ctx, Example_Test_FullMethodName, in, out)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
+}
+
+type ExampleServer interface {
+	Test(context.Context, *TestRequest) (*TestReply, error)
+}
+
+func RegisterExampleServer(s nrpc.ServiceRegistrar, srv ExampleServer) {
+	s.RegisterService(&Example_ServiceDesc, srv)
+}
+
+func _Example_Test_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(TestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	return srv.(ExampleServer).Test(ctx, in)
+}
+
+var Example_ServiceDesc = nrpc.ServiceDesc{
+	ServiceName: "example.Example",
+	HandlerType: (*ExampleServer)(nil),
+	Methods: []nrpc.MethodDesc{
+		{
+			MethodName: "Test",
+			Handler:    _Example_Test_Handler,
+		},
+	},
+	Metadata: "example.proto",
 }
