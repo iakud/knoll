@@ -28,11 +28,10 @@ func (c *ClientConn) Invoke(ctx context.Context, method string, args proto.Messa
 	if err != nil {
 		return err
 	}
-	var msg nats.Msg
-	msg.Subject = c.subj
+	msg := nats.NewMsg(c.subj)
 	msg.Header.Set("method", method)
 	msg.Data = data
-	m, err := c.nc.RequestMsgWithContext(ctx, &msg)
+	m, err := c.nc.RequestMsgWithContext(ctx, msg)
 	if err != nil {
 		return err
 	}
