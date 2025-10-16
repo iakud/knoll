@@ -7,31 +7,35 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type Client struct {
-	nc *nats.Conn
+type ClientConnInterface interface {
+	Invoke(ctx context.Context, method string, args proto.Message, reply proto.Message) error
 }
 
-func NewClient(nc *nats.Conn) *Client {
-	return &Client{nc}
+// Assert *ClientConn implements ClientConnInterface.
+var _ ClientConnInterface = (*ClientConn)(nil)
+
+type ClientConn struct {
+	nc   *nats.Conn
+	subj string
 }
 
-func (c *Client) Call(ctx context.Context, subj string, method string, req proto.Message, reply proto.Message) error {
-	data, err := proto.Marshal(req)
+func NewClient(nc *nats.Conn, subj string) *ClientConn {
+	return &ClientConn{nc, subj}
+}
+
+func (c *ClientConn) Invoke(ctx context.Context, method string, args proto.Message, reply proto.Message) error {
+	data, err := proto.Marshal(args)
 	if err != nil {
 		return err
 	}
 	var msg nats.Msg
-	msg.Subject = subj
-	msg.Header.Add("method", method)
+	msg.Subject = c.subj
+	msg.Header.Set("method", method)
 	msg.Data = data
 	m, err := c.nc.RequestMsgWithContext(ctx, &msg)
 	if err != nil {
 		return err
 	}
-
-	// c.nc.Subscribe("1", func(msg *nats.Msg) {
-	// msg.Respond()
-	// })
 
 	return proto.Unmarshal(m.Data, reply)
 }

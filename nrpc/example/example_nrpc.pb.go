@@ -8,6 +8,7 @@ package example
 
 import (
 	context "context"
+
 	nrpc "github.com/iakud/knoll/nrpc"
 )
 
@@ -22,10 +23,10 @@ type ExampleClient interface {
 }
 
 type exampleClient struct {
-	c *nrpc.Client
+	c *nrpc.ClientConn
 }
 
-func NewExampleClient(c *nrpc.Client) ExampleClient {
+func NewExampleClient(c *nrpc.ClientConn) ExampleClient {
 	return &exampleClient{c}
 }
 
