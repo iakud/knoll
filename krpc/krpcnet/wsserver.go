@@ -126,11 +126,11 @@ func (s *wsServer) handleHandshake(conn *wsConn, m Msg) error {
 	return s.handler.Handshake(conn, &msg)
 }
 
-func (s *wsServer) handlePing(conn *wsConn, m Msg) error {
-	return nil
+func (s *wsServer) handlePing(conn *wsConn, _ Msg) error {
+	return SendPong(conn)
 }
 
-func (s *wsServer) handlePong(conn *wsConn, m Msg) error {
+func (s *wsServer) handlePong(_ *wsConn, _ Msg) error {
 	return nil
 }
 

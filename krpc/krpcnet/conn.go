@@ -92,6 +92,30 @@ func SendServerHandshake(conn Conn, hash uint64) error {
 	return conn.Send(m)
 }
 
+func SendPing(conn Conn) error {
+	var msg knetpb.Ping
+	payload, err := proto.Marshal(&msg)
+	if err != nil {
+		return err
+	}
+	m := conn.NewMsg()
+	m.Header().SetMsgId(uint16(knetpb.Msg_PING))
+	m.SetPayload(payload)
+	return conn.Send(m)
+}
+
+func SendPong(conn Conn) error {
+	var msg knetpb.Pong
+	payload, err := proto.Marshal(&msg)
+	if err != nil {
+		return err
+	}
+	m := conn.NewMsg()
+	m.Header().SetMsgId(uint16(knetpb.Msg_PONG))
+	m.SetPayload(payload)
+	return conn.Send(m)
+}
+
 func RequestUserOnline(ctx context.Context, conn Conn, req *knetpb.UserOnlineRequest) (*knetpb.UserOnlineReply, error) {
 	payload, err := proto.Marshal(req)
 	if err != nil {

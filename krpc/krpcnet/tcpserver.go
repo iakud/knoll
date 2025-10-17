@@ -126,11 +126,11 @@ func (s *tcpServer) handleHandshake(conn *tcpConn, m Msg) error {
 	return s.handler.Handshake(conn, &msg)
 }
 
-func (s *tcpServer) handlePing(conn *tcpConn, m Msg) error {
-	return nil
+func (s *tcpServer) handlePing(conn *tcpConn, _ Msg) error {
+	return SendPong(conn)
 }
 
-func (s *tcpServer) handlePong(conn *tcpConn, m Msg) error {
+func (s *tcpServer) handlePong(_ *tcpConn, _ Msg) error {
 	return nil
 }
 
