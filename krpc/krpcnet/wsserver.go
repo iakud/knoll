@@ -105,6 +105,10 @@ func (s *wsServer) handleMessage(conn *wsConn, m Msg) error {
 	switch m.Header().MsgId() {
 	case uint16(knetpb.Msg_HANDSHAKE):
 		return s.handleHandshake(conn, m)
+	case uint16(knetpb.Msg_PING):
+		return s.handlePing(conn, m)
+	case uint16(knetpb.Msg_PONG):
+		return s.handlePong(conn, m)
 	case uint16(knetpb.Msg_USER_ONLINE):
 		return s.handleUserOnline(conn, m)
 	case uint16(knetpb.Msg_KICK_OUT):
@@ -120,6 +124,14 @@ func (s *wsServer) handleHandshake(conn *wsConn, m Msg) error {
 	}
 	conn.hash = msg.GetHash()
 	return s.handler.Handshake(conn, &msg)
+}
+
+func (s *wsServer) handlePing(conn *wsConn, m Msg) error {
+	return nil
+}
+
+func (s *wsServer) handlePong(conn *wsConn, m Msg) error {
+	return nil
 }
 
 func (s *wsServer) handleUserOnline(conn *wsConn, m Msg) error {
