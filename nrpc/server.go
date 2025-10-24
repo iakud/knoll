@@ -3,7 +3,9 @@ package nrpc
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -72,7 +74,7 @@ func (s *Server) register(sd *ServiceDesc, ss any) {
 		panic(fmt.Sprintf("nrpc: Server.RegisterService after Server.Serve for %q", sd.ServiceName))
 	}
 	if _, ok := s.services[sd.ServiceName]; ok {
-		panic(fmt.Sprintf("grpc: Server.RegisterService found duplicate service registration for %q", sd.ServiceName))
+		panic(fmt.Sprintf("nrpc: Server.RegisterService found duplicate service registration for %q", sd.ServiceName))
 	}
 	info := &serviceInfo{
 		serviceImpl: ss,
@@ -96,27 +98,7 @@ func (s *Server) register(sd *ServiceDesc, ss any) {
 func (s *Server) Start() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	sub, err := s.nc.Subscribe(s.subj, func(msg *nats.Msg) {
-		ctx := context.TODO()
-		sm := msg.Header.Get("method")
-		if sm != "" && sm[0] == '/' {
-			sm = sm[1:]
-		}
-		pos := strings.LastIndex(sm, "/")
-		if pos == -1 {
-			// FIXME: error
-			return
-		}
-		service := sm[:pos]
-		method := sm[pos+1:]
-		srv, knownService := s.services[service]
-		if knownService {
-			if md, ok := srv.methods[method]; ok {
-				s.processMsg(ctx, msg, srv, md)
-				return
-			}
-		}
-	})
+	sub, err := s.nc.Subscribe(s.subj, s.handleMsg)
 
 	if err != nil {
 		return err
@@ -140,21 +122,67 @@ func (s *Server) Close() error {
 	return nil
 }
 
-func (s *Server) processMsg(ctx context.Context, msg *nats.Msg, srv *serviceInfo, md *MethodDesc) {
+func (s *Server) handleMsg(msg *nats.Msg) {
+	ctx := context.TODO()
+	sm := msg.Header.Get(methodHdr)
+	if sm != "" && sm[0] == '/' {
+		sm = sm[1:]
+	}
+	pos := strings.LastIndex(sm, "/")
+	if pos == -1 {
+		errDesc := fmt.Sprintf("malformed method name: %q", sm)
+		s.respondError(msg.Reply, Unimplemented, errDesc)
+		return
+	}
+	service := sm[:pos]
+	method := sm[pos+1:]
+	srv, knownService := s.services[service]
+	if knownService {
+		if md, ok := srv.methods[method]; ok {
+			s.processMsg(ctx, msg, srv, md)
+			return
+		}
+	}
+}
+
+func (s *Server) processMsg(ctx context.Context, msg *nats.Msg, srv *serviceInfo, md *MethodDesc) error {
 	df := func(v interface{}) error {
-		return proto.Unmarshal(msg.Data, v.(proto.Message))
+		if err := proto.Unmarshal(msg.Data, v.(proto.Message)); err != nil {
+			return Errorf(Internal, "nrpc: error unmarshalling request: %v", err)
+		}
+		return nil
 	}
 	reply, err := md.Handler(srv.serviceImpl, ctx, df)
 	if err != nil {
-		// FIXME: err
-		return
+		appStatus, ok := FromError(err)
+		if !ok {
+			appStatus = FromContextError(err)
+			err = appStatus.Err()
+		}
+		s.respondError(msg.Reply, appStatus.Code, appStatus.Message)
+		return err
 	}
 	data, err := proto.Marshal(reply.(proto.Message))
 	if err != nil {
-		// FIXME: err
-		return
+		errDesc := fmt.Sprintf("nrpc: error marshaling reply: %v", err)
+		s.respondError(msg.Reply, Internal, errDesc)
+		return err
 	}
 	if err := msg.Respond(data); err != nil {
-		// FIXME: err
+		slog.Warn("nrpc: Server.processMsg failed to respond", "error", err)
+		return err
 	}
+	return nil
+}
+
+func (s *Server) respondError(reply string, code Code, message string) error {
+	m := nats.NewMsg(reply)
+	m.Header.Set(statusHdr, strconv.Itoa(int(code)))
+	m.Header.Set(messageHdr, message)
+
+	if err := s.nc.PublishMsg(m); err != nil {
+		slog.Warn("nrpc: Server.respondError failed to publish msg", "error", err)
+		return err
+	}
+	return nil
 }
