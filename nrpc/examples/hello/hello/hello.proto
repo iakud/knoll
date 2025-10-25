@@ -1,0 +1,17 @@
+edition = "2023";
+
+package hello;
+
+option go_package="github.com/iakud/knoll/nrpc/examples/hello/hello";
+
+service Hello {
+    rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+message HelloRequest {
+    string Name = 1;
+}
+
+message HelloReply {
+    string Message = 1;
+}

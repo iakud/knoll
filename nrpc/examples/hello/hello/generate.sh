@@ -28,7 +28,7 @@ function printUsage() {
     $colorful && tput setaf 7
 }
 
-source ../../var.sh
+source ../../../../var.sh
 
 protoc -I. -I=$PROTOC_INCLUDE \
     --go_opt=default_api_level=API_OPAQUE \
