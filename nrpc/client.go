@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/iakud/knoll/nrpc/codes"
+	"github.com/iakud/knoll/nrpc/status"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 )
@@ -27,7 +29,7 @@ func NewClient(nc *nats.Conn, subj string) *ClientConn {
 func (c *ClientConn) Invoke(ctx context.Context, method string, args proto.Message, reply proto.Message) error {
 	data, err := proto.Marshal(args)
 	if err != nil {
-		return err
+		return status.Errorf(codes.Internal, "nrpc: error marshaling: %v", err.Error())
 	}
 	msg := nats.NewMsg(c.subj)
 	msg.Header.Set(methodHdr, method)
@@ -36,15 +38,18 @@ func (c *ClientConn) Invoke(ctx context.Context, method string, args proto.Messa
 	if err != nil {
 		return err
 	}
-	status := m.Header.Get(statusHdr)
-	if len(status) > 0 {
-		c, err := strconv.Atoi(status)
+	// status
+	if value := m.Header.Get(statusHdr); len(value) > 0 {
+		code, err := strconv.ParseInt(value, 10, 32)
 		if err != nil {
-			return err
+			return status.Errorf(codes.Internal, "malformed nrpc-status: %v", err.Error())
 		}
 		message := m.Header.Get(messageHdr)
-		return New(Code(c), message).Err()
+		return status.New(codes.Code(int32(code)), message).Err()
 	}
 
-	return proto.Unmarshal(m.Data, reply)
+	if err := proto.Unmarshal(m.Data, reply); err != nil {
+		return status.Errorf(codes.Internal, "nrpc: failed to unmarshal the received message: %v", err.Error())
+	}
+	return nil
 }

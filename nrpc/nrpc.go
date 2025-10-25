@@ -1,7 +1,7 @@
 package nrpc
 
 const (
-	methodHdr  = "Nrpc-Method"
-	statusHdr  = "Nrpc-Status"
-	messageHdr = "Nrpc-Message"
+	methodHdr  = "nrpc-method"
+	statusHdr  = "nrpc-status"
+	messageHdr = "nrpc-message"
 )

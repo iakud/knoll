@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/iakud/knoll/nrpc/codes"
+	"github.com/iakud/knoll/nrpc/status"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 )
@@ -130,8 +132,7 @@ func (s *Server) handleMsg(msg *nats.Msg) {
 	}
 	pos := strings.LastIndex(sm, "/")
 	if pos == -1 {
-		errDesc := fmt.Sprintf("malformed method name: %q", sm)
-		s.respondError(msg.Reply, Unimplemented, errDesc)
+		s.respondStatus(msg, codes.Unimplemented, fmt.Sprintf("malformed nrpc-method name: %q", sm))
 		return
 	}
 	service := sm[:pos]
@@ -148,40 +149,42 @@ func (s *Server) handleMsg(msg *nats.Msg) {
 func (s *Server) processMsg(ctx context.Context, msg *nats.Msg, srv *serviceInfo, md *MethodDesc) error {
 	df := func(v interface{}) error {
 		if err := proto.Unmarshal(msg.Data, v.(proto.Message)); err != nil {
-			return Errorf(Internal, "nrpc: error unmarshalling request: %v", err)
+			return status.Errorf(codes.Internal, "nrpc: error unmarshalling request: %v", err.Error())
 		}
 		return nil
 	}
 	reply, err := md.Handler(srv.serviceImpl, ctx, df)
 	if err != nil {
-		appStatus, ok := FromError(err)
+		appStatus, ok := status.FromError(err)
 		if !ok {
-			appStatus = FromContextError(err)
+			appStatus = status.FromContextError(err)
 			err = appStatus.Err()
 		}
-		s.respondError(msg.Reply, appStatus.Code, appStatus.Message)
+		s.respondStatus(msg, appStatus.Code, appStatus.Message)
 		return err
 	}
 	data, err := proto.Marshal(reply.(proto.Message))
 	if err != nil {
-		errDesc := fmt.Sprintf("nrpc: error marshaling reply: %v", err)
-		s.respondError(msg.Reply, Internal, errDesc)
+		s.respondStatus(msg, codes.Internal, fmt.Sprintf("nrpc: error marshaling reply: %v", err))
 		return err
 	}
-	if err := msg.Respond(data); err != nil {
-		slog.Warn("nrpc: Server.processMsg failed to respond", "error", err)
+	return s.respond(msg, data)
+}
+
+func (s *Server) respondStatus(msg *nats.Msg, code codes.Code, message string) error {
+	replyMsg := nats.NewMsg("")
+	replyMsg.Header.Set(statusHdr, strconv.Itoa(int(code)))
+	replyMsg.Header.Set(messageHdr, message)
+	if err := msg.RespondMsg(replyMsg); err != nil {
+		slog.Warn("nrpc: Server.respondStatus failed to respond msg", "error", err.Error())
 		return err
 	}
 	return nil
 }
 
-func (s *Server) respondError(reply string, code Code, message string) error {
-	m := nats.NewMsg(reply)
-	m.Header.Set(statusHdr, strconv.Itoa(int(code)))
-	m.Header.Set(messageHdr, message)
-
-	if err := s.nc.PublishMsg(m); err != nil {
-		slog.Warn("nrpc: Server.respondError failed to publish msg", "error", err)
+func (s *Server) respond(msg *nats.Msg, data []byte) error {
+	if err := msg.Respond(data); err != nil {
+		slog.Warn("nrpc: Server.respond failed to respond", "error", err.Error())
 		return err
 	}
 	return nil
