@@ -3,8 +3,10 @@ package nrpc
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/iakud/knoll/nrpc/codes"
+	"github.com/iakud/knoll/nrpc/nrpcutil"
 	"github.com/iakud/knoll/nrpc/status"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
@@ -32,6 +34,15 @@ func (c *ClientConn) Invoke(ctx context.Context, method string, args proto.Messa
 		return status.Errorf(codes.Internal, "nrpc: error marshaling: %v", err.Error())
 	}
 	msg := nats.NewMsg(c.subj)
+
+	if dl, ok := ctx.Deadline(); ok {
+		timeout := time.Until(dl)
+		if timeout <= 0 {
+			return status.New(codes.DeadlineExceeded, context.DeadlineExceeded.Error()).Err()
+		}
+		msg.Header.Set(timeoutHdr, nrpcutil.EncodeDuration(timeout))
+	}
+
 	msg.Header.Set(methodHdr, method)
 	msg.Data = data
 	m, err := c.nc.RequestMsgWithContext(ctx, msg)

@@ -8,8 +8,10 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/iakud/knoll/nrpc/codes"
+	"github.com/iakud/knoll/nrpc/nrpcutil"
 	"github.com/iakud/knoll/nrpc/status"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
@@ -125,14 +127,28 @@ func (s *Server) Close() error {
 }
 
 func (s *Server) handleMsg(msg *nats.Msg) {
-	ctx := context.TODO()
+	var ctx context.Context
+	var cancel context.CancelFunc
+	if value := msg.Header.Get(timeoutHdr); len(value) > 0 {
+		var timeout time.Duration
+		var err error
+		if timeout, err = nrpcutil.DecodeDuration(value); err != nil {
+			s.respondStatus(msg, codes.Internal, fmt.Sprintf("malformed nrpc-timeout: %v", err))
+			return
+		}
+		ctx, cancel = context.WithTimeout(context.Background(), timeout)
+	} else {
+		ctx, cancel = context.WithCancel(context.Background())
+	}
+	defer cancel()
+
 	sm := msg.Header.Get(methodHdr)
 	if sm != "" && sm[0] == '/' {
 		sm = sm[1:]
 	}
 	pos := strings.LastIndex(sm, "/")
 	if pos == -1 {
-		s.respondStatus(msg, codes.Unimplemented, fmt.Sprintf("malformed nrpc-method name: %q", sm))
+		s.respondStatus(msg, codes.Unimplemented, fmt.Sprintf("malformed nrpc-method: %q", sm))
 		return
 	}
 	service := sm[:pos]
