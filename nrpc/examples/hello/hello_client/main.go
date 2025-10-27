@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/iakud/knoll/nrpc"
-	"github.com/iakud/knoll/nrpc/example"
+	"github.com/iakud/knoll/nrpc/examples/hello/hello"
 	"github.com/nats-io/nats.go"
 )
 
@@ -14,12 +15,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	c := nrpc.NewClient(nc, "example1")
-	client := example.NewExampleClient(c)
-	var req example.TestRequest
-	req.SetText("hello")
+	c := nrpc.NewClient(nc, "hello")
+	client := hello.NewHelloClient(c)
+
 	for i := 0; i < 10; i++ {
-		reply, err := client.Test(context.TODO(), &req)
+		var req hello.SayHelloRequest
+		req.SetName(fmt.Sprintf("world %d", i))
+		reply, err := client.SayHello(context.Background(), &req)
 		if err != nil {
 			slog.Info("client test", "error", err)
 		} else {

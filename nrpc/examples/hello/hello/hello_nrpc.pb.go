@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-nrpc v1.0.0
 // - protoc             v6.30.2
-// source: example.proto
+// source: hello.proto
 
-package example
+package hello
 
 import (
 	context "context"
@@ -12,54 +12,54 @@ import (
 )
 
 const (
-	Example_Test_FullMethodName = "/example.Example/Test"
+	Hello_SayHello_FullMethodName = "/hello.Hello/SayHello"
 )
 
-type ExampleClient interface {
-	Test(ctx context.Context, in *TestRequest) (*TestReply, error)
+type HelloClient interface {
+	SayHello(ctx context.Context, in *SayHelloRequest) (*SayHelloReply, error)
 }
 
-type exampleClient struct {
+type helloClient struct {
 	cc nrpc.ClientConnInterface
 }
 
-func NewExampleClient(cc nrpc.ClientConnInterface) ExampleClient {
-	return &exampleClient{cc}
+func NewHelloClient(cc nrpc.ClientConnInterface) HelloClient {
+	return &helloClient{cc}
 }
 
-func (c *exampleClient) Test(ctx context.Context, in *TestRequest) (*TestReply, error) {
-	out := new(TestReply)
-	err := c.cc.Invoke(ctx, Example_Test_FullMethodName, in, out)
+func (c *helloClient) SayHello(ctx context.Context, in *SayHelloRequest) (*SayHelloReply, error) {
+	out := new(SayHelloReply)
+	err := c.cc.Invoke(ctx, Hello_SayHello_FullMethodName, in, out)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-type ExampleServer interface {
-	Test(context.Context, *TestRequest) (*TestReply, error)
+type HelloServer interface {
+	SayHello(context.Context, *SayHelloRequest) (*SayHelloReply, error)
 }
 
-func RegisterExampleServer(s nrpc.ServiceRegistrar, srv ExampleServer) {
-	s.RegisterService(&Example_ServiceDesc, srv)
+func RegisterHelloServer(s nrpc.ServiceRegistrar, srv HelloServer) {
+	s.RegisterService(&Hello_ServiceDesc, srv)
 }
 
-func _Example_Test_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
-	in := new(TestRequest)
+func _Hello_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(SayHelloRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(ExampleServer).Test(ctx, in)
+	return srv.(HelloServer).SayHello(ctx, in)
 }
 
-var Example_ServiceDesc = nrpc.ServiceDesc{
-	ServiceName: "example.Example",
-	HandlerType: (*ExampleServer)(nil),
+var Hello_ServiceDesc = nrpc.ServiceDesc{
+	ServiceName: "hello.Hello",
+	HandlerType: (*HelloServer)(nil),
 	Methods: []nrpc.MethodDesc{
 		{
-			MethodName: "Test",
-			Handler:    _Example_Test_Handler,
+			MethodName: "SayHello",
+			Handler:    _Hello_SayHello_Handler,
 		},
 	},
-	Metadata: "example.proto",
+	Metadata: "hello.proto",
 }

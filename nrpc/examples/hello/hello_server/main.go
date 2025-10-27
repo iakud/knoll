@@ -2,26 +2,24 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
-	"sync/atomic"
 	"syscall"
 
 	"github.com/iakud/knoll/nrpc"
-	"github.com/iakud/knoll/nrpc/example"
+	"github.com/iakud/knoll/nrpc/examples/hello/hello"
 	"github.com/nats-io/nats.go"
 )
 
-type server struct {
-	num atomic.Int32
+type helloServer struct {
 }
 
-func (s *server) Test(ctx context.Context, req *example.TestRequest) (*example.TestReply, error) {
-	slog.Info("server test", "req", req)
-	reply := &example.TestReply{}
-	reply.SetText(req.GetText())
-	reply.SetNum(s.num.Add(1))
+func (s *helloServer) SayHello(ctx context.Context, req *hello.SayHelloRequest) (*hello.SayHelloReply, error) {
+	slog.Info("sayhello", "req", req)
+	reply := &hello.SayHelloReply{}
+	reply.SetMessage(fmt.Sprintf("hello %s", req.GetName()))
 	return reply, nil
 }
 
@@ -30,8 +28,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	s := nrpc.NewServer(nc, "example1")
-	example.RegisterExampleServer(s, &server{})
+	s := nrpc.NewServer(nc, "hello", "hello")
+	hello.RegisterHelloServer(s, &helloServer{})
 	if err := s.Start(); err != nil {
 		panic(err)
 	}

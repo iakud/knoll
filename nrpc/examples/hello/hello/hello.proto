@@ -5,13 +5,13 @@ package hello;
 option go_package="github.com/iakud/knoll/nrpc/examples/hello/hello";
 
 service Hello {
-    rpc SayHello (HelloRequest) returns (HelloReply) {}
+    rpc SayHello (SayHelloRequest) returns (SayHelloReply) {}
 }
 
-message HelloRequest {
+message SayHelloRequest {
     string Name = 1;
 }
 
-message HelloReply {
+message SayHelloReply {
     string Message = 1;
 }

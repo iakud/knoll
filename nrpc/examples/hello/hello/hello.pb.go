@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.7
 // 	protoc        v6.30.2
-// source: example.proto
+// source: hello.proto
 
-package example
+package hello
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -20,30 +20,30 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type TestRequest struct {
+type SayHelloRequest struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Text        *string                `protobuf:"bytes,1,opt,name=Text"`
+	xxx_hidden_Name        *string                `protobuf:"bytes,1,opt,name=Name"`
 	XXX_raceDetectHookData protoimpl.RaceDetectHookData
 	XXX_presence           [1]uint32
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
 
-func (x *TestRequest) Reset() {
-	*x = TestRequest{}
-	mi := &file_example_proto_msgTypes[0]
+func (x *SayHelloRequest) Reset() {
+	*x = SayHelloRequest{}
+	mi := &file_hello_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *TestRequest) String() string {
+func (x *SayHelloRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TestRequest) ProtoMessage() {}
+func (*SayHelloRequest) ProtoMessage() {}
 
-func (x *TestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_example_proto_msgTypes[0]
+func (x *SayHelloRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hello_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54,75 +54,74 @@ func (x *TestRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *TestRequest) GetText() string {
+func (x *SayHelloRequest) GetName() string {
 	if x != nil {
-		if x.xxx_hidden_Text != nil {
-			return *x.xxx_hidden_Text
+		if x.xxx_hidden_Name != nil {
+			return *x.xxx_hidden_Name
 		}
 		return ""
 	}
 	return ""
 }
 
-func (x *TestRequest) SetText(v string) {
-	x.xxx_hidden_Text = &v
+func (x *SayHelloRequest) SetName(v string) {
+	x.xxx_hidden_Name = &v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
 }
 
-func (x *TestRequest) HasText() bool {
+func (x *SayHelloRequest) HasName() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
 }
 
-func (x *TestRequest) ClearText() {
+func (x *SayHelloRequest) ClearName() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
-	x.xxx_hidden_Text = nil
+	x.xxx_hidden_Name = nil
 }
 
-type TestRequest_builder struct {
+type SayHelloRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Text *string
+	Name *string
 }
 
-func (b0 TestRequest_builder) Build() *TestRequest {
-	m0 := &TestRequest{}
+func (b0 SayHelloRequest_builder) Build() *SayHelloRequest {
+	m0 := &SayHelloRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
-	if b.Text != nil {
+	if b.Name != nil {
 		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 1)
-		x.xxx_hidden_Text = b.Text
+		x.xxx_hidden_Name = b.Name
 	}
 	return m0
 }
 
-type TestReply struct {
+type SayHelloReply struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Text        *string                `protobuf:"bytes,1,opt,name=Text"`
-	xxx_hidden_Num         int32                  `protobuf:"varint,2,opt,name=Num"`
+	xxx_hidden_Message     *string                `protobuf:"bytes,1,opt,name=Message"`
 	XXX_raceDetectHookData protoimpl.RaceDetectHookData
 	XXX_presence           [1]uint32
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
 
-func (x *TestReply) Reset() {
-	*x = TestReply{}
-	mi := &file_example_proto_msgTypes[1]
+func (x *SayHelloReply) Reset() {
+	*x = SayHelloReply{}
+	mi := &file_hello_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *TestReply) String() string {
+func (x *SayHelloReply) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TestReply) ProtoMessage() {}
+func (*SayHelloReply) ProtoMessage() {}
 
-func (x *TestReply) ProtoReflect() protoreflect.Message {
-	mi := &file_example_proto_msgTypes[1]
+func (x *SayHelloReply) ProtoReflect() protoreflect.Message {
+	mi := &file_hello_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -133,100 +132,70 @@ func (x *TestReply) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *TestReply) GetText() string {
+func (x *SayHelloReply) GetMessage() string {
 	if x != nil {
-		if x.xxx_hidden_Text != nil {
-			return *x.xxx_hidden_Text
+		if x.xxx_hidden_Message != nil {
+			return *x.xxx_hidden_Message
 		}
 		return ""
 	}
 	return ""
 }
 
-func (x *TestReply) GetNum() int32 {
-	if x != nil {
-		return x.xxx_hidden_Num
-	}
-	return 0
+func (x *SayHelloReply) SetMessage(v string) {
+	x.xxx_hidden_Message = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
 }
 
-func (x *TestReply) SetText(v string) {
-	x.xxx_hidden_Text = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 2)
-}
-
-func (x *TestReply) SetNum(v int32) {
-	x.xxx_hidden_Num = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 2)
-}
-
-func (x *TestReply) HasText() bool {
+func (x *SayHelloReply) HasMessage() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
 }
 
-func (x *TestReply) HasNum() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
-}
-
-func (x *TestReply) ClearText() {
+func (x *SayHelloReply) ClearMessage() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
-	x.xxx_hidden_Text = nil
+	x.xxx_hidden_Message = nil
 }
 
-func (x *TestReply) ClearNum() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-	x.xxx_hidden_Num = 0
-}
-
-type TestReply_builder struct {
+type SayHelloReply_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Text *string
-	Num  *int32
+	Message *string
 }
 
-func (b0 TestReply_builder) Build() *TestReply {
-	m0 := &TestReply{}
+func (b0 SayHelloReply_builder) Build() *SayHelloReply {
+	m0 := &SayHelloReply{}
 	b, x := &b0, m0
 	_, _ = b, x
-	if b.Text != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 2)
-		x.xxx_hidden_Text = b.Text
-	}
-	if b.Num != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 2)
-		x.xxx_hidden_Num = *b.Num
+	if b.Message != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 1)
+		x.xxx_hidden_Message = b.Message
 	}
 	return m0
 }
 
-var File_example_proto protoreflect.FileDescriptor
+var File_hello_proto protoreflect.FileDescriptor
 
-const file_example_proto_rawDesc = "" +
+const file_hello_proto_rawDesc = "" +
 	"\n" +
-	"\rexample.proto\x12\aexample\"!\n" +
-	"\vTestRequest\x12\x12\n" +
-	"\x04Text\x18\x01 \x01(\tR\x04Text\"1\n" +
-	"\tTestReply\x12\x12\n" +
-	"\x04Text\x18\x01 \x01(\tR\x04Text\x12\x10\n" +
-	"\x03Num\x18\x02 \x01(\x05R\x03Num2=\n" +
-	"\aExample\x122\n" +
-	"\x04Test\x12\x14.example.TestRequest\x1a\x12.example.TestReply\"\x00B%Z#github.com/iakud/knoll/nrpc/exampleb\beditionsp\xe8\a"
+	"\vhello.proto\x12\x05hello\"%\n" +
+	"\x0fSayHelloRequest\x12\x12\n" +
+	"\x04Name\x18\x01 \x01(\tR\x04Name\")\n" +
+	"\rSayHelloReply\x12\x18\n" +
+	"\aMessage\x18\x01 \x01(\tR\aMessage2C\n" +
+	"\x05Hello\x12:\n" +
+	"\bSayHello\x12\x16.hello.SayHelloRequest\x1a\x14.hello.SayHelloReply\"\x00B2Z0github.com/iakud/knoll/nrpc/examples/hello/hellob\beditionsp\xe8\a"
 
-var file_example_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_example_proto_goTypes = []any{
-	(*TestRequest)(nil), // 0: example.TestRequest
-	(*TestReply)(nil),   // 1: example.TestReply
+var file_hello_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_hello_proto_goTypes = []any{
+	(*SayHelloRequest)(nil), // 0: hello.SayHelloRequest
+	(*SayHelloReply)(nil),   // 1: hello.SayHelloReply
 }
-var file_example_proto_depIdxs = []int32{
-	0, // 0: example.Example.Test:input_type -> example.TestRequest
-	1, // 1: example.Example.Test:output_type -> example.TestReply
+var file_hello_proto_depIdxs = []int32{
+	0, // 0: hello.Hello.SayHello:input_type -> hello.SayHelloRequest
+	1, // 1: hello.Hello.SayHello:output_type -> hello.SayHelloReply
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -234,26 +203,26 @@ var file_example_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_example_proto_init() }
-func file_example_proto_init() {
-	if File_example_proto != nil {
+func init() { file_hello_proto_init() }
+func file_hello_proto_init() {
+	if File_hello_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_example_proto_rawDesc), len(file_example_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_hello_proto_rawDesc), len(file_hello_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_example_proto_goTypes,
-		DependencyIndexes: file_example_proto_depIdxs,
-		MessageInfos:      file_example_proto_msgTypes,
+		GoTypes:           file_hello_proto_goTypes,
+		DependencyIndexes: file_hello_proto_depIdxs,
+		MessageInfos:      file_hello_proto_msgTypes,
 	}.Build()
-	File_example_proto = out.File
-	file_example_proto_goTypes = nil
-	file_example_proto_depIdxs = nil
+	File_hello_proto = out.File
+	file_hello_proto_goTypes = nil
+	file_hello_proto_depIdxs = nil
 }
