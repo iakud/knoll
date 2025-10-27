@@ -43,16 +43,17 @@ type serviceInfo struct {
 }
 
 type Server struct {
-	mu   sync.Mutex // guards following
-	nc   *nats.Conn
-	subj string
-	sub  *nats.Subscription
+	mu    sync.Mutex // guards following
+	nc    *nats.Conn
+	subj  string
+	queue string
+	sub   *nats.Subscription
 
 	services map[string]*serviceInfo
 }
 
-func NewServer(nc *nats.Conn, subj string) *Server {
-	return &Server{nc: nc, subj: subj, services: make(map[string]*serviceInfo)}
+func NewServer(nc *nats.Conn, subj string, queue string) *Server {
+	return &Server{nc: nc, subj: subj, queue: queue, services: make(map[string]*serviceInfo)}
 }
 
 type ServiceRegistrar interface {
@@ -102,8 +103,7 @@ func (s *Server) register(sd *ServiceDesc, ss any) {
 func (s *Server) Start() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	sub, err := s.nc.Subscribe(s.subj, s.handleMsg)
-
+	sub, err := s.nc.QueueSubscribe(s.subj, s.queue, s.handleMsg)
 	if err != nil {
 		return err
 	}
