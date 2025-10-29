@@ -33,5 +33,5 @@ source ../../../../var.sh
 protoc -I. -I=$PROTOC_INCLUDE \
     --go_opt=default_api_level=API_OPAQUE \
 	--go_out=paths=source_relative:. \
-    --go-nrpc_out=paths=source_relative:. \
+    --nrpc_out=paths=source_relative:. \
 	`find . -name "*.proto"`
