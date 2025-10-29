@@ -24,7 +24,11 @@ func (s *helloServer) SayHello(ctx context.Context, req *hello.SayHelloRequest) 
 }
 
 func main() {
-	nc, err := nats.Connect("nats://10.10.45.25:4222")
+	var natsURL = nats.DefaultURL
+	if len(os.Args) == 2 {
+		natsURL = os.Args[1]
+	}
+	nc, err := nats.Connect(natsURL)
 	if err != nil {
 		panic(err)
 	}
