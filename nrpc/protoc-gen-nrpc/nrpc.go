@@ -96,11 +96,7 @@ func generateFile(gen *protogen.Plugin, file *protogen.File) *protogen.Generated
 	g.P("// versions:")
 	g.P("// - protoc-gen-nrpc v", version)
 	g.P("// - protoc             ", protocVersion(gen))
-	if file.Proto.GetOptions().GetDeprecated() {
-		g.P("// ", file.Desc.Path(), " is a deprecated file.")
-	} else {
-		g.P("// source: ", file.Desc.Path())
-	}
+	g.P("// source: ", file.Desc.Path())
 	g.P()
 	// Attach all comments associated with the package field.
 	genLeadingComments(g, file.Desc.SourceLocations().ByPath(protoreflect.SourcePath{fileDescriptorProtoPackageFieldNumber}))
