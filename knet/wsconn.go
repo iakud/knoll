@@ -151,6 +151,7 @@ func (c *WSConn) Shutdown() {
 func (c *WSConn) Close() error {
 	return c.wsconn.Close()
 }
+
 func (c *WSConn) CloseWithTimeout(timeout time.Duration) {
 	time.AfterFunc(timeout, func() {
 		c.Close()
