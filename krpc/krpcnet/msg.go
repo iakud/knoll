@@ -3,6 +3,7 @@ package krpcnet
 import (
 	"encoding/binary"
 	"errors"
+	"net/netip"
 	"slices"
 	"sync"
 )
@@ -12,6 +13,8 @@ type Msg interface {
 	Size() int
 	ConnId() uint64
 	SetConnId(connId uint64)
+	ConnAddr() netip.Addr
+	SetConnAddr(addr netip.Addr)
 	UserId() uint64
 	SetUserId(userId uint64)
 	Payload() []byte
@@ -49,6 +52,13 @@ func (m *userMsg) ConnId() uint64 {
 }
 
 func (m *userMsg) SetConnId(connId uint64) {
+}
+
+func (m *userMsg) ConnAddr() netip.Addr {
+	return netip.Addr{}
+}
+
+func (m *userMsg) SetConnAddr(addr netip.Addr) {
 }
 
 func (m *userMsg) UserId() uint64 {
@@ -98,8 +108,9 @@ func (m *userMsg) Unmarshal(buf []byte) (int, error) {
 }
 
 const (
-	kMsgConnIdSize = 8
-	kMsgUserIdSize = 8
+	kMsgConnIdSize   = 8
+	kMsgConnAddrSize = 16
+	kMsgUserIdSize   = 8
 )
 
 var _ Msg = (*backendMsg)(nil)
@@ -111,10 +122,11 @@ func NewBackendMsg() Msg {
 }
 
 type backendMsg struct {
-	header  Header
-	connId  uint64
-	userId  uint64
-	payload []byte
+	header   Header
+	connId   uint64
+	connAddr [16]byte
+	userId   uint64
+	payload  []byte
 }
 
 func (m *backendMsg) Header() *Header {
@@ -127,6 +139,14 @@ func (m *backendMsg) ConnId() uint64 {
 
 func (m *backendMsg) SetConnId(connId uint64) {
 	m.connId = connId
+}
+
+func (m *backendMsg) ConnAddr() netip.Addr {
+	return netip.AddrFrom16(m.connAddr)
+}
+
+func (m *backendMsg) SetConnAddr(addr netip.Addr) {
+	m.connAddr = addr.As16()
 }
 
 func (m *backendMsg) UserId() uint64 {
@@ -146,11 +166,11 @@ func (m *backendMsg) SetPayload(payload []byte) {
 }
 
 func (m *backendMsg) Size() int {
-	return HeaderSize + kMsgConnIdSize + kMsgUserIdSize + len(m.payload)
+	return HeaderSize + kMsgConnIdSize + kMsgConnAddrSize + kMsgUserIdSize + len(m.payload)
 }
 
 func (m *backendMsg) Marshal(buf []byte) (int, error) {
-	if len(buf) < HeaderSize+kMsgConnIdSize+kMsgUserIdSize+len(m.payload) {
+	if len(buf) < HeaderSize+kMsgConnIdSize+kMsgConnAddrSize+kMsgUserIdSize+len(m.payload) {
 		return 0, errors.New("buffer too small")
 	}
 	n, err := m.header.Marshal(buf)
@@ -160,6 +180,8 @@ func (m *backendMsg) Marshal(buf []byte) (int, error) {
 
 	binary.BigEndian.PutUint64(buf[n:], m.connId)
 	n += kMsgConnIdSize
+	copy(buf[n:], m.connAddr[:])
+	n += kMsgConnAddrSize
 	binary.BigEndian.PutUint64(buf[n:], m.userId)
 	n += kMsgUserIdSize
 
@@ -168,7 +190,7 @@ func (m *backendMsg) Marshal(buf []byte) (int, error) {
 }
 
 func (m *backendMsg) Unmarshal(buf []byte) (int, error) {
-	if len(buf) < HeaderSize+kMsgConnIdSize+kMsgUserIdSize {
+	if len(buf) < HeaderSize+kMsgConnIdSize+kMsgConnAddrSize+kMsgUserIdSize {
 		return 0, errors.New("buffer too small")
 	}
 	n, err := m.header.Unmarshal(buf)
@@ -178,6 +200,8 @@ func (m *backendMsg) Unmarshal(buf []byte) (int, error) {
 
 	m.connId = binary.BigEndian.Uint64(buf[n:])
 	n += kMsgConnIdSize
+	copy(m.connAddr[:], buf[n:])
+	n += kMsgConnAddrSize
 	m.userId = binary.BigEndian.Uint64(buf[n:])
 	n += kMsgUserIdSize
 
