@@ -3,7 +3,7 @@ package krpcnet
 import (
 	"encoding/binary"
 	"errors"
-	"net"
+	"net/netip"
 	"slices"
 	"sync"
 )
@@ -13,8 +13,8 @@ type Msg interface {
 	Size() int
 	ConnId() uint64
 	SetConnId(connId uint64)
-	ConnIP() net.IP
-	SetConnIP(ip net.IP)
+	ConnIP() netip.Addr
+	SetConnIP(ip netip.Addr)
 	UserId() uint64
 	SetUserId(userId uint64)
 	Payload() []byte
@@ -54,11 +54,11 @@ func (m *userMsg) ConnId() uint64 {
 func (m *userMsg) SetConnId(connId uint64) {
 }
 
-func (m *userMsg) ConnIP() net.IP {
-	return net.IPv6zero
+func (m *userMsg) ConnIP() netip.Addr {
+	return netip.Addr{}
 }
 
-func (m *userMsg) SetConnIP(ip net.IP) {
+func (m *userMsg) SetConnIP(ip netip.Addr) {
 }
 
 func (m *userMsg) UserId() uint64 {
@@ -109,7 +109,7 @@ func (m *userMsg) Unmarshal(buf []byte) (int, error) {
 
 const (
 	kMsgConnIdSize   = 8
-	kMsgConnAddrSize = net.IPv6len
+	kMsgConnAddrSize = 16
 	kMsgUserIdSize   = 8
 )
 
@@ -124,7 +124,7 @@ func NewBackendMsg() Msg {
 type backendMsg struct {
 	header  Header
 	connId  uint64
-	connIP  [net.IPv6len]byte
+	connIP  [16]byte
 	userId  uint64
 	payload []byte
 }
@@ -141,21 +141,12 @@ func (m *backendMsg) SetConnId(connId uint64) {
 	m.connId = connId
 }
 
-func (m *backendMsg) ConnIP() net.IP {
-	ip := make(net.IP, net.IPv6len)
-	copy(ip, m.connIP[:])
-	return ip
+func (m *backendMsg) ConnIP() netip.Addr {
+	return netip.AddrFrom16(m.connIP)
 }
 
-func (m *backendMsg) SetConnIP(ip net.IP) {
-	switch len(ip) {
-	case net.IPv4len:
-		m.connIP = [16]byte(net.IPv4(ip[0], ip[1], ip[2], ip[3]))
-	case net.IPv6len:
-		m.connIP = [16]byte(ip)
-	default:
-		m.connIP = [16]byte(net.IPv6zero)
-	}
+func (m *backendMsg) SetConnIP(ip netip.Addr) {
+	m.connIP = ip.As16()
 }
 
 func (m *backendMsg) UserId() uint64 {
