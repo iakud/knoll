@@ -109,7 +109,7 @@ func (m *userMsg) Unmarshal(buf []byte) (int, error) {
 
 const (
 	kMsgConnIdSize   = 8
-	kMsgConnAddrSize = 16
+	kMsgConnAddrSize = net.IPv6len
 	kMsgUserIdSize   = 8
 )
 
@@ -124,7 +124,7 @@ func NewBackendMsg() Msg {
 type backendMsg struct {
 	header  Header
 	connId  uint64
-	connIP  [16]byte
+	connIP  [net.IPv6len]byte
 	userId  uint64
 	payload []byte
 }
@@ -142,7 +142,9 @@ func (m *backendMsg) SetConnId(connId uint64) {
 }
 
 func (m *backendMsg) ConnIP() net.IP {
-	return net.IP(m.connIP[:])
+	ip := make(net.IP, net.IPv6len)
+	copy(ip, m.connIP[:])
+	return ip
 }
 
 func (m *backendMsg) SetConnIP(ip net.IP) {
