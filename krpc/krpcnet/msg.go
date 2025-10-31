@@ -55,7 +55,7 @@ func (m *userMsg) SetConnId(connId uint64) {
 }
 
 func (m *userMsg) ConnIP() net.IP {
-	return nil
+	return net.IPv6zero
 }
 
 func (m *userMsg) SetConnIP(ip net.IP) {
@@ -146,7 +146,14 @@ func (m *backendMsg) ConnIP() net.IP {
 }
 
 func (m *backendMsg) SetConnIP(ip net.IP) {
-	m.connIP = [16]byte(ip.To16())
+	switch len(ip) {
+	case net.IPv4len:
+		m.connIP = [16]byte(net.IPv4(ip[0], ip[1], ip[2], ip[3]))
+	case net.IPv6len:
+		m.connIP = [16]byte(ip)
+	default:
+		m.connIP = [16]byte(net.IPv6zero)
+	}
 }
 
 func (m *backendMsg) UserId() uint64 {
