@@ -3,7 +3,7 @@ package krpcnet
 import (
 	"encoding/binary"
 	"errors"
-	"net/netip"
+	"net"
 	"slices"
 	"sync"
 )
@@ -13,8 +13,8 @@ type Msg interface {
 	Size() int
 	ConnId() uint64
 	SetConnId(connId uint64)
-	ConnAddr() netip.Addr
-	SetConnAddr(addr netip.Addr)
+	ConnIP() net.IP
+	SetConnIP(ip net.IP)
 	UserId() uint64
 	SetUserId(userId uint64)
 	Payload() []byte
@@ -54,11 +54,11 @@ func (m *userMsg) ConnId() uint64 {
 func (m *userMsg) SetConnId(connId uint64) {
 }
 
-func (m *userMsg) ConnAddr() netip.Addr {
-	return netip.Addr{}
+func (m *userMsg) ConnIP() net.IP {
+	return nil
 }
 
-func (m *userMsg) SetConnAddr(addr netip.Addr) {
+func (m *userMsg) SetConnIP(ip net.IP) {
 }
 
 func (m *userMsg) UserId() uint64 {
@@ -122,11 +122,11 @@ func NewBackendMsg() Msg {
 }
 
 type backendMsg struct {
-	header   Header
-	connId   uint64
-	connAddr [16]byte
-	userId   uint64
-	payload  []byte
+	header  Header
+	connId  uint64
+	connIP  [16]byte
+	userId  uint64
+	payload []byte
 }
 
 func (m *backendMsg) Header() *Header {
@@ -141,12 +141,12 @@ func (m *backendMsg) SetConnId(connId uint64) {
 	m.connId = connId
 }
 
-func (m *backendMsg) ConnAddr() netip.Addr {
-	return netip.AddrFrom16(m.connAddr)
+func (m *backendMsg) ConnIP() net.IP {
+	return net.IP(m.connIP[:])
 }
 
-func (m *backendMsg) SetConnAddr(addr netip.Addr) {
-	m.connAddr = addr.As16()
+func (m *backendMsg) SetConnIP(ip net.IP) {
+	m.connIP = [16]byte(ip.To16())
 }
 
 func (m *backendMsg) UserId() uint64 {
@@ -180,7 +180,7 @@ func (m *backendMsg) Marshal(buf []byte) (int, error) {
 
 	binary.BigEndian.PutUint64(buf[n:], m.connId)
 	n += kMsgConnIdSize
-	copy(buf[n:], m.connAddr[:])
+	copy(buf[n:], m.connIP[:])
 	n += kMsgConnAddrSize
 	binary.BigEndian.PutUint64(buf[n:], m.userId)
 	n += kMsgUserIdSize
@@ -200,7 +200,7 @@ func (m *backendMsg) Unmarshal(buf []byte) (int, error) {
 
 	m.connId = binary.BigEndian.Uint64(buf[n:])
 	n += kMsgConnIdSize
-	copy(m.connAddr[:], buf[n:])
+	copy(m.connIP[:], buf[n:])
 	n += kMsgConnAddrSize
 	m.userId = binary.BigEndian.Uint64(buf[n:])
 	n += kMsgUserIdSize
