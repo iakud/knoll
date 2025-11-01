@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
 var (
@@ -13,8 +13,9 @@ var (
 )
 
 type WSServer struct {
-	Handler WSHandler
-	server  *http.Server
+	Handler  WSHandler
+	upgrader websocket.Upgrader
+	server   *http.Server
 
 	mutex  sync.Mutex
 	conns  map[*WSConn]struct{}
@@ -26,7 +27,7 @@ func NewWSServer(addr string, handler WSHandler) *WSServer {
 		Handler: handler,
 		conns:   make(map[*WSConn]struct{}),
 	}
-	server.server = &http.Server{Addr: addr, Handler: websocket.Server{Handler: server.serveWebSocket}}
+	server.server = &http.Server{Addr: addr, Handler: http.HandlerFunc(server.serveWebSocket)}
 	return server
 }
 
@@ -34,16 +35,21 @@ func (s *WSServer) ListenAndServe() error {
 	return s.server.ListenAndServe()
 }
 
-func (s *WSServer) serveWebSocket(wsconn *websocket.Conn) {
-	handler := s.Handler
-	if handler == nil {
-		handler = DefaultWSHandler
+func (s *WSServer) serveWebSocket(w http.ResponseWriter, r *http.Request) {
+	wsconn, err := s.upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return
 	}
 
 	conn := newWSConn(wsconn)
 	if err := s.newConn(conn); err != nil {
 		conn.Close() // close
 		return
+	}
+
+	handler := s.Handler
+	if handler == nil {
+		handler = DefaultWSHandler
 	}
 	s.serveConn(conn, handler)
 }

@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
 var (
@@ -52,8 +52,8 @@ func (c *WSConn) serve(handler WSHandler) {
 	handler.Connect(c, true)
 	defer handler.Connect(c, false)
 	for {
-		var data []byte
-		if err := websocket.Message.Receive(c.wsconn, &data); err != nil {
+		_, data, err := c.wsconn.ReadMessage()
+		if err != nil {
 			c.wsconn.Close()
 			break
 		}
@@ -83,7 +83,7 @@ func (c *WSConn) backgroundWrite() {
 		c.mutex.Unlock()
 
 		for _, message := range bufs {
-			if err := websocket.Message.Send(c.wsconn, message); err != nil {
+			if err := c.wsconn.WriteMessage(websocket.BinaryMessage, message); err != nil {
 				c.closeWrite()
 				c.wsconn.Close()
 				return
