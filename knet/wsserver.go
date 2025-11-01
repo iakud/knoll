@@ -2,6 +2,7 @@ package knet
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"sync"
 
@@ -38,6 +39,7 @@ func (s *WSServer) ListenAndServe() error {
 func (s *WSServer) serveWebSocket(w http.ResponseWriter, r *http.Request) {
 	wsconn, err := s.upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		log.Printf("knet: WSServer upgrade error: %v", err)
 		return
 	}
 
