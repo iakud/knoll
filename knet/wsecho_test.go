@@ -68,7 +68,6 @@ func TestWSEcho(t *testing.T) {
 			log.Println(err)
 		}
 		wsServer.Close()
-		wsServer.Close()
 	}()
 	wsServer.ListenAndServe()
 }
