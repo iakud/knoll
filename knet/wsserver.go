@@ -23,7 +23,7 @@ type WSServer struct {
 	closed bool
 }
 
-func NewWSServer(addr string, handler WSHandler) *WSServer {
+func NewWSServer(addr string, handler WSHandler, checkOrigin func(r *http.Request) bool) *WSServer {
 	server := &WSServer{
 		Handler: handler,
 		conns:   make(map[*WSConn]struct{}),

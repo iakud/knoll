@@ -58,7 +58,7 @@ func (c *wsEchoClient) Receive(connection *knet.WSConn, data []byte) {
 
 func TestWSEcho(t *testing.T) {
 	log.Println("test start")
-	wsServer := knet.NewWSServer("localhost:8000", newWSEchoServer())
+	wsServer := knet.NewWSServer("localhost:8000", newWSEchoServer(), nil)
 	go func() {
 		client := newWSEchoClient()
 		wsClient := knet.NewWSClient("ws://localhost:8000", client)

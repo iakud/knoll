@@ -2,6 +2,7 @@ package krpcnet
 
 import (
 	"log/slog"
+	"net/http"
 	"sync"
 	"sync/atomic"
 
@@ -19,13 +20,13 @@ type wsServer struct {
 	conns   map[uint64]*wsConn
 }
 
-func NewWSServer(addr string, handler ServerHandler, backend bool) Server {
+func NewWSServer(addr string, handler ServerHandler, backend bool, checkOrigin func(r *http.Request) bool) Server {
 	s := &wsServer{
 		handler: handler,
 		backend: backend,
 		conns:   make(map[uint64]*wsConn),
 	}
-	s.server = knet.NewWSServer(addr, s)
+	s.server = knet.NewWSServer(addr, s, checkOrigin)
 	return s
 }
 
