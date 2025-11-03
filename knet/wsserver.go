@@ -28,6 +28,9 @@ func NewWSServer(addr string, handler WSHandler, checkOrigin func(r *http.Reques
 		Handler: handler,
 		conns:   make(map[*WSConn]struct{}),
 	}
+	if checkOrigin != nil {
+		server.upgrader.CheckOrigin = checkOrigin
+	}
 	server.server = &http.Server{Addr: addr, Handler: http.HandlerFunc(server.serveWebSocket)}
 	return server
 }
