@@ -32,7 +32,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	s := nrpc.NewServer(nc, "hello", "hello")
+	s := nrpc.NewServer(nc, "hello")
 	hello.RegisterHelloServer(s, &helloServer{})
 	if err := s.Start(); err != nil {
 		panic(err)
