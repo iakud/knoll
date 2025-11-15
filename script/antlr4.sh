@@ -33,8 +33,8 @@ function printUsage() {
 }
 
 
-export http_proxy=http://127.0.0.1:1087
-export https_proxy=http://127.0.0.1:1087
+# export http_proxy=http://127.0.0.1:1087
+# export https_proxy=http://127.0.0.1:1087
 
 INSTALL_DIR="../local"
 ANTLR4_VERSION=4.13.2
