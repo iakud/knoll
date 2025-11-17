@@ -1,33 +1,65 @@
 package naming
 
-type Attributes struct {
-	m map[any]any
+import (
+	"context"
+	"sync"
+
+	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/client/v3/naming/endpoints"
+)
+
+type Endpoint[T any] struct {
+	Addr     string
+	Metadata T
 }
 
-func New(key, value any) *Attributes {
-	return &Attributes{m: map[any]any{key: value}}
+type Manager[T any] struct {
+	client  *clientv3.Client
+	manager endpoints.Manager
+	ctx     context.Context
+	cancel  context.CancelFunc
+	wg      sync.WaitGroup
 }
 
-func (a *Attributes) WithValue(key, value any) *Attributes {
-	if a == nil {
-		return New(key, value)
+func NewManager[T any](client *clientv3.Client, target string) (*Manager[T], error) {
+	manager, err := endpoints.NewManager(client, target)
+	if err != nil {
+		return nil, err
 	}
-	n := &Attributes{m: make(map[any]any, len(a.m)+1)}
-	for k, v := range a.m {
-		n.m[k] = v
+	ctx, cancel := context.WithCancel(context.Background())
+
+	m := &Manager[T]{
+		client:  client,
+		manager: manager,
+		ctx:     ctx,
+		cancel:  cancel,
 	}
-	n.m[key] = value
-	return n
+	return m, nil
 }
 
-func (a *Attributes) Value(key any) any {
-	if a == nil {
-		return nil
-	}
-	return a.m[key]
+func (m *Manager[T]) Close() {
+	m.cancel()
+	m.wg.Wait()
 }
 
-type Endpoint struct {
-	Addr       string
-	Attributes *Attributes
+func (m *Manager[T]) Context() context.Context {
+	return m.ctx
+}
+
+func (m *Manager[T]) AddEndpoint(key string, endpoint Endpoint[T], opts ...clientv3.OpOption) error {
+	ep := endpoints.Endpoint{
+		Addr:     endpoint.Addr,
+		Metadata: endpoint.Metadata,
+	}
+	return m.manager.AddEndpoint(m.ctx, key, ep, opts...)
+}
+
+func (m *Manager[T]) Watch(watcher Watcher[T]) error {
+	wch, err := m.manager.NewWatchChannel(m.ctx)
+	if err != nil {
+		return err
+	}
+	m.wg.Add(1)
+	go watch(m, wch, watcher)
+	return nil
 }

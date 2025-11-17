@@ -1,62 +1,21 @@
 package naming
 
 import (
-	"context"
-	"sync"
-
-	clientv3 "go.etcd.io/etcd/client/v3"
+	"github.com/go-viper/mapstructure/v2"
 	"go.etcd.io/etcd/client/v3/naming/endpoints"
 )
 
-type ResolverState interface {
-	UpdateState(Endpoints []Endpoint)
+type Watcher[T any] interface {
+	UpdateState(endpoints []Endpoint[T])
 }
 
-type Resolver struct {
-	client *clientv3.Client
-	target string
-	state  ResolverState
-	ctx    context.Context
-	cancel context.CancelFunc
-	wg     sync.WaitGroup
-}
-
-func Resolve(client *clientv3.Client, target string, state ResolverState) (*Resolver, error) {
-	ctx, cancel := context.WithCancel(context.Background())
-	r := &Resolver{
-		client: client,
-		target: target,
-		state:  state,
-		ctx:    ctx,
-		cancel: cancel,
-	}
-
-	manager, err := endpoints.NewManager(client, target)
-	if err != nil {
-		return nil, err
-	}
-	wch, err := manager.NewWatchChannel(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	r.wg.Add(1)
-	go r.watch(wch)
-	return r, nil
-}
-
-func (r *Resolver) Close() {
-	r.cancel()
-	r.wg.Wait()
-}
-
-func (r *Resolver) watch(wch endpoints.WatchChannel) {
-	defer r.wg.Done()
+func watch[T any](m *Manager[T], wch endpoints.WatchChannel, watcher Watcher[T]) {
+	defer m.wg.Done()
 
 	allUps := make(map[string]*endpoints.Update)
 	for {
 		select {
-		case <-r.ctx.Done():
+		case <-m.ctx.Done():
 			return
 		case ups, ok := <-wch:
 			if !ok {
@@ -70,21 +29,19 @@ func (r *Resolver) watch(wch endpoints.WatchChannel) {
 					delete(allUps, up.Key)
 				}
 			}
-			eps := convertToEndpoint(allUps)
-			r.state.UpdateState(eps)
+			eps := convertToEndpoint[T](allUps)
+			watcher.UpdateState(eps)
 		}
 	}
 }
 
-func convertToEndpoint(ups map[string]*endpoints.Update) []Endpoint {
-	var eps []Endpoint
+func convertToEndpoint[T any](ups map[string]*endpoints.Update) []Endpoint[T] {
+	var eps []Endpoint[T]
 	for _, up := range ups {
-		ep := Endpoint{
+		ep := Endpoint[T]{
 			Addr: up.Endpoint.Addr,
 		}
-		if attributes, ok := up.Endpoint.Metadata.(map[any]any); ok {
-			ep.Attributes = &Attributes{m: attributes}
-		}
+		mapstructure.Decode(up.Endpoint.Metadata.(map[string]any), &ep.Metadata)
 		eps = append(eps, ep)
 	}
 	return eps
