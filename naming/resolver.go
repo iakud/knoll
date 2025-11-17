@@ -9,7 +9,7 @@ import (
 )
 
 type ResolverState interface {
-	UpdateState(Endpoints []endpoints.Endpoint)
+	UpdateState(Endpoints []Endpoint)
 }
 
 type Resolver struct {
@@ -72,11 +72,13 @@ func (r *Resolver) watch(wch endpoints.WatchChannel) {
 				}
 			}
 
-			var eps []endpoints.Endpoint
+			var eps []Endpoint
 			for _, up := range ups {
-				ep := endpoints.Endpoint{
-					Addr:     up.Endpoint.Addr,
-					Metadata: up.Endpoint.Metadata,
+				ep := Endpoint{
+					Addr: up.Endpoint.Addr,
+				}
+				if attributes, ok := up.Endpoint.Metadata.(map[any]any); ok {
+					ep.Attributes = &Attributes{m: attributes}
 				}
 				eps = append(eps, ep)
 			}

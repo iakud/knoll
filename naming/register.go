@@ -15,7 +15,7 @@ type Manager struct {
 	cancel context.CancelFunc
 }
 
-func Register(client *clientv3.Client, target string, key string, endpoint endpoints.Endpoint) (*Manager, error) {
+func Register(client *clientv3.Client, target string, key string, endpoint Endpoint) (*Manager, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	r := &Manager{
 		client: client,
@@ -31,7 +31,7 @@ func (r *Manager) Close() {
 	r.cancel()
 }
 
-func (r *Manager) register(key string, endpoint endpoints.Endpoint) {
+func (r *Manager) register(key string, endpoint Endpoint) {
 	for {
 		if err := r.add(key, endpoint); err != nil {
 			fmt.Printf("naming: watch error: %v", err)
@@ -44,7 +44,7 @@ func (r *Manager) register(key string, endpoint endpoints.Endpoint) {
 
 const defaultTTL = 60
 
-func (r *Manager) add(key string, endpoint endpoints.Endpoint) error {
+func (r *Manager) add(key string, endpoint Endpoint) error {
 	resp, err := r.client.Grant(r.ctx, defaultTTL)
 	if err != nil {
 		return err
@@ -53,7 +53,8 @@ func (r *Manager) add(key string, endpoint endpoints.Endpoint) error {
 	if err != nil {
 		return err
 	}
-	if err := manager.AddEndpoint(r.ctx, key, endpoint, clientv3.WithLease(resp.ID)); err != nil {
+	ep := endpoints.Endpoint{Addr: endpoint.Addr, Metadata: endpoint.Attributes}
+	if err := manager.AddEndpoint(r.ctx, key, ep, clientv3.WithLease(resp.ID)); err != nil {
 		return err
 	}
 	return r.keepAlive(resp.ID)
