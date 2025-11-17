@@ -53,7 +53,10 @@ func (r *Manager) add(key string, endpoint Endpoint) error {
 	if err != nil {
 		return err
 	}
-	ep := endpoints.Endpoint{Addr: endpoint.Addr, Metadata: endpoint.Attributes}
+	ep := endpoints.Endpoint{Addr: endpoint.Addr}
+	if endpoint.Attributes != nil {
+		ep.Metadata = endpoint.Attributes.m
+	}
 	if err := manager.AddEndpoint(r.ctx, key, ep, clientv3.WithLease(resp.ID)); err != nil {
 		return err
 	}
