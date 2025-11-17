@@ -62,7 +62,6 @@ func (r *Resolver) watch(wch endpoints.WatchChannel) {
 			if !ok {
 				return
 			}
-
 			for _, up := range ups {
 				switch up.Op {
 				case endpoints.Add:
@@ -71,18 +70,22 @@ func (r *Resolver) watch(wch endpoints.WatchChannel) {
 					delete(allUps, up.Key)
 				}
 			}
-
-			var eps []Endpoint
-			for _, up := range ups {
-				ep := Endpoint{
-					Addr: up.Endpoint.Addr,
-				}
-				if attributes, ok := up.Endpoint.Metadata.(map[any]any); ok {
-					ep.Attributes = &Attributes{m: attributes}
-				}
-				eps = append(eps, ep)
-			}
+			eps := convertToEndpoint(allUps)
 			r.state.UpdateState(eps)
 		}
 	}
+}
+
+func convertToEndpoint(ups map[string]*endpoints.Update) []Endpoint {
+	var eps []Endpoint
+	for _, up := range ups {
+		ep := Endpoint{
+			Addr: up.Endpoint.Addr,
+		}
+		if attributes, ok := up.Endpoint.Metadata.(map[any]any); ok {
+			ep.Attributes = &Attributes{m: attributes}
+		}
+		eps = append(eps, ep)
+	}
+	return eps
 }
