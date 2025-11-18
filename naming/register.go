@@ -1,64 +1,74 @@
 package naming
 
 import (
-	"context"
-	"fmt"
+	"log"
+	"time"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/client/v3/concurrency"
+	"go.etcd.io/etcd/client/v3/naming/endpoints"
 )
 
-func Register[T any](client *clientv3.Client, target string, key string, endpoint Endpoint[T]) (*Manager[T], error) {
-	manager, err := NewManager[T](client, target)
+func (m *Manager[T]) addEndpoint(key string, endpoint endpoints.Endpoint) error {
+	session, err := m.addSessionEndpoint(key, endpoint)
+	if err != nil {
+		return err
+	}
+	go m.keepSessionEndpoint(session, key, endpoint)
+	return nil
+}
+
+func (m *Manager[T]) addSessionEndpoint(key string, endpoint endpoints.Endpoint) (*concurrency.Session, error) {
+	session, err := concurrency.NewSession(m.client)
 	if err != nil {
 		return nil, err
 	}
-	go register(client, manager, key, endpoint)
-	return manager, nil
+	if err := m.manager.AddEndpoint(m.ctx, key, endpoint, clientv3.WithLease(session.Lease())); err != nil {
+		session.Close()
+		return nil, err
+	}
+	return session, nil
 }
 
-func register[T any](client *clientv3.Client, m *Manager[T], key string, endpoint Endpoint[T]) {
-	for {
-		if err := add(client, m, key, endpoint); err != nil {
-			fmt.Printf("naming: addEndpoint error: %v", err)
-			// FIXME： 增加重试间隔
-			continue
-		}
+func (m *Manager[T]) keepSessionEndpoint(session *concurrency.Session, key string, endpoint endpoints.Endpoint) {
+	err := m.keepAliveCtxCloser(session)
+	if err != nil {
 		return
 	}
-}
 
-const defaultTTL = 60
-
-func add[T any](client *clientv3.Client, m *Manager[T], key string, endpoint Endpoint[T]) error {
-	resp, err := client.Grant(m.Context(), defaultTTL)
-	if err != nil {
-		return err
-	}
-	if err := m.AddEndpoint(key, endpoint, clientv3.WithLease(resp.ID)); err != nil {
-		return err
-	}
-	return keepAlive(m.Context(), client, resp.ID)
-}
-
-func keepAlive(ctx context.Context, client *clientv3.Client, id clientv3.LeaseID) error {
-	kaCtx, kaCancel := context.WithCancel(ctx)
-	defer kaCancel()
-	keepAlive, err := client.KeepAlive(kaCtx, id)
-	if err != nil || keepAlive == nil {
-		return err
-	}
-	donec := make(chan struct{})
-	go func() {
-		defer close(donec)
-		for range keepAlive {
-			// eat messages until keep alive channel closes
+	var tempDelay time.Duration // how long to sleep on add failure
+	for {
+		session, err = m.addSessionEndpoint(key, endpoint)
+		if err != nil {
+			select {
+			case <-m.ctx.Done():
+				return
+			default:
+				if tempDelay == 0 {
+					tempDelay = 5 * time.Millisecond
+				} else {
+					tempDelay *= 2
+				}
+				if max := 1 * time.Second; tempDelay > max {
+					tempDelay = max
+				}
+				log.Printf("naming: add endpoint error: %v; retrying in %v", err, tempDelay)
+				time.Sleep(tempDelay)
+				continue
+			}
 		}
-	}()
+		tempDelay = 0
+		if err = m.keepAliveCtxCloser(session); err != nil {
+			return
+		}
+	}
+}
 
+func (m *Manager[T]) keepAliveCtxCloser(session *concurrency.Session) error {
 	select {
-	case <-donec:
-		return fmt.Errorf("naming: keep alive channel closed")
-	case <-ctx.Done():
+	case <-session.Done():
 		return nil
+	case <-m.ctx.Done():
+		return m.ctx.Err()
 	}
 }

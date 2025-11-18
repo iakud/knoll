@@ -46,12 +46,8 @@ func (m *Manager[T]) Context() context.Context {
 	return m.ctx
 }
 
-func (m *Manager[T]) AddEndpoint(key string, endpoint Endpoint[T], opts ...clientv3.OpOption) error {
-	ep := endpoints.Endpoint{
-		Addr:     endpoint.Addr,
-		Metadata: endpoint.Metadata,
-	}
-	return m.manager.AddEndpoint(m.ctx, key, ep, opts...)
+func (m *Manager[T]) AddEndpoint(key string, endpoint Endpoint[T]) error {
+	return m.addEndpoint(key, endpoints.Endpoint{Addr: endpoint.Addr, Metadata: endpoint.Metadata})
 }
 
 func (m *Manager[T]) Watch(watcher Watcher[T]) error {
