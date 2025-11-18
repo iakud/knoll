@@ -1,6 +1,8 @@
 syntax = "proto3";
-package messages;
-option go_package = "github.com/iakud/knoll/examples/actor-chat/messages";
+
+package message;
+
+option go_package = "github.com/iakud/knoll/examples/chat/message";
 
 message Disconnect {}
 

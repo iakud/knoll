@@ -1,3 +1,3 @@
 package main
 
-//go:generate ./generate.sh
+//go:generate ./build.sh

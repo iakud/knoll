@@ -5,8 +5,8 @@ import (
 	"log/slog"
 
 	"github.com/iakud/knoll/actor"
+	"github.com/iakud/knoll/actor/examples/chat/message"
 	"github.com/iakud/knoll/actor/remote"
-	"github.com/iakud/knoll/examples/actor-chat/messages"
 )
 
 type clientMap map[string]*actor.PID
@@ -26,10 +26,10 @@ func newServer() *server {
 
 func (s *server) Receive(ctx *actor.Context) {
 	switch msg := ctx.Message().(type) {
-	case *messages.Message:
+	case *message.Message:
 		slog.Info("message received", "msg", msg.Msg, "from", ctx.Sender())
 		s.handleMessage(ctx)
-	case *messages.Disconnect:
+	case *message.Disconnect:
 		cAddr := ctx.Sender().GetAddress()
 		pid, ok := s.clients[cAddr]
 		if !ok {
@@ -44,7 +44,7 @@ func (s *server) Receive(ctx *actor.Context) {
 		slog.Info("client disconnected", "username", username)
 		delete(s.clients, cAddr)
 		delete(s.users, username)
-	case *messages.Connect:
+	case *message.Connect:
 		cAddr := ctx.Sender().GetAddress()
 		if _, ok := s.clients[cAddr]; ok {
 			slog.Warn("client already connected", "client", ctx.Sender().GetID())

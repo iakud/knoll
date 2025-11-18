@@ -28,6 +28,6 @@ function printUsage() {
     $colorful && tput setaf 7
 }
 
-source ../../../var.sh
+source ../../../../var.sh
 
-protoc -I=. -I=$PROTOC_INCLUDE --go_out=paths=source_relative:. messages.proto
+protoc -I=. -I=$PROTOC_INCLUDE --go_out=paths=source_relative:. message.proto

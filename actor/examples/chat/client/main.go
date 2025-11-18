@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/iakud/knoll/actor"
+	"github.com/iakud/knoll/actor/examples/chat/message"
 	"github.com/iakud/knoll/actor/remote"
-	"github.com/iakud/knoll/examples/actor-chat/messages"
 )
 
 type client struct {
@@ -29,10 +29,10 @@ func newClient(username string, serverPID *actor.PID) *client {
 
 func (c *client) Receive(ctx *actor.Context) {
 	switch msg := ctx.Message().(type) {
-	case *messages.Message:
+	case *message.Message:
 		fmt.Printf("%s: %s\n", msg.Username, msg.Msg)
 	case actor.Started:
-		ctx.Send(c.serverPID, &messages.Connect{
+		ctx.Send(c.serverPID, &message.Connect{
 			Username: c.username,
 		})
 	case actor.Stopped:
@@ -61,7 +61,7 @@ func main() {
 	)
 	fmt.Println("Type 'quit' and press return to exit.")
 	for scanner.Scan() {
-		msg := &messages.Message{
+		msg := &message.Message{
 			Msg:      scanner.Text(),
 			Username: *username,
 		}
@@ -74,7 +74,7 @@ func main() {
 		slog.Error("failed to read message from stdin", "err", err)
 	}
 
-	s.SendWithSender(serverPID, &messages.Disconnect{}, clientPID)
+	s.SendWithSender(serverPID, &message.Disconnect{}, clientPID)
 	s.Shutdown(context.Background(), clientPID)
 	timer := time.AfterFunc(3*time.Second, func() {
 		r.Stop()

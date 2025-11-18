@@ -1,3 +1,3 @@
-package main
+package messages
 
 //go:generate ./build.sh

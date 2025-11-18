@@ -1,3 +1,3 @@
-package main
+package hello
 
 //go:generate ./build.sh
