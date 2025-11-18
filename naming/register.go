@@ -1,6 +1,7 @@
 package naming
 
 import (
+	"context"
 	"log"
 	"time"
 
@@ -49,14 +50,23 @@ func (m *Manager[T]) keepAliveEndpoint(key string, endpoint endpoints.Endpoint) 
 			}
 		}
 		tempDelay = 0
-		if err = m.keepAliveSessionCloser(session); err != nil {
+		if err = m.keepAliveSessionCloser(session, key); err != nil {
 			return
 		}
 	}
 }
 
-func (m *Manager[T]) keepAliveSessionCloser(session *concurrency.Session) error {
-	defer session.Close()
+func (m *Manager[T]) keepAliveSessionCloser(session *concurrency.Session, key string) error {
+	defer func() {
+		ctx, cancel := context.WithTimeout(session.Ctx(), time.Second*3)
+		if err := m.manager.DeleteEndpoint(ctx, key); err != nil {
+			log.Printf("naming: delete endpoint error: %v", err)
+		}
+		cancel()
+		if err := session.Close(); err != nil {
+			log.Printf("naming: session close error: %v", err)
+		}
+	}()
 
 	select {
 	case <-session.Done():
