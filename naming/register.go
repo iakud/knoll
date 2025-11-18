@@ -9,16 +9,12 @@ import (
 	"go.etcd.io/etcd/client/v3/naming/endpoints"
 )
 
-func (m *Manager[T]) addEndpoint(key string, endpoint endpoints.Endpoint) error {
-	session, err := m.addSessionEndpoint(key, endpoint)
-	if err != nil {
-		return err
-	}
-	go m.keepSessionEndpoint(session, key, endpoint)
+func (m *Manager[T]) startAddEndpoint(key string, endpoint endpoints.Endpoint) error {
+	go m.keepAliveEndpoint(key, endpoint)
 	return nil
 }
 
-func (m *Manager[T]) addSessionEndpoint(key string, endpoint endpoints.Endpoint) (*concurrency.Session, error) {
+func (m *Manager[T]) addEndpoint(key string, endpoint endpoints.Endpoint) (*concurrency.Session, error) {
 	session, err := concurrency.NewSession(m.client)
 	if err != nil {
 		return nil, err
@@ -30,15 +26,10 @@ func (m *Manager[T]) addSessionEndpoint(key string, endpoint endpoints.Endpoint)
 	return session, nil
 }
 
-func (m *Manager[T]) keepSessionEndpoint(session *concurrency.Session, key string, endpoint endpoints.Endpoint) {
-	err := m.keepAliveCtxCloser(session)
-	if err != nil {
-		return
-	}
-
-	var tempDelay time.Duration // how long to sleep on add failure
+func (m *Manager[T]) keepAliveEndpoint(key string, endpoint endpoints.Endpoint) {
+	var tempDelay time.Duration // how long to sleep on add endpoint failure
 	for {
-		session, err = m.addSessionEndpoint(key, endpoint)
+		session, err := m.addEndpoint(key, endpoint)
 		if err != nil {
 			select {
 			case <-m.ctx.Done():
@@ -58,13 +49,15 @@ func (m *Manager[T]) keepSessionEndpoint(session *concurrency.Session, key strin
 			}
 		}
 		tempDelay = 0
-		if err = m.keepAliveCtxCloser(session); err != nil {
+		if err = m.keepAliveSessionCloser(session); err != nil {
 			return
 		}
 	}
 }
 
-func (m *Manager[T]) keepAliveCtxCloser(session *concurrency.Session) error {
+func (m *Manager[T]) keepAliveSessionCloser(session *concurrency.Session) error {
+	defer session.Close()
+
 	select {
 	case <-session.Done():
 		return nil
