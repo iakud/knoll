@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+##################################################
+# Owned by knoll. DON'T change me.
+##################################################
+
 [[ "$TRACE" ]] && set -x
 pushd `dirname "$0"` > /dev/null
 trap `popd > /dev/null` EXIT
@@ -28,22 +32,10 @@ function printUsage() {
     $colorful && tput setaf 7
 }
 
-source ../../../var.sh
+source ../../var.sh
 
-rm -rf kds
-mkdir -p kds
-
-rm -rf proto
-mkdir -p proto
-
-#kdsc --go_out=kds --proto_out=proto *.kds
-kdsc --out=kds --tmpl=../template/kds.go.tmpl *.kds
-[[ $? -ne 0 ]] && exit 1
-
-rm -rf kdspb
-mkdir -p kdspb
-
-protoc -I=./proto -I=$PROTOC_INCLUDE \
+protoc -I=. \
+    -I=$PROTOC_INCLUDE \
     --go_opt=default_api_level=API_OPAQUE \
-	--go_out=paths=source_relative:./kdspb \
-	`find proto -name "*.proto"`
+	--go_out=paths=source_relative:. \
+	`find . -name "*.proto"`

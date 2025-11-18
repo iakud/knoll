@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-##################################################
-# Owned by knoll. DON'T change me.
-##################################################
-
 [[ "$TRACE" ]] && set -x
 pushd `dirname "$0"` > /dev/null
 trap `popd > /dev/null` EXIT
@@ -32,13 +28,22 @@ function printUsage() {
     $colorful && tput setaf 7
 }
 
-source ../var.sh
+source ../../../var.sh
 
-PROTO_PATH=$ROOT_PATH/krpc/knetpb
-PB_PATH=$ROOT_PATH/krpc/knetpb
+rm -rf kds
+mkdir -p kds
 
-protoc -I=$PROTO_PATH \
-    -I=$PROTOC_INCLUDE \
-    --go_opt=default_api_level=API_OPAQUE \
-	--go_out=paths=source_relative:$PB_PATH \
-	`find $PROTO_PATH -name "*.proto"`
+rm -rf proto
+mkdir -p proto
+
+#kdsc --go_out=kds --proto_out=proto *.kds
+kdsc --out=kds --tmpl=../template/kds.go.tmpl *.kds
+# [[ $? -ne 0 ]] && exit 1
+
+# rm -rf kdspb
+# mkdir -p kdspb
+
+# protoc -I=./proto -I=$PROTOC_INCLUDE \
+#   --go_opt=default_api_level=API_OPAQUE \
+#	--go_out=paths=source_relative:./kdspb \
+#	`find proto -name "*.proto"`

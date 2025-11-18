@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.10
 // 	protoc        v6.30.2
-// source: remote/remote.proto
+// source: remote.proto
 
 package remote
 
@@ -34,7 +34,7 @@ type Envelope struct {
 
 func (x *Envelope) Reset() {
 	*x = Envelope{}
-	mi := &file_remote_remote_proto_msgTypes[0]
+	mi := &file_remote_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +46,7 @@ func (x *Envelope) String() string {
 func (*Envelope) ProtoMessage() {}
 
 func (x *Envelope) ProtoReflect() protoreflect.Message {
-	mi := &file_remote_remote_proto_msgTypes[0]
+	mi := &file_remote_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +59,7 @@ func (x *Envelope) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Envelope.ProtoReflect.Descriptor instead.
 func (*Envelope) Descriptor() ([]byte, []int) {
-	return file_remote_remote_proto_rawDescGZIP(), []int{0}
+	return file_remote_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Envelope) GetTarget() *actor.PID {
@@ -90,11 +90,11 @@ func (x *Envelope) GetMessage() []byte {
 	return nil
 }
 
-var File_remote_remote_proto protoreflect.FileDescriptor
+var File_remote_proto protoreflect.FileDescriptor
 
-const file_remote_remote_proto_rawDesc = "" +
+const file_remote_proto_rawDesc = "" +
 	"\n" +
-	"\x13remote/remote.proto\x12\x06remote\x1a\vactor.proto\"\x88\x01\n" +
+	"\fremote.proto\x12\x06remote\x1a\vactor.proto\"\x88\x01\n" +
 	"\bEnvelope\x12\"\n" +
 	"\x06target\x18\x01 \x01(\v2\n" +
 	".actor.PIDR\x06target\x12\"\n" +
@@ -106,23 +106,23 @@ const file_remote_remote_proto_rawDesc = "" +
 	"\aReceive\x12\x10.remote.Envelope\x1a\x10.remote.Envelope\"\x00(\x010\x01B%Z#github.com/iakud/knoll/actor/remoteb\x06proto3"
 
 var (
-	file_remote_remote_proto_rawDescOnce sync.Once
-	file_remote_remote_proto_rawDescData []byte
+	file_remote_proto_rawDescOnce sync.Once
+	file_remote_proto_rawDescData []byte
 )
 
-func file_remote_remote_proto_rawDescGZIP() []byte {
-	file_remote_remote_proto_rawDescOnce.Do(func() {
-		file_remote_remote_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_remote_remote_proto_rawDesc), len(file_remote_remote_proto_rawDesc)))
+func file_remote_proto_rawDescGZIP() []byte {
+	file_remote_proto_rawDescOnce.Do(func() {
+		file_remote_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_remote_proto_rawDesc), len(file_remote_proto_rawDesc)))
 	})
-	return file_remote_remote_proto_rawDescData
+	return file_remote_proto_rawDescData
 }
 
-var file_remote_remote_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_remote_remote_proto_goTypes = []any{
+var file_remote_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_remote_proto_goTypes = []any{
 	(*Envelope)(nil),  // 0: remote.Envelope
 	(*actor.PID)(nil), // 1: actor.PID
 }
-var file_remote_remote_proto_depIdxs = []int32{
+var file_remote_proto_depIdxs = []int32{
 	1, // 0: remote.Envelope.target:type_name -> actor.PID
 	1, // 1: remote.Envelope.sender:type_name -> actor.PID
 	0, // 2: remote.Remote.Receive:input_type -> remote.Envelope
@@ -134,26 +134,26 @@ var file_remote_remote_proto_depIdxs = []int32{
 	0, // [0:2] is the sub-list for field type_name
 }
 
-func init() { file_remote_remote_proto_init() }
-func file_remote_remote_proto_init() {
-	if File_remote_remote_proto != nil {
+func init() { file_remote_proto_init() }
+func file_remote_proto_init() {
+	if File_remote_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_remote_remote_proto_rawDesc), len(file_remote_remote_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_remote_proto_rawDesc), len(file_remote_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_remote_remote_proto_goTypes,
-		DependencyIndexes: file_remote_remote_proto_depIdxs,
-		MessageInfos:      file_remote_remote_proto_msgTypes,
+		GoTypes:           file_remote_proto_goTypes,
+		DependencyIndexes: file_remote_proto_depIdxs,
+		MessageInfos:      file_remote_proto_msgTypes,
 	}.Build()
-	File_remote_remote_proto = out.File
-	file_remote_remote_proto_goTypes = nil
-	file_remote_remote_proto_depIdxs = nil
+	File_remote_proto = out.File
+	file_remote_proto_goTypes = nil
+	file_remote_proto_depIdxs = nil
 }

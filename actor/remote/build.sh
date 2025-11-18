@@ -28,6 +28,8 @@ function printUsage() {
     $colorful && tput setaf 7
 }
 
-source ../var.sh
+source ../../var.sh
 
-protoc -I=. -I=$PROTOC_INCLUDE --go_out=paths=source_relative:. `find . -name "actor.proto"`
+ACTOR_PATH=$ROOT_PATH/actor
+
+protoc -I=. -I=$PROTOC_INCLUDE -I=$ACTOR_PATH --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. `find . -name "remote.proto"`

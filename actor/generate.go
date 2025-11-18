@@ -1,3 +1,3 @@
-package messages
+package actor
 
 //go:generate ./build.sh

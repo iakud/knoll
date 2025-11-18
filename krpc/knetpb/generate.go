@@ -1,3 +1,3 @@
-package hello
+package knetpb
 
 //go:generate ./build.sh
