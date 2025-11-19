@@ -60,12 +60,12 @@ func (n *Node) Generate() (ID, error) {
 		}
 	}
 
-	r := ID((n.sequence << sequenceShift) |
+	id := ID((n.sequence << sequenceShift) |
 		(n.node << nodeShift) |
 		(n.step),
 	)
 
-	return r, nil
+	return id, nil
 }
 
 func (n *Node) update() error {
@@ -96,16 +96,16 @@ func (n *Node) update() error {
 
 type ID int64
 
-func (f ID) Int64() int64 {
-	return int64(f)
+func (id ID) Int64() int64 {
+	return int64(id)
 }
 
 func ParseInt64(id int64) ID {
 	return ID(id)
 }
 
-func (f ID) String() string {
-	return strconv.FormatInt(int64(f), 10)
+func (id ID) String() string {
+	return strconv.FormatInt(int64(id), 10)
 }
 
 func ParseString(id string) (ID, error) {
@@ -113,14 +113,14 @@ func ParseString(id string) (ID, error) {
 	return ID(i), err
 }
 
-func (f ID) Sequence() int64 {
-	return (int64(f) >> sequenceShift)
+func (id ID) Sequence() int64 {
+	return (int64(id) >> sequenceShift)
 }
 
-func (f ID) Node() int64 {
-	return int64(f) & nodeMask >> nodeShift
+func (id ID) Node() int64 {
+	return int64(id) & nodeMask >> nodeShift
 }
 
-func (f ID) Step() int64 {
-	return int64(f) & stepMask
+func (id ID) Step() int64 {
+	return int64(id) & stepMask
 }
