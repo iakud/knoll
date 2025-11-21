@@ -6,7 +6,7 @@ option go_package="github.com/iakud/krpc/knetpb";
 
 enum Msg {
 	INVALID = 0;
-    OK = 1;
+	OK = 1;
 	ERROR = 2;
 	HANDSHAKE = 3;
 	PING = 4;
