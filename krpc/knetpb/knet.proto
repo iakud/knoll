@@ -45,8 +45,8 @@ message KickedOutNotify {
 }
 
 message KickOutRequest {
-	uint64 UserId = 1;
-	uint64 UserConnId = 2;
+	int64 UserId = 1;
+	int64 UserConnId = 2;
 	string Message = 3;
 }
 
@@ -54,14 +54,14 @@ message KickOutReply {
 }
 
 message UserOnlineRequest {
-	uint64 UserId = 1;
-	uint64 UserConnId = 2;
+	int64 UserId = 1;
+	int64 UserConnId = 2;
 }
 
 message UserOnlineReply {
 }
 
 message UserOfflineNotify {
-	uint64 UserId = 1;
-	uint64 UserConnId = 2;
+	int64 UserId = 1;
+	int64 UserConnId = 2;
 }
