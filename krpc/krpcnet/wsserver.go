@@ -12,19 +12,19 @@ import (
 )
 
 type wsServer struct {
-	connId  atomic.Uint64
+	connId  atomic.Int64
 	server  *knet.WSServer
 	handler ServerHandler
 	backend bool
 	locker  sync.RWMutex
-	conns   map[uint64]*wsConn
+	conns   map[int64]*wsConn
 }
 
 func NewWSServer(addr string, handler ServerHandler, backend bool, checkOrigin func(r *http.Request) bool) Server {
 	s := &wsServer{
 		handler: handler,
 		backend: backend,
-		conns:   make(map[uint64]*wsConn),
+		conns:   make(map[int64]*wsConn),
 	}
 	s.server = knet.NewWSServer(addr, s, checkOrigin)
 	return s
@@ -38,7 +38,7 @@ func (s *wsServer) Close() error {
 	return s.server.Close()
 }
 
-func (s *wsServer) GetConn(id uint64) (Conn, bool) {
+func (s *wsServer) GetConn(id int64) (Conn, bool) {
 	s.locker.RLock()
 	conn, ok := s.conns[id]
 	s.locker.RUnlock()

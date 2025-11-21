@@ -512,8 +512,8 @@ func (b0 KickedOutNotify_builder) Build() *KickedOutNotify {
 
 type KickOutRequest struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_UserId      uint64                 `protobuf:"varint,1,opt,name=UserId"`
-	xxx_hidden_UserConnId  uint64                 `protobuf:"varint,2,opt,name=UserConnId"`
+	xxx_hidden_UserId      int64                  `protobuf:"varint,1,opt,name=UserId"`
+	xxx_hidden_UserConnId  int64                  `protobuf:"varint,2,opt,name=UserConnId"`
 	xxx_hidden_Message     *string                `protobuf:"bytes,3,opt,name=Message"`
 	XXX_raceDetectHookData protoimpl.RaceDetectHookData
 	XXX_presence           [1]uint32
@@ -546,14 +546,14 @@ func (x *KickOutRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *KickOutRequest) GetUserId() uint64 {
+func (x *KickOutRequest) GetUserId() int64 {
 	if x != nil {
 		return x.xxx_hidden_UserId
 	}
 	return 0
 }
 
-func (x *KickOutRequest) GetUserConnId() uint64 {
+func (x *KickOutRequest) GetUserConnId() int64 {
 	if x != nil {
 		return x.xxx_hidden_UserConnId
 	}
@@ -570,12 +570,12 @@ func (x *KickOutRequest) GetMessage() string {
 	return ""
 }
 
-func (x *KickOutRequest) SetUserId(v uint64) {
+func (x *KickOutRequest) SetUserId(v int64) {
 	x.xxx_hidden_UserId = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 3)
 }
 
-func (x *KickOutRequest) SetUserConnId(v uint64) {
+func (x *KickOutRequest) SetUserConnId(v int64) {
 	x.xxx_hidden_UserConnId = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 3)
 }
@@ -624,8 +624,8 @@ func (x *KickOutRequest) ClearMessage() {
 type KickOutRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	UserId     *uint64
-	UserConnId *uint64
+	UserId     *int64
+	UserConnId *int64
 	Message    *string
 }
 
@@ -693,8 +693,8 @@ func (b0 KickOutReply_builder) Build() *KickOutReply {
 
 type UserOnlineRequest struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_UserId      uint64                 `protobuf:"varint,1,opt,name=UserId"`
-	xxx_hidden_UserConnId  uint64                 `protobuf:"varint,2,opt,name=UserConnId"`
+	xxx_hidden_UserId      int64                  `protobuf:"varint,1,opt,name=UserId"`
+	xxx_hidden_UserConnId  int64                  `protobuf:"varint,2,opt,name=UserConnId"`
 	XXX_raceDetectHookData protoimpl.RaceDetectHookData
 	XXX_presence           [1]uint32
 	unknownFields          protoimpl.UnknownFields
@@ -726,26 +726,26 @@ func (x *UserOnlineRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *UserOnlineRequest) GetUserId() uint64 {
+func (x *UserOnlineRequest) GetUserId() int64 {
 	if x != nil {
 		return x.xxx_hidden_UserId
 	}
 	return 0
 }
 
-func (x *UserOnlineRequest) GetUserConnId() uint64 {
+func (x *UserOnlineRequest) GetUserConnId() int64 {
 	if x != nil {
 		return x.xxx_hidden_UserConnId
 	}
 	return 0
 }
 
-func (x *UserOnlineRequest) SetUserId(v uint64) {
+func (x *UserOnlineRequest) SetUserId(v int64) {
 	x.xxx_hidden_UserId = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 2)
 }
 
-func (x *UserOnlineRequest) SetUserConnId(v uint64) {
+func (x *UserOnlineRequest) SetUserConnId(v int64) {
 	x.xxx_hidden_UserConnId = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 2)
 }
@@ -777,8 +777,8 @@ func (x *UserOnlineRequest) ClearUserConnId() {
 type UserOnlineRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	UserId     *uint64
-	UserConnId *uint64
+	UserId     *int64
+	UserConnId *int64
 }
 
 func (b0 UserOnlineRequest_builder) Build() *UserOnlineRequest {
@@ -841,8 +841,8 @@ func (b0 UserOnlineReply_builder) Build() *UserOnlineReply {
 
 type UserOfflineNotify struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_UserId      uint64                 `protobuf:"varint,1,opt,name=UserId"`
-	xxx_hidden_UserConnId  uint64                 `protobuf:"varint,2,opt,name=UserConnId"`
+	xxx_hidden_UserId      int64                  `protobuf:"varint,1,opt,name=UserId"`
+	xxx_hidden_UserConnId  int64                  `protobuf:"varint,2,opt,name=UserConnId"`
 	XXX_raceDetectHookData protoimpl.RaceDetectHookData
 	XXX_presence           [1]uint32
 	unknownFields          protoimpl.UnknownFields
@@ -874,26 +874,26 @@ func (x *UserOfflineNotify) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *UserOfflineNotify) GetUserId() uint64 {
+func (x *UserOfflineNotify) GetUserId() int64 {
 	if x != nil {
 		return x.xxx_hidden_UserId
 	}
 	return 0
 }
 
-func (x *UserOfflineNotify) GetUserConnId() uint64 {
+func (x *UserOfflineNotify) GetUserConnId() int64 {
 	if x != nil {
 		return x.xxx_hidden_UserConnId
 	}
 	return 0
 }
 
-func (x *UserOfflineNotify) SetUserId(v uint64) {
+func (x *UserOfflineNotify) SetUserId(v int64) {
 	x.xxx_hidden_UserId = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 2)
 }
 
-func (x *UserOfflineNotify) SetUserConnId(v uint64) {
+func (x *UserOfflineNotify) SetUserConnId(v int64) {
 	x.xxx_hidden_UserConnId = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 2)
 }
@@ -925,8 +925,8 @@ func (x *UserOfflineNotify) ClearUserConnId() {
 type UserOfflineNotify_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	UserId     *uint64
-	UserConnId *uint64
+	UserId     *int64
+	UserConnId *int64
 }
 
 func (b0 UserOfflineNotify_builder) Build() *UserOfflineNotify {
@@ -962,22 +962,22 @@ const file_knet_proto_rawDesc = "" +
 	"\x0fKickedOutNotify\x12\x18\n" +
 	"\aMessage\x18\x01 \x01(\tR\aMessage\"b\n" +
 	"\x0eKickOutRequest\x12\x16\n" +
-	"\x06UserId\x18\x01 \x01(\x04R\x06UserId\x12\x1e\n" +
+	"\x06UserId\x18\x01 \x01(\x03R\x06UserId\x12\x1e\n" +
 	"\n" +
-	"UserConnId\x18\x02 \x01(\x04R\n" +
+	"UserConnId\x18\x02 \x01(\x03R\n" +
 	"UserConnId\x12\x18\n" +
 	"\aMessage\x18\x03 \x01(\tR\aMessage\"\x0e\n" +
 	"\fKickOutReply\"K\n" +
 	"\x11UserOnlineRequest\x12\x16\n" +
-	"\x06UserId\x18\x01 \x01(\x04R\x06UserId\x12\x1e\n" +
+	"\x06UserId\x18\x01 \x01(\x03R\x06UserId\x12\x1e\n" +
 	"\n" +
-	"UserConnId\x18\x02 \x01(\x04R\n" +
+	"UserConnId\x18\x02 \x01(\x03R\n" +
 	"UserConnId\"\x11\n" +
 	"\x0fUserOnlineReply\"K\n" +
 	"\x11UserOfflineNotify\x12\x16\n" +
-	"\x06UserId\x18\x01 \x01(\x04R\x06UserId\x12\x1e\n" +
+	"\x06UserId\x18\x01 \x01(\x03R\x06UserId\x12\x1e\n" +
 	"\n" +
-	"UserConnId\x18\x02 \x01(\x04R\n" +
+	"UserConnId\x18\x02 \x01(\x03R\n" +
 	"UserConnId*\xa3\x01\n" +
 	"\x03Msg\x12\v\n" +
 	"\aINVALID\x10\x00\x12\x06\n" +

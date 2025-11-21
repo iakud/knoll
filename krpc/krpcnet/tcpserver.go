@@ -11,19 +11,19 @@ import (
 )
 
 type tcpServer struct {
-	connId  atomic.Uint64
+	connId  atomic.Int64
 	server  *knet.TCPServer
 	handler ServerHandler
 	backend bool
 	locker  sync.RWMutex
-	conns   map[uint64]*tcpConn
+	conns   map[int64]*tcpConn
 }
 
 func NewTCPServer(addr string, handler ServerHandler, backend bool) Server {
 	s := &tcpServer{
 		handler: handler,
 		backend: backend,
-		conns:   make(map[uint64]*tcpConn),
+		conns:   make(map[int64]*tcpConn),
 	}
 	s.server = knet.NewTCPServer(addr, s, knet.StdCodec)
 	return s
@@ -37,7 +37,7 @@ func (s *tcpServer) Close() error {
 	return s.server.Close()
 }
 
-func (s *tcpServer) GetConn(id uint64) (Conn, bool) {
+func (s *tcpServer) GetConn(id int64) (Conn, bool) {
 	s.locker.RLock()
 	conn, ok := s.conns[id]
 	s.locker.RUnlock()

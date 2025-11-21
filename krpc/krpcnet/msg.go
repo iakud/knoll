@@ -11,12 +11,12 @@ import (
 type Msg interface {
 	Header() *Header
 	Size() int
-	ConnId() uint64
-	SetConnId(connId uint64)
+	ConnId() int64
+	SetConnId(connId int64)
 	ConnIP() netip.Addr
 	SetConnIP(ip netip.Addr)
-	UserId() uint64
-	SetUserId(userId uint64)
+	UserId() int64
+	SetUserId(userId int64)
 	Payload() []byte
 	SetPayload(payload []byte)
 	Marshal(buf []byte) (int, error)
@@ -47,11 +47,11 @@ func (m *userMsg) Header() *Header {
 	return &m.header
 }
 
-func (m *userMsg) ConnId() uint64 {
+func (m *userMsg) ConnId() int64 {
 	return 0
 }
 
-func (m *userMsg) SetConnId(connId uint64) {
+func (m *userMsg) SetConnId(connId int64) {
 }
 
 func (m *userMsg) ConnIP() netip.Addr {
@@ -61,11 +61,11 @@ func (m *userMsg) ConnIP() netip.Addr {
 func (m *userMsg) SetConnIP(ip netip.Addr) {
 }
 
-func (m *userMsg) UserId() uint64 {
+func (m *userMsg) UserId() int64 {
 	return 0
 }
 
-func (m *userMsg) SetUserId(userId uint64) {
+func (m *userMsg) SetUserId(userId int64) {
 }
 
 func (m *userMsg) Payload() []byte {
@@ -123,9 +123,9 @@ func NewBackendMsg() Msg {
 
 type backendMsg struct {
 	header  Header
-	connId  uint64
+	connId  int64
 	connIP  [16]byte
-	userId  uint64
+	userId  int64
 	payload []byte
 }
 
@@ -133,11 +133,11 @@ func (m *backendMsg) Header() *Header {
 	return &m.header
 }
 
-func (m *backendMsg) ConnId() uint64 {
+func (m *backendMsg) ConnId() int64 {
 	return m.connId
 }
 
-func (m *backendMsg) SetConnId(connId uint64) {
+func (m *backendMsg) SetConnId(connId int64) {
 	m.connId = connId
 }
 
@@ -149,11 +149,11 @@ func (m *backendMsg) SetConnIP(ip netip.Addr) {
 	m.connIP = ip.As16()
 }
 
-func (m *backendMsg) UserId() uint64 {
+func (m *backendMsg) UserId() int64 {
 	return m.userId
 }
 
-func (m *backendMsg) SetUserId(userId uint64) {
+func (m *backendMsg) SetUserId(userId int64) {
 	m.userId = userId
 }
 
@@ -178,11 +178,11 @@ func (m *backendMsg) Marshal(buf []byte) (int, error) {
 		return n, err
 	}
 
-	binary.BigEndian.PutUint64(buf[n:], m.connId)
+	binary.BigEndian.PutUint64(buf[n:], uint64(m.connId))
 	n += kMsgConnIdSize
 	copy(buf[n:], m.connIP[:])
 	n += kMsgConnAddrSize
-	binary.BigEndian.PutUint64(buf[n:], m.userId)
+	binary.BigEndian.PutUint64(buf[n:], uint64(m.userId))
 	n += kMsgUserIdSize
 
 	n += copy(buf[n:], m.payload)
@@ -198,11 +198,11 @@ func (m *backendMsg) Unmarshal(buf []byte) (int, error) {
 		return n, err
 	}
 
-	m.connId = binary.BigEndian.Uint64(buf[n:])
+	m.connId = int64(binary.BigEndian.Uint64(buf[n:]))
 	n += kMsgConnIdSize
 	copy(m.connIP[:], buf[n:])
 	n += kMsgConnAddrSize
-	m.userId = binary.BigEndian.Uint64(buf[n:])
+	m.userId = int64(binary.BigEndian.Uint64(buf[n:]))
 	n += kMsgUserIdSize
 
 	m.payload = slices.Clone(buf[n:])

@@ -9,7 +9,7 @@ import (
 )
 
 type Conn interface {
-	Id() uint64
+	Id() int64
 	Hash() uint64
 	Shutdown()
 	Close() error
@@ -54,7 +54,7 @@ func Reply(conn Conn, req Msg, msgId uint16, message proto.Message) error {
 	return conn.Send(m)
 }
 
-func Send(conn Conn, msgId uint16, message proto.Message, connId uint64) error {
+func Send(conn Conn, msgId uint16, message proto.Message, connId int64) error {
 	payload, err := proto.Marshal(message)
 	if err != nil {
 		return err
@@ -135,7 +135,7 @@ func RequestUserOnline(ctx context.Context, conn Conn, req *knetpb.UserOnlineReq
 	return &reply, nil
 }
 
-func SendUserOffline(conn Conn, userId uint64, userConnId uint64) error {
+func SendUserOffline(conn Conn, userId int64, userConnId int64) error {
 	var msg knetpb.UserOfflineNotify
 	msg.SetUserId(userId)
 	msg.SetUserConnId(userConnId)

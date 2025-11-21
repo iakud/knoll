@@ -8,7 +8,7 @@ import (
 )
 
 type wsConn struct {
-	id       uint64
+	id       int64
 	wsconn   *knet.WSConn
 	backend  bool
 	rt       *roundTrip
@@ -16,7 +16,7 @@ type wsConn struct {
 	userdata any
 }
 
-func newWSConn(id uint64, wsconn *knet.WSConn, backend bool) *wsConn {
+func newWSConn(id int64, wsconn *knet.WSConn, backend bool) *wsConn {
 	c := &wsConn{
 		id:      id,
 		wsconn:  wsconn,
@@ -26,7 +26,7 @@ func newWSConn(id uint64, wsconn *knet.WSConn, backend bool) *wsConn {
 	return c
 }
 
-func (s *wsConn) Id() uint64 {
+func (s *wsConn) Id() int64 {
 	return s.id
 }
 

@@ -7,7 +7,7 @@ import (
 type Server interface {
 	ListenAndServe() error
 	Close() error
-	GetConn(id uint64) (Conn, bool)
+	GetConn(id int64) (Conn, bool)
 }
 
 type ServerHandler interface {

@@ -8,7 +8,7 @@ import (
 )
 
 type tcpConn struct {
-	id       uint64
+	id       int64
 	tcpconn  *knet.TCPConn
 	backend  bool
 	rt       *roundTrip
@@ -16,7 +16,7 @@ type tcpConn struct {
 	userdata any
 }
 
-func newTCPConn(id uint64, tcpconn *knet.TCPConn, backend bool) *tcpConn {
+func newTCPConn(id int64, tcpconn *knet.TCPConn, backend bool) *tcpConn {
 	c := &tcpConn{
 		id:      id,
 		tcpconn: tcpconn,
@@ -26,7 +26,7 @@ func newTCPConn(id uint64, tcpconn *knet.TCPConn, backend bool) *tcpConn {
 	return c
 }
 
-func (s *tcpConn) Id() uint64 {
+func (s *tcpConn) Id() int64 {
 	return s.id
 }
 
