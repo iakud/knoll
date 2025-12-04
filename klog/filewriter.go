@@ -17,7 +17,7 @@ var ErrClosed = errors.New("klog: file writer already closed")
 
 const bufferSize = 256 * 1024
 const flushInterval = 3 * time.Second
-const rollInterval = 60 * 60 * 24 * time.Second
+const rollInterval = 24 * time.Hour
 const fileRotateLayout = "20060102-150405"
 const DefaultRollSize = 10240000
 
@@ -77,7 +77,7 @@ func (fw *FileWriter) Write(p []byte) (int, error) {
 	now := time.Now()
 	if fw.writtenBytes > fw.rollSize {
 		fw.rollFile(now)
-	} else if period := now.Truncate(rollInterval); period != fw.filePeriod {
+	} else if period := fw.period(now); period != fw.filePeriod {
 		fw.rollFile(now)
 	}
 	return n, err
@@ -160,7 +160,7 @@ func (fw *FileWriter) rollFile(now time.Time) {
 	fw.buffer = bufio.NewWriterSize(file, bufferSize)
 	fw.writtenBytes = 0
 
-	period := now.Truncate(rollInterval)
+	period := fw.period(now)
 	fw.rollTime = now
 	fw.filePeriod = period
 }
@@ -220,4 +220,12 @@ func (fw *FileWriter) removeOldRolls() {
 		}
 		fw.history = fw.history[removeRools:]
 	}
+}
+
+func (fw *FileWriter) period(now time.Time) time.Time {
+	if rollInterval == 24*time.Hour {
+		year, month, day := now.Date()
+		return time.Date(year, month, day, 0, 0, 0, 0, time.Local)
+	}
+	return now.Truncate(rollInterval)
 }
