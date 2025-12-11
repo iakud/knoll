@@ -9,6 +9,7 @@ tool (
 )
 
 require (
+	github.com/agiledragon/gomonkey/v2 v2.13.0
 	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/go-viper/mapstructure/v2 v2.4.0
 	github.com/gorilla/websocket v1.5.3
