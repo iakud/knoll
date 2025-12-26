@@ -9,28 +9,8 @@ import (
 )
 
 type Endpoint struct {
-	addr       string
-	attributes map[string]any
-}
-
-func NewEndpoint() Endpoint {
-	return Endpoint{attributes: make(map[string]any)}
-}
-
-func (e *Endpoint) Addr() string {
-	return e.addr
-}
-
-func (e *Endpoint) SetAddr(addr string) {
-	e.addr = addr
-}
-
-func (e *Endpoint) Get(key string) any {
-	return e.attributes[key]
-}
-
-func (e *Endpoint) Set(key string, value any) {
-	e.attributes[key] = value
+	Addr     string
+	Metadata any
 }
 
 type Manager struct {
@@ -67,7 +47,7 @@ func (m *Manager) Context() context.Context {
 }
 
 func (m *Manager) AddEndpoint(key string, endpoint Endpoint) error {
-	return m.startAddEndpoint(key, endpoints.Endpoint{Addr: endpoint.addr, Metadata: endpoint.attributes})
+	return m.startAddEndpoint(key, endpoints.Endpoint{Addr: endpoint.Addr, Metadata: endpoint.Metadata})
 }
 
 func (m *Manager) Watch(watcher Watcher) error {

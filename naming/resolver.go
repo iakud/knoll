@@ -38,8 +38,8 @@ func convertToEndpoint(ups map[string]*endpoints.Update) []Endpoint {
 	var eps []Endpoint
 	for _, up := range ups {
 		ep := Endpoint{
-			addr:       up.Endpoint.Addr,
-			attributes: up.Endpoint.Metadata.(map[string]any),
+			Addr:     up.Endpoint.Addr,
+			Metadata: up.Endpoint.Metadata,
 		}
 		eps = append(eps, ep)
 	}
