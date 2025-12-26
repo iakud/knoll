@@ -1,15 +1,14 @@
 package naming
 
 import (
-	"github.com/go-viper/mapstructure/v2"
 	"go.etcd.io/etcd/client/v3/naming/endpoints"
 )
 
-type Watcher[T any] interface {
-	UpdateState(endpoints []Endpoint[T])
+type Watcher interface {
+	UpdateState(endpoints []Endpoint)
 }
 
-func watch[T any](m *Manager[T], wch endpoints.WatchChannel, watcher Watcher[T]) {
+func watch(m *Manager, wch endpoints.WatchChannel, watcher Watcher) {
 	defer m.wg.Done()
 
 	allUps := make(map[string]*endpoints.Update)
@@ -29,19 +28,19 @@ func watch[T any](m *Manager[T], wch endpoints.WatchChannel, watcher Watcher[T])
 					delete(allUps, up.Key)
 				}
 			}
-			eps := convertToEndpoint[T](allUps)
+			eps := convertToEndpoint(allUps)
 			watcher.UpdateState(eps)
 		}
 	}
 }
 
-func convertToEndpoint[T any](ups map[string]*endpoints.Update) []Endpoint[T] {
-	var eps []Endpoint[T]
+func convertToEndpoint(ups map[string]*endpoints.Update) []Endpoint {
+	var eps []Endpoint
 	for _, up := range ups {
-		ep := Endpoint[T]{
-			Addr: up.Endpoint.Addr,
+		ep := Endpoint{
+			addr:       up.Endpoint.Addr,
+			attributes: up.Endpoint.Metadata.(map[string]any),
 		}
-		mapstructure.Decode(up.Endpoint.Metadata.(map[string]any), &ep.Metadata)
 		eps = append(eps, ep)
 	}
 	return eps

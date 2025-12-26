@@ -10,12 +10,12 @@ import (
 	"go.etcd.io/etcd/client/v3/naming/endpoints"
 )
 
-func (m *Manager[T]) startAddEndpoint(key string, endpoint endpoints.Endpoint) error {
+func (m *Manager) startAddEndpoint(key string, endpoint endpoints.Endpoint) error {
 	go m.keepAliveEndpoint(key, endpoint)
 	return nil
 }
 
-func (m *Manager[T]) addEndpoint(key string, endpoint endpoints.Endpoint) (*concurrency.Session, error) {
+func (m *Manager) addEndpoint(key string, endpoint endpoints.Endpoint) (*concurrency.Session, error) {
 	session, err := concurrency.NewSession(m.client)
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (m *Manager[T]) addEndpoint(key string, endpoint endpoints.Endpoint) (*conc
 	return session, nil
 }
 
-func (m *Manager[T]) keepAliveEndpoint(key string, endpoint endpoints.Endpoint) {
+func (m *Manager) keepAliveEndpoint(key string, endpoint endpoints.Endpoint) {
 	var tempDelay time.Duration // how long to sleep on add endpoint failure
 	for {
 		session, err := m.addEndpoint(key, endpoint)
@@ -56,7 +56,7 @@ func (m *Manager[T]) keepAliveEndpoint(key string, endpoint endpoints.Endpoint) 
 	}
 }
 
-func (m *Manager[T]) keepAliveSessionCloser(session *concurrency.Session, key string) error {
+func (m *Manager) keepAliveSessionCloser(session *concurrency.Session, key string) error {
 	defer func() {
 		ctx, cancel := context.WithTimeout(session.Ctx(), time.Second*3)
 		if err := m.manager.DeleteEndpoint(ctx, key); err != nil {

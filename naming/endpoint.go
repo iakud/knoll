@@ -8,12 +8,32 @@ import (
 	"go.etcd.io/etcd/client/v3/naming/endpoints"
 )
 
-type Endpoint[T any] struct {
-	Addr     string
-	Metadata T
+type Endpoint struct {
+	addr       string
+	attributes map[string]any
 }
 
-type Manager[T any] struct {
+func NewEndpoint() Endpoint {
+	return Endpoint{attributes: make(map[string]any)}
+}
+
+func (e *Endpoint) Addr() string {
+	return e.addr
+}
+
+func (e *Endpoint) SetAddr(addr string) {
+	e.addr = addr
+}
+
+func (e *Endpoint) Get(key string) any {
+	return e.attributes[key]
+}
+
+func (e *Endpoint) Set(key string, value any) {
+	e.attributes[key] = value
+}
+
+type Manager struct {
 	client  *clientv3.Client
 	manager endpoints.Manager
 	ctx     context.Context
@@ -21,14 +41,14 @@ type Manager[T any] struct {
 	wg      sync.WaitGroup
 }
 
-func NewManager[T any](client *clientv3.Client, target string) (*Manager[T], error) {
+func NewManager(client *clientv3.Client, target string) (*Manager, error) {
 	manager, err := endpoints.NewManager(client, target)
 	if err != nil {
 		return nil, err
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 
-	m := &Manager[T]{
+	m := &Manager{
 		client:  client,
 		manager: manager,
 		ctx:     ctx,
@@ -37,20 +57,20 @@ func NewManager[T any](client *clientv3.Client, target string) (*Manager[T], err
 	return m, nil
 }
 
-func (m *Manager[T]) Close() {
+func (m *Manager) Close() {
 	m.cancel()
 	m.wg.Wait()
 }
 
-func (m *Manager[T]) Context() context.Context {
+func (m *Manager) Context() context.Context {
 	return m.ctx
 }
 
-func (m *Manager[T]) AddEndpoint(key string, endpoint Endpoint[T]) error {
-	return m.startAddEndpoint(key, endpoints.Endpoint{Addr: endpoint.Addr, Metadata: endpoint.Metadata})
+func (m *Manager) AddEndpoint(key string, endpoint Endpoint) error {
+	return m.startAddEndpoint(key, endpoints.Endpoint{Addr: endpoint.addr, Metadata: endpoint.attributes})
 }
 
-func (m *Manager[T]) Watch(watcher Watcher[T]) error {
+func (m *Manager) Watch(watcher Watcher) error {
 	wch, err := m.manager.NewWatchChannel(m.ctx)
 	if err != nil {
 		return err
