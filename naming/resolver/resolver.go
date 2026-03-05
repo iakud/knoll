@@ -25,15 +25,14 @@ func NewResolver(client *clientv3.Client, target string, watcher Watcher) (*Reso
 		return nil, err
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-
-	wch, err := manager.NewWatchChannel(ctx)
-	if err != nil {
-		return nil, err
-	}
 	r := &Resolver{
 		manager: manager,
 		ctx:     ctx,
 		cancel:  cancel,
+	}
+	wch, err := manager.NewWatchChannel(ctx)
+	if err != nil {
+		return nil, err
 	}
 	r.wg.Add(1)
 	go r.watch(ctx, wch, watcher)
