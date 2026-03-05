@@ -1,20 +1,56 @@
 package naming
 
 import (
-	"go.etcd.io/etcd/client/v3/naming/endpoints"
+	"context"
+	"sync"
+
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 type Watcher interface {
 	UpdateState(endpoints []Endpoint)
 }
 
-func watch(m *Manager, wch endpoints.WatchChannel, watcher Watcher) {
-	defer m.wg.Done()
+type Resolver struct {
+	manager *Manager
+	ctx     context.Context
+	cancel  context.CancelFunc
+	wg      sync.WaitGroup
+}
 
-	allUps := make(map[string]*endpoints.Update)
+func NewResolver(client *clientv3.Client, target string, watcher Watcher) (*Resolver, error) {
+	manager, err := NewManager(client, target)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+
+	wch, err := manager.NewWatchChannel(ctx)
+	if err != nil {
+		return nil, err
+	}
+	r := &Resolver{
+		manager: manager,
+		ctx:     ctx,
+		cancel:  cancel,
+	}
+	r.wg.Add(1)
+	go r.watch(ctx, wch, watcher)
+	return r, nil
+}
+
+func (r *Resolver) Close() {
+	r.cancel()
+	r.wg.Wait()
+}
+
+func (r *Resolver) watch(ctx context.Context, wch WatchChannel, watcher Watcher) {
+	defer r.wg.Done()
+
+	allUps := make(map[string]*Update)
 	for {
 		select {
-		case <-m.ctx.Done():
+		case <-ctx.Done():
 			return
 		case ups, ok := <-wch:
 			if !ok {
@@ -22,9 +58,10 @@ func watch(m *Manager, wch endpoints.WatchChannel, watcher Watcher) {
 			}
 			for _, up := range ups {
 				switch up.Op {
-				case endpoints.Add:
+				case Add:
 					allUps[up.Key] = up
-				case endpoints.Delete:
+
+				case Delete:
 					delete(allUps, up.Key)
 				}
 			}
@@ -34,7 +71,7 @@ func watch(m *Manager, wch endpoints.WatchChannel, watcher Watcher) {
 	}
 }
 
-func convertToEndpoint(ups map[string]*endpoints.Update) []Endpoint {
+func convertToEndpoint(ups map[string]*Update) []Endpoint {
 	var eps []Endpoint
 	for _, up := range ups {
 		ep := Endpoint{

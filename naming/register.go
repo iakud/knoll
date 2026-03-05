@@ -2,38 +2,52 @@ package naming
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"log/slog"
+	"strings"
 	"time"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/client/v3/concurrency"
-	"go.etcd.io/etcd/client/v3/naming/endpoints"
 )
 
-func (m *Manager) startAddEndpoint(key string, endpoint endpoints.Endpoint) error {
-	go m.keepAliveEndpoint(key, endpoint)
-	return nil
+type Register struct {
+	client  *clientv3.Client
+	manager *Manager
+	ctx     context.Context
+	cancel  context.CancelFunc
 }
 
-func (m *Manager) addEndpoint(key string, endpoint endpoints.Endpoint) (*concurrency.Session, error) {
-	session, err := concurrency.NewSession(m.client)
+func NewRegister(client *clientv3.Client, target string, key string, endpoint Endpoint) (*Register, error) {
+	if !strings.HasPrefix(key, target+"/") {
+		return nil, fmt.Errorf("register: endpoint key should be prefixed with '%s/' got: '%s'", target, key)
+	}
+	manager, err := NewManager(client, target)
 	if err != nil {
 		return nil, err
 	}
-	if err := m.manager.AddEndpoint(m.ctx, key, endpoint, clientv3.WithLease(session.Lease())); err != nil {
-		session.Close()
-		return nil, err
+	ctx, cancel := context.WithCancel(context.Background())
+	r := &Register{
+		client:  client,
+		manager: manager,
+		ctx:     ctx,
+		cancel:  cancel,
 	}
-	return session, nil
+	go r.registerEndpoint(key, endpoint)
+	return r, nil
 }
 
-func (m *Manager) keepAliveEndpoint(key string, endpoint endpoints.Endpoint) {
+func (r *Register) Close() {
+	r.cancel()
+}
+
+func (r *Register) registerEndpoint(key string, endpoint Endpoint) {
 	var tempDelay time.Duration // how long to sleep on add endpoint failure
 	for {
-		session, err := m.addEndpoint(key, endpoint)
+		session, err := concurrency.NewSession(r.client)
 		if err != nil {
 			select {
-			case <-m.ctx.Done():
+			case <-r.ctx.Done():
 				return
 			default:
 				if tempDelay == 0 {
@@ -44,34 +58,37 @@ func (m *Manager) keepAliveEndpoint(key string, endpoint endpoints.Endpoint) {
 				if max := 1 * time.Second; tempDelay > max {
 					tempDelay = max
 				}
-				log.Printf("naming: add endpoint error: %v; retrying in %v", err, tempDelay)
+				slog.Error(fmt.Sprintf("register: session error: %v; retrying in %v", err, tempDelay))
 				time.Sleep(tempDelay)
 				continue
 			}
 		}
 		tempDelay = 0
-		if err = m.keepAliveSessionCloser(session, key); err != nil {
+		if err = r.serveEndpoint(session, key, endpoint); err != nil {
 			return
 		}
 	}
 }
 
-func (m *Manager) keepAliveSessionCloser(session *concurrency.Session, key string) error {
+func (r *Register) serveEndpoint(session *concurrency.Session, key string, endpoint Endpoint) error {
+	defer session.Close()
+
+	if err := r.manager.AddEndpoint(r.ctx, key, endpoint, clientv3.WithLease(session.Lease())); err != nil {
+		slog.Error("register: add endpoint", "error", err, "key", key, "endpoint", endpoint)
+		return nil
+	}
+	slog.Info("register: ok", "key", key, "endpoint", endpoint)
+
 	defer func() {
-		ctx, cancel := context.WithTimeout(session.Ctx(), time.Second*3)
-		if err := m.manager.DeleteEndpoint(ctx, key); err != nil {
-			log.Printf("naming: delete endpoint error: %v", err)
-		}
-		cancel()
-		if err := session.Close(); err != nil {
-			log.Printf("naming: session close error: %v", err)
+		if err := r.manager.DeleteEndpoint(r.ctx, key, clientv3.WithLease(session.Lease())); err != nil {
+			slog.Error("register: delete endpoint", "error", err, "key", key)
 		}
 	}()
 
 	select {
 	case <-session.Done():
 		return nil
-	case <-m.ctx.Done():
-		return m.ctx.Err()
+	case <-r.ctx.Done():
+		return r.ctx.Err()
 	}
 }
