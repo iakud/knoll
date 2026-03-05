@@ -7,22 +7,23 @@ import (
 	"strings"
 	"time"
 
+	"github.com/iakud/knoll/naming/endpoints"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
 type Register struct {
 	client  *clientv3.Client
-	manager *Manager
+	manager *endpoints.Manager
 	ctx     context.Context
 	cancel  context.CancelFunc
 }
 
-func NewRegister(client *clientv3.Client, target string, key string, endpoint Endpoint) (*Register, error) {
+func NewRegister(client *clientv3.Client, target string, key string, endpoint endpoints.Endpoint) (*Register, error) {
 	if !strings.HasPrefix(key, target+"/") {
 		return nil, fmt.Errorf("register: endpoint key should be prefixed with '%s/' got: '%s'", target, key)
 	}
-	manager, err := NewManager(client, target)
+	manager, err := endpoints.NewManager(client, target)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +42,7 @@ func (r *Register) Close() {
 	r.cancel()
 }
 
-func (r *Register) registerEndpoint(key string, endpoint Endpoint) {
+func (r *Register) registerEndpoint(key string, endpoint endpoints.Endpoint) {
 	var tempDelay time.Duration // how long to sleep on add endpoint failure
 	for {
 		session, err := concurrency.NewSession(r.client)
@@ -70,7 +71,7 @@ func (r *Register) registerEndpoint(key string, endpoint Endpoint) {
 	}
 }
 
-func (r *Register) serveEndpoint(session *concurrency.Session, key string, endpoint Endpoint) error {
+func (r *Register) serveEndpoint(session *concurrency.Session, key string, endpoint endpoints.Endpoint) error {
 	defer session.Close()
 
 	if err := r.manager.AddEndpoint(r.ctx, key, endpoint, clientv3.WithLease(session.Lease())); err != nil {

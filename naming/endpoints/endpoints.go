@@ -1,4 +1,4 @@
-package naming
+package endpoints
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/iakud/knoll/naming/internal"
+	"github.com/iakud/knoll/naming/endpoints/internal"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
