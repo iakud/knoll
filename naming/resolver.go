@@ -1,34 +1,32 @@
-package resolver
+package naming
 
 import (
 	"context"
 	"sync"
 
-	"github.com/iakud/knoll/naming/endpoints"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/client/v3/naming/endpoints"
 )
 
 type Watcher interface {
-	UpdateState(endpoints []endpoints.Endpoint)
+	UpdateState(endpoints []Endpoint)
 }
 
 type Resolver struct {
-	manager *endpoints.Manager
-	ctx     context.Context
-	cancel  context.CancelFunc
-	wg      sync.WaitGroup
+	ctx    context.Context
+	cancel context.CancelFunc
+	wg     sync.WaitGroup
 }
 
-func NewResolver(client *clientv3.Client, target string, watcher Watcher) (*Resolver, error) {
+func Resolve(client *clientv3.Client, target string, watcher Watcher) (*Resolver, error) {
 	manager, err := endpoints.NewManager(client, target)
 	if err != nil {
 		return nil, err
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	r := &Resolver{
-		manager: manager,
-		ctx:     ctx,
-		cancel:  cancel,
+		ctx:    ctx,
+		cancel: cancel,
 	}
 	wch, err := manager.NewWatchChannel(ctx)
 	if err != nil {
@@ -71,10 +69,10 @@ func (r *Resolver) watch(ctx context.Context, wch endpoints.WatchChannel, watche
 	}
 }
 
-func convertToEndpoint(ups map[string]*endpoints.Update) []endpoints.Endpoint {
-	var eps []endpoints.Endpoint
+func convertToEndpoint(ups map[string]*endpoints.Update) []Endpoint {
+	var eps []Endpoint
 	for _, up := range ups {
-		ep := endpoints.Endpoint{
+		ep := Endpoint{
 			Addr:     up.Endpoint.Addr,
 			Metadata: up.Endpoint.Metadata,
 		}
