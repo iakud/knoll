@@ -38,22 +38,230 @@
 
 {{- /* LIST */ -}}
 {{- define "List"}}
-	public class {{.Name}}
+	public static class {{.Name}}
 	{
-		public void Unmarshal(List<{{template "ListValueType" .}}> data, byte[] b)
+		public static void Unmarshal(List<{{template "ListValueType" .}}> data, byte[] b)
 		{
-
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+{{- if eq .TypeKind "component"}}
+				var v = new {{.Type}}();
+				v.Unmarshal(stream.ReadBytes().ToByteArray());
+				data.Add(v);
+{{- else if eq .TypeKind "enum"}}
+				data.Add(({{.Type}})stream.ReadEnum());
+{{- else if eq .Type "bool"}}
+				data.Add(stream.ReadBool());
+{{- else if eq .Type "int32"}}
+				data.Add(stream.ReadInt32());
+{{- else if eq .Type "sint32"}}
+				data.Add(stream.ReadSInt32());
+{{- else if eq .Type "uint32"}}
+				data.Add(stream.ReadUInt32());
+{{- else if eq .Type "int64"}}
+				data.Add(stream.ReadInt64());
+{{- else if eq .Type "sint64"}}
+				data.Add(stream.ReadSInt64());
+{{- else if eq .Type "uint64"}}
+				data.Add(stream.ReadUInt64());
+{{- else if eq .Type "fixed32"}}
+				data.Add(stream.ReadFixed32());
+{{- else if eq .Type "sfixed32"}}
+				data.Add(stream.ReadSFixed32());
+{{- else if eq .Type "fixed64"}}
+				data.Add(stream.ReadFixed64());
+{{- else if eq .Type "sfixed64"}}
+				data.Add(stream.ReadSFixed64());
+{{- else if eq .Type "float"}}
+				data.Add(stream.ReadFloat());
+{{- else if eq .Type "double"}}
+				data.Add(stream.ReadDouble());
+{{- else if eq .Type "string"}}
+				data.Add(stream.ReadString());
+{{- else if eq .Type "bytes"}}
+				data.Add(stream.ReadBytes());
+{{- else if eq .Type "timestamp"}}
+				data.Add(Timestamp.Parser.ParseFrom(stream).ToDateTime());
+{{- else if eq .Type "duration"}}
+				data.Add(Duration.Parser.ParseFrom(stream).ToTimeSpan());
+{{- else if eq .Type "empty"}}
+				Empty.Parser.ParseFrom(stream); data.Add(null);
+{{- end}}
+			}
 		}
 	}
 {{- end}}
 
 {{- /* MAP */ -}}
 {{- define "Map"}}
-	public class {{.Name}}
+	public static class {{.Name}}
 	{
-		public void Unmarshal(List<{{template "MapValueType" .}}> data, byte[] b)
+		public static void Unmarshal(Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> data, byte[] b)
 		{
-
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = null;
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+{{- if eq .KeyType "int32"}}
+				data.Remove(stream.ReadInt32());
+{{- else if eq .KeyType "int64"}}
+				data.Remove(stream.ReadInt64());
+{{- else if eq .KeyType "uint32"}}
+				data.Remove(stream.ReadUInt32());
+{{- else if eq .KeyType "uint64"}}
+				data.Remove(stream.ReadUInt64());
+{{- else if eq .KeyType "sint64"}}
+				data.Remove(stream.ReadSInt32());
+{{- else if eq .KeyType "sint64"}}
+				data.Remove(stream.ReadSInt64());
+{{- else if eq .KeyType "sfixed32"}}
+				data.Remove(stream.ReadSFixed32());
+{{- else if eq .KeyType "sfixed64"}}
+				data.Remove(stream.ReadSFixed64());
+{{- else if eq .KeyType "bool"}}
+				data.Remove(stream.ReadBool());
+{{- else if eq .KeyType "string"}}
+				data.Remove(stream.ReadString());
+{{- else}}
+				stream.SkipLastField();
+{{- end}}
+			}
+			foreach (var b in entries)
+			{
+				var stream = new CodedInputStream(b);
+				{{template "Type" .KeyType}} k = default;
+{{- if eq .TypeKind "component"}}
+				byte[] v = null;
+{{- else if eq .TypeKind "enum"}}
+				{{.Type}} v = 0;
+{{- else}}
+				{{template "MapValueType" .}} v = default;
+{{- end}}
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+{{- if eq .KeyType "int32"}}
+						k = stream.ReadInt32();
+{{- else if eq .KeyType "int64"}}
+						k = stream.ReadInt64();
+{{- else if eq .KeyType "uint32"}}
+						k = stream.ReadUInt32();
+{{- else if eq .KeyType "uint64"}}
+						k = stream.ReadUInt64();
+{{- else if eq .KeyType "sint64"}}
+						k = stream.ReadSInt32();
+{{- else if eq .KeyType "sint64"}}
+						k = stream.ReadSInt64();
+{{- else if eq .KeyType "sfixed32"}}
+						k = stream.ReadSFixed32();
+{{- else if eq .KeyType "sfixed64"}}
+						k = stream.ReadSFixed64();
+{{- else if eq .KeyType "bool"}}
+						k = stream.ReadBool();
+{{- else if eq .KeyType "string"}}
+						k = stream.ReadString();
+{{- else}}
+						stream.SkipLastField();
+{{- end}}
+						break;
+					case 2: // MapEntryValueFieldNumber
+{{- if eq .TypeKind "component"}}
+						v = stream.ReadBytes().ToByteArray();
+{{- else if eq .TypeKind "enum"}}
+						v = ({{.Type}})stream.ReadEnum();
+{{- else if eq .Type "bool"}}
+						v = stream.ReadBool();
+{{- else if eq .Type "int32"}}
+						v = stream.ReadInt32();
+{{- else if eq .Type "sint32"}}
+						v = stream.ReadSInt32();
+{{- else if eq .Type "uint32"}}
+						v = stream.ReadUInt32();
+{{- else if eq .Type "int64"}}
+						v = stream.ReadInt64();
+{{- else if eq .Type "sint64"}}
+						v = stream.ReadSInt64();
+{{- else if eq .Type "uint64"}}
+						v = stream.ReadUInt64();
+{{- else if eq .Type "fixed32"}}
+						v = stream.ReadFixed32();
+{{- else if eq .Type "sfixed32"}}
+						v = stream.ReadSFixed32();
+{{- else if eq .Type "fixed64"}}
+						v = stream.ReadFixed64();
+{{- else if eq .Type "sfixed64"}}
+						v = stream.ReadSFixed64();
+{{- else if eq .Type "float"}}
+						v = stream.ReadFloat();
+{{- else if eq .Type "double"}}
+						v = stream.ReadDouble();
+{{- else if eq .Type "string"}}
+						v = stream.ReadString();
+{{- else if eq .Type "bytes"}}
+						v = stream.ReadBytes();
+{{- else if eq .Type "timestamp"}}
+						v = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+{{- else if eq .Type "duration"}}
+						v = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+{{- else if eq .Type "empty"}}
+						Empty.Parser.ParseFrom(stream);
+{{- else}}
+						stream.SkipLastField();
+{{- end}}
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+{{- if eq .TypeKind "component"}}
+				{{.Type}} c = null;
+				if (!data.TryGetValue(k, c))
+				{
+					c = new {{.Type}}();
+					c.Unmarshal(v);
+					data[k] = c;
+				}
+				else
+				{
+					c.Unmarshal(v);
+				}
+{{- else}}
+				data[k] = v;
+{{- end}}
+			}
 		}
 	}
 {{- end}}
@@ -107,11 +315,12 @@
 
 		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(b);
-			while (stream.TryReadTag(out var tag))
+			var stream = new CodedInputStream(b);
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
 			{
-				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
-				switch (fieldNumber)
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
 				{
 {{- range .Fields}}
 				case {{.Number}}:
@@ -154,16 +363,19 @@
 {{- else if eq .Type "bytes"}}
 					_{{.Name}} = stream.ReadBytes();
 {{- else if eq .Type "timestamp"}}
-					var timestamp{{.Name}} = new Google.Protobuf.WellKnownTypes.Timestamp();
-					stream.ReadMessage(timestamp{{.Name}});
-					_{{.Name}} = timestamp{{.Name}}.ToDateTime();
+					_{{.Name}} = Timestamp.Parser.ParseFrom(stream).ToDateTime();
 {{- else if eq .Type "duration"}}
-					var duration{{.Name}} = new Google.Protobuf.WellKnownTypes.Duration();
-					stream.ReadMessage(duration{{.Name}});
-					_{{.Name}} = duration{{.Name}}.ToTimeSpan();
+					_{{.Name}} = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+{{- else if eq .Type "empty"}}
+					Empty.Parser.ParseFrom(stream);
+{{- else}}
+					stream.SkipLastField();
 {{- end}}
 					break;
 {{- end}}
+				default:
+					stream.SkipLastField();
+					break;
 				}
 			}
 		}
@@ -223,6 +435,15 @@
 using System;
 using System.Collections.Generic;
 using Google.Protobuf;
+{{- $ImportWellKnownTypes := false}}
+{{- range .FieldTypes}}
+{{- if eq . "timestamp" "duration"}}
+{{- $ImportWellKnownTypes = true}}
+{{- end}}
+{{- end}}
+{{- if $ImportWellKnownTypes}}
+using Google.Protobuf.WellKnownTypes;
+{{- end}}
 
 namespace {{.Package}}
 {

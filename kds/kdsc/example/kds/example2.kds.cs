@@ -52,11 +52,12 @@ namespace kds
 
 		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(b);
-			while (stream.TryReadTag(out var tag))
+			var stream = new CodedInputStream(b);
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
 			{
-				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
-				switch (fieldNumber)
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
 				{
 				case 1:
 					_PlayerId = stream.ReadInt64();
@@ -69,6 +70,9 @@ namespace kds
 					break;
 				case 4:
 					Int64_list.Unmarshal(_Troops, stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
 					break;
 				}
 			}
@@ -106,11 +110,12 @@ namespace kds
 
 		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(b);
-			while (stream.TryReadTag(out var tag))
+			var stream = new CodedInputStream(b);
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
 			{
-				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
-				switch (fieldNumber)
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
 				{
 				case 1:
 					Vector_list.Unmarshal(_Positions, stream.ReadBytes().ToByteArray());
@@ -120,6 +125,9 @@ namespace kds
 					break;
 				case 3:
 					_BuildInfo = stream.ReadBytes();
+					break;
+				default:
+					stream.SkipLastField();
 					break;
 				}
 			}
@@ -148,11 +156,12 @@ namespace kds
 
 		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(b);
-			while (stream.TryReadTag(out var tag))
+			var stream = new CodedInputStream(b);
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
 			{
-				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
-				switch (fieldNumber)
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
 				{
 				case 1:
 					_X = stream.ReadInt32();
@@ -160,16 +169,26 @@ namespace kds
 				case 2:
 					_Y = stream.ReadInt32();
 					break;
+				default:
+					stream.SkipLastField();
+					break;
 				}
 			}
 		}
 	}
 
-	public class Vector_list
+	public static class Vector_list
 	{
-		public void Unmarshal(List<Vector> data, byte[] b)
+		public static void Unmarshal(List<Vector> data, byte[] b)
 		{
-
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+				var v = new Vector();
+				v.Unmarshal(stream.ReadBytes().ToByteArray());
+				data.Add(v);
+			}
 		}
 	}
 }

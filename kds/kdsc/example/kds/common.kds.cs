@@ -8,27 +8,142 @@ using Google.Protobuf;
 namespace kds
 {
 
-	public class Int32Empty_map
+	public static class Int32Empty_map
 	{
-		public void Unmarshal(List<object> data, byte[] b)
+		public static void Unmarshal(Dictionary<int, object> data, byte[] b)
 		{
-
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = null;
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt32());
+			}
+			foreach (var b in entries)
+			{
+				var stream = new CodedInputStream(b);
+				int k = default;
+				object v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt32();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						Empty.Parser.ParseFrom(stream);
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
 		}
 	}
 
-	public class Int32Int32_map
+	public static class Int32Int32_map
 	{
-		public void Unmarshal(List<int> data, byte[] b)
+		public static void Unmarshal(Dictionary<int, int> data, byte[] b)
 		{
-
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = null;
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt32());
+			}
+			foreach (var b in entries)
+			{
+				var stream = new CodedInputStream(b);
+				int k = default;
+				int v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt32();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadInt32();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
 		}
 	}
 
-	public class Int64_list
+	public static class Int64_list
 	{
-		public void Unmarshal(List<long> data, byte[] b)
+		public static void Unmarshal(List<long> data, byte[] b)
 		{
-
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+				data.Add(stream.ReadInt64());
+			}
 		}
 	}
 }

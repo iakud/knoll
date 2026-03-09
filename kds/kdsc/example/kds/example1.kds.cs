@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 
 namespace kds
 {
@@ -45,11 +46,12 @@ namespace kds
 
 		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(b);
-			while (stream.TryReadTag(out var tag))
+			var stream = new CodedInputStream(b);
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
 			{
-				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
-				switch (fieldNumber)
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
 				{
 				case 1:
 					_Info.Unmarshal(stream.ReadBytes().ToByteArray());
@@ -59,6 +61,9 @@ namespace kds
 					break;
 				case 3:
 					_Bag.Unmarshal(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
 					break;
 				}
 			}
@@ -94,11 +99,12 @@ namespace kds
 
 		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(b);
-			while (stream.TryReadTag(out var tag))
+			var stream = new CodedInputStream(b);
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
 			{
-				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
-				switch (fieldNumber)
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
 				{
 				case 1:
 					_Name = stream.ReadString();
@@ -107,9 +113,10 @@ namespace kds
 					_IsNew = stream.ReadBool();
 					break;
 				case 5:
-					var timestampCreateTime = new Google.Protobuf.WellKnownTypes.Timestamp();
-					stream.ReadMessage(timestampCreateTime);
-					_CreateTime = timestampCreateTime.ToDateTime();
+					_CreateTime = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+					break;
+				default:
+					stream.SkipLastField();
 					break;
 				}
 			}
@@ -132,14 +139,18 @@ namespace kds
 
 		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(b);
-			while (stream.TryReadTag(out var tag))
+			var stream = new CodedInputStream(b);
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
 			{
-				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
-				switch (fieldNumber)
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
 				{
 				case 1:
 					Int64Hero_map.Unmarshal(_Heroes, stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
 					break;
 				}
 			}
@@ -162,14 +173,18 @@ namespace kds
 
 		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(b);
-			while (stream.TryReadTag(out var tag))
+			var stream = new CodedInputStream(b);
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
 			{
-				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
-				switch (fieldNumber)
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
 				{
 				case 1:
 					Int32Int32_map.Unmarshal(_Resources, stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
 					break;
 				}
 			}
@@ -212,11 +227,12 @@ namespace kds
 
 		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(b);
-			while (stream.TryReadTag(out var tag))
+			var stream = new CodedInputStream(b);
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
 			{
-				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
-				switch (fieldNumber)
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
 				{
 				case 1:
 					_HeroId = stream.ReadInt32();
@@ -228,20 +244,86 @@ namespace kds
 					_Type = (HeroType)stream.ReadEnum();
 					break;
 				case 4:
-					var durationNeedTime = new Google.Protobuf.WellKnownTypes.Duration();
-					stream.ReadMessage(durationNeedTime);
-					_NeedTime = durationNeedTime.ToTimeSpan();
+					_NeedTime = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+					break;
+				default:
+					stream.SkipLastField();
 					break;
 				}
 			}
 		}
 	}
 
-	public class Int64Hero_map
+	public static class Int64Hero_map
 	{
-		public void Unmarshal(List<Hero> data, byte[] b)
+		public static void Unmarshal(Dictionary<long, Hero> data, byte[] b)
 		{
-
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = null;
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt64());
+			}
+			foreach (var b in entries)
+			{
+				var stream = new CodedInputStream(b);
+				long k = default;
+				byte[] v = null;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt64();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadBytes().ToByteArray();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				Hero c = null;
+				if (!data.TryGetValue(k, c))
+				{
+					c = new Hero();
+					c.Unmarshal(v);
+					data[k] = c;
+				}
+				else
+				{
+					c.Unmarshal(v);
+				}
+			}
 		}
 	}
 

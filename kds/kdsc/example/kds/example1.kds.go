@@ -903,7 +903,7 @@ func (x *Int64Hero_map) MarshalDirty(b []byte) ([]byte, error) {
 		if b, err = wire.MarshalInt64(b, wire.MapEntryKeyFieldNumber, k); err != nil {
 			return b, err
 		}
-		if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
+		if b, err = wire.MarshalMessageDirty(b, wire.MapEntryValueFieldNumber, v); err != nil {
 			return b, err
 		}
 		b = wire.FinishSpeculativeLength(b, pos)
