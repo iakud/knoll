@@ -46,6 +46,104 @@
 	}
 {{- end}}
 
+{{- /* MESSAGE */ -}}
+{{- define "Message"}}
+{{- $MessageName := .Name}}
+
+{{- range .Fields}}
+{{/* EMPTY LINE */}}
+{{- if .Repeated}}
+		public List<{{template "ListValueType" .}}> {{.Name}}
+		{
+			get { return _{{.Name}}; }
+		}
+{{- else if .Map}}
+		public Map<{{.KeyType}}, {{template "MapValueType" .}}> {{.Name}}
+		{
+			get { return _{{.Name}}; }
+		}
+{{- else if eq .TypeKind "component"}}
+		public {{.Type}} {{.Name}}
+		{
+			get { return _{{.Name}}; }
+		}
+{{- else}}
+		public {{template "Type" .Type}} {{.Name}}
+		{
+			get { return _{{.Name}}; }
+		}
+{{- end}}
+{{- end}}
+
+		public void Unmarshal(byte[] data)
+		{
+			var stream = new Google.Protobuf.CodedInputStream(data);
+			Unmarshal(stream);
+		}
+
+		public void Unmarshal(Google.Protobuf.CodedInputStream stream)
+		{
+			while (stream.TryReadTag(out var tag))
+			{
+				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
+				switch (fieldNumber)
+				{
+{{- range .Fields}}
+				case {{.Number}}:
+{{- if .Repeated}}
+					stream.ReadMessage(_{{.Name}});
+{{- else if .Map}}
+					stream.ReadMessage(_{{.Name}});
+{{- else if eq .TypeKind "component"}}
+					_{{.Name}}.Unmarshal(stream.ReadBytes().ToByteArray());
+{{- else if eq .TypeKind "enum"}}
+					_{{.Name}} = ({{.Type}})stream.ReadEnum();
+{{- else if eq .Type "bool"}}
+					_{{.Name}} = stream.ReadBool();
+{{- else if eq .Type "int32"}}
+					_{{.Name}} = stream.ReadInt32();
+{{- else if eq .Type "sint32"}}
+					_{{.Name}} = stream.ReadSInt32();
+{{- else if eq .Type "uint32"}}
+					_{{.Name}} = stream.ReadUInt32();
+{{- else if eq .Type "int64"}}
+					_{{.Name}} = stream.ReadInt64();
+{{- else if eq .Type "sint64"}}
+					_{{.Name}} = stream.ReadSInt64();
+{{- else if eq .Type "uint64"}}
+					_{{.Name}} = stream.ReadUInt64();
+{{- else if eq .Type "fixed32"}}
+					_{{.Name}} = stream.ReadFixed32();
+{{- else if eq .Type "sfixed32"}}
+					_{{.Name}} = stream.ReadSFixed32();
+{{- else if eq .Type "fixed64"}}
+					_{{.Name}} = stream.ReadFixed64();
+{{- else if eq .Type "sfixed64"}}
+					_{{.Name}} = stream.ReadSFixed64();
+{{- else if eq .Type "float"}}
+					_{{.Name}} = stream.ReadFloat();
+{{- else if eq .Type "double"}}
+					_{{.Name}} = stream.ReadDouble();
+{{- else if eq .Type "string"}}
+					_{{.Name}} = stream.ReadString();
+{{- else if eq .Type "bytes"}}
+					_{{.Name}} = stream.ReadBytes();
+{{- else if eq .Type "timestamp"}}
+					var timestamp{{.Name}} = new Google.Protobuf.WellKnownTypes.Timestamp();
+					stream.ReadMessage(timestamp{{.Name}});
+					_{{.Name}} = timestamp{{.Name}}.ToDateTime();
+{{- else if eq .Type "duration"}}
+					var duration{{.Name}} = new Google.Protobuf.WellKnownTypes.Duration();
+					stream.ReadMessage(duration{{.Name}});
+					_{{.Name}} = duration{{.Name}}.ToTimeSpan();
+{{- end}}
+					break;
+{{- end}}
+				}
+			}
+		}
+{{- end}}
+
 {{- /* ENTITY */ -}}
 {{- define "Entity"}}
 	public class {{.Name}}
@@ -79,30 +177,7 @@
 		}
 
 		public long Id => _id;
-{{- range .Fields}}
-{{/* EMPTY LINE */}}
-{{- if .Repeated}}
-		public List<{{template "ListValueType" .}}> {{.Name}}
-		{
-			get { return _{{.Name}}; }
-		}
-{{- else if .Map}}
-		public Map<{{.KeyType}}, {{template "MapValueType" .}}> {{.Name}}
-		{
-			get { return _{{.Name}}; }
-		}
-{{- else if eq .TypeKind "component"}}
-		public {{.Type}} {{.Name}}
-		{
-			get { return _{{.Name}}; }
-		}
-{{- else}}
-		public {{template "Type" .Type}} {{.Name}}
-		{
-			get { return _{{.Name}}; }
-		}
-{{- end}}
-{{- end}}
+{{- template "Message" .}}
 	}
 {{- end}}
 
@@ -122,9 +197,8 @@
 {{- end}}
 {{- end}}
 
-		public {{.Name}}(long id)
+		public {{.Name}}()
 		{
-			_id = id;
 {{- range .Fields}}
 {{- if .Repeated}}
 			_{{.Name}} = new List<{{template "ListValueType" .}}>();
@@ -136,30 +210,7 @@
 {{- end}}
 {{- end}}
 		}
-{{- range .Fields}}
-{{/* EMPTY LINE */}}
-{{- if .Repeated}}
-		public List<{{template "ListValueType" .}}> {{.Name}}
-		{
-			get { return _{{.Name}}; }
-		}
-{{- else if .Map}}
-		public Map<{{.KeyType}}, {{template "MapValueType" .}}> {{.Name}}
-		{
-			get { return _{{.Name}}; }
-		}
-{{- else if eq .TypeKind "component"}}
-		public {{.Type}} {{.Name}}
-		{
-			get { return _{{.Name}}; }
-		}
-{{- else}}
-		public {{template "Type" .Type}} {{.Name}}
-		{
-			get { return _{{.Name}}; }
-		}
-{{- end}}
-{{- end}}
+{{- template "Message" .}}
 	}
 {{- end}}
 {{- /* END DEFINE */ -}}
