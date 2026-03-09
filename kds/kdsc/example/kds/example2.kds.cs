@@ -50,9 +50,9 @@ namespace kds
 			get { return _Troops; }
 		}
 
-		public void Unmarshal(byte[] data)
+		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(data);
+			var stream = new Google.Protobuf.CodedInputStream(b);
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -68,7 +68,7 @@ namespace kds
 					_CityInfo.Unmarshal(stream.ReadBytes().ToByteArray());
 					break;
 				case 4:
-					stream.ReadMessage(_Troops);
+					Int64_list.Unmarshal(_Troops, stream.ReadBytes().ToByteArray());
 					break;
 				}
 			}
@@ -80,7 +80,7 @@ namespace kds
 		public CityBaseInfo()
 		{
 			_Positions = new List<Vector>();
-			_Troops = new Map<int32, object>();
+			_Troops = new Dictionary<int32, object>();
 		}
 
 		private List<Vector> _Positions;
@@ -90,9 +90,9 @@ namespace kds
 			get { return _Positions; }
 		}
 
-		private Map<int32, object> _Troops;
+		private Dictionary<int32, object> _Troops;
 
-		public Map<int32, object> Troops
+		public Dictionary<int32, object> Troops
 		{
 			get { return _Troops; }
 		}
@@ -104,19 +104,19 @@ namespace kds
 			get { return _BuildInfo; }
 		}
 
-		public void Unmarshal(byte[] data)
+		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(data);
+			var stream = new Google.Protobuf.CodedInputStream(b);
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
 				switch (fieldNumber)
 				{
 				case 1:
-					stream.ReadMessage(_Positions);
+					Vector_list.Unmarshal(_Positions, stream.ReadBytes().ToByteArray());
 					break;
 				case 2:
-					stream.ReadMessage(_Troops);
+					Int32Empty_map.Unmarshal(_Troops, stream.ReadBytes().ToByteArray());
 					break;
 				case 3:
 					_BuildInfo = stream.ReadBytes();
@@ -146,9 +146,9 @@ namespace kds
 			get { return _Y; }
 		}
 
-		public void Unmarshal(byte[] data)
+		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(data);
+			var stream = new Google.Protobuf.CodedInputStream(b);
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -162,6 +162,14 @@ namespace kds
 					break;
 				}
 			}
+		}
+	}
+
+	public class Vector_list
+	{
+		public void Unmarshal(List<Vector> data, byte[] b)
+		{
+
 		}
 	}
 }

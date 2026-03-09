@@ -36,6 +36,28 @@
 {{- end}}
 {{- end}}
 
+{{- /* LIST */ -}}
+{{- define "List"}}
+	public class {{.Name}}
+	{
+		public void Unmarshal(List<{{template "ListValueType" .}}> data, byte[] b)
+		{
+
+		}
+	}
+{{- end}}
+
+{{- /* MAP */ -}}
+{{- define "Map"}}
+	public class {{.Name}}
+	{
+		public void Unmarshal(List<{{template "MapValueType" .}}> data, byte[] b)
+		{
+
+		}
+	}
+{{- end}}
+
 {{- /* ENUM */ -}}
 {{- define "Enum"}}
 	public enum {{.Name}}
@@ -60,9 +82,9 @@
 			get { return _{{.Name}}; }
 		}
 {{- else if .Map}}
-		private Map<{{.KeyType}}, {{template "MapValueType" .}}> _{{.Name}};
+		private Dictionary<{{.KeyType}}, {{template "MapValueType" .}}> _{{.Name}};
 
-		public Map<{{.KeyType}}, {{template "MapValueType" .}}> {{.Name}}
+		public Dictionary<{{.KeyType}}, {{template "MapValueType" .}}> {{.Name}}
 		{
 			get { return _{{.Name}}; }
 		}
@@ -83,9 +105,9 @@
 {{- end}}
 {{- end}}
 
-		public void Unmarshal(byte[] data)
+		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(data);
+			var stream = new Google.Protobuf.CodedInputStream(b);
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -94,9 +116,9 @@
 {{- range .Fields}}
 				case {{.Number}}:
 {{- if .Repeated}}
-					stream.ReadMessage(_{{.Name}});
+					{{.ListType}}.Unmarshal(_{{.Name}}, stream.ReadBytes().ToByteArray());
 {{- else if .Map}}
-					stream.ReadMessage(_{{.Name}});
+					{{.MapType}}.Unmarshal(_{{.Name}}, stream.ReadBytes().ToByteArray());
 {{- else if eq .TypeKind "component"}}
 					_{{.Name}}.Unmarshal(stream.ReadBytes().ToByteArray());
 {{- else if eq .TypeKind "enum"}}
@@ -162,7 +184,7 @@
 {{- if .Repeated}}
 			_{{.Name}} = new List<{{template "ListValueType" .}}>();
 {{- else if .Map}}
-			_{{.Name}} = new Map<{{.KeyType}}, {{template "MapValueType" .}}>();
+			_{{.Name}} = new Dictionary<{{.KeyType}}, {{template "MapValueType" .}}>();
 {{- else if eq .TypeKind "component"}}
 			_{{.Name}} = new {{.Type}}();
 {{- else}}
@@ -183,7 +205,7 @@
 {{- if .Repeated}}
 			_{{.Name}} = new List<{{template "ListValueType" .}}>();
 {{- else if .Map}}
-			_{{.Name}} = new Map<{{.KeyType}}, {{template "MapValueType" .}}>();
+			_{{.Name}} = new Dictionary<{{.KeyType}}, {{template "MapValueType" .}}>();
 {{- else if eq .TypeKind "component"}}
 			_{{.Name}} = new {{.Type}}();
 {{- else}}
@@ -204,16 +226,54 @@ using Google.Protobuf;
 
 namespace {{.Package}}
 {
+{{- /* COMMON TYPES */ -}}
+{{- range .Types}}
+
+{{- with findList .}}
+{{- if .}}
+{{/* EMPTY LINE */}}
+{{- template "List" .}}
+{{- end}}
+{{- end}}
+{{- range findMap .}}
+{{/* EMPTY LINE */}}
+{{- template "Map" .}}
+{{- end}}
+
+{{- end}}
 {{- /* TOPLEVEL DEFINE */ -}}
 {{- range .Defs}}
 {{/* EMPTY LINE */}}
 {{- if eq .Kind "enum"}}
 {{- template "Enum" .}}
+{{- with findList .Name}}
+{{- if .}}
+{{/* EMPTY LINE */}}
+{{- template "List" .}}
+{{- end}}
+{{- end}}
+{{- range findMap .Name}}
+{{/* EMPTY LINE */}}
+{{- template "Map" .}}
+{{- end}}
+
 {{- else if eq .Kind "entity"}}
 {{- template "Entity" .}}
+
 {{- else if eq .Kind "component"}}
 {{- template "Component" .}}
+{{- with findList .Name}}
+{{- if .}}
+{{/* EMPTY LINE */}}
+{{- template "List" .}}
 {{- end}}
+{{- end}}
+{{- range findMap .Name}}
+{{/* EMPTY LINE */}}
+{{- template "Map" .}}
+{{- end}}
+{{- end}}
+
 {{- end}}
 }
 {{/* EMPTY LINE */}}

@@ -7,4 +7,28 @@ using Google.Protobuf;
 
 namespace kds
 {
+
+	public class Int32Empty_map
+	{
+		public void Unmarshal(List<object> data, byte[] b)
+		{
+
+		}
+	}
+
+	public class Int32Int32_map
+	{
+		public void Unmarshal(List<int> data, byte[] b)
+		{
+
+		}
+	}
+
+	public class Int64_list
+	{
+		public void Unmarshal(List<long> data, byte[] b)
+		{
+
+		}
+	}
 }

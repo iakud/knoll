@@ -43,9 +43,9 @@ namespace kds
 			get { return _Bag; }
 		}
 
-		public void Unmarshal(byte[] data)
+		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(data);
+			var stream = new Google.Protobuf.CodedInputStream(b);
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -92,9 +92,9 @@ namespace kds
 			get { return _CreateTime; }
 		}
 
-		public void Unmarshal(byte[] data)
+		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(data);
+			var stream = new Google.Protobuf.CodedInputStream(b);
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -120,26 +120,26 @@ namespace kds
 	{
 		public PlayerHero()
 		{
-			_Heroes = new Map<int64, Hero>();
+			_Heroes = new Dictionary<int64, Hero>();
 		}
 
-		private Map<int64, Hero> _Heroes;
+		private Dictionary<int64, Hero> _Heroes;
 
-		public Map<int64, Hero> Heroes
+		public Dictionary<int64, Hero> Heroes
 		{
 			get { return _Heroes; }
 		}
 
-		public void Unmarshal(byte[] data)
+		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(data);
+			var stream = new Google.Protobuf.CodedInputStream(b);
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
 				switch (fieldNumber)
 				{
 				case 1:
-					stream.ReadMessage(_Heroes);
+					Int64Hero_map.Unmarshal(_Heroes, stream.ReadBytes().ToByteArray());
 					break;
 				}
 			}
@@ -150,26 +150,26 @@ namespace kds
 	{
 		public PlayerBag()
 		{
-			_Resources = new Map<int32, int>();
+			_Resources = new Dictionary<int32, int>();
 		}
 
-		private Map<int32, int> _Resources;
+		private Dictionary<int32, int> _Resources;
 
-		public Map<int32, int> Resources
+		public Dictionary<int32, int> Resources
 		{
 			get { return _Resources; }
 		}
 
-		public void Unmarshal(byte[] data)
+		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(data);
+			var stream = new Google.Protobuf.CodedInputStream(b);
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
 				switch (fieldNumber)
 				{
 				case 1:
-					stream.ReadMessage(_Resources);
+					Int32Int32_map.Unmarshal(_Resources, stream.ReadBytes().ToByteArray());
 					break;
 				}
 			}
@@ -210,9 +210,9 @@ namespace kds
 			get { return _NeedTime; }
 		}
 
-		public void Unmarshal(byte[] data)
+		public void Unmarshal(byte[] b)
 		{
-			var stream = new Google.Protobuf.CodedInputStream(data);
+			var stream = new Google.Protobuf.CodedInputStream(b);
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -234,6 +234,14 @@ namespace kds
 					break;
 				}
 			}
+		}
+	}
+
+	public class Int64Hero_map
+	{
+		public void Unmarshal(List<Hero> data, byte[] b)
+		{
+
 		}
 	}
 
