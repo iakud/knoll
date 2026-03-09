@@ -11,10 +11,8 @@ namespace kds
 	public class City
 	{
 		private long _id;
-		private long _PlayerId;
-		private PlayerBasicInfo _PlayerBasicInfo;
-		private CityBaseInfo _CityInfo;
-		private List<long> _Troops;
+
+		public long Id => _id;
 
 		public City(long id)
 		{
@@ -24,22 +22,28 @@ namespace kds
 			_Troops = new List<long>();
 		}
 
-		public long Id => _id;
+		private long _PlayerId;
 
 		public long PlayerId
 		{
 			get { return _PlayerId; }
 		}
 
+		private PlayerBasicInfo _PlayerBasicInfo;
+
 		public PlayerBasicInfo PlayerBasicInfo
 		{
 			get { return _PlayerBasicInfo; }
 		}
 
+		private CityBaseInfo _CityInfo;
+
 		public CityBaseInfo CityInfo
 		{
 			get { return _CityInfo; }
 		}
+
+		private List<long> _Troops;
 
 		public List<long> Troops
 		{
@@ -49,11 +53,6 @@ namespace kds
 		public void Unmarshal(byte[] data)
 		{
 			var stream = new Google.Protobuf.CodedInputStream(data);
-			Unmarshal(stream);
-		}
-
-		public void Unmarshal(Google.Protobuf.CodedInputStream stream)
-		{
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -78,25 +77,27 @@ namespace kds
 
 	public class CityBaseInfo
 	{
-		private List<Vector> _Positions;
-		private Map<int32, object> _Troops;
-		private byte[] _BuildInfo;
-
 		public CityBaseInfo()
 		{
 			_Positions = new List<Vector>();
 			_Troops = new Map<int32, object>();
 		}
 
+		private List<Vector> _Positions;
+
 		public List<Vector> Positions
 		{
 			get { return _Positions; }
 		}
 
+		private Map<int32, object> _Troops;
+
 		public Map<int32, object> Troops
 		{
 			get { return _Troops; }
 		}
+
+		private byte[] _BuildInfo;
 
 		public byte[] BuildInfo
 		{
@@ -106,11 +107,6 @@ namespace kds
 		public void Unmarshal(byte[] data)
 		{
 			var stream = new Google.Protobuf.CodedInputStream(data);
-			Unmarshal(stream);
-		}
-
-		public void Unmarshal(Google.Protobuf.CodedInputStream stream)
-		{
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -132,17 +128,18 @@ namespace kds
 
 	public class Vector
 	{
-		private int _X;
-		private int _Y;
-
 		public Vector()
 		{
 		}
+
+		private int _X;
 
 		public int X
 		{
 			get { return _X; }
 		}
+
+		private int _Y;
 
 		public int Y
 		{
@@ -152,11 +149,6 @@ namespace kds
 		public void Unmarshal(byte[] data)
 		{
 			var stream = new Google.Protobuf.CodedInputStream(data);
-			Unmarshal(stream);
-		}
-
-		public void Unmarshal(Google.Protobuf.CodedInputStream stream)
-		{
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);

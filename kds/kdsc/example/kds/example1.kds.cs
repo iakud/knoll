@@ -11,9 +11,8 @@ namespace kds
 	public class Player
 	{
 		private long _id;
-		private PlayerBasicInfo _Info;
-		private PlayerHero _Hero;
-		private PlayerBag _Bag;
+
+		public long Id => _id;
 
 		public Player(long id)
 		{
@@ -23,17 +22,21 @@ namespace kds
 			_Bag = new PlayerBag();
 		}
 
-		public long Id => _id;
+		private PlayerBasicInfo _Info;
 
 		public PlayerBasicInfo Info
 		{
 			get { return _Info; }
 		}
 
+		private PlayerHero _Hero;
+
 		public PlayerHero Hero
 		{
 			get { return _Hero; }
 		}
+
+		private PlayerBag _Bag;
 
 		public PlayerBag Bag
 		{
@@ -43,11 +46,6 @@ namespace kds
 		public void Unmarshal(byte[] data)
 		{
 			var stream = new Google.Protobuf.CodedInputStream(data);
-			Unmarshal(stream);
-		}
-
-		public void Unmarshal(Google.Protobuf.CodedInputStream stream)
-		{
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -69,23 +67,25 @@ namespace kds
 
 	public class PlayerBasicInfo
 	{
-		private string _Name;
-		private bool _IsNew;
-		private DateTime _CreateTime;
-
 		public PlayerBasicInfo()
 		{
 		}
+
+		private string _Name;
 
 		public string Name
 		{
 			get { return _Name; }
 		}
 
+		private bool _IsNew;
+
 		public bool IsNew
 		{
 			get { return _IsNew; }
 		}
+
+		private DateTime _CreateTime;
 
 		public DateTime CreateTime
 		{
@@ -95,11 +95,6 @@ namespace kds
 		public void Unmarshal(byte[] data)
 		{
 			var stream = new Google.Protobuf.CodedInputStream(data);
-			Unmarshal(stream);
-		}
-
-		public void Unmarshal(Google.Protobuf.CodedInputStream stream)
-		{
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -123,12 +118,12 @@ namespace kds
 
 	public class PlayerHero
 	{
-		private Map<int64, Hero> _Heroes;
-
 		public PlayerHero()
 		{
 			_Heroes = new Map<int64, Hero>();
 		}
+
+		private Map<int64, Hero> _Heroes;
 
 		public Map<int64, Hero> Heroes
 		{
@@ -138,11 +133,6 @@ namespace kds
 		public void Unmarshal(byte[] data)
 		{
 			var stream = new Google.Protobuf.CodedInputStream(data);
-			Unmarshal(stream);
-		}
-
-		public void Unmarshal(Google.Protobuf.CodedInputStream stream)
-		{
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -158,12 +148,12 @@ namespace kds
 
 	public class PlayerBag
 	{
-		private Map<int32, int> _Resources;
-
 		public PlayerBag()
 		{
 			_Resources = new Map<int32, int>();
 		}
+
+		private Map<int32, int> _Resources;
 
 		public Map<int32, int> Resources
 		{
@@ -173,11 +163,6 @@ namespace kds
 		public void Unmarshal(byte[] data)
 		{
 			var stream = new Google.Protobuf.CodedInputStream(data);
-			Unmarshal(stream);
-		}
-
-		public void Unmarshal(Google.Protobuf.CodedInputStream stream)
-		{
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -193,29 +178,32 @@ namespace kds
 
 	public class Hero
 	{
-		private int _HeroId;
-		private int _HeroLevel;
-		private HeroType _Type;
-		private TimeSpan _NeedTime;
-
 		public Hero()
 		{
 		}
+
+		private int _HeroId;
 
 		public int HeroId
 		{
 			get { return _HeroId; }
 		}
 
+		private int _HeroLevel;
+
 		public int HeroLevel
 		{
 			get { return _HeroLevel; }
 		}
 
+		private HeroType _Type;
+
 		public HeroType Type
 		{
 			get { return _Type; }
 		}
+
+		private TimeSpan _NeedTime;
 
 		public TimeSpan NeedTime
 		{
@@ -225,11 +213,6 @@ namespace kds
 		public void Unmarshal(byte[] data)
 		{
 			var stream = new Google.Protobuf.CodedInputStream(data);
-			Unmarshal(stream);
-		}
-
-		public void Unmarshal(Google.Protobuf.CodedInputStream stream)
-		{
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);

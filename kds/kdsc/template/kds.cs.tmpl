@@ -53,21 +53,29 @@
 {{- range .Fields}}
 {{/* EMPTY LINE */}}
 {{- if .Repeated}}
+		private List<{{template "ListValueType" .}}> _{{.Name}};
+
 		public List<{{template "ListValueType" .}}> {{.Name}}
 		{
 			get { return _{{.Name}}; }
 		}
 {{- else if .Map}}
+		private Map<{{.KeyType}}, {{template "MapValueType" .}}> _{{.Name}};
+
 		public Map<{{.KeyType}}, {{template "MapValueType" .}}> {{.Name}}
 		{
 			get { return _{{.Name}}; }
 		}
 {{- else if eq .TypeKind "component"}}
+		private {{.Type}} _{{.Name}};
+
 		public {{.Type}} {{.Name}}
 		{
 			get { return _{{.Name}}; }
 		}
 {{- else}}
+		private {{template "Type" .Type}} _{{.Name}};
+
 		public {{template "Type" .Type}} {{.Name}}
 		{
 			get { return _{{.Name}}; }
@@ -78,11 +86,6 @@
 		public void Unmarshal(byte[] data)
 		{
 			var stream = new Google.Protobuf.CodedInputStream(data);
-			Unmarshal(stream);
-		}
-
-		public void Unmarshal(Google.Protobuf.CodedInputStream stream)
-		{
 			while (stream.TryReadTag(out var tag))
 			{
 				var fieldNumber = Google.Protobuf.WireFormat.GetTagFieldNumber(tag);
@@ -149,17 +152,8 @@
 	public class {{.Name}}
 	{
 		private long _id;
-{{- range .Fields}}
-{{- if .Repeated}}
-		private List<{{template "ListValueType" .}}> _{{.Name}};
-{{- else if .Map}}
-		private Map<{{.KeyType}}, {{template "MapValueType" .}}> _{{.Name}};
-{{- else if eq .TypeKind "component"}}
-		private {{.Type}} _{{.Name}};
-{{- else}}
-		private {{template "Type" .Type}} _{{.Name}};
-{{- end}}
-{{- end}}
+
+		public long Id => _id;
 
 		public {{.Name}}(long id)
 		{
@@ -175,8 +169,6 @@
 {{- end}}
 {{- end}}
 		}
-
-		public long Id => _id;
 {{- template "Message" .}}
 	}
 {{- end}}
@@ -185,18 +177,6 @@
 {{- define "Component"}}
 	public class {{.Name}}
 	{
-{{- range .Fields}}
-{{- if .Repeated}}
-		private List<{{template "ListValueType" .}}> _{{.Name}};
-{{- else if .Map}}
-		private Map<{{.KeyType}}, {{template "MapValueType" .}}> _{{.Name}};
-{{- else if eq .TypeKind "component"}}
-		private {{.Type}} _{{.Name}};
-{{- else}}
-		private {{template "Type" .Type}} _{{.Name}};
-{{- end}}
-{{- end}}
-
 		public {{.Name}}()
 		{
 {{- range .Fields}}
