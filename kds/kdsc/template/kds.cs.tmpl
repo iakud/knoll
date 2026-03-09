@@ -155,9 +155,9 @@
 				stream.SkipLastField();
 {{- end}}
 			}
-			foreach (var b in entries)
+			foreach (var entry in entries)
 			{
-				var stream = new CodedInputStream(b);
+				stream = new CodedInputStream(entry);
 				{{template "Type" .KeyType}} k = default;
 {{- if eq .TypeKind "component"}}
 				byte[] v = null;
@@ -230,7 +230,7 @@
 {{- else if eq .Type "string"}}
 						v = stream.ReadString();
 {{- else if eq .Type "bytes"}}
-						v = stream.ReadBytes();
+						v = stream.ReadBytes().ToByteArray();
 {{- else if eq .Type "timestamp"}}
 						v = Timestamp.Parser.ParseFrom(stream).ToDateTime();
 {{- else if eq .Type "duration"}}
@@ -248,7 +248,7 @@
 				}
 {{- if eq .TypeKind "component"}}
 				{{.Type}} c = null;
-				if (!data.TryGetValue(k, c))
+				if (!data.TryGetValue(k, out c))
 				{
 					c = new {{.Type}}();
 					c.Unmarshal(v);
@@ -290,9 +290,9 @@
 			get { return _{{.Name}}; }
 		}
 {{- else if .Map}}
-		private Dictionary<{{.KeyType}}, {{template "MapValueType" .}}> _{{.Name}};
+		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> _{{.Name}};
 
-		public Dictionary<{{.KeyType}}, {{template "MapValueType" .}}> {{.Name}}
+		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{.Name}}
 		{
 			get { return _{{.Name}}; }
 		}
@@ -361,7 +361,7 @@
 {{- else if eq .Type "string"}}
 					_{{.Name}} = stream.ReadString();
 {{- else if eq .Type "bytes"}}
-					_{{.Name}} = stream.ReadBytes();
+					_{{.Name}} = stream.ReadBytes().ToByteArray();
 {{- else if eq .Type "timestamp"}}
 					_{{.Name}} = Timestamp.Parser.ParseFrom(stream).ToDateTime();
 {{- else if eq .Type "duration"}}
@@ -437,7 +437,7 @@ using System.Collections.Generic;
 using Google.Protobuf;
 {{- $ImportWellKnownTypes := false}}
 {{- range .FieldTypes}}
-{{- if eq . "timestamp" "duration"}}
+{{- if eq . "timestamp" "duration" "empty"}}
 {{- $ImportWellKnownTypes = true}}
 {{- end}}
 {{- end}}

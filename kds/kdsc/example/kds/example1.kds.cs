@@ -130,9 +130,9 @@ namespace kds
 			_Heroes = new Dictionary<int64, Hero>();
 		}
 
-		private Dictionary<int64, Hero> _Heroes;
+		private Dictionary<long, Hero> _Heroes;
 
-		public Dictionary<int64, Hero> Heroes
+		public Dictionary<long, Hero> Heroes
 		{
 			get { return _Heroes; }
 		}
@@ -164,9 +164,9 @@ namespace kds
 			_Resources = new Dictionary<int32, int>();
 		}
 
-		private Dictionary<int32, int> _Resources;
+		private Dictionary<int, int> _Resources;
 
-		public Dictionary<int32, int> Resources
+		public Dictionary<int, int> Resources
 		{
 			get { return _Resources; }
 		}
@@ -291,9 +291,9 @@ namespace kds
 			{
 				data.Remove(stream.ReadInt64());
 			}
-			foreach (var b in entries)
+			foreach (var entry in entries)
 			{
-				var stream = new CodedInputStream(b);
+				stream = new CodedInputStream(entry);
 				long k = default;
 				byte[] v = null;
 				while ((tag = stream.ReadTag()) != 0)
@@ -313,7 +313,7 @@ namespace kds
 					}
 				}
 				Hero c = null;
-				if (!data.TryGetValue(k, c))
+				if (!data.TryGetValue(k, out c))
 				{
 					c = new Hero();
 					c.Unmarshal(v);

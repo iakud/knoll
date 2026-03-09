@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 
 namespace kds
 {
@@ -94,9 +95,9 @@ namespace kds
 			get { return _Positions; }
 		}
 
-		private Dictionary<int32, object> _Troops;
+		private Dictionary<int, object> _Troops;
 
-		public Dictionary<int32, object> Troops
+		public Dictionary<int, object> Troops
 		{
 			get { return _Troops; }
 		}
@@ -124,7 +125,7 @@ namespace kds
 					Int32Empty_map.Unmarshal(_Troops, stream.ReadBytes().ToByteArray());
 					break;
 				case 3:
-					_BuildInfo = stream.ReadBytes();
+					_BuildInfo = stream.ReadBytes().ToByteArray();
 					break;
 				default:
 					stream.SkipLastField();

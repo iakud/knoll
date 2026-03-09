@@ -45,9 +45,9 @@ namespace kds
 			{
 				data.Remove(stream.ReadInt32());
 			}
-			foreach (var b in entries)
+			foreach (var entry in entries)
 			{
-				var stream = new CodedInputStream(b);
+				stream = new CodedInputStream(entry);
 				int k = default;
 				object v = default;
 				while ((tag = stream.ReadTag()) != 0)
@@ -108,9 +108,9 @@ namespace kds
 			{
 				data.Remove(stream.ReadInt32());
 			}
-			foreach (var b in entries)
+			foreach (var entry in entries)
 			{
-				var stream = new CodedInputStream(b);
+				stream = new CodedInputStream(entry);
 				int k = default;
 				int v = default;
 				while ((tag = stream.ReadTag()) != 0)
