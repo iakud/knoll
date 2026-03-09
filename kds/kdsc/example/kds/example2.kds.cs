@@ -85,7 +85,7 @@ namespace kds
 		public CityBaseInfo()
 		{
 			_Positions = new List<Vector>();
-			_Troops = new Dictionary<int32, object>();
+			_Troops = new Dictionary<int, object>();
 		}
 
 		private List<Vector> _Positions;

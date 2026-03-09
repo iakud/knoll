@@ -127,7 +127,7 @@ namespace kds
 	{
 		public PlayerHero()
 		{
-			_Heroes = new Dictionary<int64, Hero>();
+			_Heroes = new Dictionary<long, Hero>();
 		}
 
 		private Dictionary<long, Hero> _Heroes;
@@ -161,7 +161,7 @@ namespace kds
 	{
 		public PlayerBag()
 		{
-			_Resources = new Dictionary<int32, int>();
+			_Resources = new Dictionary<int, int>();
 		}
 
 		private Dictionary<int, int> _Resources;

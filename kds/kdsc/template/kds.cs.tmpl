@@ -396,7 +396,7 @@
 {{- if .Repeated}}
 			_{{.Name}} = new List<{{template "ListValueType" .}}>();
 {{- else if .Map}}
-			_{{.Name}} = new Dictionary<{{.KeyType}}, {{template "MapValueType" .}}>();
+			_{{.Name}} = new Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>();
 {{- else if eq .TypeKind "component"}}
 			_{{.Name}} = new {{.Type}}();
 {{- else}}
@@ -417,7 +417,7 @@
 {{- if .Repeated}}
 			_{{.Name}} = new List<{{template "ListValueType" .}}>();
 {{- else if .Map}}
-			_{{.Name}} = new Dictionary<{{.KeyType}}, {{template "MapValueType" .}}>();
+			_{{.Name}} = new Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>();
 {{- else if eq .TypeKind "component"}}
 			_{{.Name}} = new {{.Type}}();
 {{- else}}
@@ -436,6 +436,16 @@ using System;
 using System.Collections.Generic;
 using Google.Protobuf;
 {{- $ImportWellKnownTypes := false}}
+{{- range .ListTypes}}
+{{- if eq .Type "timestamp" "duration" "empty"}}
+{{- $ImportWellKnownTypes = true}}
+{{- end}}
+{{- end}}
+{{- range .MapTypes}}
+{{- if eq .Type "timestamp" "duration" "empty"}}
+{{- $ImportWellKnownTypes = true}}
+{{- end}}
+{{- end}}
 {{- range .FieldTypes}}
 {{- if eq . "timestamp" "duration" "empty"}}
 {{- $ImportWellKnownTypes = true}}
