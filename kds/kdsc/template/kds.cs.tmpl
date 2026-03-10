@@ -21,6 +21,7 @@
 {{- else}}{{.}}
 {{- end}}
 {{- end}}
+{{- define "FieldName"}}_{{lcFirst .Name}}{{- end}}
 {{- /* LIST TYPE */ -}}
 {{- define "ListValueType"}}
 {{- if eq .TypeKind "enum"}}{{.Type}}
@@ -278,7 +279,6 @@
 
 {{- /* MESSAGE */ -}}
 {{- define "Message"}}
-{{- $MessageName := .Name}}
 
 		public void Unmarshal(byte[] b)
 		{
@@ -292,47 +292,47 @@
 {{- range .Fields}}
 				case {{.Number}}:
 {{- if .Repeated}}
-					{{.ListType}}.Unmarshal(_{{.Name}}, stream.ReadBytes().ToByteArray());
+					{{.ListType}}.Unmarshal({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
 {{- else if .Map}}
-					{{.MapType}}.Unmarshal(_{{.Name}}, stream.ReadBytes().ToByteArray());
+					{{.MapType}}.Unmarshal({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
 {{- else if eq .TypeKind "component"}}
-					_{{.Name}}.Unmarshal(stream.ReadBytes().ToByteArray());
+					{{template "FieldName" .}}.Unmarshal(stream.ReadBytes().ToByteArray());
 {{- else if eq .TypeKind "enum"}}
-					_{{.Name}} = ({{.Type}})stream.ReadEnum();
+					{{template "FieldName" .}} = ({{.Type}})stream.ReadEnum();
 {{- else if eq .Type "bool"}}
-					_{{.Name}} = stream.ReadBool();
+					{{template "FieldName" .}} = stream.ReadBool();
 {{- else if eq .Type "int32"}}
-					_{{.Name}} = stream.ReadInt32();
+					{{template "FieldName" .}} = stream.ReadInt32();
 {{- else if eq .Type "sint32"}}
-					_{{.Name}} = stream.ReadSInt32();
+					{{template "FieldName" .}} = stream.ReadSInt32();
 {{- else if eq .Type "uint32"}}
-					_{{.Name}} = stream.ReadUInt32();
+					{{template "FieldName" .}} = stream.ReadUInt32();
 {{- else if eq .Type "int64"}}
-					_{{.Name}} = stream.ReadInt64();
+					{{template "FieldName" .}} = stream.ReadInt64();
 {{- else if eq .Type "sint64"}}
-					_{{.Name}} = stream.ReadSInt64();
+					{{template "FieldName" .}} = stream.ReadSInt64();
 {{- else if eq .Type "uint64"}}
-					_{{.Name}} = stream.ReadUInt64();
+					{{template "FieldName" .}} = stream.ReadUInt64();
 {{- else if eq .Type "fixed32"}}
-					_{{.Name}} = stream.ReadFixed32();
+					{{template "FieldName" .}} = stream.ReadFixed32();
 {{- else if eq .Type "sfixed32"}}
-					_{{.Name}} = stream.ReadSFixed32();
+					{{template "FieldName" .}} = stream.ReadSFixed32();
 {{- else if eq .Type "fixed64"}}
-					_{{.Name}} = stream.ReadFixed64();
+					{{template "FieldName" .}} = stream.ReadFixed64();
 {{- else if eq .Type "sfixed64"}}
-					_{{.Name}} = stream.ReadSFixed64();
+					{{template "FieldName" .}} = stream.ReadSFixed64();
 {{- else if eq .Type "float"}}
-					_{{.Name}} = stream.ReadFloat();
+					{{template "FieldName" .}} = stream.ReadFloat();
 {{- else if eq .Type "double"}}
-					_{{.Name}} = stream.ReadDouble();
+					{{template "FieldName" .}} = stream.ReadDouble();
 {{- else if eq .Type "string"}}
-					_{{.Name}} = stream.ReadString();
+					{{template "FieldName" .}} = stream.ReadString();
 {{- else if eq .Type "bytes"}}
-					_{{.Name}} = stream.ReadBytes().ToByteArray();
+					{{template "FieldName" .}} = stream.ReadBytes().ToByteArray();
 {{- else if eq .Type "timestamp"}}
-					_{{.Name}} = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+					{{template "FieldName" .}} = Timestamp.Parser.ParseFrom(stream).ToDateTime();
 {{- else if eq .Type "duration"}}
-					_{{.Name}} = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+					{{template "FieldName" .}} = Duration.Parser.ParseFrom(stream).ToTimeSpan();
 {{- else if eq .Type "empty"}}
 					Empty.Parser.ParseFrom(stream);
 {{- else}}
@@ -358,17 +358,17 @@
 {{- range .Fields}}
 {{/* EMPTY LINE */}}
 {{- if .Repeated}}
-		private List<{{template "ListValueType" .}}> _{{.Name}};
-		public List<{{template "ListValueType" .}}> Get{{.Name}} => _{{.Name}};
+		private List<{{template "ListValueType" .}}> {{template "FieldName" .}};
+		public List<{{template "ListValueType" .}}> Get{{.Name}} => {{template "FieldName" .}};
 {{- else if .Map}}
-		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> _{{.Name}};
-		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> Get{{.Name}} => _{{.Name}};
+		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "FieldName" .}};
+		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> Get{{.Name}} => {{template "FieldName" .}};
 {{- else if eq .TypeKind "component"}}
-		private {{.Type}} _{{.Name}};
-		public {{.Type}} Get{{.Name}} => _{{.Name}};
+		private {{.Type}} {{template "FieldName" .}};
+		public {{.Type}} Get{{.Name}} => {{template "FieldName" .}};
 {{- else}}
-		private {{template "Type" .Type}} _{{.Name}};
-		public {{template "Type" .Type}} Get{{.Name}} => _{{.Name}};
+		private {{template "Type" .Type}} {{template "FieldName" .}};
+		public {{template "Type" .Type}} Get{{.Name}} => {{template "FieldName" .}};
 {{- end}}
 {{- end}}
 
@@ -377,11 +377,11 @@
 			_id = id;
 {{- range .Fields}}
 {{- if .Repeated}}
-			_{{.Name}} = new List<{{template "ListValueType" .}}>();
+			{{template "FieldName" .}} = new List<{{template "ListValueType" .}}>();
 {{- else if .Map}}
-			_{{.Name}} = new Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>();
+			{{template "FieldName" .}} = new Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>();
 {{- else if eq .TypeKind "component"}}
-			_{{.Name}} = new {{.Type}}();
+			{{template "FieldName" .}} = new {{.Type}}();
 {{- else}}
 {{- end}}
 {{- end}}
@@ -396,17 +396,17 @@
 	{
 {{- range .Fields}}
 {{- if .Repeated}}
-		private List<{{template "ListValueType" .}}> _{{.Name}};
-		public List<{{template "ListValueType" .}}> Get{{.Name}} => _{{.Name}};
+		private List<{{template "ListValueType" .}}> {{template "FieldName" .}};
+		public List<{{template "ListValueType" .}}> Get{{.Name}} => {{template "FieldName" .}};
 {{- else if .Map}}
-		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> _{{.Name}};
-		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> Get{{.Name}} => _{{.Name}};
+		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "FieldName" .}};
+		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> Get{{.Name}} => {{template "FieldName" .}};
 {{- else if eq .TypeKind "component"}}
-		private {{.Type}} _{{.Name}};
-		public {{.Type}} Get{{.Name}} => _{{.Name}};
+		private {{.Type}} {{template "FieldName" .}};
+		public {{.Type}} Get{{.Name}} => {{template "FieldName" .}};
 {{- else}}
-		private {{template "Type" .Type}} _{{.Name}};
-		public {{template "Type" .Type}} Get{{.Name}} => _{{.Name}};
+		private {{template "Type" .Type}} {{template "FieldName" .}};
+		public {{template "Type" .Type}} Get{{.Name}} => {{template "FieldName" .}};
 {{- end}}
 		{{/* EMPTY LINE */}}
 {{- end}}
@@ -414,11 +414,11 @@
 		{
 {{- range .Fields}}
 {{- if .Repeated}}
-			_{{.Name}} = new List<{{template "ListValueType" .}}>();
+			{{template "FieldName" .}} = new List<{{template "ListValueType" .}}>();
 {{- else if .Map}}
-			_{{.Name}} = new Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>();
+			{{template "FieldName" .}} = new Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>();
 {{- else if eq .TypeKind "component"}}
-			_{{.Name}} = new {{.Type}}();
+			{{template "FieldName" .}} = new {{.Type}}();
 {{- else}}
 {{- end}}
 {{- end}}

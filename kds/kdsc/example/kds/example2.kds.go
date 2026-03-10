@@ -16,6 +16,7 @@ type City struct {
 	xxx_hidden_PlayerBasicInfo *PlayerBasicInfo
 	xxx_hidden_CityInfo *CityBaseInfo
 	xxx_hidden_Troops Int64_list
+	xxx_hidden_City string
 
 	dirty uint64
 }
@@ -104,6 +105,18 @@ func (x *City) initTroops() {
 	}
 }
 
+func (x *City) GetCity() string {
+	return x.xxx_hidden_City
+}
+
+func (x *City) SetCity(v string) {
+	if v == x.xxx_hidden_City {
+		return
+	}
+	x.xxx_hidden_City = v
+	x.markDirty(uint64(0x01) << 5)
+}
+
 func (x *City) Marshal(b []byte) ([]byte, error) {
 	var err error
 	if b, err = wire.MarshalInt64(b, 1, x.xxx_hidden_PlayerId); err != nil {
@@ -116,6 +129,9 @@ func (x *City) Marshal(b []byte) ([]byte, error) {
 		return b, err
 	}
 	if b, err = wire.MarshalMessage(b, 4, &x.xxx_hidden_Troops); err != nil {
+		return b, err
+	}
+	if b, err = wire.MarshalString(b, 5, x.xxx_hidden_City); err != nil {
 		return b, err
 	}
 	return b, err
@@ -146,6 +162,11 @@ func (x *City) MarshalDirty(b []byte) ([]byte, error) {
 			return b, err
 		}
 	}
+	if x.dirty&(uint64(0x01)<<5) != 0 {
+		if b, err = wire.MarshalString(b, 5, x.xxx_hidden_City); err != nil {
+			return b, err
+		}
+	}
 	return b, err
 }
 
@@ -166,6 +187,8 @@ func (x *City) Unmarshal(b []byte) error {
 			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, x.xxx_hidden_CityInfo)
 		case 4:
 			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Troops)
+		case 5:
+			x.xxx_hidden_City, valLen, err = wire.UnmarshalString(b[tagLen:], wtyp)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {

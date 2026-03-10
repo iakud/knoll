@@ -11,24 +11,27 @@ namespace kds
 		private readonly long _id;
 		public long Id => _id;
 
-		private long _PlayerId;
-		public long GetPlayerId => _PlayerId;
+		private long _playerId;
+		public long GetPlayerId => _playerId;
 
-		private PlayerBasicInfo _PlayerBasicInfo;
-		public PlayerBasicInfo GetPlayerBasicInfo => _PlayerBasicInfo;
+		private PlayerBasicInfo _playerBasicInfo;
+		public PlayerBasicInfo GetPlayerBasicInfo => _playerBasicInfo;
 
-		private CityBaseInfo _CityInfo;
-		public CityBaseInfo GetCityInfo => _CityInfo;
+		private CityBaseInfo _cityInfo;
+		public CityBaseInfo GetCityInfo => _cityInfo;
 
-		private List<long> _Troops;
-		public List<long> GetTroops => _Troops;
+		private List<long> _troops;
+		public List<long> GetTroops => _troops;
+
+		private string _city;
+		public string GetCity => _city;
 
 		public City(long id)
 		{
 			_id = id;
-			_PlayerBasicInfo = new PlayerBasicInfo();
-			_CityInfo = new CityBaseInfo();
-			_Troops = new List<long>();
+			_playerBasicInfo = new PlayerBasicInfo();
+			_cityInfo = new CityBaseInfo();
+			_troops = new List<long>();
 		}
 
 		public void Unmarshal(byte[] b)
@@ -41,16 +44,19 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					_PlayerId = stream.ReadInt64();
+					_playerId = stream.ReadInt64();
 					break;
 				case 2:
-					_PlayerBasicInfo.Unmarshal(stream.ReadBytes().ToByteArray());
+					_playerBasicInfo.Unmarshal(stream.ReadBytes().ToByteArray());
 					break;
 				case 3:
-					_CityInfo.Unmarshal(stream.ReadBytes().ToByteArray());
+					_cityInfo.Unmarshal(stream.ReadBytes().ToByteArray());
 					break;
 				case 4:
-					Int64_list.Unmarshal(_Troops, stream.ReadBytes().ToByteArray());
+					Int64_list.Unmarshal(_troops, stream.ReadBytes().ToByteArray());
+					break;
+				case 5:
+					_city = stream.ReadString();
 					break;
 				default:
 					stream.SkipLastField();
@@ -61,19 +67,19 @@ namespace kds
 	}
 	public class CityBaseInfo
 	{
-		private List<Vector> _Positions;
-		public List<Vector> GetPositions => _Positions;
+		private List<Vector> _positions;
+		public List<Vector> GetPositions => _positions;
 		
-		private Dictionary<int, object> _Troops;
-		public Dictionary<int, object> GetTroops => _Troops;
+		private Dictionary<int, object> _troops;
+		public Dictionary<int, object> GetTroops => _troops;
 		
-		private byte[] _BuildInfo;
-		public byte[] GetBuildInfo => _BuildInfo;
+		private byte[] _buildInfo;
+		public byte[] GetBuildInfo => _buildInfo;
 		
 		public CityBaseInfo()
 		{
-			_Positions = new List<Vector>();
-			_Troops = new Dictionary<int, object>();
+			_positions = new List<Vector>();
+			_troops = new Dictionary<int, object>();
 		}
 
 		public void Unmarshal(byte[] b)
@@ -86,13 +92,13 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					Vector_list.Unmarshal(_Positions, stream.ReadBytes().ToByteArray());
+					Vector_list.Unmarshal(_positions, stream.ReadBytes().ToByteArray());
 					break;
 				case 2:
-					Int32Empty_map.Unmarshal(_Troops, stream.ReadBytes().ToByteArray());
+					Int32Empty_map.Unmarshal(_troops, stream.ReadBytes().ToByteArray());
 					break;
 				case 3:
-					_BuildInfo = stream.ReadBytes().ToByteArray();
+					_buildInfo = stream.ReadBytes().ToByteArray();
 					break;
 				default:
 					stream.SkipLastField();
@@ -103,11 +109,11 @@ namespace kds
 	}
 	public class Vector
 	{
-		private int _X;
-		public int GetX => _X;
+		private int _x;
+		public int GetX => _x;
 		
-		private int _Y;
-		public int GetY => _Y;
+		private int _y;
+		public int GetY => _y;
 		
 		public Vector()
 		{
@@ -123,10 +129,10 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					_X = stream.ReadInt32();
+					_x = stream.ReadInt32();
 					break;
 				case 2:
-					_Y = stream.ReadInt32();
+					_y = stream.ReadInt32();
 					break;
 				default:
 					stream.SkipLastField();

@@ -5,6 +5,7 @@ entity City {
 	PlayerBasicInfo PlayerBasicInfo = 2;
 	CityBaseInfo CityInfo = 3;
 	repeated int64 Troops = 4;
+	string City = 5;
 }
 
 component CityBaseInfo {

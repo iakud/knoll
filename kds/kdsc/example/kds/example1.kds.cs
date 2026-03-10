@@ -13,21 +13,21 @@ namespace kds
 		private readonly long _id;
 		public long Id => _id;
 
-		private PlayerBasicInfo _Info;
-		public PlayerBasicInfo GetInfo => _Info;
+		private PlayerBasicInfo _info;
+		public PlayerBasicInfo GetInfo => _info;
 
-		private PlayerHero _Hero;
-		public PlayerHero GetHero => _Hero;
+		private PlayerHero _hero;
+		public PlayerHero GetHero => _hero;
 
-		private PlayerBag _Bag;
-		public PlayerBag GetBag => _Bag;
+		private PlayerBag _bag;
+		public PlayerBag GetBag => _bag;
 
 		public Player(long id)
 		{
 			_id = id;
-			_Info = new PlayerBasicInfo();
-			_Hero = new PlayerHero();
-			_Bag = new PlayerBag();
+			_info = new PlayerBasicInfo();
+			_hero = new PlayerHero();
+			_bag = new PlayerBag();
 		}
 
 		public void Unmarshal(byte[] b)
@@ -40,13 +40,13 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					_Info.Unmarshal(stream.ReadBytes().ToByteArray());
+					_info.Unmarshal(stream.ReadBytes().ToByteArray());
 					break;
 				case 2:
-					_Hero.Unmarshal(stream.ReadBytes().ToByteArray());
+					_hero.Unmarshal(stream.ReadBytes().ToByteArray());
 					break;
 				case 3:
-					_Bag.Unmarshal(stream.ReadBytes().ToByteArray());
+					_bag.Unmarshal(stream.ReadBytes().ToByteArray());
 					break;
 				default:
 					stream.SkipLastField();
@@ -57,14 +57,14 @@ namespace kds
 	}
 	public class PlayerBasicInfo
 	{
-		private string _Name;
-		public string GetName => _Name;
+		private string _name;
+		public string GetName => _name;
 		
-		private bool _IsNew;
-		public bool GetIsNew => _IsNew;
+		private bool _isNew;
+		public bool GetIsNew => _isNew;
 		
-		private DateTime _CreateTime;
-		public DateTime GetCreateTime => _CreateTime;
+		private DateTime _createTime;
+		public DateTime GetCreateTime => _createTime;
 		
 		public PlayerBasicInfo()
 		{
@@ -80,13 +80,13 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					_Name = stream.ReadString();
+					_name = stream.ReadString();
 					break;
 				case 3:
-					_IsNew = stream.ReadBool();
+					_isNew = stream.ReadBool();
 					break;
 				case 5:
-					_CreateTime = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+					_createTime = Timestamp.Parser.ParseFrom(stream).ToDateTime();
 					break;
 				default:
 					stream.SkipLastField();
@@ -97,12 +97,12 @@ namespace kds
 	}
 	public class PlayerHero
 	{
-		private Dictionary<long, Hero> _Heroes;
-		public Dictionary<long, Hero> GetHeroes => _Heroes;
+		private Dictionary<long, Hero> _heroes;
+		public Dictionary<long, Hero> GetHeroes => _heroes;
 		
 		public PlayerHero()
 		{
-			_Heroes = new Dictionary<long, Hero>();
+			_heroes = new Dictionary<long, Hero>();
 		}
 
 		public void Unmarshal(byte[] b)
@@ -115,7 +115,7 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					Int64Hero_map.Unmarshal(_Heroes, stream.ReadBytes().ToByteArray());
+					Int64Hero_map.Unmarshal(_heroes, stream.ReadBytes().ToByteArray());
 					break;
 				default:
 					stream.SkipLastField();
@@ -126,12 +126,12 @@ namespace kds
 	}
 	public class PlayerBag
 	{
-		private Dictionary<int, int> _Resources;
-		public Dictionary<int, int> GetResources => _Resources;
+		private Dictionary<int, int> _resources;
+		public Dictionary<int, int> GetResources => _resources;
 		
 		public PlayerBag()
 		{
-			_Resources = new Dictionary<int, int>();
+			_resources = new Dictionary<int, int>();
 		}
 
 		public void Unmarshal(byte[] b)
@@ -144,7 +144,7 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					Int32Int32_map.Unmarshal(_Resources, stream.ReadBytes().ToByteArray());
+					Int32Int32_map.Unmarshal(_resources, stream.ReadBytes().ToByteArray());
 					break;
 				default:
 					stream.SkipLastField();
@@ -155,17 +155,17 @@ namespace kds
 	}
 	public class Hero
 	{
-		private int _HeroId;
-		public int GetHeroId => _HeroId;
+		private int _heroId;
+		public int GetHeroId => _heroId;
 		
-		private int _HeroLevel;
-		public int GetHeroLevel => _HeroLevel;
+		private int _heroLevel;
+		public int GetHeroLevel => _heroLevel;
 		
-		private HeroType _Type;
-		public HeroType GetType => _Type;
+		private HeroType _type;
+		public HeroType GetType => _type;
 		
-		private TimeSpan _NeedTime;
-		public TimeSpan GetNeedTime => _NeedTime;
+		private TimeSpan _needTime;
+		public TimeSpan GetNeedTime => _needTime;
 		
 		public Hero()
 		{
@@ -181,16 +181,16 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					_HeroId = stream.ReadInt32();
+					_heroId = stream.ReadInt32();
 					break;
 				case 2:
-					_HeroLevel = stream.ReadInt32();
+					_heroLevel = stream.ReadInt32();
 					break;
 				case 3:
-					_Type = (HeroType)stream.ReadEnum();
+					_type = (HeroType)stream.ReadEnum();
 					break;
 				case 4:
-					_NeedTime = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+					_needTime = Duration.Parser.ParseFrom(stream).ToTimeSpan();
 					break;
 				default:
 					stream.SkipLastField();
