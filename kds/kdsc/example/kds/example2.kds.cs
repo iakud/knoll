@@ -40,12 +40,38 @@ namespace kds
 		public class Events
 		{
 			public event Action<City> Event;
+
+			public void TriggerEvent(City v)
+			{
+				Event?.Invoke(v);
+			}
 			public event Action<long, long> EventPlayerId;
+
+			public void TriggerEventPlayerId(long v1, long v2)
+			{
+				EventPlayerId?.Invoke(v1, v2);
+			}
 			public readonly PlayerBasicInfo.Events EventPlayerBasicInfo = new PlayerBasicInfo.Events();
 			public readonly CityBaseInfo.Events EventCityInfo = new CityBaseInfo.Events();
 			public event Action<List<long>> EventTroops;
+
+			public void TriggerEventTroops(List<long> v)
+			{
+				EventTroops?.Invoke(v);
+			}
 			public event Action<string, string> EventCity;
+
+			public void TriggerEventCity(string v1, string v2)
+			{
+				EventCity?.Invoke(v1, v2);
+			}
 			public event Action<int, int> EventId;
+
+			public void TriggerEventId(int v1, int v2)
+			{
+				EventId?.Invoke(v1, v2);
+			}
+
 			public Events()
 			{
 			}
@@ -63,9 +89,9 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					var old = _playerId;
+					var oldPlayerId = _playerId;
 					_playerId = stream.ReadInt64();
-					events.EventPlayerId?.Invoke(old, _playerId);
+					events.TriggerEventPlayerId(oldPlayerId, _playerId);
 					break;
 				case 2:
 					_playerBasicInfo.Unmarshal(stream.ReadBytes().ToByteArray(), events.EventPlayerBasicInfo);
@@ -75,17 +101,17 @@ namespace kds
 					break;
 				case 4:
 					Int64_list.Unmarshal(_troops, stream.ReadBytes().ToByteArray());
-					events.EventTroops?.Invoke(_troops);
+					events.TriggerEventTroops(_troops);
 					break;
 				case 5:
-					var old = _city;
+					var oldCity = _city;
 					_city = stream.ReadString();
-					events.EventCity?.Invoke(old, _city);
+					events.TriggerEventCity(oldCity, _city);
 					break;
 				case 6:
-					var old = _id;
+					var oldId = _id;
 					_id = stream.ReadInt32();
-					events.EventId?.Invoke(old, _id);
+					events.TriggerEventId(oldId, _id);
 					break;
 				default:
 					stream.SkipLastField();
@@ -96,10 +122,10 @@ namespace kds
 
 		public void Unmarshal(byte[] b)
 		{
-			Unmarshal(b, City.Events);
+			Unmarshal(b, City.Event);
 		}
 
-		public static readonly Events Events = new Events();
+		public static readonly Events Event = new Events();
 	}
 	public class CityBaseInfo
 	{
@@ -121,9 +147,30 @@ namespace kds
 		public class Events
 		{
 			public event Action<CityBaseInfo> Event;
+
+			public void TriggerEvent(CityBaseInfo v)
+			{
+				Event?.Invoke(v);
+			}
 			public event Action<List<Vector>> EventPositions;
+
+			public void TriggerEventPositions(List<Vector> v)
+			{
+				EventPositions?.Invoke(v);
+			}
 			public event Action<Dictionary<int, object>> EventTroops;
+
+			public void TriggerEventTroops(Dictionary<int, object> v)
+			{
+				EventTroops?.Invoke(v);
+			}
 			public event Action<byte[], byte[]> EventBuildInfo;
+
+			public void TriggerEventBuildInfo(byte[] v1, byte[] v2)
+			{
+				EventBuildInfo?.Invoke(v1, v2);
+			}
+
 			public Events()
 			{
 			}
@@ -142,16 +189,16 @@ namespace kds
 				{
 				case 1:
 					Vector_list.Unmarshal(_positions, stream.ReadBytes().ToByteArray());
-					events.EventPositions?.Invoke(_positions);
+					events.TriggerEventPositions(_positions);
 					break;
 				case 2:
 					Int32Empty_map.Unmarshal(_troops, stream.ReadBytes().ToByteArray());
-					events.EventTroops?.Invoke(_troops);
+					events.TriggerEventTroops(_troops);
 					break;
 				case 3:
-					var old = _buildInfo;
+					var oldBuildInfo = _buildInfo;
 					_buildInfo = stream.ReadBytes().ToByteArray();
-					events.EventBuildInfo?.Invoke(old, _buildInfo);
+					events.TriggerEventBuildInfo(oldBuildInfo, _buildInfo);
 					break;
 				default:
 					stream.SkipLastField();
@@ -175,8 +222,24 @@ namespace kds
 		public class Events
 		{
 			public event Action<Vector> Event;
+
+			public void TriggerEvent(Vector v)
+			{
+				Event?.Invoke(v);
+			}
 			public event Action<int, int> EventX;
+
+			public void TriggerEventX(int v1, int v2)
+			{
+				EventX?.Invoke(v1, v2);
+			}
 			public event Action<int, int> EventY;
+
+			public void TriggerEventY(int v1, int v2)
+			{
+				EventY?.Invoke(v1, v2);
+			}
+
 			public Events()
 			{
 			}
@@ -194,14 +257,14 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					var old = _x;
+					var oldX = _x;
 					_x = stream.ReadInt32();
-					events.EventX?.Invoke(old, _x);
+					events.TriggerEventX(oldX, _x);
 					break;
 				case 2:
-					var old = _y;
+					var oldY = _y;
 					_y = stream.ReadInt32();
-					events.EventY?.Invoke(old, _y);
+					events.TriggerEventY(oldY, _y);
 					break;
 				default:
 					stream.SkipLastField();

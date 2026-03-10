@@ -306,17 +306,38 @@
 		public class Events
 		{
 			public event Action<{{$MessageName}}> Event;
+
+			public void TriggerEvent({{$MessageName}} v)
+			{
+				Event?.Invoke(v);
+			}
 {{- range .Fields}}
 {{- if .Repeated}}
 			public event Action<List<{{template "ListValueType" .}}>> Event{{.Name}};
+
+			public void TriggerEvent{{.Name}}(List<{{template "ListValueType" .}}> v)
+			{
+				Event{{.Name}}?.Invoke(v);
+			}
 {{- else if .Map}}
 			public event Action<Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>> Event{{.Name}};
+
+			public void TriggerEvent{{.Name}}(Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> v)
+			{
+				Event{{.Name}}?.Invoke(v);
+			}
 {{- else if eq .TypeKind "component"}}
 			public readonly {{.Type}}.Events Event{{.Name}} = new {{.Type}}.Events();
 {{- else}}
 			public event Action<{{template "Type" .Type}}, {{template "Type" .Type}}> Event{{.Name}};
+
+			public void TriggerEvent{{.Name}}({{template "Type" .Type}} v1, {{template "Type" .Type}} v2)
+			{
+				Event{{.Name}}?.Invoke(v1, v2);
+			}
 {{- end}}
 {{- end}}
+
 			public Events()
 			{
 			}
@@ -337,84 +358,84 @@
 				case {{.Number}}:
 {{- if .Repeated}}
 					{{.ListType}}.Unmarshal({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
-					events.Event{{.Name}}?.Invoke({{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}({{template "FieldName" .}});
 {{- else if .Map}}
 					{{.MapType}}.Unmarshal({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
-					events.Event{{.Name}}?.Invoke({{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}({{template "FieldName" .}});
 {{- else if eq .TypeKind "component"}}
 					{{template "FieldName" .}}.Unmarshal(stream.ReadBytes().ToByteArray(), events.Event{{.Name}});
 {{- else if eq .TypeKind "enum"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = ({{.Type}})stream.ReadEnum();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "bool"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadBool();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "int32"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadInt32();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "sint32"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadSInt32();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "uint32"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadUInt32();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "int64"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadInt64();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "sint64"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadSInt64();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "uint64"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadUInt64();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "fixed32"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadFixed32();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "sfixed32"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadSFixed32();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "fixed64"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadFixed64();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "sfixed64"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadSFixed64();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "float"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadFloat();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "double"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadDouble();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "string"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadString();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "bytes"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadBytes().ToByteArray();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "timestamp"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = Timestamp.Parser.ParseFrom(stream).ToDateTime();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "duration"}}
-					var old = {{template "FieldName" .}};
+					var old{{.Name}} = {{template "FieldName" .}};
 					{{template "FieldName" .}} = Duration.Parser.ParseFrom(stream).ToTimeSpan();
-					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
+					events.TriggerEvent{{.Name}}(old{{.Name}}, {{template "FieldName" .}});
 {{- else if eq .Type "empty"}}
 					Empty.Parser.ParseFrom(stream);
 {{- else}}
@@ -456,10 +477,10 @@
 
 		public void Unmarshal(byte[] b)
 		{
-			Unmarshal(b, {{.Name}}.Events);
+			Unmarshal(b, {{.Name}}.Event);
 		}
 
-		public static readonly Events Events = new Events();
+		public static readonly Events Event = new Events();
 	}
 {{- end}}
 
