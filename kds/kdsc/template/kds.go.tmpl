@@ -406,9 +406,15 @@ func (x *{{.Name}}) Set(k {{template "Type" .KeyType}}, v {{template "MapValueTy
 	}
 {{- end}}
 	if e, ok := x.data[k]; ok {
+{{- if eq .Type "timestamp"}}
+		if e.Equal(v) {
+			return
+		}
+{{- else}}
 		if e == v {
 			return
 		}
+{{- end}}
 {{- if eq .TypeKind "component"}}
 		if e != nil {
 			e.dirtyParent = nil
@@ -1034,8 +1040,18 @@ import (
 {{- $SpacesBefore = true}}
 {{- end}}
 {{- $ImportTime := false}}
+{{- range .ListTypes}}
+{{- if and (not $ImportTime) (eq .Type "timestamp" "duration")}}
+{{- $ImportTime = true}}
+{{- end}}
+{{- end}}
+{{- range .MapTypes}}
+{{- if and (not $ImportTime) (eq .Type "timestamp" "duration")}}
+{{- $ImportTime = true}}
+{{- end}}
+{{- end}}
 {{- range .FieldTypes}}
-{{- if eq . "timestamp" "duration"}}
+{{- if and (not $ImportTime) (eq . "timestamp" "duration")}}
 {{- $ImportTime = true}}
 {{- end}}
 {{- end}}
