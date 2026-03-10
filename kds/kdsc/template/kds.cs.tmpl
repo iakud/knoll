@@ -280,39 +280,6 @@
 {{- define "Message"}}
 {{- $MessageName := .Name}}
 
-{{- range .Fields}}
-{{/* EMPTY LINE */}}
-{{- if .Repeated}}
-		private List<{{template "ListValueType" .}}> _{{.Name}};
-
-		public List<{{template "ListValueType" .}}> {{.Name}}
-		{
-			get { return _{{.Name}}; }
-		}
-{{- else if .Map}}
-		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> _{{.Name}};
-
-		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{.Name}}
-		{
-			get { return _{{.Name}}; }
-		}
-{{- else if eq .TypeKind "component"}}
-		private {{.Type}} _{{.Name}};
-
-		public {{.Type}} {{.Name}}
-		{
-			get { return _{{.Name}}; }
-		}
-{{- else}}
-		private {{template "Type" .Type}} _{{.Name}};
-
-		public {{template "Type" .Type}} {{.Name}}
-		{
-			get { return _{{.Name}}; }
-		}
-{{- end}}
-{{- end}}
-
 		public void Unmarshal(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -385,9 +352,25 @@
 {{- define "Entity"}}
 	public class {{.Name}}
 	{
-		private long _id;
-
+		private readonly long _id;
 		public long Id => _id;
+
+{{- range .Fields}}
+{{/* EMPTY LINE */}}
+{{- if .Repeated}}
+		private List<{{template "ListValueType" .}}> _{{.Name}};
+		public List<{{template "ListValueType" .}}> Get{{.Name}} => _{{.Name}};
+{{- else if .Map}}
+		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> _{{.Name}};
+		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> Get{{.Name}} => _{{.Name}};
+{{- else if eq .TypeKind "component"}}
+		private {{.Type}} _{{.Name}};
+		public {{.Type}} Get{{.Name}} => _{{.Name}};
+{{- else}}
+		private {{template "Type" .Type}} _{{.Name}};
+		public {{template "Type" .Type}} Get{{.Name}} => _{{.Name}};
+{{- end}}
+{{- end}}
 
 		public {{.Name}}(long id)
 		{
@@ -411,6 +394,22 @@
 {{- define "Component"}}
 	public class {{.Name}}
 	{
+{{- range .Fields}}
+{{- if .Repeated}}
+		private List<{{template "ListValueType" .}}> _{{.Name}};
+		public List<{{template "ListValueType" .}}> Get{{.Name}} => _{{.Name}};
+{{- else if .Map}}
+		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> _{{.Name}};
+		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> Get{{.Name}} => _{{.Name}};
+{{- else if eq .TypeKind "component"}}
+		private {{.Type}} _{{.Name}};
+		public {{.Type}} Get{{.Name}} => _{{.Name}};
+{{- else}}
+		private {{template "Type" .Type}} _{{.Name}};
+		public {{template "Type" .Type}} Get{{.Name}} => _{{.Name}};
+{{- end}}
+		{{/* EMPTY LINE */}}
+{{- end}}
 		public {{.Name}}()
 		{
 {{- range .Fields}}
@@ -499,24 +498,31 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace {{.Package}}
 {
+{{- $SpacesBefore := false}}
 {{- /* COMMON TYPES */ -}}
 {{- range .Types}}
 
 {{- with findList .}}
 {{- if .}}
+{{- if $SpacesBefore}}{{- $SpacesBefore = true}}
 {{/* EMPTY LINE */}}
+{{- end}}
 {{- template "List" .}}
 {{- end}}
 {{- end}}
 {{- range findMap .}}
+{{- if $SpacesBefore}}{{- $SpacesBefore = true}}
 {{/* EMPTY LINE */}}
+{{- end}}
 {{- template "Map" .}}
 {{- end}}
 
 {{- end}}
 {{- /* TOPLEVEL DEFINE */ -}}
 {{- range .Defs}}
+{{- if $SpacesBefore}}{{- $SpacesBefore = true}}
 {{/* EMPTY LINE */}}
+{{- end}}
 {{- if eq .Kind "enum"}}
 {{- template "Enum" .}}
 {{- with findList .Name}}

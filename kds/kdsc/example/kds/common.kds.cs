@@ -7,7 +7,6 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace kds
 {
-
 	public static class Int32Empty_map
 	{
 		public static void Unmarshal(Dictionary<int, object> data, byte[] b)
@@ -70,7 +69,6 @@ namespace kds
 			}
 		}
 	}
-
 	public static class Int32Int32_map
 	{
 		public static void Unmarshal(Dictionary<int, int> data, byte[] b)
@@ -133,7 +131,6 @@ namespace kds
 			}
 		}
 	}
-
 	public static class Int64_list
 	{
 		public static void Unmarshal(List<long> data, byte[] b)

@@ -6,12 +6,22 @@ using Google.Protobuf;
 
 namespace kds
 {
-
 	public class City
 	{
-		private long _id;
-
+		private readonly long _id;
 		public long Id => _id;
+
+		private long _PlayerId;
+		public long GetPlayerId => _PlayerId;
+
+		private PlayerBasicInfo _PlayerBasicInfo;
+		public PlayerBasicInfo GetPlayerBasicInfo => _PlayerBasicInfo;
+
+		private CityBaseInfo _CityInfo;
+		public CityBaseInfo GetCityInfo => _CityInfo;
+
+		private List<long> _Troops;
+		public List<long> GetTroops => _Troops;
 
 		public City(long id)
 		{
@@ -19,34 +29,6 @@ namespace kds
 			_PlayerBasicInfo = new PlayerBasicInfo();
 			_CityInfo = new CityBaseInfo();
 			_Troops = new List<long>();
-		}
-
-		private long _PlayerId;
-
-		public long PlayerId
-		{
-			get { return _PlayerId; }
-		}
-
-		private PlayerBasicInfo _PlayerBasicInfo;
-
-		public PlayerBasicInfo PlayerBasicInfo
-		{
-			get { return _PlayerBasicInfo; }
-		}
-
-		private CityBaseInfo _CityInfo;
-
-		public CityBaseInfo CityInfo
-		{
-			get { return _CityInfo; }
-		}
-
-		private List<long> _Troops;
-
-		public List<long> Troops
-		{
-			get { return _Troops; }
 		}
 
 		public void Unmarshal(byte[] b)
@@ -77,34 +59,21 @@ namespace kds
 			}
 		}
 	}
-
 	public class CityBaseInfo
 	{
+		private List<Vector> _Positions;
+		public List<Vector> GetPositions => _Positions;
+		
+		private Dictionary<int, object> _Troops;
+		public Dictionary<int, object> GetTroops => _Troops;
+		
+		private byte[] _BuildInfo;
+		public byte[] GetBuildInfo => _BuildInfo;
+		
 		public CityBaseInfo()
 		{
 			_Positions = new List<Vector>();
 			_Troops = new Dictionary<int, object>();
-		}
-
-		private List<Vector> _Positions;
-
-		public List<Vector> Positions
-		{
-			get { return _Positions; }
-		}
-
-		private Dictionary<int, object> _Troops;
-
-		public Dictionary<int, object> Troops
-		{
-			get { return _Troops; }
-		}
-
-		private byte[] _BuildInfo;
-
-		public byte[] BuildInfo
-		{
-			get { return _BuildInfo; }
 		}
 
 		public void Unmarshal(byte[] b)
@@ -132,25 +101,16 @@ namespace kds
 			}
 		}
 	}
-
 	public class Vector
 	{
+		private int _X;
+		public int GetX => _X;
+		
+		private int _Y;
+		public int GetY => _Y;
+		
 		public Vector()
 		{
-		}
-
-		private int _X;
-
-		public int X
-		{
-			get { return _X; }
-		}
-
-		private int _Y;
-
-		public int Y
-		{
-			get { return _Y; }
 		}
 
 		public void Unmarshal(byte[] b)

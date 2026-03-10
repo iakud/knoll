@@ -8,12 +8,19 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace kds
 {
-
 	public class Player
 	{
-		private long _id;
-
+		private readonly long _id;
 		public long Id => _id;
+
+		private PlayerBasicInfo _Info;
+		public PlayerBasicInfo GetInfo => _Info;
+
+		private PlayerHero _Hero;
+		public PlayerHero GetHero => _Hero;
+
+		private PlayerBag _Bag;
+		public PlayerBag GetBag => _Bag;
 
 		public Player(long id)
 		{
@@ -21,27 +28,6 @@ namespace kds
 			_Info = new PlayerBasicInfo();
 			_Hero = new PlayerHero();
 			_Bag = new PlayerBag();
-		}
-
-		private PlayerBasicInfo _Info;
-
-		public PlayerBasicInfo Info
-		{
-			get { return _Info; }
-		}
-
-		private PlayerHero _Hero;
-
-		public PlayerHero Hero
-		{
-			get { return _Hero; }
-		}
-
-		private PlayerBag _Bag;
-
-		public PlayerBag Bag
-		{
-			get { return _Bag; }
 		}
 
 		public void Unmarshal(byte[] b)
@@ -69,32 +55,19 @@ namespace kds
 			}
 		}
 	}
-
 	public class PlayerBasicInfo
 	{
+		private string _Name;
+		public string GetName => _Name;
+		
+		private bool _IsNew;
+		public bool GetIsNew => _IsNew;
+		
+		private DateTime _CreateTime;
+		public DateTime GetCreateTime => _CreateTime;
+		
 		public PlayerBasicInfo()
 		{
-		}
-
-		private string _Name;
-
-		public string Name
-		{
-			get { return _Name; }
-		}
-
-		private bool _IsNew;
-
-		public bool IsNew
-		{
-			get { return _IsNew; }
-		}
-
-		private DateTime _CreateTime;
-
-		public DateTime CreateTime
-		{
-			get { return _CreateTime; }
 		}
 
 		public void Unmarshal(byte[] b)
@@ -122,19 +95,14 @@ namespace kds
 			}
 		}
 	}
-
 	public class PlayerHero
 	{
+		private Dictionary<long, Hero> _Heroes;
+		public Dictionary<long, Hero> GetHeroes => _Heroes;
+		
 		public PlayerHero()
 		{
 			_Heroes = new Dictionary<long, Hero>();
-		}
-
-		private Dictionary<long, Hero> _Heroes;
-
-		public Dictionary<long, Hero> Heroes
-		{
-			get { return _Heroes; }
 		}
 
 		public void Unmarshal(byte[] b)
@@ -156,19 +124,14 @@ namespace kds
 			}
 		}
 	}
-
 	public class PlayerBag
 	{
+		private Dictionary<int, int> _Resources;
+		public Dictionary<int, int> GetResources => _Resources;
+		
 		public PlayerBag()
 		{
 			_Resources = new Dictionary<int, int>();
-		}
-
-		private Dictionary<int, int> _Resources;
-
-		public Dictionary<int, int> Resources
-		{
-			get { return _Resources; }
 		}
 
 		public void Unmarshal(byte[] b)
@@ -190,39 +153,22 @@ namespace kds
 			}
 		}
 	}
-
 	public class Hero
 	{
+		private int _HeroId;
+		public int GetHeroId => _HeroId;
+		
+		private int _HeroLevel;
+		public int GetHeroLevel => _HeroLevel;
+		
+		private HeroType _Type;
+		public HeroType GetType => _Type;
+		
+		private TimeSpan _NeedTime;
+		public TimeSpan GetNeedTime => _NeedTime;
+		
 		public Hero()
 		{
-		}
-
-		private int _HeroId;
-
-		public int HeroId
-		{
-			get { return _HeroId; }
-		}
-
-		private int _HeroLevel;
-
-		public int HeroLevel
-		{
-			get { return _HeroLevel; }
-		}
-
-		private HeroType _Type;
-
-		public HeroType Type
-		{
-			get { return _Type; }
-		}
-
-		private TimeSpan _NeedTime;
-
-		public TimeSpan NeedTime
-		{
-			get { return _NeedTime; }
 		}
 
 		public void Unmarshal(byte[] b)
@@ -326,7 +272,6 @@ namespace kds
 			}
 		}
 	}
-
 	public enum HeroType
 	{
 		HeroType1 = 0,
