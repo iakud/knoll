@@ -77,8 +77,6 @@ namespace kds
 			}
 		}
 
-		public static event Action<City> Event;
-
 		public void Unmarshal(byte[] b, Events events)
 		{
 			var stream = new CodedInputStream(b);
@@ -176,8 +174,6 @@ namespace kds
 			}
 		}
 
-		public static event Action<CityBaseInfo> Event;
-
 		public void Unmarshal(byte[] b, Events events)
 		{
 			var stream = new CodedInputStream(b);
@@ -244,8 +240,6 @@ namespace kds
 			{
 			}
 		}
-
-		public static event Action<Vector> Event;
 
 		public void Unmarshal(byte[] b, Events events)
 		{

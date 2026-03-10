@@ -47,8 +47,6 @@ namespace kds
 			}
 		}
 
-		public static event Action<Player> Event;
-
 		public void Unmarshal(byte[] b, Events events)
 		{
 			var stream = new CodedInputStream(b);
@@ -128,8 +126,6 @@ namespace kds
 			}
 		}
 
-		public static event Action<PlayerBasicInfo> Event;
-
 		public void Unmarshal(byte[] b, Events events)
 		{
 			var stream = new CodedInputStream(b);
@@ -191,8 +187,6 @@ namespace kds
 			}
 		}
 
-		public static event Action<PlayerHero> Event;
-
 		public void Unmarshal(byte[] b, Events events)
 		{
 			var stream = new CodedInputStream(b);
@@ -242,8 +236,6 @@ namespace kds
 			{
 			}
 		}
-
-		public static event Action<PlayerBag> Event;
 
 		public void Unmarshal(byte[] b, Events events)
 		{
@@ -320,8 +312,6 @@ namespace kds
 			{
 			}
 		}
-
-		public static event Action<Hero> Event;
 
 		public void Unmarshal(byte[] b, Events events)
 		{

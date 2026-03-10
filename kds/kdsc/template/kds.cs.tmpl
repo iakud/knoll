@@ -343,8 +343,6 @@
 			}
 		}
 
-		public static event Action<{{$MessageName}}> Event;
-
 		public void Unmarshal(byte[] b, Events events)
 		{
 			var stream = new CodedInputStream(b);
