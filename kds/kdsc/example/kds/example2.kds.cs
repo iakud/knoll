@@ -11,6 +11,14 @@ namespace kds
 		private readonly long _id_;
 		public long Id => _id_;
 
+		public City(long id)
+		{
+			_id_ = id;
+			_playerBasicInfo = new PlayerBasicInfo();
+			_cityInfo = new CityBaseInfo();
+			_troops = new List<long>();
+		}
+
 		private long _playerId;
 		public long PlayerId => _playerId;
 
@@ -29,15 +37,23 @@ namespace kds
 		private int _id;
 		public int Id_ => _id;
 
-		public City(long id)
+		public class Events
 		{
-			_id_ = id;
-			_playerBasicInfo = new PlayerBasicInfo();
-			_cityInfo = new CityBaseInfo();
-			_troops = new List<long>();
+			public event Action<City> Event;
+			public event Action<long, long> EventPlayerId;
+			public readonly PlayerBasicInfo.Events EventPlayerBasicInfo = new PlayerBasicInfo.Events();
+			public readonly CityBaseInfo.Events EventCityInfo = new CityBaseInfo.Events();
+			public event Action<List<long>> EventTroops;
+			public event Action<string, string> EventCity;
+			public event Action<int, int> EventId;
+			public Events()
+			{
+			}
 		}
 
-		public void Unmarshal(byte[] b)
+		public static event Action<City> Event;
+
+		public void Unmarshal(byte[] b, Events events)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -47,22 +63,29 @@ namespace kds
 				switch (num)
 				{
 				case 1:
+					var old = _playerId;
 					_playerId = stream.ReadInt64();
+					events.EventPlayerId?.Invoke(old, _playerId);
 					break;
 				case 2:
-					_playerBasicInfo.Unmarshal(stream.ReadBytes().ToByteArray());
+					_playerBasicInfo.Unmarshal(stream.ReadBytes().ToByteArray(), events.EventPlayerBasicInfo);
 					break;
 				case 3:
-					_cityInfo.Unmarshal(stream.ReadBytes().ToByteArray());
+					_cityInfo.Unmarshal(stream.ReadBytes().ToByteArray(), events.EventCityInfo);
 					break;
 				case 4:
 					Int64_list.Unmarshal(_troops, stream.ReadBytes().ToByteArray());
+					events.EventTroops?.Invoke(_troops);
 					break;
 				case 5:
+					var old = _city;
 					_city = stream.ReadString();
+					events.EventCity?.Invoke(old, _city);
 					break;
 				case 6:
+					var old = _id;
 					_id = stream.ReadInt32();
+					events.EventId?.Invoke(old, _id);
 					break;
 				default:
 					stream.SkipLastField();
@@ -70,25 +93,45 @@ namespace kds
 				}
 			}
 		}
+
+		public void Unmarshal(byte[] b)
+		{
+			Unmarshal(b, City.Events);
+		}
+
+		public static readonly Events Events = new Events();
 	}
 	public class CityBaseInfo
 	{
-		private List<Vector> _positions;
-		public List<Vector> Positions => _positions;
-		
-		private Dictionary<int, object> _troops;
-		public Dictionary<int, object> Troops => _troops;
-		
-		private byte[] _buildInfo;
-		public byte[] BuildInfo => _buildInfo;
-		
 		public CityBaseInfo()
 		{
 			_positions = new List<Vector>();
 			_troops = new Dictionary<int, object>();
 		}
 
-		public void Unmarshal(byte[] b)
+		private List<Vector> _positions;
+		public List<Vector> Positions => _positions;
+
+		private Dictionary<int, object> _troops;
+		public Dictionary<int, object> Troops => _troops;
+
+		private byte[] _buildInfo;
+		public byte[] BuildInfo => _buildInfo;
+
+		public class Events
+		{
+			public event Action<CityBaseInfo> Event;
+			public event Action<List<Vector>> EventPositions;
+			public event Action<Dictionary<int, object>> EventTroops;
+			public event Action<byte[], byte[]> EventBuildInfo;
+			public Events()
+			{
+			}
+		}
+
+		public static event Action<CityBaseInfo> Event;
+
+		public void Unmarshal(byte[] b, Events events)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -99,12 +142,16 @@ namespace kds
 				{
 				case 1:
 					Vector_list.Unmarshal(_positions, stream.ReadBytes().ToByteArray());
+					events.EventPositions?.Invoke(_positions);
 					break;
 				case 2:
 					Int32Empty_map.Unmarshal(_troops, stream.ReadBytes().ToByteArray());
+					events.EventTroops?.Invoke(_troops);
 					break;
 				case 3:
+					var old = _buildInfo;
 					_buildInfo = stream.ReadBytes().ToByteArray();
+					events.EventBuildInfo?.Invoke(old, _buildInfo);
 					break;
 				default:
 					stream.SkipLastField();
@@ -115,17 +162,29 @@ namespace kds
 	}
 	public class Vector
 	{
-		private int _x;
-		public int X => _x;
-		
-		private int _y;
-		public int Y => _y;
-		
 		public Vector()
 		{
 		}
 
-		public void Unmarshal(byte[] b)
+		private int _x;
+		public int X => _x;
+
+		private int _y;
+		public int Y => _y;
+
+		public class Events
+		{
+			public event Action<Vector> Event;
+			public event Action<int, int> EventX;
+			public event Action<int, int> EventY;
+			public Events()
+			{
+			}
+		}
+
+		public static event Action<Vector> Event;
+
+		public void Unmarshal(byte[] b, Events events)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -135,10 +194,14 @@ namespace kds
 				switch (num)
 				{
 				case 1:
+					var old = _x;
 					_x = stream.ReadInt32();
+					events.EventX?.Invoke(old, _x);
 					break;
 				case 2:
+					var old = _y;
 					_y = stream.ReadInt32();
+					events.EventY?.Invoke(old, _y);
 					break;
 				default:
 					stream.SkipLastField();

@@ -279,8 +279,52 @@
 
 {{- /* MESSAGE */ -}}
 {{- define "Message"}}
+{{- $MessageName := .Name}}
 
-		public void Unmarshal(byte[] b)
+{{- range .Fields}}
+{{- $MethodName := .Name}}
+{{- /* Duplicate name */ -}}
+{{- if eq $MethodName $MessageName "Id" "Unmarshal"}}
+{{- $MethodName = print .Name "_"}}
+{{- end}}
+{{/* EMPTY LINE */}}
+{{- if .Repeated}}
+		private List<{{template "ListValueType" .}}> {{template "FieldName" .}};
+		public List<{{template "ListValueType" .}}> {{$MethodName}} => {{template "FieldName" .}};
+{{- else if .Map}}
+		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "FieldName" .}};
+		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{$MethodName}} => {{template "FieldName" .}};
+{{- else if eq .TypeKind "component"}}
+		private {{.Type}} {{template "FieldName" .}};
+		public {{.Type}} {{$MethodName}} => {{template "FieldName" .}};
+{{- else}}
+		private {{template "Type" .Type}} {{template "FieldName" .}};
+		public {{template "Type" .Type}} {{$MethodName}} => {{template "FieldName" .}};
+{{- end}}
+{{- end}}
+
+		public class Events
+		{
+			public event Action<{{$MessageName}}> Event;
+{{- range .Fields}}
+{{- if .Repeated}}
+			public event Action<List<{{template "ListValueType" .}}>> Event{{.Name}};
+{{- else if .Map}}
+			public event Action<Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>> Event{{.Name}};
+{{- else if eq .TypeKind "component"}}
+			public readonly {{.Type}}.Events Event{{.Name}} = new {{.Type}}.Events();
+{{- else}}
+			public event Action<{{template "Type" .Type}}, {{template "Type" .Type}}> Event{{.Name}};
+{{- end}}
+{{- end}}
+			public Events()
+			{
+			}
+		}
+
+		public static event Action<{{$MessageName}}> Event;
+
+		public void Unmarshal(byte[] b, Events events)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -293,46 +337,84 @@
 				case {{.Number}}:
 {{- if .Repeated}}
 					{{.ListType}}.Unmarshal({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
+					events.Event{{.Name}}?.Invoke({{template "FieldName" .}});
 {{- else if .Map}}
 					{{.MapType}}.Unmarshal({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
+					events.Event{{.Name}}?.Invoke({{template "FieldName" .}});
 {{- else if eq .TypeKind "component"}}
-					{{template "FieldName" .}}.Unmarshal(stream.ReadBytes().ToByteArray());
+					{{template "FieldName" .}}.Unmarshal(stream.ReadBytes().ToByteArray(), events.Event{{.Name}});
 {{- else if eq .TypeKind "enum"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = ({{.Type}})stream.ReadEnum();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "bool"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadBool();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "int32"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadInt32();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "sint32"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadSInt32();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "uint32"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadUInt32();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "int64"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadInt64();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "sint64"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadSInt64();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "uint64"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadUInt64();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "fixed32"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadFixed32();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "sfixed32"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadSFixed32();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "fixed64"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadFixed64();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "sfixed64"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadSFixed64();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "float"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadFloat();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "double"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadDouble();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "string"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadString();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "bytes"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = stream.ReadBytes().ToByteArray();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "timestamp"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "duration"}}
+					var old = {{template "FieldName" .}};
 					{{template "FieldName" .}} = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+					events.Event{{.Name}}?.Invoke(old, {{template "FieldName" .}});
 {{- else if eq .Type "empty"}}
 					Empty.Parser.ParseFrom(stream);
 {{- else}}
@@ -356,28 +438,6 @@
 		private readonly long _id_;
 		public long Id => _id_;
 
-{{- range .Fields}}
-{{- $MethodName := .Name}}
-{{- /* Duplicate name */ -}}
-{{- if eq $MethodName $EntityName "Id" "Unmarshal"}}
-{{- $MethodName = print .Name "_"}}
-{{- end}}
-{{/* EMPTY LINE */}}
-{{- if .Repeated}}
-		private List<{{template "ListValueType" .}}> {{template "FieldName" .}};
-		public List<{{template "ListValueType" .}}> {{$MethodName}} => {{template "FieldName" .}};
-{{- else if .Map}}
-		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "FieldName" .}};
-		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{$MethodName}} => {{template "FieldName" .}};
-{{- else if eq .TypeKind "component"}}
-		private {{.Type}} {{template "FieldName" .}};
-		public {{.Type}} {{$MethodName}} => {{template "FieldName" .}};
-{{- else}}
-		private {{template "Type" .Type}} {{template "FieldName" .}};
-		public {{template "Type" .Type}} {{$MethodName}} => {{template "FieldName" .}};
-{{- end}}
-{{- end}}
-
 		public {{.Name}}(long id)
 		{
 			_id_ = id;
@@ -393,35 +453,20 @@
 {{- end}}
 		}
 {{- template "Message" .}}
+
+		public void Unmarshal(byte[] b)
+		{
+			Unmarshal(b, {{.Name}}.Events);
+		}
+
+		public static readonly Events Events = new Events();
 	}
 {{- end}}
 
 {{- /* COMPONENT */ -}}
 {{- define "Component"}}
-{{- $ComponentName := .Name}}
 	public class {{.Name}}
 	{
-{{- range .Fields}}
-{{- $MethodName := .Name}}
-{{- /* Duplicate name */ -}}
-{{- if eq $MethodName $ComponentName "Id" "Unmarshal"}}
-{{- $MethodName = print .Name "_"}}
-{{- end}}
-{{- if .Repeated}}
-		private List<{{template "ListValueType" .}}> {{template "FieldName" .}};
-		public List<{{template "ListValueType" .}}> {{$MethodName}} => {{template "FieldName" .}};
-{{- else if .Map}}
-		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "FieldName" .}};
-		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{$MethodName}} => {{template "FieldName" .}};
-{{- else if eq .TypeKind "component"}}
-		private {{.Type}} {{template "FieldName" .}};
-		public {{.Type}} {{$MethodName}} => {{template "FieldName" .}};
-{{- else}}
-		private {{template "Type" .Type}} {{template "FieldName" .}};
-		public {{template "Type" .Type}} {{$MethodName}} => {{template "FieldName" .}};
-{{- end}}
-		{{/* EMPTY LINE */}}
-{{- end}}
 		public {{.Name}}()
 		{
 {{- range .Fields}}
