@@ -8,27 +8,30 @@ namespace kds
 {
 	public class City
 	{
-		private readonly long _id;
-		public long Id => _id;
+		private readonly long _id_;
+		public long Id => _id_;
 
 		private long _playerId;
-		public long GetPlayerId => _playerId;
+		public long PlayerId => _playerId;
 
 		private PlayerBasicInfo _playerBasicInfo;
-		public PlayerBasicInfo GetPlayerBasicInfo => _playerBasicInfo;
+		public PlayerBasicInfo PlayerBasicInfo => _playerBasicInfo;
 
 		private CityBaseInfo _cityInfo;
-		public CityBaseInfo GetCityInfo => _cityInfo;
+		public CityBaseInfo CityInfo => _cityInfo;
 
 		private List<long> _troops;
-		public List<long> GetTroops => _troops;
+		public List<long> Troops => _troops;
 
 		private string _city;
-		public string GetCity => _city;
+		public string City_ => _city;
+
+		private int _id;
+		public int Id_ => _id;
 
 		public City(long id)
 		{
-			_id = id;
+			_id_ = id;
 			_playerBasicInfo = new PlayerBasicInfo();
 			_cityInfo = new CityBaseInfo();
 			_troops = new List<long>();
@@ -58,6 +61,9 @@ namespace kds
 				case 5:
 					_city = stream.ReadString();
 					break;
+				case 6:
+					_id = stream.ReadInt32();
+					break;
 				default:
 					stream.SkipLastField();
 					break;
@@ -68,13 +74,13 @@ namespace kds
 	public class CityBaseInfo
 	{
 		private List<Vector> _positions;
-		public List<Vector> GetPositions => _positions;
+		public List<Vector> Positions => _positions;
 		
 		private Dictionary<int, object> _troops;
-		public Dictionary<int, object> GetTroops => _troops;
+		public Dictionary<int, object> Troops => _troops;
 		
 		private byte[] _buildInfo;
-		public byte[] GetBuildInfo => _buildInfo;
+		public byte[] BuildInfo => _buildInfo;
 		
 		public CityBaseInfo()
 		{
@@ -110,10 +116,10 @@ namespace kds
 	public class Vector
 	{
 		private int _x;
-		public int GetX => _x;
+		public int X => _x;
 		
 		private int _y;
-		public int GetY => _y;
+		public int Y => _y;
 		
 		public Vector()
 		{

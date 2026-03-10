@@ -350,31 +350,37 @@
 
 {{- /* ENTITY */ -}}
 {{- define "Entity"}}
+{{- $EntityName := .Name}}
 	public class {{.Name}}
 	{
-		private readonly long _id;
-		public long Id => _id;
+		private readonly long _id_;
+		public long Id => _id_;
 
 {{- range .Fields}}
+{{- $MethodName := .Name}}
+{{- /* Duplicate name */ -}}
+{{- if eq $MethodName $EntityName "Id" "Unmarshal"}}
+{{- $MethodName = print .Name "_"}}
+{{- end}}
 {{/* EMPTY LINE */}}
 {{- if .Repeated}}
 		private List<{{template "ListValueType" .}}> {{template "FieldName" .}};
-		public List<{{template "ListValueType" .}}> Get{{.Name}} => {{template "FieldName" .}};
+		public List<{{template "ListValueType" .}}> {{$MethodName}} => {{template "FieldName" .}};
 {{- else if .Map}}
 		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "FieldName" .}};
-		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> Get{{.Name}} => {{template "FieldName" .}};
+		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{$MethodName}} => {{template "FieldName" .}};
 {{- else if eq .TypeKind "component"}}
 		private {{.Type}} {{template "FieldName" .}};
-		public {{.Type}} Get{{.Name}} => {{template "FieldName" .}};
+		public {{.Type}} {{$MethodName}} => {{template "FieldName" .}};
 {{- else}}
 		private {{template "Type" .Type}} {{template "FieldName" .}};
-		public {{template "Type" .Type}} Get{{.Name}} => {{template "FieldName" .}};
+		public {{template "Type" .Type}} {{$MethodName}} => {{template "FieldName" .}};
 {{- end}}
 {{- end}}
 
 		public {{.Name}}(long id)
 		{
-			_id = id;
+			_id_ = id;
 {{- range .Fields}}
 {{- if .Repeated}}
 			{{template "FieldName" .}} = new List<{{template "ListValueType" .}}>();
@@ -392,21 +398,27 @@
 
 {{- /* COMPONENT */ -}}
 {{- define "Component"}}
+{{- $ComponentName := .Name}}
 	public class {{.Name}}
 	{
 {{- range .Fields}}
+{{- $MethodName := .Name}}
+{{- /* Duplicate name */ -}}
+{{- if eq $MethodName $ComponentName "Id" "Unmarshal"}}
+{{- $MethodName = print .Name "_"}}
+{{- end}}
 {{- if .Repeated}}
 		private List<{{template "ListValueType" .}}> {{template "FieldName" .}};
-		public List<{{template "ListValueType" .}}> Get{{.Name}} => {{template "FieldName" .}};
+		public List<{{template "ListValueType" .}}> {{$MethodName}} => {{template "FieldName" .}};
 {{- else if .Map}}
 		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "FieldName" .}};
-		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> Get{{.Name}} => {{template "FieldName" .}};
+		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{$MethodName}} => {{template "FieldName" .}};
 {{- else if eq .TypeKind "component"}}
 		private {{.Type}} {{template "FieldName" .}};
-		public {{.Type}} Get{{.Name}} => {{template "FieldName" .}};
+		public {{.Type}} {{$MethodName}} => {{template "FieldName" .}};
 {{- else}}
 		private {{template "Type" .Type}} {{template "FieldName" .}};
-		public {{template "Type" .Type}} Get{{.Name}} => {{template "FieldName" .}};
+		public {{template "Type" .Type}} {{$MethodName}} => {{template "FieldName" .}};
 {{- end}}
 		{{/* EMPTY LINE */}}
 {{- end}}

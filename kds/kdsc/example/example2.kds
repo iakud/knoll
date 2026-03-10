@@ -6,6 +6,7 @@ entity City {
 	CityBaseInfo CityInfo = 3;
 	repeated int64 Troops = 4;
 	string City = 5;
+	int32 Id = 6;
 }
 
 component CityBaseInfo {

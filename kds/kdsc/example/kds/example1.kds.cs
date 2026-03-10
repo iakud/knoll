@@ -10,21 +10,21 @@ namespace kds
 {
 	public class Player
 	{
-		private readonly long _id;
-		public long Id => _id;
+		private readonly long _id_;
+		public long Id => _id_;
 
 		private PlayerBasicInfo _info;
-		public PlayerBasicInfo GetInfo => _info;
+		public PlayerBasicInfo Info => _info;
 
 		private PlayerHero _hero;
-		public PlayerHero GetHero => _hero;
+		public PlayerHero Hero => _hero;
 
 		private PlayerBag _bag;
-		public PlayerBag GetBag => _bag;
+		public PlayerBag Bag => _bag;
 
 		public Player(long id)
 		{
-			_id = id;
+			_id_ = id;
 			_info = new PlayerBasicInfo();
 			_hero = new PlayerHero();
 			_bag = new PlayerBag();
@@ -58,13 +58,13 @@ namespace kds
 	public class PlayerBasicInfo
 	{
 		private string _name;
-		public string GetName => _name;
+		public string Name => _name;
 		
 		private bool _isNew;
-		public bool GetIsNew => _isNew;
+		public bool IsNew => _isNew;
 		
 		private DateTime _createTime;
-		public DateTime GetCreateTime => _createTime;
+		public DateTime CreateTime => _createTime;
 		
 		public PlayerBasicInfo()
 		{
@@ -98,7 +98,7 @@ namespace kds
 	public class PlayerHero
 	{
 		private Dictionary<long, Hero> _heroes;
-		public Dictionary<long, Hero> GetHeroes => _heroes;
+		public Dictionary<long, Hero> Heroes => _heroes;
 		
 		public PlayerHero()
 		{
@@ -127,7 +127,7 @@ namespace kds
 	public class PlayerBag
 	{
 		private Dictionary<int, int> _resources;
-		public Dictionary<int, int> GetResources => _resources;
+		public Dictionary<int, int> Resources => _resources;
 		
 		public PlayerBag()
 		{
@@ -156,16 +156,16 @@ namespace kds
 	public class Hero
 	{
 		private int _heroId;
-		public int GetHeroId => _heroId;
+		public int HeroId => _heroId;
 		
 		private int _heroLevel;
-		public int GetHeroLevel => _heroLevel;
+		public int HeroLevel => _heroLevel;
 		
 		private HeroType _type;
-		public HeroType GetType => _type;
+		public HeroType Type => _type;
 		
 		private TimeSpan _needTime;
-		public TimeSpan GetNeedTime => _needTime;
+		public TimeSpan NeedTime => _needTime;
 		
 		public Hero()
 		{
