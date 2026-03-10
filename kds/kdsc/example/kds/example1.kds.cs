@@ -412,12 +412,12 @@ namespace kds
 				if (!data.TryGetValue(k, out c))
 				{
 					c = new Hero();
-					c.Unmarshal(v);
+					c.Unmarshal(v, new Hero.Events());
 					data[k] = c;
 				}
 				else
 				{
-					c.Unmarshal(v);
+					c.Unmarshal(v, new Hero.Events());
 				}
 			}
 		}

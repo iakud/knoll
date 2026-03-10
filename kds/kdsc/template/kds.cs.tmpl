@@ -252,12 +252,12 @@
 				if (!data.TryGetValue(k, out c))
 				{
 					c = new {{.Type}}();
-					c.Unmarshal(v);
+					c.Unmarshal(v, new {{.Type}}.Events());
 					data[k] = c;
 				}
 				else
 				{
-					c.Unmarshal(v);
+					c.Unmarshal(v, new {{.Type}}.Events());
 				}
 {{- else}}
 				data[k] = v;
@@ -512,6 +512,8 @@
 {{- $ImportSystem := false}}
 {{- $ImportGeneric := false}}
 {{- $ImportWellKnownTypes := false}}
+
+{{- $ImportSystem = true}}
 
 {{- range .Entities}}
 {{- range .Fields}}
