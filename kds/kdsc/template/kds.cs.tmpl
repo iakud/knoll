@@ -49,7 +49,7 @@
 			{
 {{- if eq .TypeKind "component"}}
 				var v = new {{.Type}}();
-				v.Unmarshal(stream.ReadBytes().ToByteArray());
+				v.Unmarshal(stream.ReadBytes().ToByteArray(), new {{.Type}}.Envets());
 				data.Add(v);
 {{- else if eq .TypeKind "enum"}}
 				data.Add(({{.Type}})stream.ReadEnum());
