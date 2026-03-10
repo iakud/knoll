@@ -278,7 +278,7 @@ namespace kds
 			while (!stream.IsAtEnd)
 			{
 				var v = new Vector();
-				v.Unmarshal(stream.ReadBytes().ToByteArray(), new Vector.Envets());
+				v.Unmarshal(stream.ReadBytes().ToByteArray(), new Vector.Events());
 				data.Add(v);
 			}
 		}
