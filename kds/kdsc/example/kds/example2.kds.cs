@@ -22,63 +22,44 @@ namespace kds
 
 		private long _playerId;
 		public long PlayerId => _playerId;
+		public bool IsPlayerIdChanged => _changed&(0x01<<1) != 0;
 
 		private PlayerBasicInfo _playerBasicInfo;
 		public PlayerBasicInfo PlayerBasicInfo => _playerBasicInfo;
+		public bool IsPlayerBasicInfoChanged => _changed&(0x01<<2) != 0;
 
 		private CityBaseInfo _cityInfo;
 		public CityBaseInfo CityInfo => _cityInfo;
+		public bool IsCityInfoChanged => _changed&(0x01<<3) != 0;
 
 		private List<long> _troops;
 		public List<long> Troops => _troops;
+		public bool IsTroopsChanged => _changed&(0x01<<4) != 0;
 
 		private string _city;
 		public string City_ => _city;
+		public bool IsCityChanged => _changed&(0x01<<5) != 0;
 
 		private int _id;
 		public int Id_ => _id;
+		public bool IsIdChanged => _changed&(0x01<<6) != 0;
 
-		public class Events
+		private long _changed;
+
+		public event Action<City> OnChanged;
+
+		public void InvokeChange()
 		{
-			public event Action<City> Event;
-
-			public void TriggerEvent(City v)
-			{
-				Event?.Invoke(v);
-			}
-			public event Action<long, long> EventPlayerId;
-
-			public void TriggerEventPlayerId(long v1, long v2)
-			{
-				EventPlayerId?.Invoke(v1, v2);
-			}
-			public readonly PlayerBasicInfo.Events EventPlayerBasicInfo = new PlayerBasicInfo.Events();
-			public readonly CityBaseInfo.Events EventCityInfo = new CityBaseInfo.Events();
-			public event Action<List<long>> EventTroops;
-
-			public void TriggerEventTroops(List<long> v)
-			{
-				EventTroops?.Invoke(v);
-			}
-			public event Action<string, string> EventCity;
-
-			public void TriggerEventCity(string v1, string v2)
-			{
-				EventCity?.Invoke(v1, v2);
-			}
-			public event Action<int, int> EventId;
-
-			public void TriggerEventId(int v1, int v2)
-			{
-				EventId?.Invoke(v1, v2);
-			}
-
-			public Events()
-			{
-			}
+			if (_changed == 0)
+				return;
+			if (_changed & (0x01<<2) != 0)
+				_playerBasicInfo.InvokeChange();
+			if (_changed & (0x01<<3) != 0)
+				_cityInfo.InvokeChange();
+			OnChanged.Invoke(this);
 		}
 
-		public void Unmarshal(byte[] b, Events events)
+		public void Unmarshal(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -88,29 +69,28 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					var oldPlayerId = _playerId;
 					_playerId = stream.ReadInt64();
-					events.TriggerEventPlayerId(oldPlayerId, _playerId);
+					_changed |= 0x01<<1;
 					break;
 				case 2:
-					_playerBasicInfo.Unmarshal(stream.ReadBytes().ToByteArray(), events.EventPlayerBasicInfo);
+					_playerBasicInfo.Unmarshal(stream.ReadBytes().ToByteArray());
+					_changed |= 0x01<<2;
 					break;
 				case 3:
-					_cityInfo.Unmarshal(stream.ReadBytes().ToByteArray(), events.EventCityInfo);
+					_cityInfo.Unmarshal(stream.ReadBytes().ToByteArray());
+					_changed |= 0x01<<3;
 					break;
 				case 4:
 					Int64_list.Unmarshal(_troops, stream.ReadBytes().ToByteArray());
-					events.TriggerEventTroops(_troops);
+					_changed |= 0x01<<4;
 					break;
 				case 5:
-					var oldCity = _city;
 					_city = stream.ReadString();
-					events.TriggerEventCity(oldCity, _city);
+					_changed |= 0x01<<5;
 					break;
 				case 6:
-					var oldId = _id;
 					_id = stream.ReadInt32();
-					events.TriggerEventId(oldId, _id);
+					_changed |= 0x01<<6;
 					break;
 				default:
 					stream.SkipLastField();
@@ -118,13 +98,6 @@ namespace kds
 				}
 			}
 		}
-
-		public void Unmarshal(byte[] b)
-		{
-			Unmarshal(b, City.Event);
-		}
-
-		public static readonly Events Event = new Events();
 	}
 	public class CityBaseInfo
 	{
@@ -136,46 +109,30 @@ namespace kds
 
 		private List<Vector> _positions;
 		public List<Vector> Positions => _positions;
+		public bool IsPositionsChanged => _changed&(0x01<<1) != 0;
 
 		private Dictionary<int, object> _troops;
 		public Dictionary<int, object> Troops => _troops;
+		public bool IsTroopsChanged => _changed&(0x01<<2) != 0;
 
 		private byte[] _buildInfo;
 		public byte[] BuildInfo => _buildInfo;
+		public bool IsBuildInfoChanged => _changed&(0x01<<3) != 0;
 
-		public class Events
+		private long _changed;
+
+		public event Action<CityBaseInfo> OnChanged;
+
+		public void InvokeChange()
 		{
-			public event Action<CityBaseInfo> Event;
-
-			public void TriggerEvent(CityBaseInfo v)
-			{
-				Event?.Invoke(v);
-			}
-			public event Action<List<Vector>> EventPositions;
-
-			public void TriggerEventPositions(List<Vector> v)
-			{
-				EventPositions?.Invoke(v);
-			}
-			public event Action<Dictionary<int, object>> EventTroops;
-
-			public void TriggerEventTroops(Dictionary<int, object> v)
-			{
-				EventTroops?.Invoke(v);
-			}
-			public event Action<byte[], byte[]> EventBuildInfo;
-
-			public void TriggerEventBuildInfo(byte[] v1, byte[] v2)
-			{
-				EventBuildInfo?.Invoke(v1, v2);
-			}
-
-			public Events()
-			{
-			}
+			if (_changed == 0)
+				return;
+			if (_changed & (0x01<<1) != 0)
+				_positions.InvokeChange();
+			OnChanged.Invoke(this);
 		}
 
-		public void Unmarshal(byte[] b, Events events)
+		public void Unmarshal(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -186,16 +143,15 @@ namespace kds
 				{
 				case 1:
 					Vector_list.Unmarshal(_positions, stream.ReadBytes().ToByteArray());
-					events.TriggerEventPositions(_positions);
+					_changed |= 0x01<<1;
 					break;
 				case 2:
 					Int32Empty_map.Unmarshal(_troops, stream.ReadBytes().ToByteArray());
-					events.TriggerEventTroops(_troops);
+					_changed |= 0x01<<2;
 					break;
 				case 3:
-					var oldBuildInfo = _buildInfo;
 					_buildInfo = stream.ReadBytes().ToByteArray();
-					events.TriggerEventBuildInfo(oldBuildInfo, _buildInfo);
+					_changed |= 0x01<<3;
 					break;
 				default:
 					stream.SkipLastField();
@@ -212,37 +168,24 @@ namespace kds
 
 		private int _x;
 		public int X => _x;
+		public bool IsXChanged => _changed&(0x01<<1) != 0;
 
 		private int _y;
 		public int Y => _y;
+		public bool IsYChanged => _changed&(0x01<<2) != 0;
 
-		public class Events
+		private long _changed;
+
+		public event Action<Vector> OnChanged;
+
+		public void InvokeChange()
 		{
-			public event Action<Vector> Event;
-
-			public void TriggerEvent(Vector v)
-			{
-				Event?.Invoke(v);
-			}
-			public event Action<int, int> EventX;
-
-			public void TriggerEventX(int v1, int v2)
-			{
-				EventX?.Invoke(v1, v2);
-			}
-			public event Action<int, int> EventY;
-
-			public void TriggerEventY(int v1, int v2)
-			{
-				EventY?.Invoke(v1, v2);
-			}
-
-			public Events()
-			{
-			}
+			if (_changed == 0)
+				return;
+			OnChanged.Invoke(this);
 		}
 
-		public void Unmarshal(byte[] b, Events events)
+		public void Unmarshal(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -252,14 +195,12 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					var oldX = _x;
 					_x = stream.ReadInt32();
-					events.TriggerEventX(oldX, _x);
+					_changed |= 0x01<<1;
 					break;
 				case 2:
-					var oldY = _y;
 					_y = stream.ReadInt32();
-					events.TriggerEventY(oldY, _y);
+					_changed |= 0x01<<2;
 					break;
 				default:
 					stream.SkipLastField();
@@ -278,7 +219,7 @@ namespace kds
 			while (!stream.IsAtEnd)
 			{
 				var v = new Vector();
-				v.Unmarshal(stream.ReadBytes().ToByteArray(), new Vector.Events());
+				v.Unmarshal(stream.ReadBytes().ToByteArray());
 				data.Add(v);
 			}
 		}

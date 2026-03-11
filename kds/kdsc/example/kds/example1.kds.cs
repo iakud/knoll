@@ -23,31 +23,34 @@ namespace kds
 
 		private PlayerBasicInfo _info;
 		public PlayerBasicInfo Info => _info;
+		public bool IsInfoChanged => _changed&(0x01<<1) != 0;
 
 		private PlayerHero _hero;
 		public PlayerHero Hero => _hero;
+		public bool IsHeroChanged => _changed&(0x01<<2) != 0;
 
 		private PlayerBag _bag;
 		public PlayerBag Bag => _bag;
+		public bool IsBagChanged => _changed&(0x01<<3) != 0;
 
-		public class Events
+		private long _changed;
+
+		public event Action<Player> OnChanged;
+
+		public void InvokeChange()
 		{
-			public event Action<Player> Event;
-
-			public void TriggerEvent(Player v)
-			{
-				Event?.Invoke(v);
-			}
-			public readonly PlayerBasicInfo.Events EventInfo = new PlayerBasicInfo.Events();
-			public readonly PlayerHero.Events EventHero = new PlayerHero.Events();
-			public readonly PlayerBag.Events EventBag = new PlayerBag.Events();
-
-			public Events()
-			{
-			}
+			if (_changed == 0)
+				return;
+			if (_changed & (0x01<<1) != 0)
+				_info.InvokeChange();
+			if (_changed & (0x01<<2) != 0)
+				_hero.InvokeChange();
+			if (_changed & (0x01<<3) != 0)
+				_bag.InvokeChange();
+			OnChanged.Invoke(this);
 		}
 
-		public void Unmarshal(byte[] b, Events events)
+		public void Unmarshal(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -57,13 +60,16 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					_info.Unmarshal(stream.ReadBytes().ToByteArray(), events.EventInfo);
+					_info.Unmarshal(stream.ReadBytes().ToByteArray());
+					_changed |= 0x01<<1;
 					break;
 				case 2:
-					_hero.Unmarshal(stream.ReadBytes().ToByteArray(), events.EventHero);
+					_hero.Unmarshal(stream.ReadBytes().ToByteArray());
+					_changed |= 0x01<<2;
 					break;
 				case 3:
-					_bag.Unmarshal(stream.ReadBytes().ToByteArray(), events.EventBag);
+					_bag.Unmarshal(stream.ReadBytes().ToByteArray());
+					_changed |= 0x01<<3;
 					break;
 				default:
 					stream.SkipLastField();
@@ -71,13 +77,6 @@ namespace kds
 				}
 			}
 		}
-
-		public void Unmarshal(byte[] b)
-		{
-			Unmarshal(b, Player.Event);
-		}
-
-		public static readonly Events Event = new Events();
 	}
 	public class PlayerBasicInfo
 	{
@@ -87,46 +86,28 @@ namespace kds
 
 		private string _name;
 		public string Name => _name;
+		public bool IsNameChanged => _changed&(0x01<<1) != 0;
 
 		private bool _isNew;
 		public bool IsNew => _isNew;
+		public bool IsIsNewChanged => _changed&(0x01<<3) != 0;
 
 		private DateTime _createTime;
 		public DateTime CreateTime => _createTime;
+		public bool IsCreateTimeChanged => _changed&(0x01<<5) != 0;
 
-		public class Events
+		private long _changed;
+
+		public event Action<PlayerBasicInfo> OnChanged;
+
+		public void InvokeChange()
 		{
-			public event Action<PlayerBasicInfo> Event;
-
-			public void TriggerEvent(PlayerBasicInfo v)
-			{
-				Event?.Invoke(v);
-			}
-			public event Action<string, string> EventName;
-
-			public void TriggerEventName(string v1, string v2)
-			{
-				EventName?.Invoke(v1, v2);
-			}
-			public event Action<bool, bool> EventIsNew;
-
-			public void TriggerEventIsNew(bool v1, bool v2)
-			{
-				EventIsNew?.Invoke(v1, v2);
-			}
-			public event Action<DateTime, DateTime> EventCreateTime;
-
-			public void TriggerEventCreateTime(DateTime v1, DateTime v2)
-			{
-				EventCreateTime?.Invoke(v1, v2);
-			}
-
-			public Events()
-			{
-			}
+			if (_changed == 0)
+				return;
+			OnChanged.Invoke(this);
 		}
 
-		public void Unmarshal(byte[] b, Events events)
+		public void Unmarshal(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -136,19 +117,16 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					var oldName = _name;
 					_name = stream.ReadString();
-					events.TriggerEventName(oldName, _name);
+					_changed |= 0x01<<1;
 					break;
 				case 3:
-					var oldIsNew = _isNew;
 					_isNew = stream.ReadBool();
-					events.TriggerEventIsNew(oldIsNew, _isNew);
+					_changed |= 0x01<<3;
 					break;
 				case 5:
-					var oldCreateTime = _createTime;
 					_createTime = Timestamp.Parser.ParseFrom(stream).ToDateTime();
-					events.TriggerEventCreateTime(oldCreateTime, _createTime);
+					_changed |= 0x01<<5;
 					break;
 				default:
 					stream.SkipLastField();
@@ -166,28 +144,22 @@ namespace kds
 
 		private Dictionary<long, Hero> _heroes;
 		public Dictionary<long, Hero> Heroes => _heroes;
+		public bool IsHeroesChanged => _changed&(0x01<<1) != 0;
 
-		public class Events
+		private long _changed;
+
+		public event Action<PlayerHero> OnChanged;
+
+		public void InvokeChange()
 		{
-			public event Action<PlayerHero> Event;
-
-			public void TriggerEvent(PlayerHero v)
-			{
-				Event?.Invoke(v);
-			}
-			public event Action<Dictionary<long, Hero>> EventHeroes;
-
-			public void TriggerEventHeroes(Dictionary<long, Hero> v)
-			{
-				EventHeroes?.Invoke(v);
-			}
-
-			public Events()
-			{
-			}
+			if (_changed == 0)
+				return;
+			if (_changed & (0x01<<1) != 0)
+				_heroes.InvokeChange();
+			OnChanged.Invoke(this);
 		}
 
-		public void Unmarshal(byte[] b, Events events)
+		public void Unmarshal(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -198,7 +170,7 @@ namespace kds
 				{
 				case 1:
 					Int64Hero_map.Unmarshal(_heroes, stream.ReadBytes().ToByteArray());
-					events.TriggerEventHeroes(_heroes);
+					_changed |= 0x01<<1;
 					break;
 				default:
 					stream.SkipLastField();
@@ -216,28 +188,20 @@ namespace kds
 
 		private Dictionary<int, int> _resources;
 		public Dictionary<int, int> Resources => _resources;
+		public bool IsResourcesChanged => _changed&(0x01<<1) != 0;
 
-		public class Events
+		private long _changed;
+
+		public event Action<PlayerBag> OnChanged;
+
+		public void InvokeChange()
 		{
-			public event Action<PlayerBag> Event;
-
-			public void TriggerEvent(PlayerBag v)
-			{
-				Event?.Invoke(v);
-			}
-			public event Action<Dictionary<int, int>> EventResources;
-
-			public void TriggerEventResources(Dictionary<int, int> v)
-			{
-				EventResources?.Invoke(v);
-			}
-
-			public Events()
-			{
-			}
+			if (_changed == 0)
+				return;
+			OnChanged.Invoke(this);
 		}
 
-		public void Unmarshal(byte[] b, Events events)
+		public void Unmarshal(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -248,7 +212,7 @@ namespace kds
 				{
 				case 1:
 					Int32Int32_map.Unmarshal(_resources, stream.ReadBytes().ToByteArray());
-					events.TriggerEventResources(_resources);
+					_changed |= 0x01<<1;
 					break;
 				default:
 					stream.SkipLastField();
@@ -265,55 +229,32 @@ namespace kds
 
 		private int _heroId;
 		public int HeroId => _heroId;
+		public bool IsHeroIdChanged => _changed&(0x01<<1) != 0;
 
 		private int _heroLevel;
 		public int HeroLevel => _heroLevel;
+		public bool IsHeroLevelChanged => _changed&(0x01<<2) != 0;
 
 		private HeroType _type;
 		public HeroType Type => _type;
+		public bool IsTypeChanged => _changed&(0x01<<3) != 0;
 
 		private TimeSpan _needTime;
 		public TimeSpan NeedTime => _needTime;
+		public bool IsNeedTimeChanged => _changed&(0x01<<4) != 0;
 
-		public class Events
+		private long _changed;
+
+		public event Action<Hero> OnChanged;
+
+		public void InvokeChange()
 		{
-			public event Action<Hero> Event;
-
-			public void TriggerEvent(Hero v)
-			{
-				Event?.Invoke(v);
-			}
-			public event Action<int, int> EventHeroId;
-
-			public void TriggerEventHeroId(int v1, int v2)
-			{
-				EventHeroId?.Invoke(v1, v2);
-			}
-			public event Action<int, int> EventHeroLevel;
-
-			public void TriggerEventHeroLevel(int v1, int v2)
-			{
-				EventHeroLevel?.Invoke(v1, v2);
-			}
-			public event Action<HeroType, HeroType> EventType;
-
-			public void TriggerEventType(HeroType v1, HeroType v2)
-			{
-				EventType?.Invoke(v1, v2);
-			}
-			public event Action<TimeSpan, TimeSpan> EventNeedTime;
-
-			public void TriggerEventNeedTime(TimeSpan v1, TimeSpan v2)
-			{
-				EventNeedTime?.Invoke(v1, v2);
-			}
-
-			public Events()
-			{
-			}
+			if (_changed == 0)
+				return;
+			OnChanged.Invoke(this);
 		}
 
-		public void Unmarshal(byte[] b, Events events)
+		public void Unmarshal(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -323,24 +264,20 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					var oldHeroId = _heroId;
 					_heroId = stream.ReadInt32();
-					events.TriggerEventHeroId(oldHeroId, _heroId);
+					_changed |= 0x01<<1;
 					break;
 				case 2:
-					var oldHeroLevel = _heroLevel;
 					_heroLevel = stream.ReadInt32();
-					events.TriggerEventHeroLevel(oldHeroLevel, _heroLevel);
+					_changed |= 0x01<<2;
 					break;
 				case 3:
-					var oldType = _type;
 					_type = (HeroType)stream.ReadEnum();
-					events.TriggerEventType(oldType, _type);
+					_changed |= 0x01<<3;
 					break;
 				case 4:
-					var oldNeedTime = _needTime;
 					_needTime = Duration.Parser.ParseFrom(stream).ToTimeSpan();
-					events.TriggerEventNeedTime(oldNeedTime, _needTime);
+					_changed |= 0x01<<4;
 					break;
 				default:
 					stream.SkipLastField();
@@ -412,12 +349,12 @@ namespace kds
 				if (!data.TryGetValue(k, out c))
 				{
 					c = new Hero();
-					c.Unmarshal(v, new Hero.Events());
+					c.Unmarshal(v);
 					data[k] = c;
 				}
 				else
 				{
-					c.Unmarshal(v, new Hero.Events());
+					c.Unmarshal(v);
 				}
 			}
 		}
