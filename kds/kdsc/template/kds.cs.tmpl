@@ -301,7 +301,7 @@
 		private {{template "Type" .Type}} {{template "FieldName" .}};
 		public {{template "Type" .Type}} {{$MethodName}} => {{template "FieldName" .}};
 {{- end}}
-		public bool Is{{.Name}}Changed => _changed&(0x01<<{{.Number}}) != 0;
+		public bool Is{{.Name}}Changed => (_changed & (0x01 << {{.Number}})) != 0;
 {{- end}}
 
 		private long _changed;
@@ -314,7 +314,7 @@
 				return;
 {{- range .Fields}}
 {{- if eq .TypeKind "component"}}
-			if (_changed & (0x01<<{{.Number}}) != 0)
+			if ((_changed & (0x01 << {{.Number}})) != 0)
 				{{template "FieldName" .}}.InvokeChange();
 {{- end}}
 {{- end}}
@@ -379,7 +379,7 @@
 {{- else}}
 					stream.SkipLastField();
 {{- end}}
-					_changed |= 0x01<<{{.Number}};
+					_changed |= 0x01 << {{.Number}};
 					break;
 {{- end}}
 				default:

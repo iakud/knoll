@@ -22,27 +22,27 @@ namespace kds
 
 		private long _playerId;
 		public long PlayerId => _playerId;
-		public bool IsPlayerIdChanged => _changed&(0x01<<1) != 0;
+		public bool IsPlayerIdChanged => (_changed & (0x01 << 1)) != 0;
 
 		private PlayerBasicInfo _playerBasicInfo;
 		public PlayerBasicInfo PlayerBasicInfo => _playerBasicInfo;
-		public bool IsPlayerBasicInfoChanged => _changed&(0x01<<2) != 0;
+		public bool IsPlayerBasicInfoChanged => (_changed & (0x01 << 2)) != 0;
 
 		private CityBaseInfo _cityInfo;
 		public CityBaseInfo CityInfo => _cityInfo;
-		public bool IsCityInfoChanged => _changed&(0x01<<3) != 0;
+		public bool IsCityInfoChanged => (_changed & (0x01 << 3)) != 0;
 
 		private List<long> _troops;
 		public List<long> Troops => _troops;
-		public bool IsTroopsChanged => _changed&(0x01<<4) != 0;
+		public bool IsTroopsChanged => (_changed & (0x01 << 4)) != 0;
 
 		private string _city;
 		public string City_ => _city;
-		public bool IsCityChanged => _changed&(0x01<<5) != 0;
+		public bool IsCityChanged => (_changed & (0x01 << 5)) != 0;
 
 		private int _id;
 		public int Id_ => _id;
-		public bool IsIdChanged => _changed&(0x01<<6) != 0;
+		public bool IsIdChanged => (_changed & (0x01 << 6)) != 0;
 
 		private long _changed;
 
@@ -52,9 +52,9 @@ namespace kds
 		{
 			if (_changed == 0)
 				return;
-			if (_changed & (0x01<<2) != 0)
+			if ((_changed & (0x01 << 2)) != 0)
 				_playerBasicInfo.InvokeChange();
-			if (_changed & (0x01<<3) != 0)
+			if ((_changed & (0x01 << 3)) != 0)
 				_cityInfo.InvokeChange();
 			OnChanged.Invoke(this);
 		}
@@ -70,27 +70,27 @@ namespace kds
 				{
 				case 1:
 					_playerId = stream.ReadInt64();
-					_changed |= 0x01<<1;
+					_changed |= 0x01 << 1;
 					break;
 				case 2:
 					_playerBasicInfo.Unmarshal(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01<<2;
+					_changed |= 0x01 << 2;
 					break;
 				case 3:
 					_cityInfo.Unmarshal(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01<<3;
+					_changed |= 0x01 << 3;
 					break;
 				case 4:
 					Int64_list.Unmarshal(_troops, stream.ReadBytes().ToByteArray());
-					_changed |= 0x01<<4;
+					_changed |= 0x01 << 4;
 					break;
 				case 5:
 					_city = stream.ReadString();
-					_changed |= 0x01<<5;
+					_changed |= 0x01 << 5;
 					break;
 				case 6:
 					_id = stream.ReadInt32();
-					_changed |= 0x01<<6;
+					_changed |= 0x01 << 6;
 					break;
 				default:
 					stream.SkipLastField();
@@ -109,15 +109,15 @@ namespace kds
 
 		private List<Vector> _positions;
 		public List<Vector> Positions => _positions;
-		public bool IsPositionsChanged => _changed&(0x01<<1) != 0;
+		public bool IsPositionsChanged => (_changed & (0x01 << 1)) != 0;
 
 		private Dictionary<int, object> _troops;
 		public Dictionary<int, object> Troops => _troops;
-		public bool IsTroopsChanged => _changed&(0x01<<2) != 0;
+		public bool IsTroopsChanged => (_changed & (0x01 << 2)) != 0;
 
 		private byte[] _buildInfo;
 		public byte[] BuildInfo => _buildInfo;
-		public bool IsBuildInfoChanged => _changed&(0x01<<3) != 0;
+		public bool IsBuildInfoChanged => (_changed & (0x01 << 3)) != 0;
 
 		private long _changed;
 
@@ -127,7 +127,7 @@ namespace kds
 		{
 			if (_changed == 0)
 				return;
-			if (_changed & (0x01<<1) != 0)
+			if ((_changed & (0x01 << 1)) != 0)
 				_positions.InvokeChange();
 			OnChanged.Invoke(this);
 		}
@@ -143,15 +143,15 @@ namespace kds
 				{
 				case 1:
 					Vector_list.Unmarshal(_positions, stream.ReadBytes().ToByteArray());
-					_changed |= 0x01<<1;
+					_changed |= 0x01 << 1;
 					break;
 				case 2:
 					Int32Empty_map.Unmarshal(_troops, stream.ReadBytes().ToByteArray());
-					_changed |= 0x01<<2;
+					_changed |= 0x01 << 2;
 					break;
 				case 3:
 					_buildInfo = stream.ReadBytes().ToByteArray();
-					_changed |= 0x01<<3;
+					_changed |= 0x01 << 3;
 					break;
 				default:
 					stream.SkipLastField();
@@ -168,11 +168,11 @@ namespace kds
 
 		private int _x;
 		public int X => _x;
-		public bool IsXChanged => _changed&(0x01<<1) != 0;
+		public bool IsXChanged => (_changed & (0x01 << 1)) != 0;
 
 		private int _y;
 		public int Y => _y;
-		public bool IsYChanged => _changed&(0x01<<2) != 0;
+		public bool IsYChanged => (_changed & (0x01 << 2)) != 0;
 
 		private long _changed;
 
@@ -196,11 +196,11 @@ namespace kds
 				{
 				case 1:
 					_x = stream.ReadInt32();
-					_changed |= 0x01<<1;
+					_changed |= 0x01 << 1;
 					break;
 				case 2:
 					_y = stream.ReadInt32();
-					_changed |= 0x01<<2;
+					_changed |= 0x01 << 2;
 					break;
 				default:
 					stream.SkipLastField();

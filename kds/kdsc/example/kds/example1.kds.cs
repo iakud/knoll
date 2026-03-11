@@ -23,15 +23,15 @@ namespace kds
 
 		private PlayerBasicInfo _info;
 		public PlayerBasicInfo Info => _info;
-		public bool IsInfoChanged => _changed&(0x01<<1) != 0;
+		public bool IsInfoChanged => (_changed & (0x01 << 1)) != 0;
 
 		private PlayerHero _hero;
 		public PlayerHero Hero => _hero;
-		public bool IsHeroChanged => _changed&(0x01<<2) != 0;
+		public bool IsHeroChanged => (_changed & (0x01 << 2)) != 0;
 
 		private PlayerBag _bag;
 		public PlayerBag Bag => _bag;
-		public bool IsBagChanged => _changed&(0x01<<3) != 0;
+		public bool IsBagChanged => (_changed & (0x01 << 3)) != 0;
 
 		private long _changed;
 
@@ -41,11 +41,11 @@ namespace kds
 		{
 			if (_changed == 0)
 				return;
-			if (_changed & (0x01<<1) != 0)
+			if ((_changed & (0x01 << 1)) != 0)
 				_info.InvokeChange();
-			if (_changed & (0x01<<2) != 0)
+			if ((_changed & (0x01 << 2)) != 0)
 				_hero.InvokeChange();
-			if (_changed & (0x01<<3) != 0)
+			if ((_changed & (0x01 << 3)) != 0)
 				_bag.InvokeChange();
 			OnChanged.Invoke(this);
 		}
@@ -61,15 +61,15 @@ namespace kds
 				{
 				case 1:
 					_info.Unmarshal(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01<<1;
+					_changed |= 0x01 << 1;
 					break;
 				case 2:
 					_hero.Unmarshal(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01<<2;
+					_changed |= 0x01 << 2;
 					break;
 				case 3:
 					_bag.Unmarshal(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01<<3;
+					_changed |= 0x01 << 3;
 					break;
 				default:
 					stream.SkipLastField();
@@ -86,15 +86,15 @@ namespace kds
 
 		private string _name;
 		public string Name => _name;
-		public bool IsNameChanged => _changed&(0x01<<1) != 0;
+		public bool IsNameChanged => (_changed & (0x01 << 1)) != 0;
 
 		private bool _isNew;
 		public bool IsNew => _isNew;
-		public bool IsIsNewChanged => _changed&(0x01<<3) != 0;
+		public bool IsIsNewChanged => (_changed & (0x01 << 3)) != 0;
 
 		private DateTime _createTime;
 		public DateTime CreateTime => _createTime;
-		public bool IsCreateTimeChanged => _changed&(0x01<<5) != 0;
+		public bool IsCreateTimeChanged => (_changed & (0x01 << 5)) != 0;
 
 		private long _changed;
 
@@ -118,15 +118,15 @@ namespace kds
 				{
 				case 1:
 					_name = stream.ReadString();
-					_changed |= 0x01<<1;
+					_changed |= 0x01 << 1;
 					break;
 				case 3:
 					_isNew = stream.ReadBool();
-					_changed |= 0x01<<3;
+					_changed |= 0x01 << 3;
 					break;
 				case 5:
 					_createTime = Timestamp.Parser.ParseFrom(stream).ToDateTime();
-					_changed |= 0x01<<5;
+					_changed |= 0x01 << 5;
 					break;
 				default:
 					stream.SkipLastField();
@@ -144,7 +144,7 @@ namespace kds
 
 		private Dictionary<long, Hero> _heroes;
 		public Dictionary<long, Hero> Heroes => _heroes;
-		public bool IsHeroesChanged => _changed&(0x01<<1) != 0;
+		public bool IsHeroesChanged => (_changed & (0x01 << 1)) != 0;
 
 		private long _changed;
 
@@ -154,7 +154,7 @@ namespace kds
 		{
 			if (_changed == 0)
 				return;
-			if (_changed & (0x01<<1) != 0)
+			if ((_changed & (0x01 << 1)) != 0)
 				_heroes.InvokeChange();
 			OnChanged.Invoke(this);
 		}
@@ -170,7 +170,7 @@ namespace kds
 				{
 				case 1:
 					Int64Hero_map.Unmarshal(_heroes, stream.ReadBytes().ToByteArray());
-					_changed |= 0x01<<1;
+					_changed |= 0x01 << 1;
 					break;
 				default:
 					stream.SkipLastField();
@@ -188,7 +188,7 @@ namespace kds
 
 		private Dictionary<int, int> _resources;
 		public Dictionary<int, int> Resources => _resources;
-		public bool IsResourcesChanged => _changed&(0x01<<1) != 0;
+		public bool IsResourcesChanged => (_changed & (0x01 << 1)) != 0;
 
 		private long _changed;
 
@@ -212,7 +212,7 @@ namespace kds
 				{
 				case 1:
 					Int32Int32_map.Unmarshal(_resources, stream.ReadBytes().ToByteArray());
-					_changed |= 0x01<<1;
+					_changed |= 0x01 << 1;
 					break;
 				default:
 					stream.SkipLastField();
@@ -229,19 +229,19 @@ namespace kds
 
 		private int _heroId;
 		public int HeroId => _heroId;
-		public bool IsHeroIdChanged => _changed&(0x01<<1) != 0;
+		public bool IsHeroIdChanged => (_changed & (0x01 << 1)) != 0;
 
 		private int _heroLevel;
 		public int HeroLevel => _heroLevel;
-		public bool IsHeroLevelChanged => _changed&(0x01<<2) != 0;
+		public bool IsHeroLevelChanged => (_changed & (0x01 << 2)) != 0;
 
 		private HeroType _type;
 		public HeroType Type => _type;
-		public bool IsTypeChanged => _changed&(0x01<<3) != 0;
+		public bool IsTypeChanged => (_changed & (0x01 << 3)) != 0;
 
 		private TimeSpan _needTime;
 		public TimeSpan NeedTime => _needTime;
-		public bool IsNeedTimeChanged => _changed&(0x01<<4) != 0;
+		public bool IsNeedTimeChanged => (_changed & (0x01 << 4)) != 0;
 
 		private long _changed;
 
@@ -265,19 +265,19 @@ namespace kds
 				{
 				case 1:
 					_heroId = stream.ReadInt32();
-					_changed |= 0x01<<1;
+					_changed |= 0x01 << 1;
 					break;
 				case 2:
 					_heroLevel = stream.ReadInt32();
-					_changed |= 0x01<<2;
+					_changed |= 0x01 << 2;
 					break;
 				case 3:
 					_type = (HeroType)stream.ReadEnum();
-					_changed |= 0x01<<3;
+					_changed |= 0x01 << 3;
 					break;
 				case 4:
 					_needTime = Duration.Parser.ParseFrom(stream).ToTimeSpan();
-					_changed |= 0x01<<4;
+					_changed |= 0x01 << 4;
 					break;
 				default:
 					stream.SkipLastField();
