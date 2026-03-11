@@ -127,8 +127,6 @@ namespace kds
 		{
 			if (_changed == 0)
 				return;
-			if ((_changed & (0x01 << 1)) != 0)
-				_positions.InvokeChange();
 			OnChanged.Invoke(this);
 		}
 
