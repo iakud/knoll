@@ -68,6 +68,11 @@ func (w *endpointWriter) initConnect() error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if err != nil {
+			conn.Close()
+		}
+	}()
 	w.conn = conn
 	client := NewRemoteClient(conn)
 	stream, err := client.Receive(context.Background())
