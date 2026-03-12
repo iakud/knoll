@@ -158,7 +158,10 @@ func (s *Server) handleMsg(msg *nats.Msg) {
 			s.processMsg(ctx, msg, srv, md)
 			return
 		}
+		s.respondStatus(msg, codes.Unimplemented, fmt.Sprintf("nrpc: unknown method %q", method))
+		return
 	}
+	s.respondStatus(msg, codes.Unimplemented, fmt.Sprintf("nrpc: unknown service %q", service))
 }
 
 func (s *Server) processMsg(ctx context.Context, msg *nats.Msg, srv *serviceInfo, md *MethodDesc) error {
