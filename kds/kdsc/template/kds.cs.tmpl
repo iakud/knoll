@@ -17,11 +17,11 @@
 {{- else if eq . "bytes"}}byte[]
 {{- else if eq . "timestamp"}}DateTime
 {{- else if eq . "duration"}}TimeSpan
-{{- else if eq . "empty"}}object
+{{- else if eq . "empty"}}ValueTuple
 {{- else}}{{.}}
 {{- end}}
 {{- end}}
-{{- define "FieldName"}}_{{lcFirst .Name}}{{- end}}
+{{- define "FieldName"}}{{lcFirst .Name}}_{{- end}}
 {{- /* LIST TYPE */ -}}
 {{- define "ListValueType"}}
 {{- if eq .TypeKind "enum"}}{{.Type}}
@@ -88,7 +88,7 @@
 {{- else if eq .Type "duration"}}
 				data.Add(Duration.Parser.ParseFrom(stream).ToTimeSpan());
 {{- else if eq .Type "empty"}}
-				Empty.Parser.ParseFrom(stream); data.Add(null);
+				Empty.Parser.ParseFrom(stream); data.Add(());
 {{- end}}
 			}
 		}
@@ -103,7 +103,7 @@
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = null;
+			byte[] deletes = [];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -161,9 +161,9 @@
 				stream = new CodedInputStream(entry);
 				{{template "Type" .KeyType}} k = default;
 {{- if eq .TypeKind "component"}}
-				byte[] v = null;
+				byte[] v = [];
 {{- else if eq .TypeKind "enum"}}
-				{{.Type}} v = 0;
+				{{.Type}} v = default;
 {{- else}}
 				{{template "MapValueType" .}} v = default;
 {{- end}}
@@ -248,16 +248,15 @@
 					}
 				}
 {{- if eq .TypeKind "component"}}
-				{{.Type}} c = null;
-				if (!data.TryGetValue(k, out c))
+				if (data.TryGetValue(k, out var c))
+				{
+					c.Unmarshal(v);	
+				}
+				else
 				{
 					c = new {{.Type}}();
 					c.Unmarshal(v);
 					data[k] = c;
-				}
-				else
-				{
-					c.Unmarshal(v);
 				}
 {{- else}}
 				data[k] = v;
@@ -306,7 +305,7 @@
 
 		private long _changed;
 
-		public event Action<{{$MessageName}}> OnChanged;
+		public event Action<{{$MessageName}}>? OnChanged;
 
 		public void InvokeChange()
 		{
@@ -320,7 +319,7 @@
 				{{template "FieldName" .}}.InvokeChange();
 {{- end}}
 {{- end}}
-			OnChanged.Invoke(this);
+			OnChanged?.Invoke(this);
 		}
 
 		public void Unmarshal(byte[] b)
@@ -397,12 +396,12 @@
 {{- $EntityName := .Name}}
 	public class {{.Name}}
 	{
-		private readonly long _id_;
-		public long Id => _id_;
+		private readonly long _id;
+		public long Id => _id;
 
 		public {{.Name}}(long id)
 		{
-			_id_ = id;
+			_id = id;
 {{- range .Fields}}
 {{- if .Repeated}}
 			{{template "FieldName" .}} = new List<{{template "ListValueType" .}}>();
@@ -410,6 +409,10 @@
 			{{template "FieldName" .}} = new Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>();
 {{- else if eq .TypeKind "component"}}
 			{{template "FieldName" .}} = new {{.Type}}();
+{{- else if eq .Type "string"}}
+			{{template "FieldName" .}} = string.Empty;
+{{- else if eq .Type "bytes"}}
+			{{template "FieldName" .}} = [];
 {{- else}}
 {{- end}}
 {{- end}}
@@ -431,6 +434,10 @@
 			{{template "FieldName" .}} = new Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>();
 {{- else if eq .TypeKind "component"}}
 			{{template "FieldName" .}} = new {{.Type}}();
+{{- else if eq .Type "string"}}
+			{{template "FieldName" .}} = string.Empty;
+{{- else if eq .Type "bytes"}}
+			{{template "FieldName" .}} = [];
 {{- else}}
 {{- end}}
 {{- end}}

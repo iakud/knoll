@@ -10,44 +10,44 @@ namespace kds
 {
 	public class Player
 	{
-		private readonly long _id_;
-		public long Id => _id_;
+		private readonly long _id;
+		public long Id => _id;
 
 		public Player(long id)
 		{
-			_id_ = id;
-			_info = new PlayerBasicInfo();
-			_hero = new PlayerHero();
-			_bag = new PlayerBag();
+			_id = id;
+			info_ = new PlayerBasicInfo();
+			hero_ = new PlayerHero();
+			bag_ = new PlayerBag();
 		}
 
-		private PlayerBasicInfo _info;
-		public PlayerBasicInfo Info => _info;
+		private PlayerBasicInfo info_;
+		public PlayerBasicInfo Info => info_;
 		public bool IsInfoChanged => (_changed & (0x01 << 1)) != 0;
 
-		private PlayerHero _hero;
-		public PlayerHero Hero => _hero;
+		private PlayerHero hero_;
+		public PlayerHero Hero => hero_;
 		public bool IsHeroChanged => (_changed & (0x01 << 2)) != 0;
 
-		private PlayerBag _bag;
-		public PlayerBag Bag => _bag;
+		private PlayerBag bag_;
+		public PlayerBag Bag => bag_;
 		public bool IsBagChanged => (_changed & (0x01 << 3)) != 0;
 
 		private long _changed;
 
-		public event Action<Player> OnChanged;
+		public event Action<Player>? OnChanged;
 
 		public void InvokeChange()
 		{
 			if (_changed == 0)
 				return;
 			if ((_changed & (0x01 << 1)) != 0)
-				_info.InvokeChange();
+				info_.InvokeChange();
 			if ((_changed & (0x01 << 2)) != 0)
-				_hero.InvokeChange();
+				hero_.InvokeChange();
 			if ((_changed & (0x01 << 3)) != 0)
-				_bag.InvokeChange();
-			OnChanged.Invoke(this);
+				bag_.InvokeChange();
+			OnChanged?.Invoke(this);
 		}
 
 		public void Unmarshal(byte[] b)
@@ -60,15 +60,15 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					_info.Unmarshal(stream.ReadBytes().ToByteArray());
+					info_.Unmarshal(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 1;
 					break;
 				case 2:
-					_hero.Unmarshal(stream.ReadBytes().ToByteArray());
+					hero_.Unmarshal(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 2;
 					break;
 				case 3:
-					_bag.Unmarshal(stream.ReadBytes().ToByteArray());
+					bag_.Unmarshal(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 3;
 					break;
 				default:
@@ -82,29 +82,30 @@ namespace kds
 	{
 		public PlayerBasicInfo()
 		{
+			name_ = string.Empty;
 		}
 
-		private string _name;
-		public string Name => _name;
+		private string name_;
+		public string Name => name_;
 		public bool IsNameChanged => (_changed & (0x01 << 1)) != 0;
 
-		private bool _isNew;
-		public bool IsNew => _isNew;
+		private bool isNew_;
+		public bool IsNew => isNew_;
 		public bool IsIsNewChanged => (_changed & (0x01 << 3)) != 0;
 
-		private DateTime _createTime;
-		public DateTime CreateTime => _createTime;
+		private DateTime createTime_;
+		public DateTime CreateTime => createTime_;
 		public bool IsCreateTimeChanged => (_changed & (0x01 << 5)) != 0;
 
 		private long _changed;
 
-		public event Action<PlayerBasicInfo> OnChanged;
+		public event Action<PlayerBasicInfo>? OnChanged;
 
 		public void InvokeChange()
 		{
 			if (_changed == 0)
 				return;
-			OnChanged.Invoke(this);
+			OnChanged?.Invoke(this);
 		}
 
 		public void Unmarshal(byte[] b)
@@ -117,15 +118,15 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					_name = stream.ReadString();
+					name_ = stream.ReadString();
 					_changed |= 0x01 << 1;
 					break;
 				case 3:
-					_isNew = stream.ReadBool();
+					isNew_ = stream.ReadBool();
 					_changed |= 0x01 << 3;
 					break;
 				case 5:
-					_createTime = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+					createTime_ = Timestamp.Parser.ParseFrom(stream).ToDateTime();
 					_changed |= 0x01 << 5;
 					break;
 				default:
@@ -139,22 +140,22 @@ namespace kds
 	{
 		public PlayerHero()
 		{
-			_heroes = new Dictionary<long, Hero>();
+			heroes_ = new Dictionary<long, Hero>();
 		}
 
-		private Dictionary<long, Hero> _heroes;
-		public Dictionary<long, Hero> Heroes => _heroes;
+		private Dictionary<long, Hero> heroes_;
+		public Dictionary<long, Hero> Heroes => heroes_;
 		public bool IsHeroesChanged => (_changed & (0x01 << 1)) != 0;
 
 		private long _changed;
 
-		public event Action<PlayerHero> OnChanged;
+		public event Action<PlayerHero>? OnChanged;
 
 		public void InvokeChange()
 		{
 			if (_changed == 0)
 				return;
-			OnChanged.Invoke(this);
+			OnChanged?.Invoke(this);
 		}
 
 		public void Unmarshal(byte[] b)
@@ -167,7 +168,7 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					Int64Hero_map.Unmarshal(_heroes, stream.ReadBytes().ToByteArray());
+					Int64Hero_map.Unmarshal(heroes_, stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 1;
 					break;
 				default:
@@ -181,22 +182,22 @@ namespace kds
 	{
 		public PlayerBag()
 		{
-			_resources = new Dictionary<int, int>();
+			resources_ = new Dictionary<int, int>();
 		}
 
-		private Dictionary<int, int> _resources;
-		public Dictionary<int, int> Resources => _resources;
+		private Dictionary<int, int> resources_;
+		public Dictionary<int, int> Resources => resources_;
 		public bool IsResourcesChanged => (_changed & (0x01 << 1)) != 0;
 
 		private long _changed;
 
-		public event Action<PlayerBag> OnChanged;
+		public event Action<PlayerBag>? OnChanged;
 
 		public void InvokeChange()
 		{
 			if (_changed == 0)
 				return;
-			OnChanged.Invoke(this);
+			OnChanged?.Invoke(this);
 		}
 
 		public void Unmarshal(byte[] b)
@@ -209,7 +210,7 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					Int32Int32_map.Unmarshal(_resources, stream.ReadBytes().ToByteArray());
+					Int32Int32_map.Unmarshal(resources_, stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 1;
 					break;
 				default:
@@ -225,31 +226,31 @@ namespace kds
 		{
 		}
 
-		private int _heroId;
-		public int HeroId => _heroId;
+		private int heroId_;
+		public int HeroId => heroId_;
 		public bool IsHeroIdChanged => (_changed & (0x01 << 1)) != 0;
 
-		private int _heroLevel;
-		public int HeroLevel => _heroLevel;
+		private int heroLevel_;
+		public int HeroLevel => heroLevel_;
 		public bool IsHeroLevelChanged => (_changed & (0x01 << 2)) != 0;
 
-		private HeroType _type;
-		public HeroType Type => _type;
+		private HeroType type_;
+		public HeroType Type => type_;
 		public bool IsTypeChanged => (_changed & (0x01 << 3)) != 0;
 
-		private TimeSpan _needTime;
-		public TimeSpan NeedTime => _needTime;
+		private TimeSpan needTime_;
+		public TimeSpan NeedTime => needTime_;
 		public bool IsNeedTimeChanged => (_changed & (0x01 << 4)) != 0;
 
 		private long _changed;
 
-		public event Action<Hero> OnChanged;
+		public event Action<Hero>? OnChanged;
 
 		public void InvokeChange()
 		{
 			if (_changed == 0)
 				return;
-			OnChanged.Invoke(this);
+			OnChanged?.Invoke(this);
 		}
 
 		public void Unmarshal(byte[] b)
@@ -262,19 +263,19 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					_heroId = stream.ReadInt32();
+					heroId_ = stream.ReadInt32();
 					_changed |= 0x01 << 1;
 					break;
 				case 2:
-					_heroLevel = stream.ReadInt32();
+					heroLevel_ = stream.ReadInt32();
 					_changed |= 0x01 << 2;
 					break;
 				case 3:
-					_type = (HeroType)stream.ReadEnum();
+					type_ = (HeroType)stream.ReadEnum();
 					_changed |= 0x01 << 3;
 					break;
 				case 4:
-					_needTime = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+					needTime_ = Duration.Parser.ParseFrom(stream).ToTimeSpan();
 					_changed |= 0x01 << 4;
 					break;
 				default:
@@ -291,7 +292,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = null;
+			byte[] deletes = [];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -326,7 +327,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				long k = default;
-				byte[] v = null;
+				byte[] v = [];
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -343,16 +344,15 @@ namespace kds
 						break;
 					}
 				}
-				Hero c = null;
-				if (!data.TryGetValue(k, out c))
+				if (data.TryGetValue(k, out var c))
+				{
+					c.Unmarshal(v);	
+				}
+				else
 				{
 					c = new Hero();
 					c.Unmarshal(v);
 					data[k] = c;
-				}
-				else
-				{
-					c.Unmarshal(v);
 				}
 			}
 		}

@@ -10,11 +10,11 @@ namespace kds
 {
 	public static class Int32Empty_map
 	{
-		public static void Unmarshal(Dictionary<int, object> data, byte[] b)
+		public static void Unmarshal(Dictionary<int, ValueTuple> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = null;
+			byte[] deletes = [];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -49,7 +49,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				int k = default;
-				object v = default;
+				ValueTuple v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -76,7 +76,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = null;
+			byte[] deletes = [];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)

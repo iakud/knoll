@@ -9,54 +9,55 @@ namespace kds
 {
 	public class City
 	{
-		private readonly long _id_;
-		public long Id => _id_;
+		private readonly long _id;
+		public long Id => _id;
 
 		public City(long id)
 		{
-			_id_ = id;
-			_playerBasicInfo = new PlayerBasicInfo();
-			_cityInfo = new CityBaseInfo();
-			_troops = new List<long>();
+			_id = id;
+			playerBasicInfo_ = new PlayerBasicInfo();
+			cityInfo_ = new CityBaseInfo();
+			troops_ = new List<long>();
+			city_ = string.Empty;
 		}
 
-		private long _playerId;
-		public long PlayerId => _playerId;
+		private long playerId_;
+		public long PlayerId => playerId_;
 		public bool IsPlayerIdChanged => (_changed & (0x01 << 1)) != 0;
 
-		private PlayerBasicInfo _playerBasicInfo;
-		public PlayerBasicInfo PlayerBasicInfo => _playerBasicInfo;
+		private PlayerBasicInfo playerBasicInfo_;
+		public PlayerBasicInfo PlayerBasicInfo => playerBasicInfo_;
 		public bool IsPlayerBasicInfoChanged => (_changed & (0x01 << 2)) != 0;
 
-		private CityBaseInfo _cityInfo;
-		public CityBaseInfo CityInfo => _cityInfo;
+		private CityBaseInfo cityInfo_;
+		public CityBaseInfo CityInfo => cityInfo_;
 		public bool IsCityInfoChanged => (_changed & (0x01 << 3)) != 0;
 
-		private List<long> _troops;
-		public List<long> Troops => _troops;
+		private List<long> troops_;
+		public List<long> Troops => troops_;
 		public bool IsTroopsChanged => (_changed & (0x01 << 4)) != 0;
 
-		private string _city;
-		public string City_ => _city;
+		private string city_;
+		public string City_ => city_;
 		public bool IsCityChanged => (_changed & (0x01 << 5)) != 0;
 
-		private int _id;
-		public int Id_ => _id;
+		private int id_;
+		public int Id_ => id_;
 		public bool IsIdChanged => (_changed & (0x01 << 6)) != 0;
 
 		private long _changed;
 
-		public event Action<City> OnChanged;
+		public event Action<City>? OnChanged;
 
 		public void InvokeChange()
 		{
 			if (_changed == 0)
 				return;
 			if ((_changed & (0x01 << 2)) != 0)
-				_playerBasicInfo.InvokeChange();
+				playerBasicInfo_.InvokeChange();
 			if ((_changed & (0x01 << 3)) != 0)
-				_cityInfo.InvokeChange();
-			OnChanged.Invoke(this);
+				cityInfo_.InvokeChange();
+			OnChanged?.Invoke(this);
 		}
 
 		public void Unmarshal(byte[] b)
@@ -69,27 +70,27 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					_playerId = stream.ReadInt64();
+					playerId_ = stream.ReadInt64();
 					_changed |= 0x01 << 1;
 					break;
 				case 2:
-					_playerBasicInfo.Unmarshal(stream.ReadBytes().ToByteArray());
+					playerBasicInfo_.Unmarshal(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 2;
 					break;
 				case 3:
-					_cityInfo.Unmarshal(stream.ReadBytes().ToByteArray());
+					cityInfo_.Unmarshal(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 3;
 					break;
 				case 4:
-					Int64_list.Unmarshal(_troops, stream.ReadBytes().ToByteArray());
+					Int64_list.Unmarshal(troops_, stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 4;
 					break;
 				case 5:
-					_city = stream.ReadString();
+					city_ = stream.ReadString();
 					_changed |= 0x01 << 5;
 					break;
 				case 6:
-					_id = stream.ReadInt32();
+					id_ = stream.ReadInt32();
 					_changed |= 0x01 << 6;
 					break;
 				default:
@@ -103,31 +104,32 @@ namespace kds
 	{
 		public CityBaseInfo()
 		{
-			_positions = new List<Vector>();
-			_troops = new Dictionary<int, object>();
+			positions_ = new List<Vector>();
+			troops_ = new Dictionary<int, ValueTuple>();
+			buildInfo_ = [];
 		}
 
-		private List<Vector> _positions;
-		public List<Vector> Positions => _positions;
+		private List<Vector> positions_;
+		public List<Vector> Positions => positions_;
 		public bool IsPositionsChanged => (_changed & (0x01 << 1)) != 0;
 
-		private Dictionary<int, object> _troops;
-		public Dictionary<int, object> Troops => _troops;
+		private Dictionary<int, ValueTuple> troops_;
+		public Dictionary<int, ValueTuple> Troops => troops_;
 		public bool IsTroopsChanged => (_changed & (0x01 << 2)) != 0;
 
-		private byte[] _buildInfo;
-		public byte[] BuildInfo => _buildInfo;
+		private byte[] buildInfo_;
+		public byte[] BuildInfo => buildInfo_;
 		public bool IsBuildInfoChanged => (_changed & (0x01 << 3)) != 0;
 
 		private long _changed;
 
-		public event Action<CityBaseInfo> OnChanged;
+		public event Action<CityBaseInfo>? OnChanged;
 
 		public void InvokeChange()
 		{
 			if (_changed == 0)
 				return;
-			OnChanged.Invoke(this);
+			OnChanged?.Invoke(this);
 		}
 
 		public void Unmarshal(byte[] b)
@@ -140,15 +142,15 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					Vector_list.Unmarshal(_positions, stream.ReadBytes().ToByteArray());
+					Vector_list.Unmarshal(positions_, stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 1;
 					break;
 				case 2:
-					Int32Empty_map.Unmarshal(_troops, stream.ReadBytes().ToByteArray());
+					Int32Empty_map.Unmarshal(troops_, stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 2;
 					break;
 				case 3:
-					_buildInfo = stream.ReadBytes().ToByteArray();
+					buildInfo_ = stream.ReadBytes().ToByteArray();
 					_changed |= 0x01 << 3;
 					break;
 				default:
@@ -164,23 +166,23 @@ namespace kds
 		{
 		}
 
-		private int _x;
-		public int X => _x;
+		private int x_;
+		public int X => x_;
 		public bool IsXChanged => (_changed & (0x01 << 1)) != 0;
 
-		private int _y;
-		public int Y => _y;
+		private int y_;
+		public int Y => y_;
 		public bool IsYChanged => (_changed & (0x01 << 2)) != 0;
 
 		private long _changed;
 
-		public event Action<Vector> OnChanged;
+		public event Action<Vector>? OnChanged;
 
 		public void InvokeChange()
 		{
 			if (_changed == 0)
 				return;
-			OnChanged.Invoke(this);
+			OnChanged?.Invoke(this);
 		}
 
 		public void Unmarshal(byte[] b)
@@ -193,11 +195,11 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					_x = stream.ReadInt32();
+					x_ = stream.ReadInt32();
 					_changed |= 0x01 << 1;
 					break;
 				case 2:
-					_y = stream.ReadInt32();
+					y_ = stream.ReadInt32();
 					_changed |= 0x01 << 2;
 					break;
 				default:
