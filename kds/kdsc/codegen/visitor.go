@@ -83,10 +83,10 @@ func visitEntity(ctx *Context, kds *Kds, entityCtx parser.IEntityDefContext) *En
 	for _, element := range entityCtx.EntityBody().AllEntityElement() {
 		switch {
 		case element.Field() != nil:
-			field := visitField(ctx, kds, element.Field())
+			field := visitField(ctx, kds, entity, element.Field())
 			entity.Fields = append(entity.Fields, field)
 		case element.MapField() != nil:
-			field := visitMapField(ctx, kds, element.MapField())
+			field := visitMapField(ctx, kds, entity, element.MapField())
 			entity.Fields = append(entity.Fields, field)
 		}
 	}
@@ -101,17 +101,17 @@ func visitComponent(ctx *Context, kds *Kds, componentCtx parser.IComponentDefCon
 	for _, element := range componentCtx.ComponentBody().AllComponentElement() {
 		switch {
 		case element.Field() != nil:
-			field := visitField(ctx, kds, element.Field())
+			field := visitField(ctx, kds, component, element.Field())
 			component.Fields = append(component.Fields, field)
 		case element.MapField() != nil:
-			field := visitMapField(ctx, kds, element.MapField())
+			field := visitMapField(ctx, kds, component, element.MapField())
 			component.Fields = append(component.Fields, field)
 		}
 	}
 	return component
 }
 
-func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
+func visitField(ctx *Context, kds *Kds, def TopLevelDef, fieldCtx parser.IFieldContext) *Field {
 	field := new(Field)
 	field.ctx = ctx
 	field.kds = kds
@@ -121,7 +121,7 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	field.Name = GoCamelCase(fieldCtx.FieldName().GetText())
 	field.Number, _ = strconv.Atoi(fieldCtx.FieldNumber().GetText())
 
-	field.GoVarName = GoSanitized(ToLowerFirst(field.Name))
+	field.Def = def
 
 	if field.Repeated {
 		field.ListType = ctx.addListType(field.Type)
@@ -129,7 +129,7 @@ func visitField(ctx *Context, kds *Kds, fieldCtx parser.IFieldContext) *Field {
 	return field
 }
 
-func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) *Field {
+func visitMapField(ctx *Context, kds *Kds, def TopLevelDef, mapFieldCtx parser.IMapFieldContext) *Field {
 	field := new(Field)
 	field.ctx = ctx
 	field.kds = kds
@@ -140,7 +140,7 @@ func visitMapField(ctx *Context, kds *Kds, mapFieldCtx parser.IMapFieldContext) 
 	field.Name = GoCamelCase(mapFieldCtx.MapName().GetText())
 	field.Number, _ = strconv.Atoi(mapFieldCtx.FieldNumber().GetText())
 
-	field.GoVarName = GoSanitized(ToLowerFirst(field.Name))
+	field.Def = def
 
 	field.MapType = ctx.addMapType(field.Type, field.KeyType)
 	return field

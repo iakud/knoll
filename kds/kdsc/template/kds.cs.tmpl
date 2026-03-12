@@ -21,6 +21,15 @@
 {{- else}}{{.}}
 {{- end}}
 {{- end}}
+
+{{- define "PropertyName"}}
+{{- /*Protobuf reserved "Types" "Descriptor" "Equals" "ToString" "GetHashCode" "WriteTo" "Clone" "CalculateSize" "MergeFrom" "OnConstruction" "Parser"*/ -}}
+{{- if eq .Name .Def.Name}}{{.Name}}_
+{{- else if and (eq .Def.Kind "entity") (eq .Name "Id")}}{{.Name}}_
+{{- else if eq .Name "Equals" "ToString" "GetHashCode" "Unmarshal" "InvokeChange"}}{{.Name}}_
+{{- else}}{{.Name}}
+{{- end}}
+{{- end}}
 {{- define "FieldName"}}{{lcFirst .Name}}_{{- end}}
 {{- /* LIST TYPE */ -}}
 {{- define "ListValueType"}}
@@ -281,24 +290,19 @@
 {{- $MessageName := .Name}}
 
 {{- range .Fields}}
-{{- $MethodName := .Name}}
-{{- /* Duplicate name */ -}}
-{{- if eq $MethodName $MessageName "Id" "Unmarshal"}}
-{{- $MethodName = print .Name "_"}}
-{{- end}}
 {{/* EMPTY LINE */}}
 {{- if .Repeated}}
 		private List<{{template "ListValueType" .}}> {{template "FieldName" .}};
-		public List<{{template "ListValueType" .}}> {{$MethodName}} => {{template "FieldName" .}};
+		public List<{{template "ListValueType" .}}> {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else if .Map}}
 		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "FieldName" .}};
-		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{$MethodName}} => {{template "FieldName" .}};
+		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else if eq .TypeKind "component"}}
 		private {{.Type}} {{template "FieldName" .}};
-		public {{.Type}} {{$MethodName}} => {{template "FieldName" .}};
+		public {{.Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else}}
 		private {{template "Type" .Type}} {{template "FieldName" .}};
-		public {{template "Type" .Type}} {{$MethodName}} => {{template "FieldName" .}};
+		public {{template "Type" .Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- end}}
 		public bool Is{{.Name}}Changed => (_changed & (0x01 << {{.Number}})) != 0;
 {{- end}}

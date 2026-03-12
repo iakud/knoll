@@ -98,6 +98,7 @@ func (c *Component) Kind() string {
 type Field struct {
 	ctx      *Context
 	kds      *Kds
+	Def      TopLevelDef
 	Repeated bool
 	Map      bool
 	KeyType  string
@@ -105,9 +106,8 @@ type Field struct {
 	Name     string
 	Number   int
 
-	GoVarName string
-	ListType  string
-	MapType   string
+	ListType string
+	MapType  string
 }
 
 func (f *Field) TypeKind() string {
