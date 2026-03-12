@@ -9,6 +9,7 @@ import (
 
 	"github.com/iakud/knoll/actor"
 	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type endpointWriter struct {
@@ -64,22 +65,17 @@ func (w *endpointWriter) init() {
 }
 
 func (w *endpointWriter) initConnect() error {
-	conn, err := grpc.Dial(w.address, grpc.WithInsecure())
+	conn, err := grpc.NewClient(w.address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err != nil {
-			conn.Close()
-		}
-	}()
-	w.conn = conn
-	client := NewRemoteClient(conn)
-	stream, err := client.Receive(context.Background())
+	stream, err := NewRemoteClient(conn).Receive(context.Background())
 	if err != nil {
+		conn.Close()
 		w.system.Logger().Error("remote: Writer failed to create receive stream", slog.String("address", w.address), slog.Any("error", err))
 		return err
 	}
+	w.conn = conn
 	w.stream = stream
 
 	go func() {

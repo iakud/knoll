@@ -158,16 +158,19 @@ func (s *Server) handleMsg(msg *nats.Msg) {
 			s.processMsg(ctx, msg, srv, md)
 			return
 		}
-		s.respondStatus(msg, codes.Unimplemented, fmt.Sprintf("nrpc: unknown method %q", method))
-		return
 	}
-	s.respondStatus(msg, codes.Unimplemented, fmt.Sprintf("nrpc: unknown service %q", service))
+	// Unknown service, or known server unknown method.
+	if !knownService {
+		s.respondStatus(msg, codes.Unimplemented, fmt.Sprintf("unknown service %v", service))
+	} else {
+		s.respondStatus(msg, codes.Unimplemented, fmt.Sprintf("unknown method %v for service %v", method, service))
+	}
 }
 
 func (s *Server) processMsg(ctx context.Context, msg *nats.Msg, srv *serviceInfo, md *MethodDesc) error {
 	df := func(v interface{}) error {
 		if err := proto.Unmarshal(msg.Data, v.(proto.Message)); err != nil {
-			return status.Errorf(codes.Internal, "nrpc: error unmarshalling request: %v", err.Error())
+			return status.Errorf(codes.Internal, "error unmarshalling request: %v", err.Error())
 		}
 		return nil
 	}
@@ -183,7 +186,7 @@ func (s *Server) processMsg(ctx context.Context, msg *nats.Msg, srv *serviceInfo
 	}
 	data, err := proto.Marshal(reply.(proto.Message))
 	if err != nil {
-		s.respondStatus(msg, codes.Internal, fmt.Sprintf("nrpc: error marshaling reply: %v", err))
+		s.respondStatus(msg, codes.Internal, fmt.Sprintf("error marshaling reply: %v", err))
 		return err
 	}
 	return s.respond(msg, data)
@@ -194,7 +197,7 @@ func (s *Server) respondStatus(msg *nats.Msg, code codes.Code, message string) e
 	replyMsg.Header.Set(statusHdr, strconv.Itoa(int(code)))
 	replyMsg.Header.Set(messageHdr, message)
 	if err := msg.RespondMsg(replyMsg); err != nil {
-		slog.Warn("nrpc: Server.respondStatus failed to respond msg", "error", err.Error())
+		slog.Warn("nrpc: respond status failed", "error", err.Error())
 		return err
 	}
 	return nil
@@ -202,7 +205,7 @@ func (s *Server) respondStatus(msg *nats.Msg, code codes.Code, message string) e
 
 func (s *Server) respond(msg *nats.Msg, data []byte) error {
 	if err := msg.Respond(data); err != nil {
-		slog.Warn("nrpc: Server.respond failed to respond", "error", err.Error())
+		slog.Warn("nrpc: respond failed", "error", err.Error())
 		return err
 	}
 	return nil
