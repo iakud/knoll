@@ -1,1 +1,14 @@
 package kds;
+
+enum ItemType {
+	ItemTypeNone = 0;
+	ItemTypeWeapon = 1;
+	ItemTypeArmor = 2;
+	ItemTypePotion = 3;
+}
+
+component ItemData {
+	int32 id = 1;
+	string name = 2;
+	int32 count = 3;
+}

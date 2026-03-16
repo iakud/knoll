@@ -8,6 +8,455 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace kds
 {
+	public static class Bool_list
+	{
+		public static void ApplySync(List<bool> data, byte[] b)
+		{
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+				data.Add(stream.ReadBool());
+			}
+		}
+
+		public static void RaiseChanged(List<bool> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<bool> data)
+		{
+
+		}
+	}
+	public static class Double_list
+	{
+		public static void ApplySync(List<double> data, byte[] b)
+		{
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+				data.Add(stream.ReadDouble());
+			}
+		}
+
+		public static void RaiseChanged(List<double> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<double> data)
+		{
+
+		}
+	}
+	public static class Duration_list
+	{
+		public static void ApplySync(List<TimeSpan> data, byte[] b)
+		{
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+				data.Add(Duration.Parser.ParseFrom(stream).ToTimeSpan());
+			}
+		}
+
+		public static void RaiseChanged(List<TimeSpan> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<TimeSpan> data)
+		{
+
+		}
+	}
+	public static class BoolDuration_map
+	{
+		public static void ApplySync(Dictionary<bool, TimeSpan> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadBool());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				bool k = default;
+				TimeSpan v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadBool();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<bool, TimeSpan> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<bool, TimeSpan> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class Int32Duration_map
+	{
+		public static void ApplySync(Dictionary<int, TimeSpan> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt32());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				int k = default;
+				TimeSpan v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt32();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<int, TimeSpan> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<int, TimeSpan> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class Int64Duration_map
+	{
+		public static void ApplySync(Dictionary<long, TimeSpan> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt64());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				long k = default;
+				TimeSpan v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt64();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<long, TimeSpan> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<long, TimeSpan> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class StringDuration_map
+	{
+		public static void ApplySync(Dictionary<string, TimeSpan> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadString());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				string k = default;
+				TimeSpan v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadString();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<string, TimeSpan> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<string, TimeSpan> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class Empty_list
+	{
+		public static void ApplySync(List<ValueTuple> data, byte[] b)
+		{
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+				Empty.Parser.ParseFrom(stream);
+				data.Add(default);
+			}
+		}
+
+		public static void RaiseChanged(List<ValueTuple> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<ValueTuple> data)
+		{
+
+		}
+	}
+	public static class BoolEmpty_map
+	{
+		public static void ApplySync(Dictionary<bool, ValueTuple> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadBool());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				bool k = default;
+				ValueTuple v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadBool();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						Empty.Parser.ParseFrom(stream);
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<bool, ValueTuple> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<bool, ValueTuple> data)
+		{
+			// FIXME:
+		}
+	}
 	public static class Int32Empty_map
 	{
 		public static void ApplySync(Dictionary<int, ValueTuple> data, byte[] b)
@@ -76,6 +525,266 @@ namespace kds
 		}
 
 		public static void ClearChanged(Dictionary<int, ValueTuple> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class Int64Empty_map
+	{
+		public static void ApplySync(Dictionary<long, ValueTuple> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt64());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				long k = default;
+				ValueTuple v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt64();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						Empty.Parser.ParseFrom(stream);
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<long, ValueTuple> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<long, ValueTuple> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class StringEmpty_map
+	{
+		public static void ApplySync(Dictionary<string, ValueTuple> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadString());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				string k = default;
+				ValueTuple v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadString();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						Empty.Parser.ParseFrom(stream);
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<string, ValueTuple> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<string, ValueTuple> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class Float_list
+	{
+		public static void ApplySync(List<float> data, byte[] b)
+		{
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+				data.Add(stream.ReadFloat());
+			}
+		}
+
+		public static void RaiseChanged(List<float> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<float> data)
+		{
+
+		}
+	}
+	public static class Int32_list
+	{
+		public static void ApplySync(List<int> data, byte[] b)
+		{
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+				data.Add(stream.ReadInt32());
+			}
+		}
+
+		public static void RaiseChanged(List<int> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<int> data)
+		{
+
+		}
+	}
+	public static class BoolInt32_map
+	{
+		public static void ApplySync(Dictionary<bool, int> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadBool());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				bool k = default;
+				int v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadBool();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadInt32();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<bool, int> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<bool, int> data)
 		{
 			// FIXME:
 		}
@@ -152,6 +861,78 @@ namespace kds
 			// FIXME:
 		}
 	}
+	public static class StringInt32_map
+	{
+		public static void ApplySync(Dictionary<string, int> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadString());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				string k = default;
+				int v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadString();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadInt32();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<string, int> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<string, int> data)
+		{
+			// FIXME:
+		}
+	}
 	public static class Int64_list
 	{
 		public static void ApplySync(List<long> data, byte[] b)
@@ -172,6 +953,1451 @@ namespace kds
 		public static void ClearChanged(List<long> data)
 		{
 
+		}
+	}
+	public static class Int64Int64_map
+	{
+		public static void ApplySync(Dictionary<long, long> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt64());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				long k = default;
+				long v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt64();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadInt64();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<long, long> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<long, long> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class String_list
+	{
+		public static void ApplySync(List<string> data, byte[] b)
+		{
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+				data.Add(stream.ReadString());
+			}
+		}
+
+		public static void RaiseChanged(List<string> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<string> data)
+		{
+
+		}
+	}
+	public static class BoolString_map
+	{
+		public static void ApplySync(Dictionary<bool, string> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadBool());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				bool k = default;
+				string v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadBool();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadString();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<bool, string> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<bool, string> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class Int32String_map
+	{
+		public static void ApplySync(Dictionary<int, string> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt32());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				int k = default;
+				string v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt32();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadString();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<int, string> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<int, string> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class Int64String_map
+	{
+		public static void ApplySync(Dictionary<long, string> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt64());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				long k = default;
+				string v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt64();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadString();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<long, string> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<long, string> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class StringString_map
+	{
+		public static void ApplySync(Dictionary<string, string> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadString());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				string k = default;
+				string v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadString();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadString();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<string, string> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<string, string> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class Timestamp_list
+	{
+		public static void ApplySync(List<DateTime> data, byte[] b)
+		{
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+				data.Add(Timestamp.Parser.ParseFrom(stream).ToDateTime());
+			}
+		}
+
+		public static void RaiseChanged(List<DateTime> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<DateTime> data)
+		{
+
+		}
+	}
+	public static class BoolTimestamp_map
+	{
+		public static void ApplySync(Dictionary<bool, DateTime> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadBool());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				bool k = default;
+				DateTime v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadBool();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<bool, DateTime> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<bool, DateTime> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class Int32Timestamp_map
+	{
+		public static void ApplySync(Dictionary<int, DateTime> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt32());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				int k = default;
+				DateTime v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt32();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<int, DateTime> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<int, DateTime> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class Int64Timestamp_map
+	{
+		public static void ApplySync(Dictionary<long, DateTime> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt64());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				long k = default;
+				DateTime v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt64();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<long, DateTime> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<long, DateTime> data)
+		{
+			// FIXME:
+		}
+	}
+	public static class StringTimestamp_map
+	{
+		public static void ApplySync(Dictionary<string, DateTime> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadString());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				string k = default;
+				DateTime v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadString();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<string, DateTime> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<string, DateTime> data)
+		{
+			// FIXME:
+		}
+	}
+	public enum ItemType
+	{
+		ItemTypeNone = 0,
+		ItemTypeWeapon = 1,
+		ItemTypeArmor = 2,
+		ItemTypePotion = 3,
+	}
+
+	public static class ItemType_list
+	{
+		public static void ApplySync(List<ItemType> data, byte[] b)
+		{
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+				data.Add((ItemType)stream.ReadEnum());
+			}
+		}
+
+		public static void RaiseChanged(List<ItemType> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<ItemType> data)
+		{
+
+		}
+	}
+
+	public static class BoolItemType_map
+	{
+		public static void ApplySync(Dictionary<bool, ItemType> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadBool());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				bool k = default;
+				ItemType v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadBool();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = (ItemType)stream.ReadEnum();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<bool, ItemType> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<bool, ItemType> data)
+		{
+			// FIXME:
+		}
+	}
+
+	public static class Int32ItemType_map
+	{
+		public static void ApplySync(Dictionary<int, ItemType> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt32());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				int k = default;
+				ItemType v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt32();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = (ItemType)stream.ReadEnum();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<int, ItemType> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<int, ItemType> data)
+		{
+			// FIXME:
+		}
+	}
+
+	public static class Int64ItemType_map
+	{
+		public static void ApplySync(Dictionary<long, ItemType> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt64());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				long k = default;
+				ItemType v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt64();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = (ItemType)stream.ReadEnum();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<long, ItemType> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<long, ItemType> data)
+		{
+			// FIXME:
+		}
+	}
+
+	public static class StringItemType_map
+	{
+		public static void ApplySync(Dictionary<string, ItemType> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadString());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				string k = default;
+				ItemType v = default;
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadString();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = (ItemType)stream.ReadEnum();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				data[k] = v;
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<string, ItemType> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<string, ItemType> data)
+		{
+			// FIXME:
+		}
+	}
+	public class ItemData
+	{
+		public ItemData()
+		{
+			name_ = string.Empty;
+		}
+
+		private int id_;
+		public int Id => id_;
+		public bool IsIdChanged => (_changed & (0x01 << 1)) != 0;
+
+		private string name_;
+		public string Name => name_;
+		public bool IsNameChanged => (_changed & (0x01 << 2)) != 0;
+
+		private int count_;
+		public int Count => count_;
+		public bool IsCountChanged => (_changed & (0x01 << 3)) != 0;
+
+		private long _changed;
+
+		public event Action<ItemData, EventChanged>? OnChanged;
+
+		public class EventChanged
+		{
+			public long _changed;
+			public bool Id => (_changed & (0x01 << 1)) != 0;
+			public bool Name => (_changed & (0x01 << 2)) != 0;
+			public bool Count => (_changed & (0x01 << 3)) != 0;
+
+			public EventChanged(long changed)
+			{
+				_changed = changed;
+			}
+		}
+
+		public void ApplySync(byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1:
+					id_ = stream.ReadInt32();
+					_changed |= 0x01 << 1;
+					break;
+				case 2:
+					name_ = stream.ReadString();
+					_changed |= 0x01 << 2;
+					break;
+				case 3:
+					count_ = stream.ReadInt32();
+					_changed |= 0x01 << 3;
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+			_changed = 0;
+		}
+	}
+
+	public static class ItemData_list
+	{
+		public static void ApplySync(List<ItemData> data, byte[] b)
+		{
+			data.Clear();
+			var stream = new CodedInputStream(b);
+			while (!stream.IsAtEnd)
+			{
+				var v = new ItemData();
+				v.ApplySync(stream.ReadBytes().ToByteArray());
+				data.Add(v);
+			}
+		}
+
+		public static void RaiseChanged(List<ItemData> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<ItemData> data)
+		{
+
+		}
+	}
+
+	public static class BoolItemData_map
+	{
+		public static void ApplySync(Dictionary<bool, ItemData> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadBool());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				bool k = default;
+				byte[] v = [];
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadBool();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadBytes().ToByteArray();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				if (data.TryGetValue(k, out var c))
+				{
+					c.ApplySync(v);	
+				}
+				else
+				{
+					c = new ItemData();
+					c.ApplySync(v);
+					data[k] = c;
+				}
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<bool, ItemData> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<bool, ItemData> data)
+		{
+			// FIXME:
+		}
+	}
+
+	public static class Int32ItemData_map
+	{
+		public static void ApplySync(Dictionary<int, ItemData> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt32());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				int k = default;
+				byte[] v = [];
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt32();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadBytes().ToByteArray();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				if (data.TryGetValue(k, out var c))
+				{
+					c.ApplySync(v);	
+				}
+				else
+				{
+					c = new ItemData();
+					c.ApplySync(v);
+					data[k] = c;
+				}
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<int, ItemData> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<int, ItemData> data)
+		{
+			// FIXME:
+		}
+	}
+
+	public static class Int64ItemData_map
+	{
+		public static void ApplySync(Dictionary<long, ItemData> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadInt64());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				long k = default;
+				byte[] v = [];
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadInt64();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadBytes().ToByteArray();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				if (data.TryGetValue(k, out var c))
+				{
+					c.ApplySync(v);	
+				}
+				else
+				{
+					c = new ItemData();
+					c.ApplySync(v);
+					data[k] = c;
+				}
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<long, ItemData> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<long, ItemData> data)
+		{
+			// FIXME:
+		}
+	}
+
+	public static class StringItemData_map
+	{
+		public static void ApplySync(Dictionary<string, ItemData> data, byte[] b)
+		{
+			var stream = new CodedInputStream(b);
+			var clear = false;
+			byte[] deletes = [];
+			var entries = new List<byte[]>();
+			uint tag;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapClearFieldNumber
+					clear = stream.ReadBool();
+					break;
+				case 2: // MapDeleteFieldNumber
+					deletes = stream.ReadBytes().ToByteArray();
+					break;
+				case 3: // MapEntryFieldNumber
+					entries.Add(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (clear)
+			{
+				data.Clear();
+			}
+			stream = new CodedInputStream(deletes);
+			while (!stream.IsAtEnd)
+			{
+				data.Remove(stream.ReadString());
+			}
+			foreach (var entry in entries)
+			{
+				stream = new CodedInputStream(entry);
+				string k = default;
+				byte[] v = [];
+				while ((tag = stream.ReadTag()) != 0)
+				{
+					var num = WireFormat.GetTagFieldNumber(tag);
+					switch (num)
+					{
+					case 1: // MapEntryKeyFieldNumber
+						k = stream.ReadString();
+						break;
+					case 2: // MapEntryValueFieldNumber
+						v = stream.ReadBytes().ToByteArray();
+						break;
+					default:
+						stream.SkipLastField();
+						break;
+					}
+				}
+				if (data.TryGetValue(k, out var c))
+				{
+					c.ApplySync(v);	
+				}
+				else
+				{
+					c = new ItemData();
+					c.ApplySync(v);
+					data[k] = c;
+				}
+			}
+		}
+
+		public static void RaiseChanged(Dictionary<string, ItemData> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<string, ItemData> data)
+		{
+			// FIXME:
 		}
 	}
 }

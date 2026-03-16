@@ -98,7 +98,7 @@
 				data.Add(Duration.Parser.ParseFrom(stream).ToTimeSpan());
 {{- else if eq .Type "empty"}}
 				Empty.Parser.ParseFrom(stream);
-				data.Add(());
+				data.Add(default);
 {{- end}}
 			}
 		}

@@ -1,0 +1,93 @@
+package kds;
+
+entity All {
+	AllType types = 1;
+	AllList lists = 2;
+	AllMap maps = 3;
+}
+
+component AllType {
+	// 基础数值类型
+	int32 int32Val = 1;
+	int64 int64Val = 2;
+	uint32 uint32Val = 3;
+	uint64 uint64Val = 4;
+	sint32 sint32Val = 5;
+	sint64 sint64Val = 6;
+	fixed32 fixed32Val = 7;
+	fixed64 fixed64Val = 8;
+	sfixed32 sfixed32Val = 9;
+	sfixed64 sfixed64Val = 10;
+
+	// 浮点类型
+	float floatVal = 11;
+	double doubleVal = 12;
+
+	// 布尔和字符串
+	bool boolVal = 13;
+	string stringVal = 14;
+	bytes bytesVal = 15;
+
+	// 时间类型
+	timestamp timestampVal = 16;
+	duration durationVal = 17;
+	empty emptyVal = 18;
+
+	// 枚举类型
+	ItemType enumVal = 19;
+
+	// 自定义类型
+	ItemData itemData = 20;
+}
+
+component AllList {
+	repeated int32 int32List = 1;
+	repeated int64 int64List = 2;
+	repeated float floatList = 3;
+	repeated double doubleList = 4;
+	repeated bool boolList = 5;
+	repeated string stringList = 6;
+	repeated timestamp timestampList = 7;
+	repeated duration durationList = 8;
+	repeated empty emptyList = 9;
+	repeated ItemType enumList = 10;
+	repeated ItemData itemList = 11;
+}
+
+component AllMap {
+	// map<int32, value>
+	map<int32, int32> int32_int32 = 1;
+	map<int32, string> int32_string = 2;
+	map<int32, timestamp> int32_timestamp = 3;
+	map<int32, duration> int32_duration = 4;
+	map<int32, empty> int32_empty = 5;
+	map<int32, ItemType> int32_enum = 6;
+	map<int32, ItemData> int32_itemData = 7;
+
+	// map<int64, value>
+	map<int64, int64> int64_int64 = 8;
+	map<int64, string> int64_string = 9;
+	map<int64, timestamp> int64_timestamp = 10;
+	map<int64, duration> int64_duration = 11;
+	map<int64, empty> int64_empty = 12;
+	map<int64, ItemType> int64_enum = 13;
+	map<int64, ItemData> int64_itemData = 14;
+
+	// map<string, value>
+	map<string, int32> string_int32 = 15;
+	map<string, string> string_string = 16;
+	map<string, timestamp> string_timestamp = 17;
+	map<string, duration> string_duration = 18;
+	map<string, empty> string_empty = 19;
+	map<string, ItemType> string_enum = 20;
+	map<string, ItemData> string_itemData = 21;
+
+	// map<bool, value>
+	map<bool, int32> bool_int32 = 22;
+	map<bool, string> bool_string = 23;
+	map<bool, timestamp> bool_timestamp = 24;
+	map<bool, duration> bool_duration = 25;
+	map<bool, empty> bool_empty = 26;
+	map<bool, ItemType> bool_enum = 27;
+	map<bool, ItemData> bool_itemData = 28;
+}
