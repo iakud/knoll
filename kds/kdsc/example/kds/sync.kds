@@ -1,0 +1,30 @@
+package kds;
+
+// 同步示例 - 玩家数据
+entity PlayerSync {
+	PlayerSyncInfo Info = 1;
+	PlayerSyncHero Hero = 2;
+	PlayerSyncBag Bag = 3;
+}
+
+component PlayerSyncInfo {
+	string Name = 1;
+	int32 Level = 2;
+	bool IsNew = 3;
+}
+
+component PlayerSyncHero {
+	map<int64, SyncHero> Heroes = 1;
+}
+
+component PlayerSyncBag {
+	map<int32, int32> Items = 1;
+	map<int32, int32> Currencies = 2;
+}
+
+component SyncHero {
+	int32 HeroId = 1;
+	int32 Level = 2;
+	int32 Star = 3;
+	int32 Exp = 4;
+}

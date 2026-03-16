@@ -32,19 +32,10 @@ source ../../../var.sh
 
 rm -rf server/kds
 mkdir -p server/kds
-
-#kdsc --go_out=kds --proto_out=proto *.kds
 kdsc --out=server/kds --tmpl=../template/kds.go.tmpl kds/*.kds
 
 rm -rf client/kds
 mkdir -p client/kds
 kdsc --out=client/kds --tmpl=../template/kds.cs.tmpl kds/*.kds
-# [[ $? -ne 0 ]] && exit 1
 
-# rm -rf kdspb
-# mkdir -p kdspb
-
-# protoc -I=./proto -I=$PROTOC_INCLUDE \
-#   --go_opt=default_api_level=API_OPAQUE \
-#	--go_out=paths=source_relative:./kdspb \
-#	`find proto -name "*.proto"`
+dotnet publish -c Release -o bin --use-current-runtime client

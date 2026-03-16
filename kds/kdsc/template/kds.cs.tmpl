@@ -330,7 +330,7 @@
 
 		private long _changed;
 
-		public event Action<{{$MessageName}}>? OnChanged;
+		public event Action<{{$MessageName}}, EventChanged>? OnChanged;
 
 		public class EventChanged
 		{
@@ -339,7 +339,7 @@
 			public bool {{.Name}} => (_changed & (0x01 << {{.Number}})) != 0;
 {{- end}}
 
-			public void EventChanged(long changed)
+			public EventChanged(long changed)
 			{
 				_changed = changed;
 			}

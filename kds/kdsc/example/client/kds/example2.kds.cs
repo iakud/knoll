@@ -47,7 +47,7 @@ namespace kds
 
 		private long _changed;
 
-		public event Action<City>? OnChanged;
+		public event Action<City, EventChanged>? OnChanged;
 
 		public class EventChanged
 		{
@@ -59,7 +59,7 @@ namespace kds
 			public bool City => (_changed & (0x01 << 5)) != 0;
 			public bool Id => (_changed & (0x01 << 6)) != 0;
 
-			public void EventChanged(long changed)
+			public EventChanged(long changed)
 			{
 				_changed = changed;
 			}
@@ -154,7 +154,7 @@ namespace kds
 
 		private long _changed;
 
-		public event Action<CityBaseInfo>? OnChanged;
+		public event Action<CityBaseInfo, EventChanged>? OnChanged;
 
 		public class EventChanged
 		{
@@ -163,7 +163,7 @@ namespace kds
 			public bool Troops => (_changed & (0x01 << 2)) != 0;
 			public bool BuildInfo => (_changed & (0x01 << 3)) != 0;
 
-			public void EventChanged(long changed)
+			public EventChanged(long changed)
 			{
 				_changed = changed;
 			}
@@ -235,7 +235,7 @@ namespace kds
 
 		private long _changed;
 
-		public event Action<Vector>? OnChanged;
+		public event Action<Vector, EventChanged>? OnChanged;
 
 		public class EventChanged
 		{
@@ -243,7 +243,7 @@ namespace kds
 			public bool X => (_changed & (0x01 << 1)) != 0;
 			public bool Y => (_changed & (0x01 << 2)) != 0;
 
-			public void EventChanged(long changed)
+			public EventChanged(long changed)
 			{
 				_changed = changed;
 			}
