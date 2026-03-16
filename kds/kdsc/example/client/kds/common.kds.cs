@@ -10,7 +10,7 @@ namespace kds
 {
 	public static class Int32Empty_map
 	{
-		public static void Unmarshal(Dictionary<int, ValueTuple> data, byte[] b)
+		public static void ApplySync(Dictionary<int, ValueTuple> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -69,10 +69,20 @@ namespace kds
 				data[k] = v;
 			}
 		}
+
+		public static void RaiseChanged(Dictionary<int, ValueTuple> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<int, ValueTuple> data)
+		{
+			// FIXME:
+		}
 	}
 	public static class Int32Int32_map
 	{
-		public static void Unmarshal(Dictionary<int, int> data, byte[] b)
+		public static void ApplySync(Dictionary<int, int> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -131,10 +141,20 @@ namespace kds
 				data[k] = v;
 			}
 		}
+
+		public static void RaiseChanged(Dictionary<int, int> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<int, int> data)
+		{
+			// FIXME:
+		}
 	}
 	public static class Int64_list
 	{
-		public static void Unmarshal(List<long> data, byte[] b)
+		public static void ApplySync(List<long> data, byte[] b)
 		{
 			data.Clear();
 			var stream = new CodedInputStream(b);
@@ -142,6 +162,16 @@ namespace kds
 			{
 				data.Add(stream.ReadInt64());
 			}
+		}
+
+		public static void RaiseChanged(List<long> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<long> data)
+		{
+
 		}
 	}
 }

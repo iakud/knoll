@@ -26,7 +26,7 @@
 {{- /*Protobuf reserved "Types" "Descriptor" "Equals" "ToString" "GetHashCode" "WriteTo" "Clone" "CalculateSize" "MergeFrom" "OnConstruction" "Parser"*/ -}}
 {{- if eq .Name .Def.Name}}{{.Name}}_
 {{- else if and (eq .Def.Kind "entity") (eq .Name "Id")}}{{.Name}}_
-{{- else if eq .Name "Equals" "ToString" "GetHashCode" "Unmarshal" "InvokeChange"}}{{.Name}}_
+{{- else if eq .Name "Equals" "ToString" "GetHashCode" "ApplySync" "RaiseChanged" "ClearChanged"}}{{.Name}}_
 {{- else}}{{.Name}}
 {{- end}}
 {{- end}}
@@ -50,7 +50,7 @@
 {{- define "List"}}
 	public static class {{.Name}}
 	{
-		public static void Unmarshal(List<{{template "ListValueType" .}}> data, byte[] b)
+		public static void ApplySync(List<{{template "ListValueType" .}}> data, byte[] b)
 		{
 			data.Clear();
 			var stream = new CodedInputStream(b);
@@ -58,7 +58,7 @@
 			{
 {{- if eq .TypeKind "component"}}
 				var v = new {{.Type}}();
-				v.Unmarshal(stream.ReadBytes().ToByteArray());
+				v.ApplySync(stream.ReadBytes().ToByteArray());
 				data.Add(v);
 {{- else if eq .TypeKind "enum"}}
 				data.Add(({{.Type}})stream.ReadEnum());
@@ -97,9 +97,20 @@
 {{- else if eq .Type "duration"}}
 				data.Add(Duration.Parser.ParseFrom(stream).ToTimeSpan());
 {{- else if eq .Type "empty"}}
-				Empty.Parser.ParseFrom(stream); data.Add(());
+				Empty.Parser.ParseFrom(stream);
+				data.Add(());
 {{- end}}
 			}
+		}
+
+		public static void RaiseChanged(List<{{template "ListValueType" .}}> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<{{template "ListValueType" .}}> data)
+		{
+
 		}
 	}
 {{- end}}
@@ -108,7 +119,7 @@
 {{- define "Map"}}
 	public static class {{.Name}}
 	{
-		public static void Unmarshal(Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> data, byte[] b)
+		public static void ApplySync(Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -259,18 +270,28 @@
 {{- if eq .TypeKind "component"}}
 				if (data.TryGetValue(k, out var c))
 				{
-					c.Unmarshal(v);	
+					c.ApplySync(v);	
 				}
 				else
 				{
 					c = new {{.Type}}();
-					c.Unmarshal(v);
+					c.ApplySync(v);
 					data[k] = c;
 				}
 {{- else}}
 				data[k] = v;
 {{- end}}
 			}
+		}
+
+		public static void RaiseChanged(Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> data)
+		{
+			// FIXME:
 		}
 	}
 {{- end}}
@@ -311,22 +332,20 @@
 
 		public event Action<{{$MessageName}}>? OnChanged;
 
-		public void InvokeChange()
+		public class EventChanged
 		{
-			if (_changed == 0)
-				return;
+			public long _changed;
 {{- range .Fields}}
-{{- if .Repeated}}
-{{- else if .Map}}
-{{- else if eq .TypeKind "component"}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
-				{{template "FieldName" .}}.InvokeChange();
+			public bool {{.Name}} => (_changed & (0x01 << {{.Number}})) != 0;
 {{- end}}
-{{- end}}
-			OnChanged?.Invoke(this);
+
+			public void EventChanged(long changed)
+			{
+				_changed = changed;
+			}
 		}
 
-		public void Unmarshal(byte[] b)
+		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -338,11 +357,11 @@
 {{- range .Fields}}
 				case {{.Number}}:
 {{- if .Repeated}}
-					{{.ListType}}.Unmarshal({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
+					{{.ListType}}.ApplySync({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
 {{- else if .Map}}
-					{{.MapType}}.Unmarshal({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
+					{{.MapType}}.ApplySync({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
 {{- else if eq .TypeKind "component"}}
-					{{template "FieldName" .}}.Unmarshal(stream.ReadBytes().ToByteArray());
+					{{template "FieldName" .}}.ApplySync(stream.ReadBytes().ToByteArray());
 {{- else if eq .TypeKind "enum"}}
 					{{template "FieldName" .}} = ({{.Type}})stream.ReadEnum();
 {{- else if eq .Type "bool"}}
@@ -392,6 +411,44 @@
 					break;
 				}
 			}
+		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+{{- range .Fields}}
+{{- if .Repeated}}
+			if ((_changed & (0x01 << {{.Number}})) != 0)
+				{{.ListType}}.RaiseChanged({{template "FieldName" .}});
+{{- else if .Map}}
+			if ((_changed & (0x01 << {{.Number}})) != 0)
+				{{.MapType}}.RaiseChanged({{template "FieldName" .}});
+{{- else if eq .TypeKind "component"}}
+			if ((_changed & (0x01 << {{.Number}})) != 0)
+				{{template "FieldName" .}}.RaiseChanged();
+{{- end}}
+{{- end}}
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+{{- range .Fields}}
+{{- if .Repeated}}
+			if ((_changed & (0x01 << {{.Number}})) != 0)
+				{{.ListType}}.ClearChanged({{template "FieldName" .}});
+{{- else if .Map}}
+			if ((_changed & (0x01 << {{.Number}})) != 0)
+				{{.MapType}}.ClearChanged({{template "FieldName" .}});
+{{- else if eq .TypeKind "component"}}
+			if ((_changed & (0x01 << {{.Number}})) != 0)
+				{{template "FieldName" .}}.ClearChanged();
+{{- end}}
+{{- end}}
+			_changed = 0;
 		}
 {{- end}}
 

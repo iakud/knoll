@@ -49,18 +49,23 @@ namespace kds
 
 		public event Action<City>? OnChanged;
 
-		public void InvokeChange()
+		public class EventChanged
 		{
-			if (_changed == 0)
-				return;
-			if ((_changed & (0x01 << 2)) != 0)
-				playerBasicInfo_.InvokeChange();
-			if ((_changed & (0x01 << 3)) != 0)
-				cityInfo_.InvokeChange();
-			OnChanged?.Invoke(this);
+			public long _changed;
+			public bool PlayerId => (_changed & (0x01 << 1)) != 0;
+			public bool PlayerBasicInfo => (_changed & (0x01 << 2)) != 0;
+			public bool CityInfo => (_changed & (0x01 << 3)) != 0;
+			public bool Troops => (_changed & (0x01 << 4)) != 0;
+			public bool City => (_changed & (0x01 << 5)) != 0;
+			public bool Id => (_changed & (0x01 << 6)) != 0;
+
+			public void EventChanged(long changed)
+			{
+				_changed = changed;
+			}
 		}
 
-		public void Unmarshal(byte[] b)
+		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -74,15 +79,15 @@ namespace kds
 					_changed |= 0x01 << 1;
 					break;
 				case 2:
-					playerBasicInfo_.Unmarshal(stream.ReadBytes().ToByteArray());
+					playerBasicInfo_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 2;
 					break;
 				case 3:
-					cityInfo_.Unmarshal(stream.ReadBytes().ToByteArray());
+					cityInfo_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 3;
 					break;
 				case 4:
-					Int64_list.Unmarshal(troops_, stream.ReadBytes().ToByteArray());
+					Int64_list.ApplySync(troops_, stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 4;
 					break;
 				case 5:
@@ -98,6 +103,32 @@ namespace kds
 					break;
 				}
 			}
+		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+			if ((_changed & (0x01 << 2)) != 0)
+				playerBasicInfo_.RaiseChanged();
+			if ((_changed & (0x01 << 3)) != 0)
+				cityInfo_.RaiseChanged();
+			if ((_changed & (0x01 << 4)) != 0)
+				Int64_list.RaiseChanged(troops_);
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+			if ((_changed & (0x01 << 2)) != 0)
+				playerBasicInfo_.ClearChanged();
+			if ((_changed & (0x01 << 3)) != 0)
+				cityInfo_.ClearChanged();
+			if ((_changed & (0x01 << 4)) != 0)
+				Int64_list.ClearChanged(troops_);
+			_changed = 0;
 		}
 	}
 	public class CityBaseInfo
@@ -125,14 +156,20 @@ namespace kds
 
 		public event Action<CityBaseInfo>? OnChanged;
 
-		public void InvokeChange()
+		public class EventChanged
 		{
-			if (_changed == 0)
-				return;
-			OnChanged?.Invoke(this);
+			public long _changed;
+			public bool Positions => (_changed & (0x01 << 1)) != 0;
+			public bool Troops => (_changed & (0x01 << 2)) != 0;
+			public bool BuildInfo => (_changed & (0x01 << 3)) != 0;
+
+			public void EventChanged(long changed)
+			{
+				_changed = changed;
+			}
 		}
 
-		public void Unmarshal(byte[] b)
+		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -142,11 +179,11 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					Vector_list.Unmarshal(positions_, stream.ReadBytes().ToByteArray());
+					Vector_list.ApplySync(positions_, stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 1;
 					break;
 				case 2:
-					Int32Empty_map.Unmarshal(troops_, stream.ReadBytes().ToByteArray());
+					Int32Empty_map.ApplySync(troops_, stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 2;
 					break;
 				case 3:
@@ -158,6 +195,28 @@ namespace kds
 					break;
 				}
 			}
+		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+			if ((_changed & (0x01 << 1)) != 0)
+				Vector_list.RaiseChanged(positions_);
+			if ((_changed & (0x01 << 2)) != 0)
+				Int32Empty_map.RaiseChanged(troops_);
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+			if ((_changed & (0x01 << 1)) != 0)
+				Vector_list.ClearChanged(positions_);
+			if ((_changed & (0x01 << 2)) != 0)
+				Int32Empty_map.ClearChanged(troops_);
+			_changed = 0;
 		}
 	}
 	public class Vector
@@ -178,14 +237,19 @@ namespace kds
 
 		public event Action<Vector>? OnChanged;
 
-		public void InvokeChange()
+		public class EventChanged
 		{
-			if (_changed == 0)
-				return;
-			OnChanged?.Invoke(this);
+			public long _changed;
+			public bool X => (_changed & (0x01 << 1)) != 0;
+			public bool Y => (_changed & (0x01 << 2)) != 0;
+
+			public void EventChanged(long changed)
+			{
+				_changed = changed;
+			}
 		}
 
-		public void Unmarshal(byte[] b)
+		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -208,20 +272,44 @@ namespace kds
 				}
 			}
 		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+			_changed = 0;
+		}
 	}
 
 	public static class Vector_list
 	{
-		public static void Unmarshal(List<Vector> data, byte[] b)
+		public static void ApplySync(List<Vector> data, byte[] b)
 		{
 			data.Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
 				var v = new Vector();
-				v.Unmarshal(stream.ReadBytes().ToByteArray());
+				v.ApplySync(stream.ReadBytes().ToByteArray());
 				data.Add(v);
 			}
+		}
+
+		public static void RaiseChanged(List<Vector> data)
+		{
+
+		}
+
+		public static void ClearChanged(List<Vector> data)
+		{
+
 		}
 	}
 }

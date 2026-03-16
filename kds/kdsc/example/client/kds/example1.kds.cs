@@ -37,20 +37,20 @@ namespace kds
 
 		public event Action<Player>? OnChanged;
 
-		public void InvokeChange()
+		public class EventChanged
 		{
-			if (_changed == 0)
-				return;
-			if ((_changed & (0x01 << 1)) != 0)
-				info_.InvokeChange();
-			if ((_changed & (0x01 << 2)) != 0)
-				hero_.InvokeChange();
-			if ((_changed & (0x01 << 3)) != 0)
-				bag_.InvokeChange();
-			OnChanged?.Invoke(this);
+			public long _changed;
+			public bool Info => (_changed & (0x01 << 1)) != 0;
+			public bool Hero => (_changed & (0x01 << 2)) != 0;
+			public bool Bag => (_changed & (0x01 << 3)) != 0;
+
+			public void EventChanged(long changed)
+			{
+				_changed = changed;
+			}
 		}
 
-		public void Unmarshal(byte[] b)
+		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -60,15 +60,15 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					info_.Unmarshal(stream.ReadBytes().ToByteArray());
+					info_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 1;
 					break;
 				case 2:
-					hero_.Unmarshal(stream.ReadBytes().ToByteArray());
+					hero_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 2;
 					break;
 				case 3:
-					bag_.Unmarshal(stream.ReadBytes().ToByteArray());
+					bag_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 3;
 					break;
 				default:
@@ -76,6 +76,32 @@ namespace kds
 					break;
 				}
 			}
+		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+			if ((_changed & (0x01 << 1)) != 0)
+				info_.RaiseChanged();
+			if ((_changed & (0x01 << 2)) != 0)
+				hero_.RaiseChanged();
+			if ((_changed & (0x01 << 3)) != 0)
+				bag_.RaiseChanged();
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+			if ((_changed & (0x01 << 1)) != 0)
+				info_.ClearChanged();
+			if ((_changed & (0x01 << 2)) != 0)
+				hero_.ClearChanged();
+			if ((_changed & (0x01 << 3)) != 0)
+				bag_.ClearChanged();
+			_changed = 0;
 		}
 	}
 	public class PlayerBasicInfo
@@ -101,14 +127,20 @@ namespace kds
 
 		public event Action<PlayerBasicInfo>? OnChanged;
 
-		public void InvokeChange()
+		public class EventChanged
 		{
-			if (_changed == 0)
-				return;
-			OnChanged?.Invoke(this);
+			public long _changed;
+			public bool Name => (_changed & (0x01 << 1)) != 0;
+			public bool IsNew => (_changed & (0x01 << 3)) != 0;
+			public bool CreateTime => (_changed & (0x01 << 5)) != 0;
+
+			public void EventChanged(long changed)
+			{
+				_changed = changed;
+			}
 		}
 
-		public void Unmarshal(byte[] b)
+		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -135,6 +167,20 @@ namespace kds
 				}
 			}
 		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+			_changed = 0;
+		}
 	}
 	public class PlayerHero
 	{
@@ -151,14 +197,18 @@ namespace kds
 
 		public event Action<PlayerHero>? OnChanged;
 
-		public void InvokeChange()
+		public class EventChanged
 		{
-			if (_changed == 0)
-				return;
-			OnChanged?.Invoke(this);
+			public long _changed;
+			public bool Heroes => (_changed & (0x01 << 1)) != 0;
+
+			public void EventChanged(long changed)
+			{
+				_changed = changed;
+			}
 		}
 
-		public void Unmarshal(byte[] b)
+		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -168,7 +218,7 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					Int64Hero_map.Unmarshal(heroes_, stream.ReadBytes().ToByteArray());
+					Int64Hero_map.ApplySync(heroes_, stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 1;
 					break;
 				default:
@@ -176,6 +226,24 @@ namespace kds
 					break;
 				}
 			}
+		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+			if ((_changed & (0x01 << 1)) != 0)
+				Int64Hero_map.RaiseChanged(heroes_);
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+			if ((_changed & (0x01 << 1)) != 0)
+				Int64Hero_map.ClearChanged(heroes_);
+			_changed = 0;
 		}
 	}
 	public class PlayerBag
@@ -193,14 +261,18 @@ namespace kds
 
 		public event Action<PlayerBag>? OnChanged;
 
-		public void InvokeChange()
+		public class EventChanged
 		{
-			if (_changed == 0)
-				return;
-			OnChanged?.Invoke(this);
+			public long _changed;
+			public bool Resources => (_changed & (0x01 << 1)) != 0;
+
+			public void EventChanged(long changed)
+			{
+				_changed = changed;
+			}
 		}
 
-		public void Unmarshal(byte[] b)
+		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -210,7 +282,7 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					Int32Int32_map.Unmarshal(resources_, stream.ReadBytes().ToByteArray());
+					Int32Int32_map.ApplySync(resources_, stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 1;
 					break;
 				default:
@@ -218,6 +290,24 @@ namespace kds
 					break;
 				}
 			}
+		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+			if ((_changed & (0x01 << 1)) != 0)
+				Int32Int32_map.RaiseChanged(resources_);
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+			if ((_changed & (0x01 << 1)) != 0)
+				Int32Int32_map.ClearChanged(resources_);
+			_changed = 0;
 		}
 	}
 	public class Hero
@@ -246,14 +336,21 @@ namespace kds
 
 		public event Action<Hero>? OnChanged;
 
-		public void InvokeChange()
+		public class EventChanged
 		{
-			if (_changed == 0)
-				return;
-			OnChanged?.Invoke(this);
+			public long _changed;
+			public bool HeroId => (_changed & (0x01 << 1)) != 0;
+			public bool HeroLevel => (_changed & (0x01 << 2)) != 0;
+			public bool Type => (_changed & (0x01 << 3)) != 0;
+			public bool NeedTime => (_changed & (0x01 << 4)) != 0;
+
+			public void EventChanged(long changed)
+			{
+				_changed = changed;
+			}
 		}
 
-		public void Unmarshal(byte[] b)
+		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			uint tag;
@@ -284,11 +381,25 @@ namespace kds
 				}
 			}
 		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+			_changed = 0;
+		}
 	}
 
 	public static class Int64Hero_map
 	{
-		public static void Unmarshal(Dictionary<long, Hero> data, byte[] b)
+		public static void ApplySync(Dictionary<long, Hero> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -346,15 +457,25 @@ namespace kds
 				}
 				if (data.TryGetValue(k, out var c))
 				{
-					c.Unmarshal(v);	
+					c.ApplySync(v);	
 				}
 				else
 				{
 					c = new Hero();
-					c.Unmarshal(v);
+					c.ApplySync(v);
 					data[k] = c;
 				}
 			}
+		}
+
+		public static void RaiseChanged(Dictionary<long, Hero> data)
+		{
+			// FIXME:
+		}
+
+		public static void ClearChanged(Dictionary<long, Hero> data)
+		{
+			// FIXME:
 		}
 	}
 	public enum HeroType
