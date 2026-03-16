@@ -30,18 +30,15 @@ function printUsage() {
 
 source ../../../var.sh
 
-rm -rf kds
-mkdir -p kds
-
-rm -rf proto
-mkdir -p proto
+rm -rf server/kds
+mkdir -p server/kds
 
 #kdsc --go_out=kds --proto_out=proto *.kds
-kdsc --out=kds --tmpl=../template/kds.go.tmpl *.kds
+kdsc --out=server/kds --tmpl=../template/kds.go.tmpl kds/*.kds
 
 rm -rf client/kds
 mkdir -p client/kds
-kdsc --out=client/kds --tmpl=../template/kds.cs.tmpl *.kds
+kdsc --out=client/kds --tmpl=../template/kds.cs.tmpl kds/*.kds
 # [[ $? -ne 0 ]] && exit 1
 
 # rm -rf kdspb

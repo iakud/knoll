@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iakud/knoll/kds/kdsc/example/kds"
+	"github.com/iakud/knoll/kds/kdsc/example/server/kds"
 )
 
 /*
