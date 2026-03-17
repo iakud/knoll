@@ -8,7 +8,7 @@ namespace kds
 {
     public static class Example
     {
-        private static All? _all = new All(0);
+        private static All _all = new All(0);
 
         public static void Initialize()
         {

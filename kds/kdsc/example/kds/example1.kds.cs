@@ -23,15 +23,12 @@ namespace kds
 
 		private PlayerBasicInfo info_;
 		public PlayerBasicInfo Info => info_;
-		public bool IsInfoChanged => (_changed & (0x01 << 1)) != 0;
 
 		private PlayerHero hero_;
 		public PlayerHero Hero => hero_;
-		public bool IsHeroChanged => (_changed & (0x01 << 2)) != 0;
 
 		private PlayerBag bag_;
 		public PlayerBag Bag => bag_;
-		public bool IsBagChanged => (_changed & (0x01 << 3)) != 0;
 
 		private long _changed;
 
@@ -113,15 +110,12 @@ namespace kds
 
 		private string name_;
 		public string Name => name_;
-		public bool IsNameChanged => (_changed & (0x01 << 1)) != 0;
 
 		private bool isNew_;
 		public bool IsNew => isNew_;
-		public bool IsIsNewChanged => (_changed & (0x01 << 3)) != 0;
 
 		private DateTime createTime_;
 		public DateTime CreateTime => createTime_;
-		public bool IsCreateTimeChanged => (_changed & (0x01 << 5)) != 0;
 
 		private long _changed;
 
@@ -158,7 +152,7 @@ namespace kds
 					_changed |= 0x01 << 3;
 					break;
 				case 5:
-					createTime_ = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+					createTime_ = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
 					_changed |= 0x01 << 5;
 					break;
 				default:
@@ -191,7 +185,6 @@ namespace kds
 
 		private Dictionary<long, Hero> heroes_;
 		public Dictionary<long, Hero> Heroes => heroes_;
-		public bool IsHeroesChanged => (_changed & (0x01 << 1)) != 0;
 
 		private long _changed;
 
@@ -255,7 +248,6 @@ namespace kds
 
 		private Dictionary<int, int> resources_;
 		public Dictionary<int, int> Resources => resources_;
-		public bool IsResourcesChanged => (_changed & (0x01 << 1)) != 0;
 
 		private long _changed;
 
@@ -318,19 +310,15 @@ namespace kds
 
 		private int heroId_;
 		public int HeroId => heroId_;
-		public bool IsHeroIdChanged => (_changed & (0x01 << 1)) != 0;
 
 		private int heroLevel_;
 		public int HeroLevel => heroLevel_;
-		public bool IsHeroLevelChanged => (_changed & (0x01 << 2)) != 0;
 
 		private HeroType type_;
 		public HeroType Type => type_;
-		public bool IsTypeChanged => (_changed & (0x01 << 3)) != 0;
 
 		private TimeSpan needTime_;
 		public TimeSpan NeedTime => needTime_;
-		public bool IsNeedTimeChanged => (_changed & (0x01 << 4)) != 0;
 
 		private long _changed;
 
@@ -372,7 +360,7 @@ namespace kds
 					_changed |= 0x01 << 3;
 					break;
 				case 4:
-					needTime_ = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+					needTime_ = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
 					_changed |= 0x01 << 4;
 					break;
 				default:

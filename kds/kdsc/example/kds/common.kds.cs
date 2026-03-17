@@ -60,7 +60,7 @@ namespace kds
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(Duration.Parser.ParseFrom(stream).ToTimeSpan());
+				data.Add(Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan());
 			}
 		}
 
@@ -125,7 +125,7 @@ namespace kds
 						k = stream.ReadBool();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
 						break;
 					default:
 						stream.SkipLastField();
@@ -197,7 +197,7 @@ namespace kds
 						k = stream.ReadInt32();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
 						break;
 					default:
 						stream.SkipLastField();
@@ -269,7 +269,7 @@ namespace kds
 						k = stream.ReadInt64();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
 						break;
 					default:
 						stream.SkipLastField();
@@ -330,7 +330,7 @@ namespace kds
 			foreach (var entry in entries)
 			{
 				stream = new CodedInputStream(entry);
-				string k = default;
+				string k = string.Empty;
 				TimeSpan v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
@@ -341,7 +341,7 @@ namespace kds
 						k = stream.ReadString();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
 						break;
 					default:
 						stream.SkipLastField();
@@ -370,7 +370,7 @@ namespace kds
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				Empty.Parser.ParseFrom(stream);
+				Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 				data.Add(default);
 			}
 		}
@@ -436,7 +436,7 @@ namespace kds
 						k = stream.ReadBool();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						Empty.Parser.ParseFrom(stream);
+						Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -508,7 +508,7 @@ namespace kds
 						k = stream.ReadInt32();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						Empty.Parser.ParseFrom(stream);
+						Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -580,7 +580,7 @@ namespace kds
 						k = stream.ReadInt64();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						Empty.Parser.ParseFrom(stream);
+						Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -641,7 +641,7 @@ namespace kds
 			foreach (var entry in entries)
 			{
 				stream = new CodedInputStream(entry);
-				string k = default;
+				string k = string.Empty;
 				ValueTuple v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
@@ -652,7 +652,7 @@ namespace kds
 						k = stream.ReadString();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						Empty.Parser.ParseFrom(stream);
+						Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -901,7 +901,7 @@ namespace kds
 			foreach (var entry in entries)
 			{
 				stream = new CodedInputStream(entry);
-				string k = default;
+				string k = string.Empty;
 				int v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
@@ -1090,7 +1090,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				bool k = default;
-				string v = default;
+				string v = string.Empty;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -1162,7 +1162,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				int k = default;
-				string v = default;
+				string v = string.Empty;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -1234,7 +1234,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				long k = default;
-				string v = default;
+				string v = string.Empty;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -1305,8 +1305,8 @@ namespace kds
 			foreach (var entry in entries)
 			{
 				stream = new CodedInputStream(entry);
-				string k = default;
-				string v = default;
+				string k = string.Empty;
+				string v = string.Empty;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -1345,7 +1345,7 @@ namespace kds
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(Timestamp.Parser.ParseFrom(stream).ToDateTime());
+				data.Add(Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime());
 			}
 		}
 
@@ -1410,7 +1410,7 @@ namespace kds
 						k = stream.ReadBool();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
 						break;
 					default:
 						stream.SkipLastField();
@@ -1482,7 +1482,7 @@ namespace kds
 						k = stream.ReadInt32();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
 						break;
 					default:
 						stream.SkipLastField();
@@ -1554,7 +1554,7 @@ namespace kds
 						k = stream.ReadInt64();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
 						break;
 					default:
 						stream.SkipLastField();
@@ -1615,7 +1615,7 @@ namespace kds
 			foreach (var entry in entries)
 			{
 				stream = new CodedInputStream(entry);
-				string k = default;
+				string k = string.Empty;
 				DateTime v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
@@ -1626,7 +1626,7 @@ namespace kds
 						k = stream.ReadString();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
 						break;
 					default:
 						stream.SkipLastField();
@@ -1937,7 +1937,7 @@ namespace kds
 			foreach (var entry in entries)
 			{
 				stream = new CodedInputStream(entry);
-				string k = default;
+				string k = string.Empty;
 				ItemType v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
@@ -1978,15 +1978,12 @@ namespace kds
 
 		private int id_;
 		public int Id => id_;
-		public bool IsIdChanged => (_changed & (0x01 << 1)) != 0;
 
 		private string name_;
 		public string Name => name_;
-		public bool IsNameChanged => (_changed & (0x01 << 2)) != 0;
 
 		private int count_;
 		public int Count => count_;
-		public bool IsCountChanged => (_changed & (0x01 << 3)) != 0;
 
 		private long _changed;
 
@@ -2359,7 +2356,7 @@ namespace kds
 			foreach (var entry in entries)
 			{
 				stream = new CodedInputStream(entry);
-				string k = default;
+				string k = string.Empty;
 				byte[] v = [];
 				while ((tag = stream.ReadTag()) != 0)
 				{

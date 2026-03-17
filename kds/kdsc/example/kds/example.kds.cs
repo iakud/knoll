@@ -23,15 +23,12 @@ namespace kds
 
 		private AllType types_;
 		public AllType Types => types_;
-		public bool IsTypesChanged => (_changed & (0x01 << 1)) != 0;
 
 		private AllList lists_;
 		public AllList Lists => lists_;
-		public bool IsListsChanged => (_changed & (0x01 << 2)) != 0;
 
 		private AllMap maps_;
 		public AllMap Maps => maps_;
-		public bool IsMapsChanged => (_changed & (0x01 << 3)) != 0;
 
 		private long _changed;
 
@@ -110,88 +107,69 @@ namespace kds
 		{
 			stringVal_ = string.Empty;
 			bytesVal_ = [];
+			emptyVal_ = default;
 			itemData_ = new ItemData();
 		}
 
 		private int int32Val_;
 		public int Int32Val => int32Val_;
-		public bool IsInt32ValChanged => (_changed & (0x01 << 1)) != 0;
 
 		private long int64Val_;
 		public long Int64Val => int64Val_;
-		public bool IsInt64ValChanged => (_changed & (0x01 << 2)) != 0;
 
 		private uint uint32Val_;
 		public uint Uint32Val => uint32Val_;
-		public bool IsUint32ValChanged => (_changed & (0x01 << 3)) != 0;
 
 		private ulong uint64Val_;
 		public ulong Uint64Val => uint64Val_;
-		public bool IsUint64ValChanged => (_changed & (0x01 << 4)) != 0;
 
 		private int sint32Val_;
 		public int Sint32Val => sint32Val_;
-		public bool IsSint32ValChanged => (_changed & (0x01 << 5)) != 0;
 
 		private long sint64Val_;
 		public long Sint64Val => sint64Val_;
-		public bool IsSint64ValChanged => (_changed & (0x01 << 6)) != 0;
 
 		private uint fixed32Val_;
 		public uint Fixed32Val => fixed32Val_;
-		public bool IsFixed32ValChanged => (_changed & (0x01 << 7)) != 0;
 
 		private ulong fixed64Val_;
 		public ulong Fixed64Val => fixed64Val_;
-		public bool IsFixed64ValChanged => (_changed & (0x01 << 8)) != 0;
 
 		private int sfixed32Val_;
 		public int Sfixed32Val => sfixed32Val_;
-		public bool IsSfixed32ValChanged => (_changed & (0x01 << 9)) != 0;
 
 		private long sfixed64Val_;
 		public long Sfixed64Val => sfixed64Val_;
-		public bool IsSfixed64ValChanged => (_changed & (0x01 << 10)) != 0;
 
 		private float floatVal_;
 		public float FloatVal => floatVal_;
-		public bool IsFloatValChanged => (_changed & (0x01 << 11)) != 0;
 
 		private double doubleVal_;
 		public double DoubleVal => doubleVal_;
-		public bool IsDoubleValChanged => (_changed & (0x01 << 12)) != 0;
 
 		private bool boolVal_;
 		public bool BoolVal => boolVal_;
-		public bool IsBoolValChanged => (_changed & (0x01 << 13)) != 0;
 
 		private string stringVal_;
 		public string StringVal => stringVal_;
-		public bool IsStringValChanged => (_changed & (0x01 << 14)) != 0;
 
 		private byte[] bytesVal_;
 		public byte[] BytesVal => bytesVal_;
-		public bool IsBytesValChanged => (_changed & (0x01 << 15)) != 0;
 
 		private DateTime timestampVal_;
 		public DateTime TimestampVal => timestampVal_;
-		public bool IsTimestampValChanged => (_changed & (0x01 << 16)) != 0;
 
 		private TimeSpan durationVal_;
 		public TimeSpan DurationVal => durationVal_;
-		public bool IsDurationValChanged => (_changed & (0x01 << 17)) != 0;
 
 		private ValueTuple emptyVal_;
 		public ValueTuple EmptyVal => emptyVal_;
-		public bool IsEmptyValChanged => (_changed & (0x01 << 18)) != 0;
 
 		private ItemType enumVal_;
 		public ItemType EnumVal => enumVal_;
-		public bool IsEnumValChanged => (_changed & (0x01 << 19)) != 0;
 
 		private ItemData itemData_;
 		public ItemData ItemData => itemData_;
-		public bool IsItemDataChanged => (_changed & (0x01 << 20)) != 0;
 
 		private long _changed;
 
@@ -297,15 +275,15 @@ namespace kds
 					_changed |= 0x01 << 15;
 					break;
 				case 16:
-					timestampVal_ = Timestamp.Parser.ParseFrom(stream).ToDateTime();
+					timestampVal_ = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
 					_changed |= 0x01 << 16;
 					break;
 				case 17:
-					durationVal_ = Duration.Parser.ParseFrom(stream).ToTimeSpan();
+					durationVal_ = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
 					_changed |= 0x01 << 17;
 					break;
 				case 18:
-					Empty.Parser.ParseFrom(stream);
+					Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 18;
 					break;
 				case 19:
@@ -360,47 +338,36 @@ namespace kds
 
 		private List<int> int32List_;
 		public List<int> Int32List => int32List_;
-		public bool IsInt32ListChanged => (_changed & (0x01 << 1)) != 0;
 
 		private List<long> int64List_;
 		public List<long> Int64List => int64List_;
-		public bool IsInt64ListChanged => (_changed & (0x01 << 2)) != 0;
 
 		private List<float> floatList_;
 		public List<float> FloatList => floatList_;
-		public bool IsFloatListChanged => (_changed & (0x01 << 3)) != 0;
 
 		private List<double> doubleList_;
 		public List<double> DoubleList => doubleList_;
-		public bool IsDoubleListChanged => (_changed & (0x01 << 4)) != 0;
 
 		private List<bool> boolList_;
 		public List<bool> BoolList => boolList_;
-		public bool IsBoolListChanged => (_changed & (0x01 << 5)) != 0;
 
 		private List<string> stringList_;
 		public List<string> StringList => stringList_;
-		public bool IsStringListChanged => (_changed & (0x01 << 6)) != 0;
 
 		private List<DateTime> timestampList_;
 		public List<DateTime> TimestampList => timestampList_;
-		public bool IsTimestampListChanged => (_changed & (0x01 << 7)) != 0;
 
 		private List<TimeSpan> durationList_;
 		public List<TimeSpan> DurationList => durationList_;
-		public bool IsDurationListChanged => (_changed & (0x01 << 8)) != 0;
 
 		private List<ValueTuple> emptyList_;
 		public List<ValueTuple> EmptyList => emptyList_;
-		public bool IsEmptyListChanged => (_changed & (0x01 << 9)) != 0;
 
 		private List<ItemType> enumList_;
 		public List<ItemType> EnumList => enumList_;
-		public bool IsEnumListChanged => (_changed & (0x01 << 10)) != 0;
 
 		private List<ItemData> itemList_;
 		public List<ItemData> ItemList => itemList_;
-		public bool IsItemListChanged => (_changed & (0x01 << 11)) != 0;
 
 		private long _changed;
 
@@ -581,115 +548,87 @@ namespace kds
 
 		private Dictionary<int, int> int32Int32_;
 		public Dictionary<int, int> Int32Int32 => int32Int32_;
-		public bool IsInt32Int32Changed => (_changed & (0x01 << 1)) != 0;
 
 		private Dictionary<int, string> int32String_;
 		public Dictionary<int, string> Int32String => int32String_;
-		public bool IsInt32StringChanged => (_changed & (0x01 << 2)) != 0;
 
 		private Dictionary<int, DateTime> int32Timestamp_;
 		public Dictionary<int, DateTime> Int32Timestamp => int32Timestamp_;
-		public bool IsInt32TimestampChanged => (_changed & (0x01 << 3)) != 0;
 
 		private Dictionary<int, TimeSpan> int32Duration_;
 		public Dictionary<int, TimeSpan> Int32Duration => int32Duration_;
-		public bool IsInt32DurationChanged => (_changed & (0x01 << 4)) != 0;
 
 		private Dictionary<int, ValueTuple> int32Empty_;
 		public Dictionary<int, ValueTuple> Int32Empty => int32Empty_;
-		public bool IsInt32EmptyChanged => (_changed & (0x01 << 5)) != 0;
 
 		private Dictionary<int, ItemType> int32Enum_;
 		public Dictionary<int, ItemType> Int32Enum => int32Enum_;
-		public bool IsInt32EnumChanged => (_changed & (0x01 << 6)) != 0;
 
 		private Dictionary<int, ItemData> int32ItemData_;
 		public Dictionary<int, ItemData> Int32ItemData => int32ItemData_;
-		public bool IsInt32ItemDataChanged => (_changed & (0x01 << 7)) != 0;
 
 		private Dictionary<long, long> int64Int64_;
 		public Dictionary<long, long> Int64Int64 => int64Int64_;
-		public bool IsInt64Int64Changed => (_changed & (0x01 << 8)) != 0;
 
 		private Dictionary<long, string> int64String_;
 		public Dictionary<long, string> Int64String => int64String_;
-		public bool IsInt64StringChanged => (_changed & (0x01 << 9)) != 0;
 
 		private Dictionary<long, DateTime> int64Timestamp_;
 		public Dictionary<long, DateTime> Int64Timestamp => int64Timestamp_;
-		public bool IsInt64TimestampChanged => (_changed & (0x01 << 10)) != 0;
 
 		private Dictionary<long, TimeSpan> int64Duration_;
 		public Dictionary<long, TimeSpan> Int64Duration => int64Duration_;
-		public bool IsInt64DurationChanged => (_changed & (0x01 << 11)) != 0;
 
 		private Dictionary<long, ValueTuple> int64Empty_;
 		public Dictionary<long, ValueTuple> Int64Empty => int64Empty_;
-		public bool IsInt64EmptyChanged => (_changed & (0x01 << 12)) != 0;
 
 		private Dictionary<long, ItemType> int64Enum_;
 		public Dictionary<long, ItemType> Int64Enum => int64Enum_;
-		public bool IsInt64EnumChanged => (_changed & (0x01 << 13)) != 0;
 
 		private Dictionary<long, ItemData> int64ItemData_;
 		public Dictionary<long, ItemData> Int64ItemData => int64ItemData_;
-		public bool IsInt64ItemDataChanged => (_changed & (0x01 << 14)) != 0;
 
 		private Dictionary<string, int> stringInt32_;
 		public Dictionary<string, int> StringInt32 => stringInt32_;
-		public bool IsStringInt32Changed => (_changed & (0x01 << 15)) != 0;
 
 		private Dictionary<string, string> stringString_;
 		public Dictionary<string, string> StringString => stringString_;
-		public bool IsStringStringChanged => (_changed & (0x01 << 16)) != 0;
 
 		private Dictionary<string, DateTime> stringTimestamp_;
 		public Dictionary<string, DateTime> StringTimestamp => stringTimestamp_;
-		public bool IsStringTimestampChanged => (_changed & (0x01 << 17)) != 0;
 
 		private Dictionary<string, TimeSpan> stringDuration_;
 		public Dictionary<string, TimeSpan> StringDuration => stringDuration_;
-		public bool IsStringDurationChanged => (_changed & (0x01 << 18)) != 0;
 
 		private Dictionary<string, ValueTuple> stringEmpty_;
 		public Dictionary<string, ValueTuple> StringEmpty => stringEmpty_;
-		public bool IsStringEmptyChanged => (_changed & (0x01 << 19)) != 0;
 
 		private Dictionary<string, ItemType> stringEnum_;
 		public Dictionary<string, ItemType> StringEnum => stringEnum_;
-		public bool IsStringEnumChanged => (_changed & (0x01 << 20)) != 0;
 
 		private Dictionary<string, ItemData> stringItemData_;
 		public Dictionary<string, ItemData> StringItemData => stringItemData_;
-		public bool IsStringItemDataChanged => (_changed & (0x01 << 21)) != 0;
 
 		private Dictionary<bool, int> boolInt32_;
 		public Dictionary<bool, int> BoolInt32 => boolInt32_;
-		public bool IsBoolInt32Changed => (_changed & (0x01 << 22)) != 0;
 
 		private Dictionary<bool, string> boolString_;
 		public Dictionary<bool, string> BoolString => boolString_;
-		public bool IsBoolStringChanged => (_changed & (0x01 << 23)) != 0;
 
 		private Dictionary<bool, DateTime> boolTimestamp_;
 		public Dictionary<bool, DateTime> BoolTimestamp => boolTimestamp_;
-		public bool IsBoolTimestampChanged => (_changed & (0x01 << 24)) != 0;
 
 		private Dictionary<bool, TimeSpan> boolDuration_;
 		public Dictionary<bool, TimeSpan> BoolDuration => boolDuration_;
-		public bool IsBoolDurationChanged => (_changed & (0x01 << 25)) != 0;
 
 		private Dictionary<bool, ValueTuple> boolEmpty_;
 		public Dictionary<bool, ValueTuple> BoolEmpty => boolEmpty_;
-		public bool IsBoolEmptyChanged => (_changed & (0x01 << 26)) != 0;
 
 		private Dictionary<bool, ItemType> boolEnum_;
 		public Dictionary<bool, ItemType> BoolEnum => boolEnum_;
-		public bool IsBoolEnumChanged => (_changed & (0x01 << 27)) != 0;
 
 		private Dictionary<bool, ItemData> boolItemData_;
 		public Dictionary<bool, ItemData> BoolItemData => boolItemData_;
-		public bool IsBoolItemDataChanged => (_changed & (0x01 << 28)) != 0;
 
 		private long _changed;
 

@@ -23,27 +23,21 @@ namespace kds
 
 		private long playerId_;
 		public long PlayerId => playerId_;
-		public bool IsPlayerIdChanged => (_changed & (0x01 << 1)) != 0;
 
 		private PlayerBasicInfo playerBasicInfo_;
 		public PlayerBasicInfo PlayerBasicInfo => playerBasicInfo_;
-		public bool IsPlayerBasicInfoChanged => (_changed & (0x01 << 2)) != 0;
 
 		private CityBaseInfo cityInfo_;
 		public CityBaseInfo CityInfo => cityInfo_;
-		public bool IsCityInfoChanged => (_changed & (0x01 << 3)) != 0;
 
 		private List<long> troops_;
 		public List<long> Troops => troops_;
-		public bool IsTroopsChanged => (_changed & (0x01 << 4)) != 0;
 
 		private string city_;
 		public string City_ => city_;
-		public bool IsCityChanged => (_changed & (0x01 << 5)) != 0;
 
 		private int id_;
 		public int Id_ => id_;
-		public bool IsIdChanged => (_changed & (0x01 << 6)) != 0;
 
 		private long _changed;
 
@@ -142,15 +136,12 @@ namespace kds
 
 		private List<Vector> positions_;
 		public List<Vector> Positions => positions_;
-		public bool IsPositionsChanged => (_changed & (0x01 << 1)) != 0;
 
 		private Dictionary<int, ValueTuple> troops_;
 		public Dictionary<int, ValueTuple> Troops => troops_;
-		public bool IsTroopsChanged => (_changed & (0x01 << 2)) != 0;
 
 		private byte[] buildInfo_;
 		public byte[] BuildInfo => buildInfo_;
-		public bool IsBuildInfoChanged => (_changed & (0x01 << 3)) != 0;
 
 		private long _changed;
 
@@ -227,11 +218,9 @@ namespace kds
 
 		private int x_;
 		public int X => x_;
-		public bool IsXChanged => (_changed & (0x01 << 1)) != 0;
 
 		private int y_;
 		public int Y => y_;
-		public bool IsYChanged => (_changed & (0x01 << 2)) != 0;
 
 		private long _changed;
 
