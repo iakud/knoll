@@ -1,13 +1,4 @@
-package main
-
-/*
-#cgo LDFLAGS: -ldl -lm -Wl,-rpath,${SRCDIR}/bin ${SRCDIR}/bin/example.dylib
-#include <stdlib.h>
-
-extern int32_t apply_sync(const char* data, int32_t length);
-extern char* dump(void);
-*/
-import "C"
+package example
 
 import (
 	"encoding/base64"
@@ -15,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/iakud/knoll/kds/kdsc/example/kds"
@@ -22,7 +14,7 @@ import (
 
 var all = kds.NewAll(0)
 
-func main() {
+func TestExample(t *testing.T) {
 	initAll()
 	syncAdd()
 
@@ -131,7 +123,7 @@ func syncAdd() {
 	if err != nil {
 		panic(err)
 	}
-	C.apply_sync(C.CString(string(fullData)), C.int32_t(len(fullData)))
+	ApplySync(fullData)
 	check()
 	all.ClearDirty()
 }
@@ -141,7 +133,7 @@ func syncUpdate() {
 	if err != nil {
 		panic(err)
 	}
-	C.apply_sync(C.CString(string(dirtyData)), C.int32_t(len(dirtyData)))
+	ApplySync(dirtyData)
 	check()
 	all.ClearDirty()
 }
@@ -1451,7 +1443,7 @@ func dumpBoolItemDataMap(m *kds.BoolItemData_map) string {
 
 func check() {
 	goDump := dump()
-	csharpDump := C.GoString(C.dump())
+	csharpDump := Dump()
 	if goDump != csharpDump {
 		fmt.Printf("=== Go Dump ===\n%s, ", goDump)
 		fmt.Printf("=== C# Dump ===\n%s, ", csharpDump)
