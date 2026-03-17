@@ -13,6 +13,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/iakud/knoll/kds/kdsc/example/kds"
 )
@@ -21,24 +22,130 @@ var all = kds.NewAll(0)
 
 func main() {
 	// FIXME: init datas
+	initAll()
+
+	syncAdd()
+
+	// FIXME: change datas
+	syncUpdate()
+}
+
+func initAll() {
+	types := all.GetTypes()
+	types.SetInt32Val(32)
+	types.SetInt64Val(64)
+	types.SetUint32Val(32)
+	types.SetUint64Val(64)
+	types.SetSint32Val(-32)
+	types.SetSint64Val(-64)
+	types.SetFixed32Val(32)
+	types.SetFixed64Val(64)
+	types.SetSfixed32Val(-32)
+	types.SetSfixed64Val(-64)
+	types.SetFloatVal(3.14)
+	types.SetDoubleVal(3.14159)
+	types.SetBoolVal(true)
+	types.SetStringVal("hello")
+	types.SetBytesVal([]byte("bytes"))
+	types.SetTimestampVal(time.Unix(1234567890, 0))
+	types.SetDurationVal(time.Second * 30)
+	types.SetEnumVal(kds.ItemType_ItemTypeWeapon)
+	types.GetItemData().SetId(1)
+	types.GetItemData().SetName("sword")
+	types.GetItemData().SetCount(10)
+
+	// Lists
+	lists := all.GetLists()
+	lists.GetInt32List().Append(1, 2, 3)
+	lists.GetInt64List().Append(100, 200, 300)
+	lists.GetFloatList().Append(1.1, 2.2, 3.3)
+	lists.GetDoubleList().Append(1.11, 2.22, 3.33)
+	lists.GetBoolList().Append(true, false)
+	lists.GetStringList().Append("a", "b", "c")
+	lists.GetTimestampList().Append(time.Unix(1000, 0), time.Unix(2000, 0))
+	lists.GetDurationList().Append(time.Second, time.Minute)
+	lists.GetEnumList().Append(kds.ItemType_ItemTypeWeapon, kds.ItemType_ItemTypeArmor)
+	itemList := lists.GetItemList()
+	item1 := kds.NewItemData()
+	item1.SetId(1)
+	item1.SetName("potion")
+	item1.SetCount(5)
+	itemList.Append(item1)
+
+	// Maps
+	maps := all.GetMaps()
+	maps.GetInt32Int32().Set(1, 100)
+	maps.GetInt32Int32().Set(2, 200)
+	maps.GetInt32String().Set(1, "one")
+	maps.GetInt32String().Set(2, "two")
+	maps.GetInt32Timestamp().Set(1, time.Unix(1000, 0))
+	maps.GetInt32Duration().Set(1, time.Second)
+	maps.GetInt32Enum().Set(1, kds.ItemType_ItemTypeWeapon)
+	item2 := kds.NewItemData()
+	item2.SetId(2)
+	item2.SetName("sword")
+	item2.SetCount(10)
+	maps.GetInt32ItemData().Set(1, item2)
+
+	maps.GetInt64Int64().Set(1, 1000)
+	maps.GetInt64Int64().Set(2, 2000)
+	maps.GetInt64String().Set(1, "one")
+	maps.GetInt64String().Set(2, "two")
+	maps.GetInt64Timestamp().Set(1, time.Unix(1000, 0))
+	maps.GetInt64Duration().Set(1, time.Second)
+	maps.GetInt64Enum().Set(1, kds.ItemType_ItemTypeWeapon)
+	item3 := kds.NewItemData()
+	item3.SetId(3)
+	item3.SetName("shield")
+	item3.SetCount(3)
+	maps.GetInt64ItemData().Set(1, item3)
+
+	maps.GetStringInt32().Set("a", 1)
+	maps.GetStringInt32().Set("b", 2)
+	maps.GetStringString().Set("a", "value_a")
+	maps.GetStringString().Set("b", "value_b")
+	maps.GetStringTimestamp().Set("a", time.Unix(1000, 0))
+	maps.GetStringDuration().Set("a", time.Second)
+	maps.GetStringEnum().Set("a", kds.ItemType_ItemTypeWeapon)
+	item4 := kds.NewItemData()
+	item4.SetId(4)
+	item4.SetName("armor")
+	item4.SetCount(7)
+	maps.GetStringItemData().Set("a", item4)
+
+	maps.GetBoolInt32().Set(true, 1)
+	maps.GetBoolInt32().Set(false, 0)
+	maps.GetBoolString().Set(true, "true")
+	maps.GetBoolString().Set(false, "false")
+	maps.GetBoolTimestamp().Set(true, time.Unix(1000, 0))
+	maps.GetBoolDuration().Set(true, time.Second)
+	maps.GetBoolEnum().Set(true, kds.ItemType_ItemTypeWeapon)
+	item5 := kds.NewItemData()
+	item5.SetId(5)
+	item5.SetName("helm")
+	item5.SetCount(2)
+	maps.GetBoolItemData().Set(true, item5)
+}
+
+func syncAdd() {
 	fullData, err := all.Marshal(nil)
 	if err != nil {
 		panic(err)
 	}
 	C.apply_sync(C.CString(string(fullData)), C.int32_t(len(fullData)))
-	Check()
-	// FIXME: change datas
-	all.GetTypes().SetInt32Val(10)
+	check()
+}
 
+func syncUpdate() {
 	dirtyData, err := all.Marshal(nil)
 	if err != nil {
 		panic(err)
 	}
 	C.apply_sync(C.CString(string(dirtyData)), C.int32_t(len(dirtyData)))
-	Check()
+	check()
 }
 
-func Dump() string {
+func dump() string {
 	types := all.GetTypes()
 	lists := all.GetLists()
 	maps := all.GetMaps()
@@ -762,8 +869,8 @@ func dumpBoolItemDataMap(m *kds.BoolItemData_map) string {
 	return sb.String()
 }
 
-func Check() {
-	goDump := Dump()
+func check() {
+	goDump := dump()
 	csharpDump := C.GoString(C.dump())
 	if goDump != csharpDump {
 		fmt.Printf("=== Go Dump ===\n%s, ", goDump)
