@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -23,7 +22,15 @@ namespace kds
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "apply_sync", CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+        static void SetupChangeListener(All all)
+        {
+            // FIXME: fields onchanged
+
+
+            all.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Changed\n");
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "apply_sync", CallConvs = new[] { typeof(CallConvCdecl) })]
         public static int ApplySync(IntPtr dataPtr, int length)
         {
             try
@@ -46,12 +53,10 @@ namespace kds
             }
         }
 
-        static void SetupChangeListener(All all)
+        [UnmanagedCallersOnly(EntryPoint = "dump", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static IntPtr Dump()
         {
-            // FIXME: fields onchanged
-
-
-            all.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Changed\n");
+            return Marshal.StringToHGlobalAnsi("");
         }
     }
 }
