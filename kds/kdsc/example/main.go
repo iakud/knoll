@@ -12,6 +12,8 @@ import "C"
 import (
 	"encoding/base64"
 	"fmt"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -134,15 +136,17 @@ func syncAdd() {
 	}
 	C.apply_sync(C.CString(string(fullData)), C.int32_t(len(fullData)))
 	check()
+	all.ClearDirty()
 }
 
 func syncUpdate() {
-	dirtyData, err := all.Marshal(nil)
+	dirtyData, err := all.MarshalDirty(nil)
 	if err != nil {
 		panic(err)
 	}
 	C.apply_sync(C.CString(string(dirtyData)), C.int32_t(len(dirtyData)))
 	check()
+	all.ClearDirty()
 }
 
 func dump() string {
@@ -180,7 +184,7 @@ func dump() string {
 	sb.WriteString(", ")
 	fmt.Fprintf(&sb, "StringVal=%s", types.GetStringVal())
 	sb.WriteString(", ")
-	fmt.Fprintf(&sb, "BytesVal=%s", base64.RawStdEncoding.EncodeToString(types.GetBytesVal()))
+	fmt.Fprintf(&sb, "BytesVal=%s", base64.StdEncoding.EncodeToString(types.GetBytesVal()))
 	sb.WriteString(", ")
 	fmt.Fprintf(&sb, "TimestampVal=%v", types.GetTimestampVal().UnixNano())
 	sb.WriteString(", ")
@@ -441,13 +445,20 @@ func dumpInt32Int32Map(m *kds.Int32Int32_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]int32, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%d:%d", k, v)
 		first = false
 	}
@@ -459,13 +470,20 @@ func dumpInt32StringMap(m *kds.Int32String_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]int32, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%d:%s", k, v)
 		first = false
 	}
@@ -477,13 +495,20 @@ func dumpInt32TimestampMap(m *kds.Int32Timestamp_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]int32, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%d:%d", k, v.UnixNano())
 		first = false
 	}
@@ -495,13 +520,20 @@ func dumpInt32DurationMap(m *kds.Int32Duration_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]int32, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%d:%d", k, v.Nanoseconds())
 		first = false
 	}
@@ -513,13 +545,20 @@ func dumpInt32EnumMap(m *kds.Int32ItemType_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]int32, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%d:%d", k, v)
 		first = false
 	}
@@ -531,13 +570,20 @@ func dumpInt32ItemDataMap(m *kds.Int32ItemData_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]int32, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%d:(%d,%s,%d)", k, v.GetId(), v.GetName(), v.GetCount())
 		first = false
 	}
@@ -549,13 +595,20 @@ func dumpInt64Int64Map(m *kds.Int64Int64_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]int64, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%d:%d", k, v)
 		first = false
 	}
@@ -567,13 +620,20 @@ func dumpInt64StringMap(m *kds.Int64String_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]int64, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%d:%s", k, v)
 		first = false
 	}
@@ -585,13 +645,20 @@ func dumpInt64TimestampMap(m *kds.Int64Timestamp_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]int64, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%d:%d", k, v.UnixNano())
 		first = false
 	}
@@ -603,13 +670,20 @@ func dumpInt64DurationMap(m *kds.Int64Duration_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]int64, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%d:%d", k, v.Nanoseconds())
 		first = false
 	}
@@ -621,13 +695,20 @@ func dumpInt64EnumMap(m *kds.Int64ItemType_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]int64, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%d:%d", k, v)
 		first = false
 	}
@@ -639,13 +720,20 @@ func dumpInt64ItemDataMap(m *kds.Int64ItemData_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]int64, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%d:(%d,%s,%d)", k, v.GetId(), v.GetName(), v.GetCount())
 		first = false
 	}
@@ -657,13 +745,20 @@ func dumpStringInt32Map(m *kds.StringInt32_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]string, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%s:%d", k, v)
 		first = false
 	}
@@ -675,13 +770,20 @@ func dumpStringStringMap(m *kds.StringString_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]string, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%s:%s", k, v)
 		first = false
 	}
@@ -693,13 +795,20 @@ func dumpStringTimestampMap(m *kds.StringTimestamp_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]string, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%s:%d", k, v.UnixNano())
 		first = false
 	}
@@ -711,13 +820,20 @@ func dumpStringDurationMap(m *kds.StringDuration_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]string, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%s:%d", k, v.Nanoseconds())
 		first = false
 	}
@@ -729,13 +845,20 @@ func dumpStringEnumMap(m *kds.StringItemType_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]string, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%s:%d", k, v)
 		first = false
 	}
@@ -747,13 +870,20 @@ func dumpStringItemDataMap(m *kds.StringItemData_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]string, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
+		v, _ := m.Get(k)
 		fmt.Fprintf(&sb, "%s:(%d,%s,%d)", k, v.GetId(), v.GetName(), v.GetCount())
 		first = false
 	}
@@ -765,14 +895,21 @@ func dumpBoolInt32Map(m *kds.BoolInt32_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]bool, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] && !keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
-		fmt.Fprintf(&sb, "%v:%d", k, v)
+		v, _ := m.Get(k)
+		fmt.Fprintf(&sb, "%v:%d", strconv.FormatBool(k), v)
 		first = false
 	}
 	sb.WriteString("]")
@@ -783,14 +920,21 @@ func dumpBoolStringMap(m *kds.BoolString_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]bool, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] && !keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
-		fmt.Fprintf(&sb, "%v:%s", k, v)
+		v, _ := m.Get(k)
+		fmt.Fprintf(&sb, "%v:%s", strconv.FormatBool(k), v)
 		first = false
 	}
 	sb.WriteString("]")
@@ -801,14 +945,21 @@ func dumpBoolTimestampMap(m *kds.BoolTimestamp_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]bool, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] && !keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
-		fmt.Fprintf(&sb, "%v:%d", k, v.UnixNano())
+		v, _ := m.Get(k)
+		fmt.Fprintf(&sb, "%v:%d", strconv.FormatBool(k), v.UnixNano())
 		first = false
 	}
 	sb.WriteString("]")
@@ -819,14 +970,21 @@ func dumpBoolDurationMap(m *kds.BoolDuration_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]bool, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] && !keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
-		fmt.Fprintf(&sb, "%v:%d", k, v.Nanoseconds())
+		v, _ := m.Get(k)
+		fmt.Fprintf(&sb, "%v:%d", strconv.FormatBool(k), v.Nanoseconds())
 		first = false
 	}
 	sb.WriteString("]")
@@ -837,14 +995,21 @@ func dumpBoolEnumMap(m *kds.BoolItemType_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]bool, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] && !keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
-		fmt.Fprintf(&sb, "%v:%d", k, v)
+		v, _ := m.Get(k)
+		fmt.Fprintf(&sb, "%v:%d", strconv.FormatBool(k), v)
 		first = false
 	}
 	sb.WriteString("]")
@@ -855,14 +1020,21 @@ func dumpBoolItemDataMap(m *kds.BoolItemData_map) string {
 	if m.Len() == 0 {
 		return "map[]"
 	}
+	keys := make([]bool, 0, m.Len())
+	for k := range m.All() {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] && !keys[j] })
+
 	var sb strings.Builder
 	sb.WriteString("map[")
 	first := true
-	for k, v := range m.All() {
+	for _, k := range keys {
 		if !first {
 			sb.WriteString(",")
 		}
-		fmt.Fprintf(&sb, "%v:(%d,%s,%d)", k, v.GetId(), v.GetName(), v.GetCount())
+		v, _ := m.Get(k)
+		sb.WriteString(fmt.Sprintf("%v:(%d,%s,%d)", strconv.FormatBool(k), v.GetId(), v.GetName(), v.GetCount()))
 		first = false
 	}
 	sb.WriteString("]")

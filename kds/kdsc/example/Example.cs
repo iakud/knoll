@@ -202,32 +202,32 @@ namespace kds
         static string DumpEnumList(List<ItemType> l) => l.Count == 0 ? "[]" : $"[{string.Join(",", l.Select(x => (int)x))}]";
         static string DumpItemDataList(List<ItemData> l) => l.Count == 0 ? "[]" : $"[{string.Join(",", l.Select(x => $"({x.Id},{x.Name},{x.Count})"))}]";
 
-        static string DumpInt32Int32Map(Dictionary<int, int> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value}"))}]";
-        static string DumpInt32StringMap(Dictionary<int, string> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value}"))}]";
-        static string DumpInt32TimestampMap(Dictionary<int, Timestamp> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value.Seconds * 1000000000 + kv.Value.Nanos}"))}]";
-        static string DumpInt32DurationMap(Dictionary<int, Duration> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value.Seconds * Duration.NanosecondsPerSecond + kv.Value.Nanos}"))}]";
-        static string DumpInt32EnumMap(Dictionary<int, ItemType> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{(int)kv.Value}"))}]";
-        static string DumpInt32ItemDataMap(Dictionary<int, ItemData> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:({kv.Value.Id},{kv.Value.Name},{kv.Value.Count})"))}]";
+        static string DumpInt32Int32Map(Dictionary<int, int> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{kv.Value}"))}]";
+        static string DumpInt32StringMap(Dictionary<int, string> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{kv.Value}"))}]";
+        static string DumpInt32TimestampMap(Dictionary<int, Timestamp> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{kv.Value.Seconds * 1000000000 + kv.Value.Nanos}"))}]";
+        static string DumpInt32DurationMap(Dictionary<int, Duration> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{kv.Value.Seconds * Duration.NanosecondsPerSecond + kv.Value.Nanos}"))}]";
+        static string DumpInt32EnumMap(Dictionary<int, ItemType> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{(int)kv.Value}"))}]";
+        static string DumpInt32ItemDataMap(Dictionary<int, ItemData> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:({kv.Value.Id},{kv.Value.Name},{kv.Value.Count})"))}]";
 
-        static string DumpInt64Int64Map(Dictionary<long, long> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value}"))}]";
-        static string DumpInt64StringMap(Dictionary<long, string> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value}"))}]";
-        static string DumpInt64TimestampMap(Dictionary<long, Timestamp> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value.Seconds * 1000000000 + kv.Value.Nanos}"))}]";
-        static string DumpInt64DurationMap(Dictionary<long, Duration> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value.Seconds * Duration.NanosecondsPerSecond + kv.Value.Nanos}"))}]";
-        static string DumpInt64EnumMap(Dictionary<long, ItemType> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{(int)kv.Value}"))}]";
-        static string DumpInt64ItemDataMap(Dictionary<long, ItemData> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:({kv.Value.Id},{kv.Value.Name},{kv.Value.Count})"))}]";
+        static string DumpInt64Int64Map(Dictionary<long, long> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{kv.Value}"))}]";
+        static string DumpInt64StringMap(Dictionary<long, string> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{kv.Value}"))}]";
+        static string DumpInt64TimestampMap(Dictionary<long, Timestamp> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{kv.Value.Seconds * 1000000000 + kv.Value.Nanos}"))}]";
+        static string DumpInt64DurationMap(Dictionary<long, Duration> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{kv.Value.Seconds * Duration.NanosecondsPerSecond + kv.Value.Nanos}"))}]";
+        static string DumpInt64EnumMap(Dictionary<long, ItemType> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{(int)kv.Value}"))}]";
+        static string DumpInt64ItemDataMap(Dictionary<long, ItemData> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:({kv.Value.Id},{kv.Value.Name},{kv.Value.Count})"))}]";
 
-        static string DumpStringInt32Map(Dictionary<string, int> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value}"))}]";
-        static string DumpStringStringMap(Dictionary<string, string> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value}"))}]";
-        static string DumpStringTimestampMap(Dictionary<string, Timestamp> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value.Seconds * 1000000000 + kv.Value.Nanos}"))}]";
-        static string DumpStringDurationMap(Dictionary<string, Duration> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value.Seconds * Duration.NanosecondsPerSecond + kv.Value.Nanos}"))}]";
-        static string DumpStringEnumMap(Dictionary<string, ItemType> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{(int)kv.Value}"))}]";
-        static string DumpStringItemDataMap(Dictionary<string, ItemData> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:({kv.Value.Id},{kv.Value.Name},{kv.Value.Count})"))}]";
+        static string DumpStringInt32Map(Dictionary<string, int> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{kv.Value}"))}]";
+        static string DumpStringStringMap(Dictionary<string, string> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{kv.Value}"))}]";
+        static string DumpStringTimestampMap(Dictionary<string, Timestamp> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{kv.Value.Seconds * 1000000000 + kv.Value.Nanos}"))}]";
+        static string DumpStringDurationMap(Dictionary<string, Duration> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{kv.Value.Seconds * Duration.NanosecondsPerSecond + kv.Value.Nanos}"))}]";
+        static string DumpStringEnumMap(Dictionary<string, ItemType> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:{(int)kv.Value}"))}]";
+        static string DumpStringItemDataMap(Dictionary<string, ItemData> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}:({kv.Value.Id},{kv.Value.Name},{kv.Value.Count})"))}]";
 
-        static string DumpBoolInt32Map(Dictionary<bool, int> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value}"))}]";
-        static string DumpBoolStringMap(Dictionary<bool, string> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value}"))}]";
-        static string DumpBoolTimestampMap(Dictionary<bool, Timestamp> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value.Seconds * 1000000000 + kv.Value.Nanos}"))}]";
-        static string DumpBoolDurationMap(Dictionary<bool, Duration> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{kv.Value.Seconds * Duration.NanosecondsPerSecond + kv.Value.Nanos}"))}]";
-        static string DumpBoolEnumMap(Dictionary<bool, ItemType> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:{(int)kv.Value}"))}]";
-        static string DumpBoolItemDataMap(Dictionary<bool, ItemData> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.Select(kv => $"{kv.Key}:({kv.Value.Id},{kv.Value.Name},{kv.Value.Count})"))}]";
+        static string DumpBoolInt32Map(Dictionary<bool, int> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderByDescending(kv => kv.Key).Select(kv => $"{kv.Key.ToString().ToLower()}:{kv.Value}"))}]";
+        static string DumpBoolStringMap(Dictionary<bool, string> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderByDescending(kv => kv.Key).Select(kv => $"{kv.Key.ToString().ToLower()}:{kv.Value}"))}]";
+        static string DumpBoolTimestampMap(Dictionary<bool, Timestamp> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderByDescending(kv => kv.Key).Select(kv => $"{kv.Key.ToString().ToLower()}:{kv.Value.Seconds * 1000000000 + kv.Value.Nanos}"))}]";
+        static string DumpBoolDurationMap(Dictionary<bool, Duration> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderByDescending(kv => kv.Key).Select(kv => $"{kv.Key.ToString().ToLower()}:{kv.Value.Seconds * Duration.NanosecondsPerSecond + kv.Value.Nanos}"))}]";
+        static string DumpBoolEnumMap(Dictionary<bool, ItemType> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderByDescending(kv => kv.Key).Select(kv => $"{kv.Key.ToString().ToLower()}:{(int)kv.Value}"))}]";
+        static string DumpBoolItemDataMap(Dictionary<bool, ItemData> m) => m.Count == 0 ? "map[]" : $"map[{string.Join(",", m.OrderByDescending(kv => kv.Key).Select(kv => $"{kv.Key.ToString().ToLower()}:({kv.Value.Id},{kv.Value.Name},{kv.Value.Count})"))}]";
     }
 }
