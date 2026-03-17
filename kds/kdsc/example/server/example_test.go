@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iakud/knoll/kds/kdsc/example/server/kds"
+	"github.com/iakud/knoll/kds/kdsc/example/kds"
 )
 
 func TestMarshalMessage(t *testing.T) {

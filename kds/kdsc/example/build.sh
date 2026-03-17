@@ -30,12 +30,9 @@ function printUsage() {
 
 source ../../../var.sh
 
-rm -rf server/kds
-mkdir -p server/kds
-kdsc --out=server/kds --tmpl=../template/kds.go.tmpl kds/*.kds
+rm -rf kds/*.kds.cs kds/*.kds.go
 
-rm -rf client/kds
-mkdir -p client/kds
-kdsc --out=client/kds --tmpl=../template/kds.cs.tmpl kds/*.kds
+kdsc --out=kds --tmpl=../template/kds.go.tmpl kds/*.kds
+kdsc --out=kds --tmpl=../template/kds.cs.tmpl kds/*.kds
 
-dotnet publish -c Release -o bin --use-current-runtime client
+dotnet publish -c Release -o bin --use-current-runtime .
