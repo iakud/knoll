@@ -114,8 +114,8 @@ namespace kds
 		private bool isNew_;
 		public bool IsNew => isNew_;
 
-		private DateTime createTime_;
-		public DateTime CreateTime => createTime_;
+		private Timestamp createTime_;
+		public Timestamp CreateTime => createTime_;
 
 		private long _changed;
 
@@ -152,7 +152,7 @@ namespace kds
 					_changed |= 0x01 << 3;
 					break;
 				case 5:
-					createTime_ = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
+					createTime_ = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 5;
 					break;
 				default:
@@ -317,8 +317,8 @@ namespace kds
 		private HeroType type_;
 		public HeroType Type => type_;
 
-		private TimeSpan needTime_;
-		public TimeSpan NeedTime => needTime_;
+		private Duration needTime_;
+		public Duration NeedTime => needTime_;
 
 		private long _changed;
 
@@ -360,7 +360,7 @@ namespace kds
 					_changed |= 0x01 << 3;
 					break;
 				case 4:
-					needTime_ = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
+					needTime_ = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 4;
 					break;
 				default:

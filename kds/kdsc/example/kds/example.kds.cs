@@ -156,14 +156,14 @@ namespace kds
 		private byte[] bytesVal_;
 		public byte[] BytesVal => bytesVal_;
 
-		private DateTime timestampVal_;
-		public DateTime TimestampVal => timestampVal_;
+		private Timestamp timestampVal_;
+		public Timestamp TimestampVal => timestampVal_;
 
-		private TimeSpan durationVal_;
-		public TimeSpan DurationVal => durationVal_;
+		private Duration durationVal_;
+		public Duration DurationVal => durationVal_;
 
-		private ValueTuple emptyVal_;
-		public ValueTuple EmptyVal => emptyVal_;
+		private Empty emptyVal_;
+		public Empty EmptyVal => emptyVal_;
 
 		private ItemType enumVal_;
 		public ItemType EnumVal => enumVal_;
@@ -275,15 +275,15 @@ namespace kds
 					_changed |= 0x01 << 15;
 					break;
 				case 16:
-					timestampVal_ = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
+					timestampVal_ = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 16;
 					break;
 				case 17:
-					durationVal_ = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
+					durationVal_ = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 17;
 					break;
 				case 18:
-					Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
+					emptyVal_ = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 18;
 					break;
 				case 19:
@@ -329,9 +329,9 @@ namespace kds
 			doubleList_ = new List<double>();
 			boolList_ = new List<bool>();
 			stringList_ = new List<string>();
-			timestampList_ = new List<DateTime>();
-			durationList_ = new List<TimeSpan>();
-			emptyList_ = new List<ValueTuple>();
+			timestampList_ = new List<Timestamp>();
+			durationList_ = new List<Duration>();
+			emptyList_ = new List<Empty>();
 			enumList_ = new List<ItemType>();
 			itemList_ = new List<ItemData>();
 		}
@@ -354,14 +354,14 @@ namespace kds
 		private List<string> stringList_;
 		public List<string> StringList => stringList_;
 
-		private List<DateTime> timestampList_;
-		public List<DateTime> TimestampList => timestampList_;
+		private List<Timestamp> timestampList_;
+		public List<Timestamp> TimestampList => timestampList_;
 
-		private List<TimeSpan> durationList_;
-		public List<TimeSpan> DurationList => durationList_;
+		private List<Duration> durationList_;
+		public List<Duration> DurationList => durationList_;
 
-		private List<ValueTuple> emptyList_;
-		public List<ValueTuple> EmptyList => emptyList_;
+		private List<Empty> emptyList_;
+		public List<Empty> EmptyList => emptyList_;
 
 		private List<ItemType> enumList_;
 		public List<ItemType> EnumList => enumList_;
@@ -518,30 +518,30 @@ namespace kds
 		{
 			int32Int32_ = new Dictionary<int, int>();
 			int32String_ = new Dictionary<int, string>();
-			int32Timestamp_ = new Dictionary<int, DateTime>();
-			int32Duration_ = new Dictionary<int, TimeSpan>();
-			int32Empty_ = new Dictionary<int, ValueTuple>();
+			int32Timestamp_ = new Dictionary<int, Timestamp>();
+			int32Duration_ = new Dictionary<int, Duration>();
+			int32Empty_ = new Dictionary<int, Empty>();
 			int32Enum_ = new Dictionary<int, ItemType>();
 			int32ItemData_ = new Dictionary<int, ItemData>();
 			int64Int64_ = new Dictionary<long, long>();
 			int64String_ = new Dictionary<long, string>();
-			int64Timestamp_ = new Dictionary<long, DateTime>();
-			int64Duration_ = new Dictionary<long, TimeSpan>();
-			int64Empty_ = new Dictionary<long, ValueTuple>();
+			int64Timestamp_ = new Dictionary<long, Timestamp>();
+			int64Duration_ = new Dictionary<long, Duration>();
+			int64Empty_ = new Dictionary<long, Empty>();
 			int64Enum_ = new Dictionary<long, ItemType>();
 			int64ItemData_ = new Dictionary<long, ItemData>();
 			stringInt32_ = new Dictionary<string, int>();
 			stringString_ = new Dictionary<string, string>();
-			stringTimestamp_ = new Dictionary<string, DateTime>();
-			stringDuration_ = new Dictionary<string, TimeSpan>();
-			stringEmpty_ = new Dictionary<string, ValueTuple>();
+			stringTimestamp_ = new Dictionary<string, Timestamp>();
+			stringDuration_ = new Dictionary<string, Duration>();
+			stringEmpty_ = new Dictionary<string, Empty>();
 			stringEnum_ = new Dictionary<string, ItemType>();
 			stringItemData_ = new Dictionary<string, ItemData>();
 			boolInt32_ = new Dictionary<bool, int>();
 			boolString_ = new Dictionary<bool, string>();
-			boolTimestamp_ = new Dictionary<bool, DateTime>();
-			boolDuration_ = new Dictionary<bool, TimeSpan>();
-			boolEmpty_ = new Dictionary<bool, ValueTuple>();
+			boolTimestamp_ = new Dictionary<bool, Timestamp>();
+			boolDuration_ = new Dictionary<bool, Duration>();
+			boolEmpty_ = new Dictionary<bool, Empty>();
 			boolEnum_ = new Dictionary<bool, ItemType>();
 			boolItemData_ = new Dictionary<bool, ItemData>();
 		}
@@ -552,14 +552,14 @@ namespace kds
 		private Dictionary<int, string> int32String_;
 		public Dictionary<int, string> Int32String => int32String_;
 
-		private Dictionary<int, DateTime> int32Timestamp_;
-		public Dictionary<int, DateTime> Int32Timestamp => int32Timestamp_;
+		private Dictionary<int, Timestamp> int32Timestamp_;
+		public Dictionary<int, Timestamp> Int32Timestamp => int32Timestamp_;
 
-		private Dictionary<int, TimeSpan> int32Duration_;
-		public Dictionary<int, TimeSpan> Int32Duration => int32Duration_;
+		private Dictionary<int, Duration> int32Duration_;
+		public Dictionary<int, Duration> Int32Duration => int32Duration_;
 
-		private Dictionary<int, ValueTuple> int32Empty_;
-		public Dictionary<int, ValueTuple> Int32Empty => int32Empty_;
+		private Dictionary<int, Empty> int32Empty_;
+		public Dictionary<int, Empty> Int32Empty => int32Empty_;
 
 		private Dictionary<int, ItemType> int32Enum_;
 		public Dictionary<int, ItemType> Int32Enum => int32Enum_;
@@ -573,14 +573,14 @@ namespace kds
 		private Dictionary<long, string> int64String_;
 		public Dictionary<long, string> Int64String => int64String_;
 
-		private Dictionary<long, DateTime> int64Timestamp_;
-		public Dictionary<long, DateTime> Int64Timestamp => int64Timestamp_;
+		private Dictionary<long, Timestamp> int64Timestamp_;
+		public Dictionary<long, Timestamp> Int64Timestamp => int64Timestamp_;
 
-		private Dictionary<long, TimeSpan> int64Duration_;
-		public Dictionary<long, TimeSpan> Int64Duration => int64Duration_;
+		private Dictionary<long, Duration> int64Duration_;
+		public Dictionary<long, Duration> Int64Duration => int64Duration_;
 
-		private Dictionary<long, ValueTuple> int64Empty_;
-		public Dictionary<long, ValueTuple> Int64Empty => int64Empty_;
+		private Dictionary<long, Empty> int64Empty_;
+		public Dictionary<long, Empty> Int64Empty => int64Empty_;
 
 		private Dictionary<long, ItemType> int64Enum_;
 		public Dictionary<long, ItemType> Int64Enum => int64Enum_;
@@ -594,14 +594,14 @@ namespace kds
 		private Dictionary<string, string> stringString_;
 		public Dictionary<string, string> StringString => stringString_;
 
-		private Dictionary<string, DateTime> stringTimestamp_;
-		public Dictionary<string, DateTime> StringTimestamp => stringTimestamp_;
+		private Dictionary<string, Timestamp> stringTimestamp_;
+		public Dictionary<string, Timestamp> StringTimestamp => stringTimestamp_;
 
-		private Dictionary<string, TimeSpan> stringDuration_;
-		public Dictionary<string, TimeSpan> StringDuration => stringDuration_;
+		private Dictionary<string, Duration> stringDuration_;
+		public Dictionary<string, Duration> StringDuration => stringDuration_;
 
-		private Dictionary<string, ValueTuple> stringEmpty_;
-		public Dictionary<string, ValueTuple> StringEmpty => stringEmpty_;
+		private Dictionary<string, Empty> stringEmpty_;
+		public Dictionary<string, Empty> StringEmpty => stringEmpty_;
 
 		private Dictionary<string, ItemType> stringEnum_;
 		public Dictionary<string, ItemType> StringEnum => stringEnum_;
@@ -615,14 +615,14 @@ namespace kds
 		private Dictionary<bool, string> boolString_;
 		public Dictionary<bool, string> BoolString => boolString_;
 
-		private Dictionary<bool, DateTime> boolTimestamp_;
-		public Dictionary<bool, DateTime> BoolTimestamp => boolTimestamp_;
+		private Dictionary<bool, Timestamp> boolTimestamp_;
+		public Dictionary<bool, Timestamp> BoolTimestamp => boolTimestamp_;
 
-		private Dictionary<bool, TimeSpan> boolDuration_;
-		public Dictionary<bool, TimeSpan> BoolDuration => boolDuration_;
+		private Dictionary<bool, Duration> boolDuration_;
+		public Dictionary<bool, Duration> BoolDuration => boolDuration_;
 
-		private Dictionary<bool, ValueTuple> boolEmpty_;
-		public Dictionary<bool, ValueTuple> BoolEmpty => boolEmpty_;
+		private Dictionary<bool, Empty> boolEmpty_;
+		public Dictionary<bool, Empty> BoolEmpty => boolEmpty_;
 
 		private Dictionary<bool, ItemType> boolEnum_;
 		public Dictionary<bool, ItemType> BoolEnum => boolEnum_;

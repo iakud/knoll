@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 
 namespace kds
 {
@@ -130,15 +131,15 @@ namespace kds
 		public CityBaseInfo()
 		{
 			positions_ = new List<Vector>();
-			troops_ = new Dictionary<int, ValueTuple>();
+			troops_ = new Dictionary<int, Empty>();
 			buildInfo_ = [];
 		}
 
 		private List<Vector> positions_;
 		public List<Vector> Positions => positions_;
 
-		private Dictionary<int, ValueTuple> troops_;
-		public Dictionary<int, ValueTuple> Troops => troops_;
+		private Dictionary<int, Empty> troops_;
+		public Dictionary<int, Empty> Troops => troops_;
 
 		private byte[] buildInfo_;
 		public byte[] BuildInfo => buildInfo_;

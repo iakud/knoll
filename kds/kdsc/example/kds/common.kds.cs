@@ -54,29 +54,29 @@ namespace kds
 	}
 	public static class Duration_list
 	{
-		public static void ApplySync(List<TimeSpan> data, byte[] b)
+		public static void ApplySync(List<Duration> data, byte[] b)
 		{
 			data.Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan());
+				data.Add(Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
 			}
 		}
 
-		public static void RaiseChanged(List<TimeSpan> data)
+		public static void RaiseChanged(List<Duration> data)
 		{
 
 		}
 
-		public static void ClearChanged(List<TimeSpan> data)
+		public static void ClearChanged(List<Duration> data)
 		{
 
 		}
 	}
 	public static class BoolDuration_map
 	{
-		public static void ApplySync(Dictionary<bool, TimeSpan> data, byte[] b)
+		public static void ApplySync(Dictionary<bool, Duration> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -115,7 +115,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				bool k = default;
-				TimeSpan v = default;
+				Duration v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -125,7 +125,7 @@ namespace kds
 						k = stream.ReadBool();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
+						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -136,19 +136,19 @@ namespace kds
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<bool, TimeSpan> data)
+		public static void RaiseChanged(Dictionary<bool, Duration> data)
 		{
 			// FIXME:
 		}
 
-		public static void ClearChanged(Dictionary<bool, TimeSpan> data)
+		public static void ClearChanged(Dictionary<bool, Duration> data)
 		{
 			// FIXME:
 		}
 	}
 	public static class Int32Duration_map
 	{
-		public static void ApplySync(Dictionary<int, TimeSpan> data, byte[] b)
+		public static void ApplySync(Dictionary<int, Duration> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -187,7 +187,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				int k = default;
-				TimeSpan v = default;
+				Duration v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -197,7 +197,7 @@ namespace kds
 						k = stream.ReadInt32();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
+						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -208,19 +208,19 @@ namespace kds
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<int, TimeSpan> data)
+		public static void RaiseChanged(Dictionary<int, Duration> data)
 		{
 			// FIXME:
 		}
 
-		public static void ClearChanged(Dictionary<int, TimeSpan> data)
+		public static void ClearChanged(Dictionary<int, Duration> data)
 		{
 			// FIXME:
 		}
 	}
 	public static class Int64Duration_map
 	{
-		public static void ApplySync(Dictionary<long, TimeSpan> data, byte[] b)
+		public static void ApplySync(Dictionary<long, Duration> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -259,7 +259,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				long k = default;
-				TimeSpan v = default;
+				Duration v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -269,7 +269,7 @@ namespace kds
 						k = stream.ReadInt64();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
+						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -280,19 +280,19 @@ namespace kds
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<long, TimeSpan> data)
+		public static void RaiseChanged(Dictionary<long, Duration> data)
 		{
 			// FIXME:
 		}
 
-		public static void ClearChanged(Dictionary<long, TimeSpan> data)
+		public static void ClearChanged(Dictionary<long, Duration> data)
 		{
 			// FIXME:
 		}
 	}
 	public static class StringDuration_map
 	{
-		public static void ApplySync(Dictionary<string, TimeSpan> data, byte[] b)
+		public static void ApplySync(Dictionary<string, Duration> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -331,7 +331,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				string k = string.Empty;
-				TimeSpan v = default;
+				Duration v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -341,7 +341,7 @@ namespace kds
 						k = stream.ReadString();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
+						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -352,42 +352,41 @@ namespace kds
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<string, TimeSpan> data)
+		public static void RaiseChanged(Dictionary<string, Duration> data)
 		{
 			// FIXME:
 		}
 
-		public static void ClearChanged(Dictionary<string, TimeSpan> data)
+		public static void ClearChanged(Dictionary<string, Duration> data)
 		{
 			// FIXME:
 		}
 	}
 	public static class Empty_list
 	{
-		public static void ApplySync(List<ValueTuple> data, byte[] b)
+		public static void ApplySync(List<Empty> data, byte[] b)
 		{
 			data.Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-				data.Add(default);
+				data.Add(Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
 			}
 		}
 
-		public static void RaiseChanged(List<ValueTuple> data)
+		public static void RaiseChanged(List<Empty> data)
 		{
 
 		}
 
-		public static void ClearChanged(List<ValueTuple> data)
+		public static void ClearChanged(List<Empty> data)
 		{
 
 		}
 	}
 	public static class BoolEmpty_map
 	{
-		public static void ApplySync(Dictionary<bool, ValueTuple> data, byte[] b)
+		public static void ApplySync(Dictionary<bool, Empty> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -426,7 +425,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				bool k = default;
-				ValueTuple v = default;
+				Empty v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -436,7 +435,7 @@ namespace kds
 						k = stream.ReadBool();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
+						v = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -447,19 +446,19 @@ namespace kds
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<bool, ValueTuple> data)
+		public static void RaiseChanged(Dictionary<bool, Empty> data)
 		{
 			// FIXME:
 		}
 
-		public static void ClearChanged(Dictionary<bool, ValueTuple> data)
+		public static void ClearChanged(Dictionary<bool, Empty> data)
 		{
 			// FIXME:
 		}
 	}
 	public static class Int32Empty_map
 	{
-		public static void ApplySync(Dictionary<int, ValueTuple> data, byte[] b)
+		public static void ApplySync(Dictionary<int, Empty> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -498,7 +497,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				int k = default;
-				ValueTuple v = default;
+				Empty v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -508,7 +507,7 @@ namespace kds
 						k = stream.ReadInt32();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
+						v = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -519,19 +518,19 @@ namespace kds
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<int, ValueTuple> data)
+		public static void RaiseChanged(Dictionary<int, Empty> data)
 		{
 			// FIXME:
 		}
 
-		public static void ClearChanged(Dictionary<int, ValueTuple> data)
+		public static void ClearChanged(Dictionary<int, Empty> data)
 		{
 			// FIXME:
 		}
 	}
 	public static class Int64Empty_map
 	{
-		public static void ApplySync(Dictionary<long, ValueTuple> data, byte[] b)
+		public static void ApplySync(Dictionary<long, Empty> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -570,7 +569,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				long k = default;
-				ValueTuple v = default;
+				Empty v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -580,7 +579,7 @@ namespace kds
 						k = stream.ReadInt64();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
+						v = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -591,19 +590,19 @@ namespace kds
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<long, ValueTuple> data)
+		public static void RaiseChanged(Dictionary<long, Empty> data)
 		{
 			// FIXME:
 		}
 
-		public static void ClearChanged(Dictionary<long, ValueTuple> data)
+		public static void ClearChanged(Dictionary<long, Empty> data)
 		{
 			// FIXME:
 		}
 	}
 	public static class StringEmpty_map
 	{
-		public static void ApplySync(Dictionary<string, ValueTuple> data, byte[] b)
+		public static void ApplySync(Dictionary<string, Empty> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -642,7 +641,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				string k = string.Empty;
-				ValueTuple v = default;
+				Empty v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -652,7 +651,7 @@ namespace kds
 						k = stream.ReadString();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
+						v = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -663,12 +662,12 @@ namespace kds
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<string, ValueTuple> data)
+		public static void RaiseChanged(Dictionary<string, Empty> data)
 		{
 			// FIXME:
 		}
 
-		public static void ClearChanged(Dictionary<string, ValueTuple> data)
+		public static void ClearChanged(Dictionary<string, Empty> data)
 		{
 			// FIXME:
 		}
@@ -1339,29 +1338,29 @@ namespace kds
 	}
 	public static class Timestamp_list
 	{
-		public static void ApplySync(List<DateTime> data, byte[] b)
+		public static void ApplySync(List<Timestamp> data, byte[] b)
 		{
 			data.Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime());
+				data.Add(Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
 			}
 		}
 
-		public static void RaiseChanged(List<DateTime> data)
+		public static void RaiseChanged(List<Timestamp> data)
 		{
 
 		}
 
-		public static void ClearChanged(List<DateTime> data)
+		public static void ClearChanged(List<Timestamp> data)
 		{
 
 		}
 	}
 	public static class BoolTimestamp_map
 	{
-		public static void ApplySync(Dictionary<bool, DateTime> data, byte[] b)
+		public static void ApplySync(Dictionary<bool, Timestamp> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -1400,7 +1399,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				bool k = default;
-				DateTime v = default;
+				Timestamp v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -1410,7 +1409,7 @@ namespace kds
 						k = stream.ReadBool();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
+						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -1421,19 +1420,19 @@ namespace kds
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<bool, DateTime> data)
+		public static void RaiseChanged(Dictionary<bool, Timestamp> data)
 		{
 			// FIXME:
 		}
 
-		public static void ClearChanged(Dictionary<bool, DateTime> data)
+		public static void ClearChanged(Dictionary<bool, Timestamp> data)
 		{
 			// FIXME:
 		}
 	}
 	public static class Int32Timestamp_map
 	{
-		public static void ApplySync(Dictionary<int, DateTime> data, byte[] b)
+		public static void ApplySync(Dictionary<int, Timestamp> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -1472,7 +1471,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				int k = default;
-				DateTime v = default;
+				Timestamp v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -1482,7 +1481,7 @@ namespace kds
 						k = stream.ReadInt32();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
+						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -1493,19 +1492,19 @@ namespace kds
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<int, DateTime> data)
+		public static void RaiseChanged(Dictionary<int, Timestamp> data)
 		{
 			// FIXME:
 		}
 
-		public static void ClearChanged(Dictionary<int, DateTime> data)
+		public static void ClearChanged(Dictionary<int, Timestamp> data)
 		{
 			// FIXME:
 		}
 	}
 	public static class Int64Timestamp_map
 	{
-		public static void ApplySync(Dictionary<long, DateTime> data, byte[] b)
+		public static void ApplySync(Dictionary<long, Timestamp> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -1544,7 +1543,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				long k = default;
-				DateTime v = default;
+				Timestamp v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -1554,7 +1553,7 @@ namespace kds
 						k = stream.ReadInt64();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
+						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -1565,19 +1564,19 @@ namespace kds
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<long, DateTime> data)
+		public static void RaiseChanged(Dictionary<long, Timestamp> data)
 		{
 			// FIXME:
 		}
 
-		public static void ClearChanged(Dictionary<long, DateTime> data)
+		public static void ClearChanged(Dictionary<long, Timestamp> data)
 		{
 			// FIXME:
 		}
 	}
 	public static class StringTimestamp_map
 	{
-		public static void ApplySync(Dictionary<string, DateTime> data, byte[] b)
+		public static void ApplySync(Dictionary<string, Timestamp> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -1616,7 +1615,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				string k = string.Empty;
-				DateTime v = default;
+				Timestamp v = default;
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -1626,7 +1625,7 @@ namespace kds
 						k = stream.ReadString();
 						break;
 					case 2: // MapEntryValueFieldNumber
-						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
+						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 						break;
 					default:
 						stream.SkipLastField();
@@ -1637,12 +1636,12 @@ namespace kds
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<string, DateTime> data)
+		public static void RaiseChanged(Dictionary<string, Timestamp> data)
 		{
 			// FIXME:
 		}
 
-		public static void ClearChanged(Dictionary<string, DateTime> data)
+		public static void ClearChanged(Dictionary<string, Timestamp> data)
 		{
 			// FIXME:
 		}

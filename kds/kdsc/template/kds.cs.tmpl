@@ -15,9 +15,9 @@
 {{- else if eq . "double"}}double
 {{- else if eq . "string"}}string
 {{- else if eq . "bytes"}}byte[]
-{{- else if eq . "timestamp"}}DateTime
-{{- else if eq . "duration"}}TimeSpan
-{{- else if eq . "empty"}}ValueTuple
+{{- else if eq . "timestamp"}}Timestamp
+{{- else if eq . "duration"}}Duration
+{{- else if eq . "empty"}}Empty
 {{- else}}{{.}}
 {{- end}}
 {{- end}}
@@ -93,12 +93,11 @@
 {{- else if eq .Type "bytes"}}
 				data.Add(stream.ReadBytes());
 {{- else if eq .Type "timestamp"}}
-				data.Add(Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime());
+				data.Add(Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
 {{- else if eq .Type "duration"}}
-				data.Add(Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan());
+				data.Add(Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
 {{- else if eq .Type "empty"}}
-				Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-				data.Add(default);
+				data.Add(Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
 {{- end}}
 			}
 		}
@@ -259,11 +258,11 @@
 {{- else if eq .Type "bytes"}}
 						v = stream.ReadBytes().ToByteArray();
 {{- else if eq .Type "timestamp"}}
-						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
+						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 {{- else if eq .Type "duration"}}
-						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
+						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 {{- else if eq .Type "empty"}}
-						Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
+						v = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 {{- else}}
 						stream.SkipLastField();
 {{- end}}
@@ -400,11 +399,11 @@
 {{- else if eq .Type "bytes"}}
 					{{template "FieldName" .}} = stream.ReadBytes().ToByteArray();
 {{- else if eq .Type "timestamp"}}
-					{{template "FieldName" .}} = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToDateTime();
+					{{template "FieldName" .}} = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 {{- else if eq .Type "duration"}}
-					{{template "FieldName" .}} = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()).ToTimeSpan();
+					{{template "FieldName" .}} = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 {{- else if eq .Type "empty"}}
-					Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
+					{{template "FieldName" .}} = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
 {{- else}}
 					stream.SkipLastField();
 {{- end}}
@@ -535,7 +534,8 @@
 {{- end}}
 {{- if or .Repeated .Map}}
 {{- $ImportGeneric = true}}
-{{- else if eq .Type "timestamp" "duration" "empty"}}
+{{- end}}
+{{- if eq .Type "timestamp" "duration" "empty"}}
 {{- $ImportWellKnownTypes = true}}
 {{- end}}
 {{- end}}
@@ -548,7 +548,8 @@
 {{- end}}
 {{- if or .Repeated .Map}}
 {{- $ImportGeneric = true}}
-{{- else if eq .Type "timestamp" "duration" "empty"}}
+{{- end}}
+{{- if eq .Type "timestamp" "duration" "empty"}}
 {{- $ImportWellKnownTypes = true}}
 {{- end}}
 {{- end}}
