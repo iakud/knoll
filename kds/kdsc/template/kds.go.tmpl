@@ -355,7 +355,7 @@ func (x *{{.Name}}) String(indent string) string {
 	b = append(b, "[\n"...)
 	for _, v := range x.data {
 {{- if eq .TypeKind "component"}}
-		b = append(b, (indent + "  " + v.String(indent + "  ") + "\n")...)
+		b = append(b, (indent + "  " + v.String(indent+"  ") + "\n")...)
 {{- else if eq .TypeKind "enum"}}
 		// FIXME: enum value string
 		b = append(b, (indent + "  " + wire.FormatInt32(int32(v)) + "\n")...)
@@ -695,7 +695,7 @@ func (x *{{.Name}}) String(indent string) string {
 {{- end}}
 	for _, k := range keys {
 {{- if eq .TypeKind "component"}}
-		b = append(b, (indent + "  " + wire.Format{{ucFirst .KeyType}}(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
+		b = append(b, (indent + "  " + wire.Format{{ucFirst .KeyType}}(k) + " = " + x.data[k].String(indent+"  ") + "\n")...)
 {{- else if eq .TypeKind "enum"}}
 		// FIXME: enum value string
 		b = append(b, (indent + "  " + wire.Format{{ucFirst .KeyType}}(k) + " = " + wire.FormatInt32(int32(x.data[k])) + "\n")...)
@@ -903,11 +903,11 @@ func (x *{{$MessageName}}) String(indent string) string {
 	b = append(b, "{\n"...)
 {{- range .Fields}}
 {{- if .Repeated}}
-	b = append(b, (indent + "  {{.Name}} = " + x.xxx_hidden_{{.Name}}.String(indent + "  ") + "\n")...)
+	b = append(b, (indent + "  {{.Name}} = " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "\n")...)
 {{- else if .Map}}
-	b = append(b, (indent + "  {{.Name}} = " + x.xxx_hidden_{{.Name}}.String(indent + "  ") + "\n")...)
+	b = append(b, (indent + "  {{.Name}} = " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "\n")...)
 {{- else if eq .TypeKind "component"}}
-	b = append(b, (indent + "  {{.Name}} = " + x.xxx_hidden_{{.Name}}.String(indent + "  ") + "\n")...)
+	b = append(b, (indent + "  {{.Name}} = " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "\n")...)
 {{- else if eq .TypeKind "enum"}}
 	// FIXME: enum value string
 	b = append(b, (indent + "  {{.Name}} = " + wire.FormatInt32(int32(x.xxx_hidden_{{.Name}})) + "\n")...)

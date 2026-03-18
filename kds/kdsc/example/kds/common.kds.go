@@ -7745,7 +7745,7 @@ func (x *ItemData_list) String(indent string) string {
 	var b []byte
 	b = append(b, "[\n"...)
 	for _, v := range x.data {
-		b = append(b, (indent + "  " + v.String(indent + "  ") + "\n")...)
+		b = append(b, (indent + "  " + v.String(indent+"  ") + "\n")...)
 	}
 	b = append(b, indent+"]\n"...)
 	return string(b)
@@ -8013,7 +8013,7 @@ func (x *BoolItemData_map) String(indent string) string {
 		return 0
 	})
 	for _, k := range keys {
-		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
+		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + x.data[k].String(indent+"  ") + "\n")...)
 	}
 	b = append(b, indent+"]\n"...)
 	return string(b)
@@ -8274,7 +8274,7 @@ func (x *Int32ItemData_map) String(indent string) string {
 	b = append(b, "[\n"...)
 	keys := slices.Sorted(maps.Keys(x.data))
 	for _, k := range keys {
-		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
+		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + x.data[k].String(indent+"  ") + "\n")...)
 	}
 	b = append(b, indent+"]\n"...)
 	return string(b)
@@ -8535,7 +8535,7 @@ func (x *Int64ItemData_map) String(indent string) string {
 	b = append(b, "[\n"...)
 	keys := slices.Sorted(maps.Keys(x.data))
 	for _, k := range keys {
-		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
+		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + x.data[k].String(indent+"  ") + "\n")...)
 	}
 	b = append(b, indent+"]\n"...)
 	return string(b)
@@ -8796,7 +8796,7 @@ func (x *StringItemData_map) String(indent string) string {
 	b = append(b, "[\n"...)
 	keys := slices.Sorted(maps.Keys(x.data))
 	for _, k := range keys {
-		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
+		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + x.data[k].String(indent+"  ") + "\n")...)
 	}
 	b = append(b, indent+"]\n"...)
 	return string(b)

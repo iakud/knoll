@@ -229,9 +229,9 @@ func (x *City) String(indent string) string {
 	var b []byte
 	b = append(b, "{\n"...)
 	b = append(b, (indent + "  PlayerId = " + wire.FormatInt64(x.xxx_hidden_PlayerId) + "\n")...)
-	b = append(b, (indent + "  PlayerBasicInfo = " + x.xxx_hidden_PlayerBasicInfo.String(indent + "  ") + "\n")...)
-	b = append(b, (indent + "  CityInfo = " + x.xxx_hidden_CityInfo.String(indent + "  ") + "\n")...)
-	b = append(b, (indent + "  Troops = " + x.xxx_hidden_Troops.String(indent + "  ") + "\n")...)
+	b = append(b, (indent + "  PlayerBasicInfo = " + x.xxx_hidden_PlayerBasicInfo.String(indent+"  ") + "\n")...)
+	b = append(b, (indent + "  CityInfo = " + x.xxx_hidden_CityInfo.String(indent+"  ") + "\n")...)
+	b = append(b, (indent + "  Troops = " + x.xxx_hidden_Troops.String(indent+"  ") + "\n")...)
 	b = append(b, (indent + "  City = " + wire.FormatString(x.xxx_hidden_City) + "\n")...)
 	b = append(b, (indent + "  Id = " + wire.FormatInt32(x.xxx_hidden_Id) + "\n")...)
 	b = append(b, indent+"}\n"...)
@@ -402,8 +402,8 @@ func (x *CityBaseInfo) Unmarshal(b []byte) error {
 func (x *CityBaseInfo) String(indent string) string {
 	var b []byte
 	b = append(b, "{\n"...)
-	b = append(b, (indent + "  Positions = " + x.xxx_hidden_Positions.String(indent + "  ") + "\n")...)
-	b = append(b, (indent + "  Troops = " + x.xxx_hidden_Troops.String(indent + "  ") + "\n")...)
+	b = append(b, (indent + "  Positions = " + x.xxx_hidden_Positions.String(indent+"  ") + "\n")...)
+	b = append(b, (indent + "  Troops = " + x.xxx_hidden_Troops.String(indent+"  ") + "\n")...)
 	b = append(b, (indent + "  BuildInfo = " + wire.FormatBytes(x.xxx_hidden_BuildInfo) + "\n")...)
 	b = append(b, indent+"}\n"...)
 	return string(b)
@@ -831,7 +831,7 @@ func (x *Vector_list) String(indent string) string {
 	var b []byte
 	b = append(b, "[\n"...)
 	for _, v := range x.data {
-		b = append(b, (indent + "  " + v.String(indent + "  ") + "\n")...)
+		b = append(b, (indent + "  " + v.String(indent+"  ") + "\n")...)
 	}
 	b = append(b, indent+"]\n"...)
 	return string(b)

@@ -175,9 +175,9 @@ func (x *Player) Unmarshal(b []byte) error {
 func (x *Player) String(indent string) string {
 	var b []byte
 	b = append(b, "{\n"...)
-	b = append(b, (indent + "  Info = " + x.xxx_hidden_Info.String(indent + "  ") + "\n")...)
-	b = append(b, (indent + "  Hero = " + x.xxx_hidden_Hero.String(indent + "  ") + "\n")...)
-	b = append(b, (indent + "  Bag = " + x.xxx_hidden_Bag.String(indent + "  ") + "\n")...)
+	b = append(b, (indent + "  Info = " + x.xxx_hidden_Info.String(indent+"  ") + "\n")...)
+	b = append(b, (indent + "  Hero = " + x.xxx_hidden_Hero.String(indent+"  ") + "\n")...)
+	b = append(b, (indent + "  Bag = " + x.xxx_hidden_Bag.String(indent+"  ") + "\n")...)
 	b = append(b, indent+"}\n"...)
 	return string(b)
 }
@@ -459,7 +459,7 @@ func (x *PlayerHero) Unmarshal(b []byte) error {
 func (x *PlayerHero) String(indent string) string {
 	var b []byte
 	b = append(b, "{\n"...)
-	b = append(b, (indent + "  Heroes = " + x.xxx_hidden_Heroes.String(indent + "  ") + "\n")...)
+	b = append(b, (indent + "  Heroes = " + x.xxx_hidden_Heroes.String(indent+"  ") + "\n")...)
 	b = append(b, indent+"}\n"...)
 	return string(b)
 }
@@ -574,7 +574,7 @@ func (x *PlayerBag) Unmarshal(b []byte) error {
 func (x *PlayerBag) String(indent string) string {
 	var b []byte
 	b = append(b, "{\n"...)
-	b = append(b, (indent + "  Resources = " + x.xxx_hidden_Resources.String(indent + "  ") + "\n")...)
+	b = append(b, (indent + "  Resources = " + x.xxx_hidden_Resources.String(indent+"  ") + "\n")...)
 	b = append(b, indent+"}\n"...)
 	return string(b)
 }
@@ -1046,7 +1046,7 @@ func (x *Int64Hero_map) String(indent string) string {
 	b = append(b, "[\n"...)
 	keys := slices.Sorted(maps.Keys(x.data))
 	for _, k := range keys {
-		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
+		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + x.data[k].String(indent+"  ") + "\n")...)
 	}
 	b = append(b, indent+"]\n"...)
 	return string(b)
