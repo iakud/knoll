@@ -175,7 +175,7 @@ func (x *All) String(indent string) string {
 	b = append(b, (indent + "  Types = " + x.xxx_hidden_Types.String(indent + "  ") + "\n")...)
 	b = append(b, (indent + "  Lists = " + x.xxx_hidden_Lists.String(indent + "  ") + "\n")...)
 	b = append(b, (indent + "  Maps = " + x.xxx_hidden_Maps.String(indent + "  ") + "\n")...)
-	b = append(b, indent + "}\n"...)
+	b = append(b, indent+"}\n"...)
 	return string(b)
 }
 
@@ -770,7 +770,7 @@ func (x *AllType) String(indent string) string {
 	// FIXME: enum value string
 	b = append(b, (indent + "  EnumVal = " + wire.FormatInt32(int32(x.xxx_hidden_EnumVal)) + "\n")...)
 	b = append(b, (indent + "  ItemData = " + x.xxx_hidden_ItemData.String(indent + "  ") + "\n")...)
-	b = append(b, indent + "}\n"...)
+	b = append(b, indent+"}\n"...)
 	return string(b)
 }
 
@@ -1112,7 +1112,7 @@ func (x *AllList) String(indent string) string {
 	b = append(b, (indent + "  EmptyList = " + x.xxx_hidden_EmptyList.String(indent + "  ") + "\n")...)
 	b = append(b, (indent + "  EnumList = " + x.xxx_hidden_EnumList.String(indent + "  ") + "\n")...)
 	b = append(b, (indent + "  ItemList = " + x.xxx_hidden_ItemList.String(indent + "  ") + "\n")...)
-	b = append(b, indent + "}\n"...)
+	b = append(b, indent+"}\n"...)
 	return string(b)
 }
 
@@ -1959,7 +1959,7 @@ func (x *AllMap) String(indent string) string {
 	b = append(b, (indent + "  BoolEmpty = " + x.xxx_hidden_BoolEmpty.String(indent + "  ") + "\n")...)
 	b = append(b, (indent + "  BoolEnum = " + x.xxx_hidden_BoolEnum.String(indent + "  ") + "\n")...)
 	b = append(b, (indent + "  BoolItemData = " + x.xxx_hidden_BoolItemData.String(indent + "  ") + "\n")...)
-	b = append(b, indent + "}\n"...)
+	b = append(b, indent+"}\n"...)
 	return string(b)
 }
 

@@ -234,7 +234,7 @@ func (x *City) String(indent string) string {
 	b = append(b, (indent + "  Troops = " + x.xxx_hidden_Troops.String(indent + "  ") + "\n")...)
 	b = append(b, (indent + "  City = " + wire.FormatString(x.xxx_hidden_City) + "\n")...)
 	b = append(b, (indent + "  Id = " + wire.FormatInt32(x.xxx_hidden_Id) + "\n")...)
-	b = append(b, indent + "}\n"...)
+	b = append(b, indent+"}\n"...)
 	return string(b)
 }
 
@@ -405,7 +405,7 @@ func (x *CityBaseInfo) String(indent string) string {
 	b = append(b, (indent + "  Positions = " + x.xxx_hidden_Positions.String(indent + "  ") + "\n")...)
 	b = append(b, (indent + "  Troops = " + x.xxx_hidden_Troops.String(indent + "  ") + "\n")...)
 	b = append(b, (indent + "  BuildInfo = " + wire.FormatBytes(x.xxx_hidden_BuildInfo) + "\n")...)
-	b = append(b, indent + "}\n"...)
+	b = append(b, indent+"}\n"...)
 	return string(b)
 }
 
@@ -545,7 +545,7 @@ func (x *Vector) String(indent string) string {
 	b = append(b, "{\n"...)
 	b = append(b, (indent + "  X = " + wire.FormatInt32(x.xxx_hidden_X) + "\n")...)
 	b = append(b, (indent + "  Y = " + wire.FormatInt32(x.xxx_hidden_Y) + "\n")...)
-	b = append(b, indent + "}\n"...)
+	b = append(b, indent+"}\n"...)
 	return string(b)
 }
 
@@ -833,6 +833,6 @@ func (x *Vector_list) String(indent string) string {
 	for _, v := range x.data {
 		b = append(b, (indent + "  " + v.String(indent + "  ") + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }

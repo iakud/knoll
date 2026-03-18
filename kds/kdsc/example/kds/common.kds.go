@@ -194,7 +194,7 @@ func (x *Bool_list) String(indent string) string {
 	for _, v := range x.data {
 		b = append(b, (indent + "  " + wire.FormatBool(v) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -380,7 +380,7 @@ func (x *Double_list) String(indent string) string {
 	for _, v := range x.data {
 		b = append(b, (indent + "  " + wire.FormatDouble(v) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -566,7 +566,7 @@ func (x *Duration_list) String(indent string) string {
 	for _, v := range x.data {
 		b = append(b, (indent + "  " + wire.FormatDuration(v) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -798,7 +798,7 @@ func (x *BoolDuration_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + wire.FormatDuration(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -1023,7 +1023,7 @@ func (x *Int32Duration_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + wire.FormatDuration(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -1248,7 +1248,7 @@ func (x *Int64Duration_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + wire.FormatDuration(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -1473,7 +1473,7 @@ func (x *StringDuration_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + wire.FormatDuration(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -1659,7 +1659,7 @@ func (x *Empty_list) String(indent string) string {
 	for _, v := range x.data {
 		b = append(b, (indent + "  " + wire.FormatEmpty(v) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -1891,7 +1891,7 @@ func (x *BoolEmpty_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + wire.FormatEmpty(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -2116,7 +2116,7 @@ func (x *Int32Empty_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + wire.FormatEmpty(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -2341,7 +2341,7 @@ func (x *Int64Empty_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + wire.FormatEmpty(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -2566,7 +2566,7 @@ func (x *StringEmpty_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + wire.FormatEmpty(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -2752,7 +2752,7 @@ func (x *Float_list) String(indent string) string {
 	for _, v := range x.data {
 		b = append(b, (indent + "  " + wire.FormatFloat(v) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -2938,7 +2938,7 @@ func (x *Int32_list) String(indent string) string {
 	for _, v := range x.data {
 		b = append(b, (indent + "  " + wire.FormatInt32(v) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -3170,7 +3170,7 @@ func (x *BoolInt32_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + wire.FormatInt32(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -3395,7 +3395,7 @@ func (x *Int32Int32_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + wire.FormatInt32(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -3620,7 +3620,7 @@ func (x *StringInt32_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + wire.FormatInt32(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -3806,7 +3806,7 @@ func (x *Int64_list) String(indent string) string {
 	for _, v := range x.data {
 		b = append(b, (indent + "  " + wire.FormatInt64(v) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -4031,7 +4031,7 @@ func (x *Int64Int64_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + wire.FormatInt64(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -4217,7 +4217,7 @@ func (x *String_list) String(indent string) string {
 	for _, v := range x.data {
 		b = append(b, (indent + "  " + wire.FormatString(v) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -4449,7 +4449,7 @@ func (x *BoolString_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + wire.FormatString(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -4674,7 +4674,7 @@ func (x *Int32String_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + wire.FormatString(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -4899,7 +4899,7 @@ func (x *Int64String_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + wire.FormatString(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -5124,7 +5124,7 @@ func (x *StringString_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + wire.FormatString(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -5310,7 +5310,7 @@ func (x *Timestamp_list) String(indent string) string {
 	for _, v := range x.data {
 		b = append(b, (indent + "  " + wire.FormatTimestamp(v) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -5542,7 +5542,7 @@ func (x *BoolTimestamp_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + wire.FormatTimestamp(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -5767,7 +5767,7 @@ func (x *Int32Timestamp_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + wire.FormatTimestamp(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -5992,7 +5992,7 @@ func (x *Int64Timestamp_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + wire.FormatTimestamp(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -6217,7 +6217,7 @@ func (x *StringTimestamp_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + wire.FormatTimestamp(x.data[k]) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -6413,7 +6413,7 @@ func (x *ItemType_list) String(indent string) string {
 		// FIXME: enum value string
 		b = append(b, (indent + "  " + wire.FormatInt32(int32(v)) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -6646,7 +6646,7 @@ func (x *BoolItemType_map) String(indent string) string {
 		// FIXME: enum value string
 		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + wire.FormatInt32(int32(x.data[k])) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -6872,7 +6872,7 @@ func (x *Int32ItemType_map) String(indent string) string {
 		// FIXME: enum value string
 		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + wire.FormatInt32(int32(x.data[k])) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -7098,7 +7098,7 @@ func (x *Int64ItemType_map) String(indent string) string {
 		// FIXME: enum value string
 		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + wire.FormatInt32(int32(x.data[k])) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -7324,7 +7324,7 @@ func (x *StringItemType_map) String(indent string) string {
 		// FIXME: enum value string
 		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + wire.FormatInt32(int32(x.data[k])) + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -7459,7 +7459,7 @@ func (x *ItemData) String(indent string) string {
 	b = append(b, (indent + "  Id = " + wire.FormatInt32(x.xxx_hidden_Id) + "\n")...)
 	b = append(b, (indent + "  Name = " + wire.FormatString(x.xxx_hidden_Name) + "\n")...)
 	b = append(b, (indent + "  Count = " + wire.FormatInt32(x.xxx_hidden_Count) + "\n")...)
-	b = append(b, indent + "}\n"...)
+	b = append(b, indent+"}\n"...)
 	return string(b)
 }
 
@@ -7747,7 +7747,7 @@ func (x *ItemData_list) String(indent string) string {
 	for _, v := range x.data {
 		b = append(b, (indent + "  " + v.String(indent + "  ") + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -8015,7 +8015,7 @@ func (x *BoolItemData_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -8276,7 +8276,7 @@ func (x *Int32ItemData_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -8537,7 +8537,7 @@ func (x *Int64ItemData_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }
 
@@ -8798,6 +8798,6 @@ func (x *StringItemData_map) String(indent string) string {
 	for _, k := range keys {
 		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
 	}
-	b = append(b, indent + "]\n"...)
+	b = append(b, indent+"]\n"...)
 	return string(b)
 }

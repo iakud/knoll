@@ -2,7 +2,6 @@ package wire
 
 import (
 	"encoding/base64"
-	"fmt"
 	"strconv"
 	"time"
 )
@@ -68,14 +67,14 @@ func FormatBytes(v []byte) string {
 }
 
 func FormatTimestamp(v time.Time) string {
-	return fmt.Sprintf("{Seconds: %d, Nanos: %d}", v.Unix(), v.Nanosecond())
+	return "{Seconds: " + strconv.FormatInt(v.Unix(), 10) + ", Nanos: " + strconv.Itoa(v.Nanosecond()) + "}"
 }
 
 func FormatDuration(v time.Duration) string {
 	nanos := v.Nanoseconds()
 	secs := nanos / 1e9
 	nanos -= secs * 1e9
-	return fmt.Sprintf("{Seconds: %d, Nanos: %d}", secs, nanos)
+	return "{Seconds: " + strconv.FormatInt(secs, 10) + ", Nanos: " + strconv.FormatInt(nanos, 10) + "}"
 }
 
 func FormatEmpty(_ struct{}) string {
