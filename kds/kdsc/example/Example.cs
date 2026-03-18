@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Google.Protobuf.WellKnownTypes;
@@ -12,22 +8,19 @@ namespace kds
     {
         private static All _all = new All(0);
 
-        public static void Initialize()
+        static Example()
         {
-            try
-            {
-                SetupChangeListener(_all);
-                Console.Out.WriteLine($"Initialized");
-            }
-            catch (Exception ex)
-            {
-                Console.Out.WriteLine($"Init error: {ex.Message}");
-            }
+            Initialize();
+            Console.Out.WriteLine($"Initialized");
         }
 
-        static void SetupChangeListener(All all)
+        public static void Initialize()
         {
-            all.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Changed\n");
+            _all.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Changed");
+            _all.Types.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Types.Changed");
+            _all.Types.ItemData.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Types.ItemData.Changed");
+            _all.Lists.OnChanged += (sender, e) =>Console.Out.WriteLine($"All.Lists.Changed");
+            _all.Maps.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Changed");
         }
 
         [UnmanagedCallersOnly(EntryPoint = "apply_sync", CallConvs = new[] { typeof(CallConvCdecl) })]
@@ -52,8 +45,8 @@ namespace kds
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "to_string", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static IntPtr ToString()
+        [UnmanagedCallersOnly(EntryPoint = "get_string", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static IntPtr GetString()
         {
             return Marshal.StringToHGlobalAnsi(_all.ToString(""));
         }

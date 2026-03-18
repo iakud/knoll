@@ -27,7 +27,7 @@ func sync(t *testing.T) {
 		panic(err)
 	}
 	all.ClearDirty()
-	ApplySync(fullData)
+	applySync(fullData)
 	// check
 	checkKds(t)
 }
@@ -38,14 +38,14 @@ func syncUpdate(t *testing.T) {
 		panic(err)
 	}
 	all.ClearDirty()
-	ApplySync(dirtyData)
+	applySync(dirtyData)
 	// check
 	checkKds(t)
 }
 
 func checkKds(t *testing.T) {
 	goKds := all.String("")
-	csKds := ToString()
+	csKds := getString()
 
 	goLines := strings.Split(goKds, "\n")
 	csLines := strings.Split(csKds, "\n")

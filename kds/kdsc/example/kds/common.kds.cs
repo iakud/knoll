@@ -172,7 +172,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				bool k = default;
-				Duration v = default;
+				Duration v = new Duration();
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -260,7 +260,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				int k = default;
-				Duration v = default;
+				Duration v = new Duration();
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -348,7 +348,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				long k = default;
-				Duration v = default;
+				Duration v = new Duration();
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -436,7 +436,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				string k = string.Empty;
-				Duration v = default;
+				Duration v = new Duration();
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -561,7 +561,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				bool k = default;
-				Empty v = default;
+				Empty v = new Empty();
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -649,7 +649,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				int k = default;
-				Empty v = default;
+				Empty v = new Empty();
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -737,7 +737,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				long k = default;
-				Empty v = default;
+				Empty v = new Empty();
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -825,7 +825,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				string k = string.Empty;
-				Empty v = default;
+				Empty v = new Empty();
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -1796,7 +1796,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				bool k = default;
-				Timestamp v = default;
+				Timestamp v = new Timestamp();
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -1884,7 +1884,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				int k = default;
-				Timestamp v = default;
+				Timestamp v = new Timestamp();
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -1972,7 +1972,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				long k = default;
-				Timestamp v = default;
+				Timestamp v = new Timestamp();
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -2060,7 +2060,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				string k = string.Empty;
-				Timestamp v = default;
+				Timestamp v = new Timestamp();
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);

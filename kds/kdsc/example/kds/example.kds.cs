@@ -120,7 +120,9 @@ namespace kds
 		{
 			stringVal_ = string.Empty;
 			bytesVal_ = [];
-			emptyVal_ = default;
+			timestampVal_ = new Timestamp();
+			durationVal_ = new Duration();
+			emptyVal_ = new Empty();
 			itemData_ = new ItemData();
 		}
 

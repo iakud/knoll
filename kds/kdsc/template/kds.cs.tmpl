@@ -180,27 +180,7 @@
 				if (a) return b ? 0 : 1;
 				return b ? -1 : 0;
 			});
-{{- else if eq .KeyType "string"}}
-			keys.Sort();
-{{- else if eq .KeyType "int32"}}
-			keys.Sort();
-{{- else if eq .KeyType "sint32"}}
-			keys.Sort();
-{{- else if eq .KeyType "uint32"}}
-			keys.Sort();
-{{- else if eq .KeyType "int64"}}
-			keys.Sort();
-{{- else if eq .KeyType "sint64"}}
-			keys.Sort();
-{{- else if eq .KeyType "uint64"}}
-			keys.Sort();
-{{- else if eq .KeyType "fixed32"}}
-			keys.Sort();
-{{- else if eq .KeyType "sfixed32"}}
-			keys.Sort();
-{{- else if eq .KeyType "fixed64"}}
-			keys.Sort();
-{{- else if eq .KeyType "sfixed64"}}
+{{- else}}
 			keys.Sort();
 {{- end}}
 			foreach (var k in keys)
@@ -328,6 +308,8 @@
 				{{.Type}} v = default;
 {{- else if eq .Type "string"}}
 				string v = string.Empty;
+{{- else if eq .Type "timestamp" "duration" "empty"}}
+				{{template "MapValueType" .}} v = new {{template "MapValueType" .}}();
 {{- else}}
 				{{template "MapValueType" .}} v = default;
 {{- end}}
@@ -672,8 +654,8 @@
 			{{template "FieldName" .}} = string.Empty;
 {{- else if eq .Type "bytes"}}
 			{{template "FieldName" .}} = [];
-{{- else if eq .Type "empty"}}
-			{{template "FieldName" .}} = default;
+{{- else if eq .Type "timestamp" "duration" "empty"}}
+			{{template "FieldName" .}} = new {{template "Type" .Type}}();
 {{- else}}
 {{- end}}
 {{- end}}
@@ -699,8 +681,8 @@
 			{{template "FieldName" .}} = string.Empty;
 {{- else if eq .Type "bytes"}}
 			{{template "FieldName" .}} = [];
-{{- else if eq .Type "empty"}}
-			{{template "FieldName" .}} = default;
+{{- else if eq .Type "timestamp" "duration" "empty"}}
+			{{template "FieldName" .}} = new {{template "Type" .Type}}();
 {{- else}}
 {{- end}}
 {{- end}}
