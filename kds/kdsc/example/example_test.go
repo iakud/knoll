@@ -11,13 +11,20 @@ import (
 var all = kds.NewAll(0)
 
 func TestExample(t *testing.T) {
-	initAll()
-	syncAdd()
+	testInit()
 
-	initUpdates()
+	testTypesUpdate()
+
+	testListsAdd()
+	testListsUpdate()
+	testListsDelete()
+
+	testMapsAdd()
+	testMapsUpdate()
+	testMapsDelete()
 }
 
-func initAll() {
+func testInit() {
 	types := all.GetTypes()
 	types.SetInt32Val(32)
 	types.SetInt64Val(64)
@@ -112,16 +119,19 @@ func initAll() {
 	item5.SetName("helm")
 	item5.SetCount(2)
 	maps.GetBoolItemData().Set(true, item5)
+	// sync
+	sync()
 }
 
-func syncAdd() {
+func sync() {
 	fullData, err := all.Marshal(nil)
 	if err != nil {
 		panic(err)
 	}
-	ApplySync(fullData)
-	check()
 	all.ClearDirty()
+	ApplySync(fullData)
+	// check
+	check()
 }
 
 func syncUpdate() {
@@ -129,12 +139,13 @@ func syncUpdate() {
 	if err != nil {
 		panic(err)
 	}
-	ApplySync(dirtyData)
-	check()
 	all.ClearDirty()
+	ApplySync(dirtyData)
+	// check
+	check()
 }
 
-func initUpdates() {
+func testTypesUpdate() {
 	// Types 修改
 	types := all.GetTypes()
 	types.SetInt32Val(33)
@@ -195,8 +206,10 @@ func initUpdates() {
 	types.GetItemData().SetName("shield")
 	types.GetItemData().SetCount(20)
 	syncUpdate()
+}
 
-	// Lists 修改
+func testListsAdd() {
+	// Lists 新增
 	lists := all.GetLists()
 	lists.GetInt32List().Append(4)
 	syncUpdate()
@@ -231,8 +244,80 @@ func initUpdates() {
 	itemNew.SetCount(3)
 	lists.GetItemList().Append(itemNew)
 	syncUpdate()
+}
 
-	// Maps 修改
+func testListsUpdate() {
+	// Lists 修改
+	lists := all.GetLists()
+	lists.GetInt32List().Set(0, 10)
+	syncUpdate()
+
+	lists.GetInt64List().Set(0, 1000)
+	syncUpdate()
+
+	lists.GetFloatList().Set(0, 10.5)
+	syncUpdate()
+
+	lists.GetDoubleList().Set(0, 10.55)
+	syncUpdate()
+
+	lists.GetBoolList().Set(0, false)
+	syncUpdate()
+
+	lists.GetStringList().Set(0, "modified")
+	syncUpdate()
+
+	lists.GetTimestampList().Set(0, time.Unix(5000, 0))
+	syncUpdate()
+
+	lists.GetDurationList().Set(0, time.Hour*2)
+	syncUpdate()
+
+	lists.GetEnumList().Set(0, kds.ItemType_ItemTypePotion)
+	syncUpdate()
+
+	lists.GetItemList().Get(0).SetId(100)
+	lists.GetItemList().Get(0).SetName("modified_item")
+	lists.GetItemList().Get(0).SetCount(50)
+	syncUpdate()
+}
+
+func testListsDelete() {
+	// Lists 删除
+	lists := all.GetLists()
+	lists.GetInt32List().Delete(0, 1)
+	syncUpdate()
+
+	lists.GetInt64List().Delete(0, 1)
+	syncUpdate()
+
+	lists.GetFloatList().Delete(0, 1)
+	syncUpdate()
+
+	lists.GetDoubleList().Delete(0, 1)
+	syncUpdate()
+
+	lists.GetBoolList().Delete(0, 1)
+	syncUpdate()
+
+	lists.GetStringList().Delete(0, 1)
+	syncUpdate()
+
+	lists.GetTimestampList().Delete(0, 1)
+	syncUpdate()
+
+	lists.GetDurationList().Delete(0, 1)
+	syncUpdate()
+
+	lists.GetEnumList().Delete(0, 1)
+	syncUpdate()
+
+	lists.GetItemList().Delete(0, 1)
+	syncUpdate()
+}
+
+func testMapsAdd() {
+	// Maps 新增
 	maps := all.GetMaps()
 	maps.GetInt32Int32().Set(3, 300)
 	syncUpdate()
@@ -321,41 +406,11 @@ func initUpdates() {
 	itemMap5.SetCount(1)
 	maps.GetBoolItemData().Set(false, itemMap5)
 	syncUpdate()
+}
 
-	// 修改现有 List 元素
-	lists.GetInt32List().Set(0, 10)
-	syncUpdate()
-
-	lists.GetInt64List().Set(0, 1000)
-	syncUpdate()
-
-	lists.GetFloatList().Set(0, 10.5)
-	syncUpdate()
-
-	lists.GetDoubleList().Set(0, 10.55)
-	syncUpdate()
-
-	lists.GetBoolList().Set(0, false)
-	syncUpdate()
-
-	lists.GetStringList().Set(0, "modified")
-	syncUpdate()
-
-	lists.GetTimestampList().Set(0, time.Unix(5000, 0))
-	syncUpdate()
-
-	lists.GetDurationList().Set(0, time.Hour*2)
-	syncUpdate()
-
-	lists.GetEnumList().Set(0, kds.ItemType_ItemTypePotion)
-	syncUpdate()
-
-	lists.GetItemList().Get(0).SetId(100)
-	lists.GetItemList().Get(0).SetName("modified_item")
-	lists.GetItemList().Get(0).SetCount(50)
-	syncUpdate()
-
-	// 修改现有 Map 元素
+func testMapsUpdate() {
+	// Maps 修改
+	maps := all.GetMaps()
 	maps.GetInt32Int32().Set(1, 999)
 	syncUpdate()
 
@@ -439,39 +494,11 @@ func initUpdates() {
 	itemBool.SetName("modified_itemdata4")
 	itemBool.SetCount(58)
 	syncUpdate()
+}
 
-	// 删除 List 元素
-	lists.GetInt32List().Delete(0, 1)
-	syncUpdate()
-
-	lists.GetInt64List().Delete(0, 1)
-	syncUpdate()
-
-	lists.GetFloatList().Delete(0, 1)
-	syncUpdate()
-
-	lists.GetDoubleList().Delete(0, 1)
-	syncUpdate()
-
-	lists.GetBoolList().Delete(0, 1)
-	syncUpdate()
-
-	lists.GetStringList().Delete(0, 1)
-	syncUpdate()
-
-	lists.GetTimestampList().Delete(0, 1)
-	syncUpdate()
-
-	lists.GetDurationList().Delete(0, 1)
-	syncUpdate()
-
-	lists.GetEnumList().Delete(0, 1)
-	syncUpdate()
-
-	lists.GetItemList().Delete(0, 1)
-	syncUpdate()
-
+func testMapsDelete() {
 	// 删除 Map 元素
+	maps := all.GetMaps()
 	maps.GetInt32Int32().Delete(1)
 	syncUpdate()
 
