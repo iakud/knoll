@@ -578,119 +578,119 @@ namespace kds
 	{
 		public AllMap()
 		{
-			int32Int32_ = new Dictionary<int, int>();
-			int32String_ = new Dictionary<int, string>();
-			int32Timestamp_ = new Dictionary<int, Timestamp>();
-			int32Duration_ = new Dictionary<int, Duration>();
-			int32Empty_ = new Dictionary<int, Empty>();
-			int32Enum_ = new Dictionary<int, ItemType>();
-			int32ItemData_ = new Dictionary<int, ItemData>();
-			int64Int64_ = new Dictionary<long, long>();
-			int64String_ = new Dictionary<long, string>();
-			int64Timestamp_ = new Dictionary<long, Timestamp>();
-			int64Duration_ = new Dictionary<long, Duration>();
-			int64Empty_ = new Dictionary<long, Empty>();
-			int64Enum_ = new Dictionary<long, ItemType>();
-			int64ItemData_ = new Dictionary<long, ItemData>();
-			stringInt32_ = new Dictionary<string, int>();
-			stringString_ = new Dictionary<string, string>();
-			stringTimestamp_ = new Dictionary<string, Timestamp>();
-			stringDuration_ = new Dictionary<string, Duration>();
-			stringEmpty_ = new Dictionary<string, Empty>();
-			stringEnum_ = new Dictionary<string, ItemType>();
-			stringItemData_ = new Dictionary<string, ItemData>();
-			boolInt32_ = new Dictionary<bool, int>();
-			boolString_ = new Dictionary<bool, string>();
-			boolTimestamp_ = new Dictionary<bool, Timestamp>();
-			boolDuration_ = new Dictionary<bool, Duration>();
-			boolEmpty_ = new Dictionary<bool, Empty>();
-			boolEnum_ = new Dictionary<bool, ItemType>();
-			boolItemData_ = new Dictionary<bool, ItemData>();
+			int32Int32_ = new Int32Int32_map();
+			int32String_ = new Int32String_map();
+			int32Timestamp_ = new Int32Timestamp_map();
+			int32Duration_ = new Int32Duration_map();
+			int32Empty_ = new Int32Empty_map();
+			int32Enum_ = new Int32ItemType_map();
+			int32ItemData_ = new Int32ItemData_map();
+			int64Int64_ = new Int64Int64_map();
+			int64String_ = new Int64String_map();
+			int64Timestamp_ = new Int64Timestamp_map();
+			int64Duration_ = new Int64Duration_map();
+			int64Empty_ = new Int64Empty_map();
+			int64Enum_ = new Int64ItemType_map();
+			int64ItemData_ = new Int64ItemData_map();
+			stringInt32_ = new StringInt32_map();
+			stringString_ = new StringString_map();
+			stringTimestamp_ = new StringTimestamp_map();
+			stringDuration_ = new StringDuration_map();
+			stringEmpty_ = new StringEmpty_map();
+			stringEnum_ = new StringItemType_map();
+			stringItemData_ = new StringItemData_map();
+			boolInt32_ = new BoolInt32_map();
+			boolString_ = new BoolString_map();
+			boolTimestamp_ = new BoolTimestamp_map();
+			boolDuration_ = new BoolDuration_map();
+			boolEmpty_ = new BoolEmpty_map();
+			boolEnum_ = new BoolItemType_map();
+			boolItemData_ = new BoolItemData_map();
 		}
 
-		private Dictionary<int, int> int32Int32_;
-		public Dictionary<int, int> Int32Int32 => int32Int32_;
+		private Int32Int32_map int32Int32_;
+		public Int32Int32_map Int32Int32 => int32Int32_;
 
-		private Dictionary<int, string> int32String_;
-		public Dictionary<int, string> Int32String => int32String_;
+		private Int32String_map int32String_;
+		public Int32String_map Int32String => int32String_;
 
-		private Dictionary<int, Timestamp> int32Timestamp_;
-		public Dictionary<int, Timestamp> Int32Timestamp => int32Timestamp_;
+		private Int32Timestamp_map int32Timestamp_;
+		public Int32Timestamp_map Int32Timestamp => int32Timestamp_;
 
-		private Dictionary<int, Duration> int32Duration_;
-		public Dictionary<int, Duration> Int32Duration => int32Duration_;
+		private Int32Duration_map int32Duration_;
+		public Int32Duration_map Int32Duration => int32Duration_;
 
-		private Dictionary<int, Empty> int32Empty_;
-		public Dictionary<int, Empty> Int32Empty => int32Empty_;
+		private Int32Empty_map int32Empty_;
+		public Int32Empty_map Int32Empty => int32Empty_;
 
-		private Dictionary<int, ItemType> int32Enum_;
-		public Dictionary<int, ItemType> Int32Enum => int32Enum_;
+		private Int32ItemType_map int32Enum_;
+		public Int32ItemType_map Int32Enum => int32Enum_;
 
-		private Dictionary<int, ItemData> int32ItemData_;
-		public Dictionary<int, ItemData> Int32ItemData => int32ItemData_;
+		private Int32ItemData_map int32ItemData_;
+		public Int32ItemData_map Int32ItemData => int32ItemData_;
 
-		private Dictionary<long, long> int64Int64_;
-		public Dictionary<long, long> Int64Int64 => int64Int64_;
+		private Int64Int64_map int64Int64_;
+		public Int64Int64_map Int64Int64 => int64Int64_;
 
-		private Dictionary<long, string> int64String_;
-		public Dictionary<long, string> Int64String => int64String_;
+		private Int64String_map int64String_;
+		public Int64String_map Int64String => int64String_;
 
-		private Dictionary<long, Timestamp> int64Timestamp_;
-		public Dictionary<long, Timestamp> Int64Timestamp => int64Timestamp_;
+		private Int64Timestamp_map int64Timestamp_;
+		public Int64Timestamp_map Int64Timestamp => int64Timestamp_;
 
-		private Dictionary<long, Duration> int64Duration_;
-		public Dictionary<long, Duration> Int64Duration => int64Duration_;
+		private Int64Duration_map int64Duration_;
+		public Int64Duration_map Int64Duration => int64Duration_;
 
-		private Dictionary<long, Empty> int64Empty_;
-		public Dictionary<long, Empty> Int64Empty => int64Empty_;
+		private Int64Empty_map int64Empty_;
+		public Int64Empty_map Int64Empty => int64Empty_;
 
-		private Dictionary<long, ItemType> int64Enum_;
-		public Dictionary<long, ItemType> Int64Enum => int64Enum_;
+		private Int64ItemType_map int64Enum_;
+		public Int64ItemType_map Int64Enum => int64Enum_;
 
-		private Dictionary<long, ItemData> int64ItemData_;
-		public Dictionary<long, ItemData> Int64ItemData => int64ItemData_;
+		private Int64ItemData_map int64ItemData_;
+		public Int64ItemData_map Int64ItemData => int64ItemData_;
 
-		private Dictionary<string, int> stringInt32_;
-		public Dictionary<string, int> StringInt32 => stringInt32_;
+		private StringInt32_map stringInt32_;
+		public StringInt32_map StringInt32 => stringInt32_;
 
-		private Dictionary<string, string> stringString_;
-		public Dictionary<string, string> StringString => stringString_;
+		private StringString_map stringString_;
+		public StringString_map StringString => stringString_;
 
-		private Dictionary<string, Timestamp> stringTimestamp_;
-		public Dictionary<string, Timestamp> StringTimestamp => stringTimestamp_;
+		private StringTimestamp_map stringTimestamp_;
+		public StringTimestamp_map StringTimestamp => stringTimestamp_;
 
-		private Dictionary<string, Duration> stringDuration_;
-		public Dictionary<string, Duration> StringDuration => stringDuration_;
+		private StringDuration_map stringDuration_;
+		public StringDuration_map StringDuration => stringDuration_;
 
-		private Dictionary<string, Empty> stringEmpty_;
-		public Dictionary<string, Empty> StringEmpty => stringEmpty_;
+		private StringEmpty_map stringEmpty_;
+		public StringEmpty_map StringEmpty => stringEmpty_;
 
-		private Dictionary<string, ItemType> stringEnum_;
-		public Dictionary<string, ItemType> StringEnum => stringEnum_;
+		private StringItemType_map stringEnum_;
+		public StringItemType_map StringEnum => stringEnum_;
 
-		private Dictionary<string, ItemData> stringItemData_;
-		public Dictionary<string, ItemData> StringItemData => stringItemData_;
+		private StringItemData_map stringItemData_;
+		public StringItemData_map StringItemData => stringItemData_;
 
-		private Dictionary<bool, int> boolInt32_;
-		public Dictionary<bool, int> BoolInt32 => boolInt32_;
+		private BoolInt32_map boolInt32_;
+		public BoolInt32_map BoolInt32 => boolInt32_;
 
-		private Dictionary<bool, string> boolString_;
-		public Dictionary<bool, string> BoolString => boolString_;
+		private BoolString_map boolString_;
+		public BoolString_map BoolString => boolString_;
 
-		private Dictionary<bool, Timestamp> boolTimestamp_;
-		public Dictionary<bool, Timestamp> BoolTimestamp => boolTimestamp_;
+		private BoolTimestamp_map boolTimestamp_;
+		public BoolTimestamp_map BoolTimestamp => boolTimestamp_;
 
-		private Dictionary<bool, Duration> boolDuration_;
-		public Dictionary<bool, Duration> BoolDuration => boolDuration_;
+		private BoolDuration_map boolDuration_;
+		public BoolDuration_map BoolDuration => boolDuration_;
 
-		private Dictionary<bool, Empty> boolEmpty_;
-		public Dictionary<bool, Empty> BoolEmpty => boolEmpty_;
+		private BoolEmpty_map boolEmpty_;
+		public BoolEmpty_map BoolEmpty => boolEmpty_;
 
-		private Dictionary<bool, ItemType> boolEnum_;
-		public Dictionary<bool, ItemType> BoolEnum => boolEnum_;
+		private BoolItemType_map boolEnum_;
+		public BoolItemType_map BoolEnum => boolEnum_;
 
-		private Dictionary<bool, ItemData> boolItemData_;
-		public Dictionary<bool, ItemData> BoolItemData => boolItemData_;
+		private BoolItemData_map boolItemData_;
+		public BoolItemData_map BoolItemData => boolItemData_;
 
 		private long _changed;
 
@@ -738,34 +738,34 @@ namespace kds
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("{\n");
-			sb.AppendLine(indent + "  Int32Int32 = " + Int32Int32_map.ToString(int32Int32_, indent + "  "));
-			sb.AppendLine(indent + "  Int32String = " + Int32String_map.ToString(int32String_, indent + "  "));
-			sb.AppendLine(indent + "  Int32Timestamp = " + Int32Timestamp_map.ToString(int32Timestamp_, indent + "  "));
-			sb.AppendLine(indent + "  Int32Duration = " + Int32Duration_map.ToString(int32Duration_, indent + "  "));
-			sb.AppendLine(indent + "  Int32Empty = " + Int32Empty_map.ToString(int32Empty_, indent + "  "));
-			sb.AppendLine(indent + "  Int32Enum = " + Int32ItemType_map.ToString(int32Enum_, indent + "  "));
-			sb.AppendLine(indent + "  Int32ItemData = " + Int32ItemData_map.ToString(int32ItemData_, indent + "  "));
-			sb.AppendLine(indent + "  Int64Int64 = " + Int64Int64_map.ToString(int64Int64_, indent + "  "));
-			sb.AppendLine(indent + "  Int64String = " + Int64String_map.ToString(int64String_, indent + "  "));
-			sb.AppendLine(indent + "  Int64Timestamp = " + Int64Timestamp_map.ToString(int64Timestamp_, indent + "  "));
-			sb.AppendLine(indent + "  Int64Duration = " + Int64Duration_map.ToString(int64Duration_, indent + "  "));
-			sb.AppendLine(indent + "  Int64Empty = " + Int64Empty_map.ToString(int64Empty_, indent + "  "));
-			sb.AppendLine(indent + "  Int64Enum = " + Int64ItemType_map.ToString(int64Enum_, indent + "  "));
-			sb.AppendLine(indent + "  Int64ItemData = " + Int64ItemData_map.ToString(int64ItemData_, indent + "  "));
-			sb.AppendLine(indent + "  StringInt32 = " + StringInt32_map.ToString(stringInt32_, indent + "  "));
-			sb.AppendLine(indent + "  StringString = " + StringString_map.ToString(stringString_, indent + "  "));
-			sb.AppendLine(indent + "  StringTimestamp = " + StringTimestamp_map.ToString(stringTimestamp_, indent + "  "));
-			sb.AppendLine(indent + "  StringDuration = " + StringDuration_map.ToString(stringDuration_, indent + "  "));
-			sb.AppendLine(indent + "  StringEmpty = " + StringEmpty_map.ToString(stringEmpty_, indent + "  "));
-			sb.AppendLine(indent + "  StringEnum = " + StringItemType_map.ToString(stringEnum_, indent + "  "));
-			sb.AppendLine(indent + "  StringItemData = " + StringItemData_map.ToString(stringItemData_, indent + "  "));
-			sb.AppendLine(indent + "  BoolInt32 = " + BoolInt32_map.ToString(boolInt32_, indent + "  "));
-			sb.AppendLine(indent + "  BoolString = " + BoolString_map.ToString(boolString_, indent + "  "));
-			sb.AppendLine(indent + "  BoolTimestamp = " + BoolTimestamp_map.ToString(boolTimestamp_, indent + "  "));
-			sb.AppendLine(indent + "  BoolDuration = " + BoolDuration_map.ToString(boolDuration_, indent + "  "));
-			sb.AppendLine(indent + "  BoolEmpty = " + BoolEmpty_map.ToString(boolEmpty_, indent + "  "));
-			sb.AppendLine(indent + "  BoolEnum = " + BoolItemType_map.ToString(boolEnum_, indent + "  "));
-			sb.AppendLine(indent + "  BoolItemData = " + BoolItemData_map.ToString(boolItemData_, indent + "  "));
+			sb.AppendLine(indent + "  Int32Int32 = " + int32Int32_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int32String = " + int32String_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int32Timestamp = " + int32Timestamp_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int32Duration = " + int32Duration_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int32Empty = " + int32Empty_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int32Enum = " + int32Enum_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int32ItemData = " + int32ItemData_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int64Int64 = " + int64Int64_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int64String = " + int64String_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int64Timestamp = " + int64Timestamp_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int64Duration = " + int64Duration_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int64Empty = " + int64Empty_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int64Enum = " + int64Enum_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int64ItemData = " + int64ItemData_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  StringInt32 = " + stringInt32_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  StringString = " + stringString_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  StringTimestamp = " + stringTimestamp_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  StringDuration = " + stringDuration_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  StringEmpty = " + stringEmpty_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  StringEnum = " + stringEnum_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  StringItemData = " + stringItemData_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  BoolInt32 = " + boolInt32_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  BoolString = " + boolString_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  BoolTimestamp = " + boolTimestamp_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  BoolDuration = " + boolDuration_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  BoolEmpty = " + boolEmpty_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  BoolEnum = " + boolEnum_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  BoolItemData = " + boolItemData_.ToString(indent + "  "));
 			sb.Append(indent + "}");
 			return sb.ToString();
 		}
@@ -780,115 +780,115 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					Int32Int32_map.ApplySync(int32Int32_, stream.ReadBytes().ToByteArray());
+					int32Int32_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 1;
 					break;
 				case 2:
-					Int32String_map.ApplySync(int32String_, stream.ReadBytes().ToByteArray());
+					int32String_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 2;
 					break;
 				case 3:
-					Int32Timestamp_map.ApplySync(int32Timestamp_, stream.ReadBytes().ToByteArray());
+					int32Timestamp_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 3;
 					break;
 				case 4:
-					Int32Duration_map.ApplySync(int32Duration_, stream.ReadBytes().ToByteArray());
+					int32Duration_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 4;
 					break;
 				case 5:
-					Int32Empty_map.ApplySync(int32Empty_, stream.ReadBytes().ToByteArray());
+					int32Empty_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 5;
 					break;
 				case 6:
-					Int32ItemType_map.ApplySync(int32Enum_, stream.ReadBytes().ToByteArray());
+					int32Enum_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 6;
 					break;
 				case 7:
-					Int32ItemData_map.ApplySync(int32ItemData_, stream.ReadBytes().ToByteArray());
+					int32ItemData_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 7;
 					break;
 				case 8:
-					Int64Int64_map.ApplySync(int64Int64_, stream.ReadBytes().ToByteArray());
+					int64Int64_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 8;
 					break;
 				case 9:
-					Int64String_map.ApplySync(int64String_, stream.ReadBytes().ToByteArray());
+					int64String_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 9;
 					break;
 				case 10:
-					Int64Timestamp_map.ApplySync(int64Timestamp_, stream.ReadBytes().ToByteArray());
+					int64Timestamp_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 10;
 					break;
 				case 11:
-					Int64Duration_map.ApplySync(int64Duration_, stream.ReadBytes().ToByteArray());
+					int64Duration_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 11;
 					break;
 				case 12:
-					Int64Empty_map.ApplySync(int64Empty_, stream.ReadBytes().ToByteArray());
+					int64Empty_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 12;
 					break;
 				case 13:
-					Int64ItemType_map.ApplySync(int64Enum_, stream.ReadBytes().ToByteArray());
+					int64Enum_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 13;
 					break;
 				case 14:
-					Int64ItemData_map.ApplySync(int64ItemData_, stream.ReadBytes().ToByteArray());
+					int64ItemData_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 14;
 					break;
 				case 15:
-					StringInt32_map.ApplySync(stringInt32_, stream.ReadBytes().ToByteArray());
+					stringInt32_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 15;
 					break;
 				case 16:
-					StringString_map.ApplySync(stringString_, stream.ReadBytes().ToByteArray());
+					stringString_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 16;
 					break;
 				case 17:
-					StringTimestamp_map.ApplySync(stringTimestamp_, stream.ReadBytes().ToByteArray());
+					stringTimestamp_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 17;
 					break;
 				case 18:
-					StringDuration_map.ApplySync(stringDuration_, stream.ReadBytes().ToByteArray());
+					stringDuration_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 18;
 					break;
 				case 19:
-					StringEmpty_map.ApplySync(stringEmpty_, stream.ReadBytes().ToByteArray());
+					stringEmpty_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 19;
 					break;
 				case 20:
-					StringItemType_map.ApplySync(stringEnum_, stream.ReadBytes().ToByteArray());
+					stringEnum_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 20;
 					break;
 				case 21:
-					StringItemData_map.ApplySync(stringItemData_, stream.ReadBytes().ToByteArray());
+					stringItemData_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 21;
 					break;
 				case 22:
-					BoolInt32_map.ApplySync(boolInt32_, stream.ReadBytes().ToByteArray());
+					boolInt32_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 22;
 					break;
 				case 23:
-					BoolString_map.ApplySync(boolString_, stream.ReadBytes().ToByteArray());
+					boolString_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 23;
 					break;
 				case 24:
-					BoolTimestamp_map.ApplySync(boolTimestamp_, stream.ReadBytes().ToByteArray());
+					boolTimestamp_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 24;
 					break;
 				case 25:
-					BoolDuration_map.ApplySync(boolDuration_, stream.ReadBytes().ToByteArray());
+					boolDuration_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 25;
 					break;
 				case 26:
-					BoolEmpty_map.ApplySync(boolEmpty_, stream.ReadBytes().ToByteArray());
+					boolEmpty_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 26;
 					break;
 				case 27:
-					BoolItemType_map.ApplySync(boolEnum_, stream.ReadBytes().ToByteArray());
+					boolEnum_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 27;
 					break;
 				case 28:
-					BoolItemData_map.ApplySync(boolItemData_, stream.ReadBytes().ToByteArray());
+					boolItemData_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 28;
 					break;
 				default:
@@ -903,61 +903,61 @@ namespace kds
 			if (_changed == 0)
 				return;
 			if ((_changed & (0x01 << 1)) != 0)
-				Int32Int32_map.RaiseChanged(int32Int32_);
+				int32Int32_.RaiseChanged();
 			if ((_changed & (0x01 << 2)) != 0)
-				Int32String_map.RaiseChanged(int32String_);
+				int32String_.RaiseChanged();
 			if ((_changed & (0x01 << 3)) != 0)
-				Int32Timestamp_map.RaiseChanged(int32Timestamp_);
+				int32Timestamp_.RaiseChanged();
 			if ((_changed & (0x01 << 4)) != 0)
-				Int32Duration_map.RaiseChanged(int32Duration_);
+				int32Duration_.RaiseChanged();
 			if ((_changed & (0x01 << 5)) != 0)
-				Int32Empty_map.RaiseChanged(int32Empty_);
+				int32Empty_.RaiseChanged();
 			if ((_changed & (0x01 << 6)) != 0)
-				Int32ItemType_map.RaiseChanged(int32Enum_);
+				int32Enum_.RaiseChanged();
 			if ((_changed & (0x01 << 7)) != 0)
-				Int32ItemData_map.RaiseChanged(int32ItemData_);
+				int32ItemData_.RaiseChanged();
 			if ((_changed & (0x01 << 8)) != 0)
-				Int64Int64_map.RaiseChanged(int64Int64_);
+				int64Int64_.RaiseChanged();
 			if ((_changed & (0x01 << 9)) != 0)
-				Int64String_map.RaiseChanged(int64String_);
+				int64String_.RaiseChanged();
 			if ((_changed & (0x01 << 10)) != 0)
-				Int64Timestamp_map.RaiseChanged(int64Timestamp_);
+				int64Timestamp_.RaiseChanged();
 			if ((_changed & (0x01 << 11)) != 0)
-				Int64Duration_map.RaiseChanged(int64Duration_);
+				int64Duration_.RaiseChanged();
 			if ((_changed & (0x01 << 12)) != 0)
-				Int64Empty_map.RaiseChanged(int64Empty_);
+				int64Empty_.RaiseChanged();
 			if ((_changed & (0x01 << 13)) != 0)
-				Int64ItemType_map.RaiseChanged(int64Enum_);
+				int64Enum_.RaiseChanged();
 			if ((_changed & (0x01 << 14)) != 0)
-				Int64ItemData_map.RaiseChanged(int64ItemData_);
+				int64ItemData_.RaiseChanged();
 			if ((_changed & (0x01 << 15)) != 0)
-				StringInt32_map.RaiseChanged(stringInt32_);
+				stringInt32_.RaiseChanged();
 			if ((_changed & (0x01 << 16)) != 0)
-				StringString_map.RaiseChanged(stringString_);
+				stringString_.RaiseChanged();
 			if ((_changed & (0x01 << 17)) != 0)
-				StringTimestamp_map.RaiseChanged(stringTimestamp_);
+				stringTimestamp_.RaiseChanged();
 			if ((_changed & (0x01 << 18)) != 0)
-				StringDuration_map.RaiseChanged(stringDuration_);
+				stringDuration_.RaiseChanged();
 			if ((_changed & (0x01 << 19)) != 0)
-				StringEmpty_map.RaiseChanged(stringEmpty_);
+				stringEmpty_.RaiseChanged();
 			if ((_changed & (0x01 << 20)) != 0)
-				StringItemType_map.RaiseChanged(stringEnum_);
+				stringEnum_.RaiseChanged();
 			if ((_changed & (0x01 << 21)) != 0)
-				StringItemData_map.RaiseChanged(stringItemData_);
+				stringItemData_.RaiseChanged();
 			if ((_changed & (0x01 << 22)) != 0)
-				BoolInt32_map.RaiseChanged(boolInt32_);
+				boolInt32_.RaiseChanged();
 			if ((_changed & (0x01 << 23)) != 0)
-				BoolString_map.RaiseChanged(boolString_);
+				boolString_.RaiseChanged();
 			if ((_changed & (0x01 << 24)) != 0)
-				BoolTimestamp_map.RaiseChanged(boolTimestamp_);
+				boolTimestamp_.RaiseChanged();
 			if ((_changed & (0x01 << 25)) != 0)
-				BoolDuration_map.RaiseChanged(boolDuration_);
+				boolDuration_.RaiseChanged();
 			if ((_changed & (0x01 << 26)) != 0)
-				BoolEmpty_map.RaiseChanged(boolEmpty_);
+				boolEmpty_.RaiseChanged();
 			if ((_changed & (0x01 << 27)) != 0)
-				BoolItemType_map.RaiseChanged(boolEnum_);
+				boolEnum_.RaiseChanged();
 			if ((_changed & (0x01 << 28)) != 0)
-				BoolItemData_map.RaiseChanged(boolItemData_);
+				boolItemData_.RaiseChanged();
 			OnChanged?.Invoke(this, new EventChanged(_changed));
 		}
 
@@ -966,61 +966,61 @@ namespace kds
 			if (_changed == 0)
 				return;
 			if ((_changed & (0x01 << 1)) != 0)
-				Int32Int32_map.ClearChanged(int32Int32_);
+				int32Int32_.ClearChanged();
 			if ((_changed & (0x01 << 2)) != 0)
-				Int32String_map.ClearChanged(int32String_);
+				int32String_.ClearChanged();
 			if ((_changed & (0x01 << 3)) != 0)
-				Int32Timestamp_map.ClearChanged(int32Timestamp_);
+				int32Timestamp_.ClearChanged();
 			if ((_changed & (0x01 << 4)) != 0)
-				Int32Duration_map.ClearChanged(int32Duration_);
+				int32Duration_.ClearChanged();
 			if ((_changed & (0x01 << 5)) != 0)
-				Int32Empty_map.ClearChanged(int32Empty_);
+				int32Empty_.ClearChanged();
 			if ((_changed & (0x01 << 6)) != 0)
-				Int32ItemType_map.ClearChanged(int32Enum_);
+				int32Enum_.ClearChanged();
 			if ((_changed & (0x01 << 7)) != 0)
-				Int32ItemData_map.ClearChanged(int32ItemData_);
+				int32ItemData_.ClearChanged();
 			if ((_changed & (0x01 << 8)) != 0)
-				Int64Int64_map.ClearChanged(int64Int64_);
+				int64Int64_.ClearChanged();
 			if ((_changed & (0x01 << 9)) != 0)
-				Int64String_map.ClearChanged(int64String_);
+				int64String_.ClearChanged();
 			if ((_changed & (0x01 << 10)) != 0)
-				Int64Timestamp_map.ClearChanged(int64Timestamp_);
+				int64Timestamp_.ClearChanged();
 			if ((_changed & (0x01 << 11)) != 0)
-				Int64Duration_map.ClearChanged(int64Duration_);
+				int64Duration_.ClearChanged();
 			if ((_changed & (0x01 << 12)) != 0)
-				Int64Empty_map.ClearChanged(int64Empty_);
+				int64Empty_.ClearChanged();
 			if ((_changed & (0x01 << 13)) != 0)
-				Int64ItemType_map.ClearChanged(int64Enum_);
+				int64Enum_.ClearChanged();
 			if ((_changed & (0x01 << 14)) != 0)
-				Int64ItemData_map.ClearChanged(int64ItemData_);
+				int64ItemData_.ClearChanged();
 			if ((_changed & (0x01 << 15)) != 0)
-				StringInt32_map.ClearChanged(stringInt32_);
+				stringInt32_.ClearChanged();
 			if ((_changed & (0x01 << 16)) != 0)
-				StringString_map.ClearChanged(stringString_);
+				stringString_.ClearChanged();
 			if ((_changed & (0x01 << 17)) != 0)
-				StringTimestamp_map.ClearChanged(stringTimestamp_);
+				stringTimestamp_.ClearChanged();
 			if ((_changed & (0x01 << 18)) != 0)
-				StringDuration_map.ClearChanged(stringDuration_);
+				stringDuration_.ClearChanged();
 			if ((_changed & (0x01 << 19)) != 0)
-				StringEmpty_map.ClearChanged(stringEmpty_);
+				stringEmpty_.ClearChanged();
 			if ((_changed & (0x01 << 20)) != 0)
-				StringItemType_map.ClearChanged(stringEnum_);
+				stringEnum_.ClearChanged();
 			if ((_changed & (0x01 << 21)) != 0)
-				StringItemData_map.ClearChanged(stringItemData_);
+				stringItemData_.ClearChanged();
 			if ((_changed & (0x01 << 22)) != 0)
-				BoolInt32_map.ClearChanged(boolInt32_);
+				boolInt32_.ClearChanged();
 			if ((_changed & (0x01 << 23)) != 0)
-				BoolString_map.ClearChanged(boolString_);
+				boolString_.ClearChanged();
 			if ((_changed & (0x01 << 24)) != 0)
-				BoolTimestamp_map.ClearChanged(boolTimestamp_);
+				boolTimestamp_.ClearChanged();
 			if ((_changed & (0x01 << 25)) != 0)
-				BoolDuration_map.ClearChanged(boolDuration_);
+				boolDuration_.ClearChanged();
 			if ((_changed & (0x01 << 26)) != 0)
-				BoolEmpty_map.ClearChanged(boolEmpty_);
+				boolEmpty_.ClearChanged();
 			if ((_changed & (0x01 << 27)) != 0)
-				BoolItemType_map.ClearChanged(boolEnum_);
+				boolEnum_.ClearChanged();
 			if ((_changed & (0x01 << 28)) != 0)
-				BoolItemData_map.ClearChanged(boolItemData_);
+				boolItemData_.ClearChanged();
 			_changed = 0;
 		}
 	}

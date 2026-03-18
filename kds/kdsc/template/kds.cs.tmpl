@@ -50,11 +50,20 @@
 {{- define "List"}}
 	public class {{.Name}} : IList<{{template "ListValueType" .}}>, ICollection<{{template "ListValueType" .}}>, IEnumerable<{{template "ListValueType" .}}>
 	{
+		public class EventChanged
+		{
+			public EventChanged()
+			{
+			}
+		}
+
 		private static readonly EqualityComparer<{{template "ListValueType" .}}> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<{{template "ListValueType" .}}>();
 
 		private {{template "ListValueType" .}}[] array = [];
 
 		private int count = 0;
+
+		public event Action<{{.Name}}, EventChanged>? OnChanged;
 
 		public int Count => count;
 
@@ -66,12 +75,14 @@
 			{
 				if (index < 0 || index >= count)
 					throw new ArgumentOutOfRangeException(nameof(index));
+
 				return array[index];
 			}
 			set
 			{
 				if (index < 0 || index >= count)
 					throw new ArgumentOutOfRangeException(nameof(index));
+
 				array[index] = value;
 			}
 		}
@@ -271,7 +282,7 @@
 
 		public void RaiseChanged()
 		{
-
+			OnChanged?.Invoke(this, new EventChanged());
 		}
 
 		public void ClearChanged()
@@ -283,24 +294,281 @@
 
 {{- /* MAP */ -}}
 {{- define "Map"}}
-	public static class {{.Name}}
+	public class {{.Name}} : IDictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>, ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>, IEnumerable<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>
 	{
-		public static string ToString(Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> data, string indent)
+		private class MapView<T> : ICollection<T>, IEnumerable<T>
+		{
+			private readonly {{.Name}} parent;
+
+			private readonly Func<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>, T> projection;
+
+			private readonly Func<T, bool> containsCheck;
+
+			public int Count => parent.Count;
+
+			public bool IsReadOnly => true;
+
+			public bool IsSynchronized => false;
+
+			public object SyncRoot => parent;
+
+			internal MapView({{.Name}} parent, Func<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>, T> projection, Func<T, bool> containsCheck)
+			{
+				this.parent = parent;
+				this.projection = projection;
+				this.containsCheck = containsCheck;
+			}
+
+			public void Add(T item)
+			{
+				throw new NotSupportedException();
+			}
+
+			public void Clear()
+			{
+				throw new NotSupportedException();
+			}
+
+			public bool Contains(T item)
+			{
+				return containsCheck(item);
+			}
+
+			public void CopyTo(T[] array, int arrayIndex)
+			{
+				if (arrayIndex < 0)
+				{
+					throw new ArgumentOutOfRangeException("arrayIndex");
+				}
+
+				if (arrayIndex + Count > array.Length)
+				{
+					throw new ArgumentException("Not enough space in the array", "array");
+				}
+
+				using IEnumerator<T> enumerator = GetEnumerator();
+				while (enumerator.MoveNext())
+				{
+					T current = enumerator.Current;
+					array[arrayIndex++] = current;
+				}
+			}
+
+			public IEnumerator<T> GetEnumerator()
+			{
+				return parent.list.Select(projection).GetEnumerator();
+			}
+
+			public bool Remove(T item)
+			{
+				throw new NotSupportedException();
+			}
+
+			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+
+			public void CopyTo(Array array, int index)
+			{
+				if (index < 0)
+				{
+					throw new ArgumentOutOfRangeException("index");
+				}
+
+				if (index + Count > array.Length)
+				{
+					throw new ArgumentException("Not enough space in the array", "array");
+				}
+
+				using IEnumerator<T> enumerator = GetEnumerator();
+				while (enumerator.MoveNext())
+				{
+					T current = enumerator.Current;
+					array.SetValue(current, index++);
+				}
+			}
+		}
+
+		public class EventChanged
+		{
+			private bool _clear;
+			public bool Clear => _clear;
+
+			private ICollection<{{template "Type" .KeyType}}> _deletes;
+			public ICollection<{{template "Type" .KeyType}}> Deletes => _deletes;
+
+			private ICollection<{{template "Type" .KeyType}}> _updates;
+			public ICollection<{{template "Type" .KeyType}}> Updates => _updates;
+
+			public EventChanged(bool clear, ICollection<{{template "Type" .KeyType}}> deletes, ICollection<{{template "Type" .KeyType}}> updates)
+			{
+				_clear = clear;
+				_deletes = deletes;
+				_updates = updates;
+			}
+		}
+
+		private static readonly EqualityComparer<{{template "MapValueType" .}}> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<{{template "MapValueType" .}}>();
+
+    	private static readonly EqualityComparer<{{template "Type" .KeyType}}> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<{{template "Type" .KeyType}}>();
+
+		private readonly Dictionary<{{template "Type" .KeyType}}, LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>> map = new Dictionary<{{template "Type" .KeyType}}, LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>>(KeyEqualityComparer);
+
+		private readonly LinkedList<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>> list = new LinkedList<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>();
+
+		private bool _clear = false;
+
+		private readonly HashSet<{{template "Type" .KeyType}}> _deletes = new HashSet<{{template "Type" .KeyType}}>(KeyEqualityComparer);
+
+		private readonly Dictionary<{{template "Type" .KeyType}}, LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>> _updates = new Dictionary<{{template "Type" .KeyType}}, LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>>(KeyEqualityComparer);
+
+		public event Action<{{.Name}}, EventChanged>? OnChanged;
+
+		public {{template "MapValueType" .}} this[{{template "Type" .KeyType}} key]
+		{
+			get
+			{
+				if (TryGetValue(key, out var value))
+					return value;
+				throw new KeyNotFoundException(nameof(key));
+			}
+			set
+			{
+				KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> value2 = new KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>(key, value);
+				LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>> value3;
+				if (map.TryGetValue(key, out value3))
+				{
+					value3.Value = value2;
+				}
+				else
+				{
+					value3 = list.AddLast(value2);
+					map[key] = value3;
+				}
+				_updates[key] = value3;
+				_deletes.Remove(key);
+			}
+		}
+
+		public ICollection<{{template "Type" .KeyType}}> Keys => new MapView<{{template "Type" .KeyType}}>(this, (KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> pair) => pair.Key, ContainsKey);
+
+		public ICollection<{{template "MapValueType" .}}> Values => new MapView<{{template "MapValueType" .}}>(this, (KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> pair) => pair.Value, ContainsValue);
+
+		public int Count => list.Count;
+
+		public bool IsReadOnly => false;
+
+		public void Add({{template "Type" .KeyType}} key, {{template "MapValueType" .}} value)
+		{
+			if (ContainsKey(key))
+				throw new ArgumentException("Key already exists in map", "key");
+			
+			this[key] = value;
+		}
+
+		public bool ContainsKey({{template "Type" .KeyType}} key)
+		{
+			return map.ContainsKey(key);
+		}
+
+		private bool ContainsValue({{template "MapValueType" .}} value)
+		{
+			return list.Any((KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+		}
+
+		public bool Remove({{template "Type" .KeyType}} key)
+		{
+			if (map.TryGetValue(key, out var value))
+			{
+				map.Remove(key);
+				list.Remove(value);
+				_updates.Remove(key);
+				_deletes.Add(key);
+				return true;
+			}
+			return false;
+		}
+
+		public bool TryGetValue({{template "Type" .KeyType}} key, out {{template "MapValueType" .}} value)
+		{
+			if (map.TryGetValue(key, out var value2))
+			{
+				value = value2.Value.Value;
+				return true;
+			}
+			value = default;
+			return false;
+		}
+
+		void ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>.Add(KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> item)
+		{
+			Add(item.Key, item.Value);
+		}
+
+		public void Clear()
+		{
+			map.Clear();
+			list.Clear();
+			_updates.Clear();
+			_deletes.Clear();
+			_clear = true;
+		}
+
+		bool ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>.Contains(KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> item)
+		{
+			if (TryGetValue(item.Key, out var value))
+				return ValueEqualityComparer.Equals(item.Value, value);
+
+			return false;
+		}
+
+		void ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>.CopyTo(KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>[] array, int arrayIndex)
+		{
+			list.CopyTo(array, arrayIndex);
+		}
+
+		bool ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>.Remove(KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> item)
+		{
+			if (item.Key == null)
+				throw new ArgumentException("Key is null", "item");
+
+			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<{{template "MapValueType" .}}>.Default.Equals(item.Value, value.Value.Value))
+			{
+				map.Remove(item.Key);
+				value.List.Remove(value);
+				return true;
+			}
+
+			return false;
+		}
+
+		public IEnumerator<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>> GetEnumerator()
+		{
+			return list.GetEnumerator();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			var keys = data.Keys.ToList();
+			var sortedKeys = new List<{{template "Type" .KeyType}}>(map.Keys);
 {{- if eq .KeyType "bool"}}
-			keys.Sort((a, b) => {
+			sortedKeys.Sort((a, b) => {
 				if (a) return b ? 0 : 1;
 				return b ? -1 : 0;
 			});
 {{- else}}
-			keys.Sort();
+			sortedKeys.Sort();
 {{- end}}
-			foreach (var k in keys)
+			foreach (var k in sortedKeys)
 			{
-				var v = data[k];
+				var v = map[k].Value.Value;
 {{- if eq .KeyType "bool"}}
 				var key = k.ToString().ToLower();
 {{- else}}
@@ -352,7 +620,7 @@
 			return sb.ToString();
 		}
 
-		public static void ApplySync(Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
@@ -380,31 +648,31 @@
 			}
 			if (clear)
 			{
-				data.Clear();
+				Clear();
 			}
 			stream = new CodedInputStream(deletes);
 			while (!stream.IsAtEnd)
 			{
 {{- if eq .KeyType "int32"}}
-				data.Remove(stream.ReadInt32());
+				Remove(stream.ReadInt32());
 {{- else if eq .KeyType "int64"}}
-				data.Remove(stream.ReadInt64());
+				Remove(stream.ReadInt64());
 {{- else if eq .KeyType "uint32"}}
-				data.Remove(stream.ReadUInt32());
+				Remove(stream.ReadUInt32());
 {{- else if eq .KeyType "uint64"}}
-				data.Remove(stream.ReadUInt64());
+				Remove(stream.ReadUInt64());
 {{- else if eq .KeyType "sint64"}}
-				data.Remove(stream.ReadSInt32());
+				Remove(stream.ReadSInt32());
 {{- else if eq .KeyType "sint64"}}
-				data.Remove(stream.ReadSInt64());
+				Remove(stream.ReadSInt64());
 {{- else if eq .KeyType "sfixed32"}}
-				data.Remove(stream.ReadSFixed32());
+				Remove(stream.ReadSFixed32());
 {{- else if eq .KeyType "sfixed64"}}
-				data.Remove(stream.ReadSFixed64());
+				Remove(stream.ReadSFixed64());
 {{- else if eq .KeyType "bool"}}
-				data.Remove(stream.ReadBool());
+				Remove(stream.ReadBool());
 {{- else if eq .KeyType "string"}}
-				data.Remove(stream.ReadString());
+				Remove(stream.ReadString());
 {{- else}}
 				stream.SkipLastField();
 {{- end}}
@@ -509,30 +777,38 @@
 					}
 				}
 {{- if eq .TypeKind "component"}}
-				if (data.TryGetValue(k, out var c))
+				if (TryGetValue(k, out var c))
 				{
-					c.ApplySync(v);	
+					c.ApplySync(v);
 				}
 				else
 				{
 					c = new {{.Type}}();
 					c.ApplySync(v);
-					data[k] = c;
+					this[k] = c;
 				}
 {{- else}}
-				data[k] = v;
+				this[k] = v;
 {{- end}}
 			}
 		}
 
-		public static void RaiseChanged(Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> data)
+		public void RaiseChanged()
 		{
-			// FIXME:
+			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+				return;
+{{- if eq .TypeKind "component"}}
+			foreach (var v in _updates.Values)
+				v.Value.Value.RaiseChanged();
+{{- end}}
+			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
 		}
 
-		public static void ClearChanged(Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> data)
+		public void ClearChanged()
 		{
-			// FIXME:
+			_clear = false;
+			_deletes.Clear();
+			_updates.Clear();
 		}
 	}
 {{- end}}
@@ -557,8 +833,8 @@
 		private {{.ListType}} {{template "FieldName" .}};
 		public {{.ListType}} {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else if .Map}}
-		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "FieldName" .}};
-		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "PropertyName" .}} => {{template "FieldName" .}};
+		private {{.MapType}} {{template "FieldName" .}};
+		public {{.MapType}} {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else if eq .TypeKind "component"}}
 		private {{.Type}} {{template "FieldName" .}};
 		public {{.Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
@@ -593,7 +869,7 @@
 {{- if .Repeated}}
 			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
 {{- else if .Map}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{.MapType}}.ToString({{template "FieldName" .}}, indent + "  "));
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
 {{- else if eq .TypeKind "component"}}
 			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
 {{- else if eq .TypeKind "enum"}}
@@ -654,7 +930,7 @@
 {{- if .Repeated}}
 					{{template "FieldName" .}}.ApplySync(stream.ReadBytes().ToByteArray());
 {{- else if .Map}}
-					{{.MapType}}.ApplySync({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
+					{{template "FieldName" .}}.ApplySync(stream.ReadBytes().ToByteArray());
 {{- else if eq .TypeKind "component"}}
 					{{template "FieldName" .}}.ApplySync(stream.ReadBytes().ToByteArray());
 {{- else if eq .TypeKind "enum"}}
@@ -718,7 +994,7 @@
 				{{template "FieldName" .}}.RaiseChanged();
 {{- else if .Map}}
 			if ((_changed & (0x01 << {{.Number}})) != 0)
-				{{.MapType}}.RaiseChanged({{template "FieldName" .}});
+				{{template "FieldName" .}}.RaiseChanged();
 {{- else if eq .TypeKind "component"}}
 			if ((_changed & (0x01 << {{.Number}})) != 0)
 				{{template "FieldName" .}}.RaiseChanged();
@@ -737,7 +1013,7 @@
 				{{template "FieldName" .}}.ClearChanged();
 {{- else if .Map}}
 			if ((_changed & (0x01 << {{.Number}})) != 0)
-				{{.MapType}}.ClearChanged({{template "FieldName" .}});
+				{{template "FieldName" .}}.ClearChanged();
 {{- else if eq .TypeKind "component"}}
 			if ((_changed & (0x01 << {{.Number}})) != 0)
 				{{template "FieldName" .}}.ClearChanged();
@@ -762,7 +1038,7 @@
 {{- if .Repeated}}
 			{{template "FieldName" .}} = new {{.ListType}}();
 {{- else if .Map}}
-			{{template "FieldName" .}} = new Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>();
+			{{template "FieldName" .}} = new {{.MapType}}();
 {{- else if eq .TypeKind "component"}}
 			{{template "FieldName" .}} = new {{.Type}}();
 {{- else if eq .Type "string"}}
@@ -789,7 +1065,7 @@
 {{- if .Repeated}}
 			{{template "FieldName" .}} = new {{.ListType}}();
 {{- else if .Map}}
-			{{template "FieldName" .}} = new Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>();
+			{{template "FieldName" .}} = new {{.MapType}}();
 {{- else if eq .TypeKind "component"}}
 			{{template "FieldName" .}} = new {{.Type}}();
 {{- else if eq .Type "string"}}
