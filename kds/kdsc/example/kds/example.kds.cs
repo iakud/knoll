@@ -366,51 +366,51 @@ namespace kds
 	{
 		public AllList()
 		{
-			int32List_ = new List<int>();
-			int64List_ = new List<long>();
-			floatList_ = new List<float>();
-			doubleList_ = new List<double>();
-			boolList_ = new List<bool>();
-			stringList_ = new List<string>();
-			timestampList_ = new List<Timestamp>();
-			durationList_ = new List<Duration>();
-			emptyList_ = new List<Empty>();
-			enumList_ = new List<ItemType>();
-			itemList_ = new List<ItemData>();
+			int32List_ = new Int32_list();
+			int64List_ = new Int64_list();
+			floatList_ = new Float_list();
+			doubleList_ = new Double_list();
+			boolList_ = new Bool_list();
+			stringList_ = new String_list();
+			timestampList_ = new Timestamp_list();
+			durationList_ = new Duration_list();
+			emptyList_ = new Empty_list();
+			enumList_ = new ItemType_list();
+			itemList_ = new ItemData_list();
 		}
 
-		private List<int> int32List_;
-		public List<int> Int32List => int32List_;
+		private Int32_list int32List_;
+		public Int32_list Int32List => int32List_;
 
-		private List<long> int64List_;
-		public List<long> Int64List => int64List_;
+		private Int64_list int64List_;
+		public Int64_list Int64List => int64List_;
 
-		private List<float> floatList_;
-		public List<float> FloatList => floatList_;
+		private Float_list floatList_;
+		public Float_list FloatList => floatList_;
 
-		private List<double> doubleList_;
-		public List<double> DoubleList => doubleList_;
+		private Double_list doubleList_;
+		public Double_list DoubleList => doubleList_;
 
-		private List<bool> boolList_;
-		public List<bool> BoolList => boolList_;
+		private Bool_list boolList_;
+		public Bool_list BoolList => boolList_;
 
-		private List<string> stringList_;
-		public List<string> StringList => stringList_;
+		private String_list stringList_;
+		public String_list StringList => stringList_;
 
-		private List<Timestamp> timestampList_;
-		public List<Timestamp> TimestampList => timestampList_;
+		private Timestamp_list timestampList_;
+		public Timestamp_list TimestampList => timestampList_;
 
-		private List<Duration> durationList_;
-		public List<Duration> DurationList => durationList_;
+		private Duration_list durationList_;
+		public Duration_list DurationList => durationList_;
 
-		private List<Empty> emptyList_;
-		public List<Empty> EmptyList => emptyList_;
+		private Empty_list emptyList_;
+		public Empty_list EmptyList => emptyList_;
 
-		private List<ItemType> enumList_;
-		public List<ItemType> EnumList => enumList_;
+		private ItemType_list enumList_;
+		public ItemType_list EnumList => enumList_;
 
-		private List<ItemData> itemList_;
-		public List<ItemData> ItemList => itemList_;
+		private ItemData_list itemList_;
+		public ItemData_list ItemList => itemList_;
 
 		private long _changed;
 
@@ -441,17 +441,17 @@ namespace kds
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("{\n");
-			sb.AppendLine(indent + "  Int32List = " + Int32_list.ToString(int32List_, indent + "  "));
-			sb.AppendLine(indent + "  Int64List = " + Int64_list.ToString(int64List_, indent + "  "));
-			sb.AppendLine(indent + "  FloatList = " + Float_list.ToString(floatList_, indent + "  "));
-			sb.AppendLine(indent + "  DoubleList = " + Double_list.ToString(doubleList_, indent + "  "));
-			sb.AppendLine(indent + "  BoolList = " + Bool_list.ToString(boolList_, indent + "  "));
-			sb.AppendLine(indent + "  StringList = " + String_list.ToString(stringList_, indent + "  "));
-			sb.AppendLine(indent + "  TimestampList = " + Timestamp_list.ToString(timestampList_, indent + "  "));
-			sb.AppendLine(indent + "  DurationList = " + Duration_list.ToString(durationList_, indent + "  "));
-			sb.AppendLine(indent + "  EmptyList = " + Empty_list.ToString(emptyList_, indent + "  "));
-			sb.AppendLine(indent + "  EnumList = " + ItemType_list.ToString(enumList_, indent + "  "));
-			sb.AppendLine(indent + "  ItemList = " + ItemData_list.ToString(itemList_, indent + "  "));
+			sb.AppendLine(indent + "  Int32List = " + int32List_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Int64List = " + int64List_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  FloatList = " + floatList_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  DoubleList = " + doubleList_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  BoolList = " + boolList_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  StringList = " + stringList_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  TimestampList = " + timestampList_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  DurationList = " + durationList_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  EmptyList = " + emptyList_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  EnumList = " + enumList_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  ItemList = " + itemList_.ToString(indent + "  "));
 			sb.Append(indent + "}");
 			return sb.ToString();
 		}
@@ -466,47 +466,47 @@ namespace kds
 				switch (num)
 				{
 				case 1:
-					Int32_list.ApplySync(int32List_, stream.ReadBytes().ToByteArray());
+					int32List_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 1;
 					break;
 				case 2:
-					Int64_list.ApplySync(int64List_, stream.ReadBytes().ToByteArray());
+					int64List_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 2;
 					break;
 				case 3:
-					Float_list.ApplySync(floatList_, stream.ReadBytes().ToByteArray());
+					floatList_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 3;
 					break;
 				case 4:
-					Double_list.ApplySync(doubleList_, stream.ReadBytes().ToByteArray());
+					doubleList_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 4;
 					break;
 				case 5:
-					Bool_list.ApplySync(boolList_, stream.ReadBytes().ToByteArray());
+					boolList_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 5;
 					break;
 				case 6:
-					String_list.ApplySync(stringList_, stream.ReadBytes().ToByteArray());
+					stringList_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 6;
 					break;
 				case 7:
-					Timestamp_list.ApplySync(timestampList_, stream.ReadBytes().ToByteArray());
+					timestampList_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 7;
 					break;
 				case 8:
-					Duration_list.ApplySync(durationList_, stream.ReadBytes().ToByteArray());
+					durationList_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 8;
 					break;
 				case 9:
-					Empty_list.ApplySync(emptyList_, stream.ReadBytes().ToByteArray());
+					emptyList_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 9;
 					break;
 				case 10:
-					ItemType_list.ApplySync(enumList_, stream.ReadBytes().ToByteArray());
+					enumList_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 10;
 					break;
 				case 11:
-					ItemData_list.ApplySync(itemList_, stream.ReadBytes().ToByteArray());
+					itemList_.ApplySync(stream.ReadBytes().ToByteArray());
 					_changed |= 0x01 << 11;
 					break;
 				default:
@@ -521,27 +521,27 @@ namespace kds
 			if (_changed == 0)
 				return;
 			if ((_changed & (0x01 << 1)) != 0)
-				Int32_list.RaiseChanged(int32List_);
+				int32List_.RaiseChanged();
 			if ((_changed & (0x01 << 2)) != 0)
-				Int64_list.RaiseChanged(int64List_);
+				int64List_.RaiseChanged();
 			if ((_changed & (0x01 << 3)) != 0)
-				Float_list.RaiseChanged(floatList_);
+				floatList_.RaiseChanged();
 			if ((_changed & (0x01 << 4)) != 0)
-				Double_list.RaiseChanged(doubleList_);
+				doubleList_.RaiseChanged();
 			if ((_changed & (0x01 << 5)) != 0)
-				Bool_list.RaiseChanged(boolList_);
+				boolList_.RaiseChanged();
 			if ((_changed & (0x01 << 6)) != 0)
-				String_list.RaiseChanged(stringList_);
+				stringList_.RaiseChanged();
 			if ((_changed & (0x01 << 7)) != 0)
-				Timestamp_list.RaiseChanged(timestampList_);
+				timestampList_.RaiseChanged();
 			if ((_changed & (0x01 << 8)) != 0)
-				Duration_list.RaiseChanged(durationList_);
+				durationList_.RaiseChanged();
 			if ((_changed & (0x01 << 9)) != 0)
-				Empty_list.RaiseChanged(emptyList_);
+				emptyList_.RaiseChanged();
 			if ((_changed & (0x01 << 10)) != 0)
-				ItemType_list.RaiseChanged(enumList_);
+				enumList_.RaiseChanged();
 			if ((_changed & (0x01 << 11)) != 0)
-				ItemData_list.RaiseChanged(itemList_);
+				itemList_.RaiseChanged();
 			OnChanged?.Invoke(this, new EventChanged(_changed));
 		}
 
@@ -550,27 +550,27 @@ namespace kds
 			if (_changed == 0)
 				return;
 			if ((_changed & (0x01 << 1)) != 0)
-				Int32_list.ClearChanged(int32List_);
+				int32List_.ClearChanged();
 			if ((_changed & (0x01 << 2)) != 0)
-				Int64_list.ClearChanged(int64List_);
+				int64List_.ClearChanged();
 			if ((_changed & (0x01 << 3)) != 0)
-				Float_list.ClearChanged(floatList_);
+				floatList_.ClearChanged();
 			if ((_changed & (0x01 << 4)) != 0)
-				Double_list.ClearChanged(doubleList_);
+				doubleList_.ClearChanged();
 			if ((_changed & (0x01 << 5)) != 0)
-				Bool_list.ClearChanged(boolList_);
+				boolList_.ClearChanged();
 			if ((_changed & (0x01 << 6)) != 0)
-				String_list.ClearChanged(stringList_);
+				stringList_.ClearChanged();
 			if ((_changed & (0x01 << 7)) != 0)
-				Timestamp_list.ClearChanged(timestampList_);
+				timestampList_.ClearChanged();
 			if ((_changed & (0x01 << 8)) != 0)
-				Duration_list.ClearChanged(durationList_);
+				durationList_.ClearChanged();
 			if ((_changed & (0x01 << 9)) != 0)
-				Empty_list.ClearChanged(emptyList_);
+				emptyList_.ClearChanged();
 			if ((_changed & (0x01 << 10)) != 0)
-				ItemType_list.ClearChanged(enumList_);
+				enumList_.ClearChanged();
 			if ((_changed & (0x01 << 11)) != 0)
-				ItemData_list.ClearChanged(itemList_);
+				itemList_.ClearChanged();
 			_changed = 0;
 		}
 	}

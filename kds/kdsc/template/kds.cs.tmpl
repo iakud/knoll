@@ -48,14 +48,119 @@
 
 {{- /* LIST */ -}}
 {{- define "List"}}
-	public static class {{.Name}}
+	public class {{.Name}} : IList<{{template "ListValueType" .}}>, ICollection<{{template "ListValueType" .}}>, IEnumerable<{{template "ListValueType" .}}>
 	{
-		public static string ToString(List<{{template "ListValueType" .}}> data, string indent)
+		private {{template "ListValueType" .}}[] array = [];
+
+		private int count = 0;
+
+		public int Count => count;
+
+		public bool IsReadOnly => false;
+
+		public {{template "ListValueType" .}} this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return array[index];
+			}
+			set
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				array[index] = value;
+			}
+		}
+
+		private void EnsureSize(int size)
+		{
+			if (array.Length < size)
+			{
+				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+				if (newCapacity < size)
+					newCapacity = size;
+				var newData = new {{template "ListValueType" .}}[newCapacity];
+				Array.Copy(array, newData, count);
+				array = newData;
+			}
+		}
+
+		public void Add({{template "ListValueType" .}} item)
+		{
+			EnsureSize(count + 1);
+			array[count++] = item;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(array, 0, count);
+			count = 0;
+		}
+
+		public bool Contains({{template "ListValueType" .}} item)
+		{
+			return IndexOf(item) != -1;
+		}
+
+		public void CopyTo({{template "ListValueType" .}}[] array, int arrayIndex)
+		{
+			Array.Copy(array, 0, array, arrayIndex, count);
+		}
+
+		public bool Remove({{template "ListValueType" .}} item)
+		{
+			var num = IndexOf(item);
+			if (num == -1)
+				return false;
+			Array.Copy(array, num + 1, array, num, count - num - 1);
+			count--;
+			array[count] = default;
+			return true;
+		}
+
+		public int IndexOf({{template "ListValueType" .}} item)
+		{
+			return Array.IndexOf(array, item, 0, count);
+		}
+
+		public void Insert(int index, {{template "ListValueType" .}} item)
+		{
+			if (index < 0 || index > count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			EnsureSize(count + 1);
+			Array.Copy(array, index, array, index + 1, count - index);
+			array[index] = item;
+			count++;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index >= count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			count--;
+			array[count] = default;
+		}
+
+		public IEnumerator<{{template "ListValueType" .}}> GetEnumerator()
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return array[i];
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			foreach (var v in data)
+			for (int i = 0; i < count; i++)
 			{
+				var v = array[i];
 {{- if eq .TypeKind "component"}}
 				sb.AppendLine(indent + "  " + v.ToString(indent + "  "));
 {{- else if eq .TypeKind "enum"}}
@@ -102,64 +207,64 @@
 			return sb.ToString();
 		}
 
-		public static void ApplySync(List<{{template "ListValueType" .}}> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
-			data.Clear();
+			Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
 {{- if eq .TypeKind "component"}}
 				var v = new {{.Type}}();
 				v.ApplySync(stream.ReadBytes().ToByteArray());
-				data.Add(v);
+				Add(v);
 {{- else if eq .TypeKind "enum"}}
-				data.Add(({{.Type}})stream.ReadEnum());
+				Add(({{.Type}})stream.ReadEnum());
 {{- else if eq .Type "bool"}}
-				data.Add(stream.ReadBool());
+				Add(stream.ReadBool());
 {{- else if eq .Type "int32"}}
-				data.Add(stream.ReadInt32());
+				Add(stream.ReadInt32());
 {{- else if eq .Type "sint32"}}
-				data.Add(stream.ReadSInt32());
+				Add(stream.ReadSInt32());
 {{- else if eq .Type "uint32"}}
-				data.Add(stream.ReadUInt32());
+				Add(stream.ReadUInt32());
 {{- else if eq .Type "int64"}}
-				data.Add(stream.ReadInt64());
+				Add(stream.ReadInt64());
 {{- else if eq .Type "sint64"}}
-				data.Add(stream.ReadSInt64());
+				Add(stream.ReadSInt64());
 {{- else if eq .Type "uint64"}}
-				data.Add(stream.ReadUInt64());
+				Add(stream.ReadUInt64());
 {{- else if eq .Type "fixed32"}}
-				data.Add(stream.ReadFixed32());
+				Add(stream.ReadFixed32());
 {{- else if eq .Type "sfixed32"}}
-				data.Add(stream.ReadSFixed32());
+				Add(stream.ReadSFixed32());
 {{- else if eq .Type "fixed64"}}
-				data.Add(stream.ReadFixed64());
+				Add(stream.ReadFixed64());
 {{- else if eq .Type "sfixed64"}}
-				data.Add(stream.ReadSFixed64());
+				Add(stream.ReadSFixed64());
 {{- else if eq .Type "float"}}
-				data.Add(stream.ReadFloat());
+				Add(stream.ReadFloat());
 {{- else if eq .Type "double"}}
-				data.Add(stream.ReadDouble());
+				Add(stream.ReadDouble());
 {{- else if eq .Type "string"}}
-				data.Add(stream.ReadString());
+				Add(stream.ReadString());
 {{- else if eq .Type "bytes"}}
-				data.Add(stream.ReadBytes());
+				Add(stream.ReadBytes());
 {{- else if eq .Type "timestamp"}}
-				data.Add(Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
+				Add(Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
 {{- else if eq .Type "duration"}}
-				data.Add(Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
+				Add(Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
 {{- else if eq .Type "empty"}}
-				data.Add(Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
+				Add(Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
 {{- end}}
 			}
 		}
 
-		public static void RaiseChanged(List<{{template "ListValueType" .}}> data)
+		public void RaiseChanged()
 		{
 
 		}
 
-		public static void ClearChanged(List<{{template "ListValueType" .}}> data)
+		public void ClearChanged()
 		{
 
 		}
@@ -439,8 +544,8 @@
 {{- range .Fields}}
 {{/* EMPTY LINE */}}
 {{- if .Repeated}}
-		private List<{{template "ListValueType" .}}> {{template "FieldName" .}};
-		public List<{{template "ListValueType" .}}> {{template "PropertyName" .}} => {{template "FieldName" .}};
+		private {{.ListType}} {{template "FieldName" .}};
+		public {{.ListType}} {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else if .Map}}
 		private Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "FieldName" .}};
 		public Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> {{template "PropertyName" .}} => {{template "FieldName" .}};
@@ -476,7 +581,7 @@
 			sb.Append("{\n");
 {{- range .Fields}}
 {{- if .Repeated}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{.ListType}}.ToString({{template "FieldName" .}}, indent + "  "));
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
 {{- else if .Map}}
 			sb.AppendLine(indent + "  {{.Name}} = " + {{.MapType}}.ToString({{template "FieldName" .}}, indent + "  "));
 {{- else if eq .TypeKind "component"}}
@@ -537,7 +642,7 @@
 {{- range .Fields}}
 				case {{.Number}}:
 {{- if .Repeated}}
-					{{.ListType}}.ApplySync({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
+					{{template "FieldName" .}}.ApplySync(stream.ReadBytes().ToByteArray());
 {{- else if .Map}}
 					{{.MapType}}.ApplySync({{template "FieldName" .}}, stream.ReadBytes().ToByteArray());
 {{- else if eq .TypeKind "component"}}
@@ -600,7 +705,7 @@
 {{- range .Fields}}
 {{- if .Repeated}}
 			if ((_changed & (0x01 << {{.Number}})) != 0)
-				{{.ListType}}.RaiseChanged({{template "FieldName" .}});
+				{{template "FieldName" .}}.RaiseChanged();
 {{- else if .Map}}
 			if ((_changed & (0x01 << {{.Number}})) != 0)
 				{{.MapType}}.RaiseChanged({{template "FieldName" .}});
@@ -619,7 +724,7 @@
 {{- range .Fields}}
 {{- if .Repeated}}
 			if ((_changed & (0x01 << {{.Number}})) != 0)
-				{{.ListType}}.ClearChanged({{template "FieldName" .}});
+				{{template "FieldName" .}}.ClearChanged();
 {{- else if .Map}}
 			if ((_changed & (0x01 << {{.Number}})) != 0)
 				{{.MapType}}.ClearChanged({{template "FieldName" .}});
@@ -645,7 +750,7 @@
 			_id = id;
 {{- range .Fields}}
 {{- if .Repeated}}
-			{{template "FieldName" .}} = new List<{{template "ListValueType" .}}>();
+			{{template "FieldName" .}} = new {{.ListType}}();
 {{- else if .Map}}
 			{{template "FieldName" .}} = new Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>();
 {{- else if eq .TypeKind "component"}}
@@ -672,7 +777,7 @@
 		{
 {{- range .Fields}}
 {{- if .Repeated}}
-			{{template "FieldName" .}} = new List<{{template "ListValueType" .}}>();
+			{{template "FieldName" .}} = new {{.ListType}}();
 {{- else if .Map}}
 			{{template "FieldName" .}} = new Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>();
 {{- else if eq .TypeKind "component"}}

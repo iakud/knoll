@@ -10,104 +10,419 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace kds
 {
-	public static class Bool_list
+	public class Bool_list : IList<bool>, ICollection<bool>, IEnumerable<bool>
 	{
-		public static string ToString(List<bool> data, string indent)
+		private bool[] array = [];
+
+		private int count = 0;
+
+		public int Count => count;
+
+		public bool IsReadOnly => false;
+
+		public bool this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return array[index];
+			}
+			set
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				array[index] = value;
+			}
+		}
+
+		private void EnsureSize(int size)
+		{
+			if (array.Length < size)
+			{
+				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+				if (newCapacity < size)
+					newCapacity = size;
+				var newData = new bool[newCapacity];
+				Array.Copy(array, newData, count);
+				array = newData;
+			}
+		}
+
+		public void Add(bool item)
+		{
+			EnsureSize(count + 1);
+			array[count++] = item;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(array, 0, count);
+			count = 0;
+		}
+
+		public bool Contains(bool item)
+		{
+			return IndexOf(item) != -1;
+		}
+
+		public void CopyTo(bool[] array, int arrayIndex)
+		{
+			Array.Copy(array, 0, array, arrayIndex, count);
+		}
+
+		public bool Remove(bool item)
+		{
+			var num = IndexOf(item);
+			if (num == -1)
+				return false;
+			Array.Copy(array, num + 1, array, num, count - num - 1);
+			count--;
+			array[count] = default;
+			return true;
+		}
+
+		public int IndexOf(bool item)
+		{
+			return Array.IndexOf(array, item, 0, count);
+		}
+
+		public void Insert(int index, bool item)
+		{
+			if (index < 0 || index > count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			EnsureSize(count + 1);
+			Array.Copy(array, index, array, index + 1, count - index);
+			array[index] = item;
+			count++;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index >= count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			count--;
+			array[count] = default;
+		}
+
+		public IEnumerator<bool> GetEnumerator()
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return array[i];
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			foreach (var v in data)
+			for (int i = 0; i < count; i++)
 			{
+				var v = array[i];
 				sb.AppendLine(indent + "  " + v.ToString().ToLower());
 			}
 			sb.Append(indent + "]");
 			return sb.ToString();
 		}
 
-		public static void ApplySync(List<bool> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
-			data.Clear();
+			Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(stream.ReadBool());
+				Add(stream.ReadBool());
 			}
 		}
 
-		public static void RaiseChanged(List<bool> data)
+		public void RaiseChanged()
 		{
 
 		}
 
-		public static void ClearChanged(List<bool> data)
+		public void ClearChanged()
 		{
 
 		}
 	}
-	public static class Double_list
+	public class Double_list : IList<double>, ICollection<double>, IEnumerable<double>
 	{
-		public static string ToString(List<double> data, string indent)
+		private double[] array = [];
+
+		private int count = 0;
+
+		public int Count => count;
+
+		public bool IsReadOnly => false;
+
+		public double this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return array[index];
+			}
+			set
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				array[index] = value;
+			}
+		}
+
+		private void EnsureSize(int size)
+		{
+			if (array.Length < size)
+			{
+				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+				if (newCapacity < size)
+					newCapacity = size;
+				var newData = new double[newCapacity];
+				Array.Copy(array, newData, count);
+				array = newData;
+			}
+		}
+
+		public void Add(double item)
+		{
+			EnsureSize(count + 1);
+			array[count++] = item;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(array, 0, count);
+			count = 0;
+		}
+
+		public bool Contains(double item)
+		{
+			return IndexOf(item) != -1;
+		}
+
+		public void CopyTo(double[] array, int arrayIndex)
+		{
+			Array.Copy(array, 0, array, arrayIndex, count);
+		}
+
+		public bool Remove(double item)
+		{
+			var num = IndexOf(item);
+			if (num == -1)
+				return false;
+			Array.Copy(array, num + 1, array, num, count - num - 1);
+			count--;
+			array[count] = default;
+			return true;
+		}
+
+		public int IndexOf(double item)
+		{
+			return Array.IndexOf(array, item, 0, count);
+		}
+
+		public void Insert(int index, double item)
+		{
+			if (index < 0 || index > count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			EnsureSize(count + 1);
+			Array.Copy(array, index, array, index + 1, count - index);
+			array[index] = item;
+			count++;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index >= count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			count--;
+			array[count] = default;
+		}
+
+		public IEnumerator<double> GetEnumerator()
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return array[i];
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			foreach (var v in data)
+			for (int i = 0; i < count; i++)
 			{
+				var v = array[i];
 				sb.AppendLine(indent + "  " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
 			}
 			sb.Append(indent + "]");
 			return sb.ToString();
 		}
 
-		public static void ApplySync(List<double> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
-			data.Clear();
+			Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(stream.ReadDouble());
+				Add(stream.ReadDouble());
 			}
 		}
 
-		public static void RaiseChanged(List<double> data)
+		public void RaiseChanged()
 		{
 
 		}
 
-		public static void ClearChanged(List<double> data)
+		public void ClearChanged()
 		{
 
 		}
 	}
-	public static class Duration_list
+	public class Duration_list : IList<Duration>, ICollection<Duration>, IEnumerable<Duration>
 	{
-		public static string ToString(List<Duration> data, string indent)
+		private Duration[] array = [];
+
+		private int count = 0;
+
+		public int Count => count;
+
+		public bool IsReadOnly => false;
+
+		public Duration this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return array[index];
+			}
+			set
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				array[index] = value;
+			}
+		}
+
+		private void EnsureSize(int size)
+		{
+			if (array.Length < size)
+			{
+				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+				if (newCapacity < size)
+					newCapacity = size;
+				var newData = new Duration[newCapacity];
+				Array.Copy(array, newData, count);
+				array = newData;
+			}
+		}
+
+		public void Add(Duration item)
+		{
+			EnsureSize(count + 1);
+			array[count++] = item;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(array, 0, count);
+			count = 0;
+		}
+
+		public bool Contains(Duration item)
+		{
+			return IndexOf(item) != -1;
+		}
+
+		public void CopyTo(Duration[] array, int arrayIndex)
+		{
+			Array.Copy(array, 0, array, arrayIndex, count);
+		}
+
+		public bool Remove(Duration item)
+		{
+			var num = IndexOf(item);
+			if (num == -1)
+				return false;
+			Array.Copy(array, num + 1, array, num, count - num - 1);
+			count--;
+			array[count] = default;
+			return true;
+		}
+
+		public int IndexOf(Duration item)
+		{
+			return Array.IndexOf(array, item, 0, count);
+		}
+
+		public void Insert(int index, Duration item)
+		{
+			if (index < 0 || index > count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			EnsureSize(count + 1);
+			Array.Copy(array, index, array, index + 1, count - index);
+			array[index] = item;
+			count++;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index >= count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			count--;
+			array[count] = default;
+		}
+
+		public IEnumerator<Duration> GetEnumerator()
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return array[i];
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			foreach (var v in data)
+			for (int i = 0; i < count; i++)
 			{
+				var v = array[i];
 				sb.AppendLine(indent + "  {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
 			}
 			sb.Append(indent + "]");
 			return sb.ToString();
 		}
 
-		public static void ApplySync(List<Duration> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
-			data.Clear();
+			Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
+				Add(Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
 			}
 		}
 
-		public static void RaiseChanged(List<Duration> data)
+		public void RaiseChanged()
 		{
 
 		}
 
-		public static void ClearChanged(List<Duration> data)
+		public void ClearChanged()
 		{
 
 		}
@@ -467,36 +782,141 @@ namespace kds
 			// FIXME:
 		}
 	}
-	public static class Empty_list
+	public class Empty_list : IList<Empty>, ICollection<Empty>, IEnumerable<Empty>
 	{
-		public static string ToString(List<Empty> data, string indent)
+		private Empty[] array = [];
+
+		private int count = 0;
+
+		public int Count => count;
+
+		public bool IsReadOnly => false;
+
+		public Empty this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return array[index];
+			}
+			set
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				array[index] = value;
+			}
+		}
+
+		private void EnsureSize(int size)
+		{
+			if (array.Length < size)
+			{
+				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+				if (newCapacity < size)
+					newCapacity = size;
+				var newData = new Empty[newCapacity];
+				Array.Copy(array, newData, count);
+				array = newData;
+			}
+		}
+
+		public void Add(Empty item)
+		{
+			EnsureSize(count + 1);
+			array[count++] = item;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(array, 0, count);
+			count = 0;
+		}
+
+		public bool Contains(Empty item)
+		{
+			return IndexOf(item) != -1;
+		}
+
+		public void CopyTo(Empty[] array, int arrayIndex)
+		{
+			Array.Copy(array, 0, array, arrayIndex, count);
+		}
+
+		public bool Remove(Empty item)
+		{
+			var num = IndexOf(item);
+			if (num == -1)
+				return false;
+			Array.Copy(array, num + 1, array, num, count - num - 1);
+			count--;
+			array[count] = default;
+			return true;
+		}
+
+		public int IndexOf(Empty item)
+		{
+			return Array.IndexOf(array, item, 0, count);
+		}
+
+		public void Insert(int index, Empty item)
+		{
+			if (index < 0 || index > count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			EnsureSize(count + 1);
+			Array.Copy(array, index, array, index + 1, count - index);
+			array[index] = item;
+			count++;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index >= count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			count--;
+			array[count] = default;
+		}
+
+		public IEnumerator<Empty> GetEnumerator()
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return array[i];
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			foreach (var v in data)
+			for (int i = 0; i < count; i++)
 			{
+				var v = array[i];
 				sb.AppendLine(indent + "  {}");
 			}
 			sb.Append(indent + "]");
 			return sb.ToString();
 		}
 
-		public static void ApplySync(List<Empty> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
-			data.Clear();
+			Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
+				Add(Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
 			}
 		}
 
-		public static void RaiseChanged(List<Empty> data)
+		public void RaiseChanged()
 		{
 
 		}
 
-		public static void ClearChanged(List<Empty> data)
+		public void ClearChanged()
 		{
 
 		}
@@ -856,70 +1276,280 @@ namespace kds
 			// FIXME:
 		}
 	}
-	public static class Float_list
+	public class Float_list : IList<float>, ICollection<float>, IEnumerable<float>
 	{
-		public static string ToString(List<float> data, string indent)
+		private float[] array = [];
+
+		private int count = 0;
+
+		public int Count => count;
+
+		public bool IsReadOnly => false;
+
+		public float this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return array[index];
+			}
+			set
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				array[index] = value;
+			}
+		}
+
+		private void EnsureSize(int size)
+		{
+			if (array.Length < size)
+			{
+				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+				if (newCapacity < size)
+					newCapacity = size;
+				var newData = new float[newCapacity];
+				Array.Copy(array, newData, count);
+				array = newData;
+			}
+		}
+
+		public void Add(float item)
+		{
+			EnsureSize(count + 1);
+			array[count++] = item;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(array, 0, count);
+			count = 0;
+		}
+
+		public bool Contains(float item)
+		{
+			return IndexOf(item) != -1;
+		}
+
+		public void CopyTo(float[] array, int arrayIndex)
+		{
+			Array.Copy(array, 0, array, arrayIndex, count);
+		}
+
+		public bool Remove(float item)
+		{
+			var num = IndexOf(item);
+			if (num == -1)
+				return false;
+			Array.Copy(array, num + 1, array, num, count - num - 1);
+			count--;
+			array[count] = default;
+			return true;
+		}
+
+		public int IndexOf(float item)
+		{
+			return Array.IndexOf(array, item, 0, count);
+		}
+
+		public void Insert(int index, float item)
+		{
+			if (index < 0 || index > count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			EnsureSize(count + 1);
+			Array.Copy(array, index, array, index + 1, count - index);
+			array[index] = item;
+			count++;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index >= count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			count--;
+			array[count] = default;
+		}
+
+		public IEnumerator<float> GetEnumerator()
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return array[i];
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			foreach (var v in data)
+			for (int i = 0; i < count; i++)
 			{
+				var v = array[i];
 				sb.AppendLine(indent + "  " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
 			}
 			sb.Append(indent + "]");
 			return sb.ToString();
 		}
 
-		public static void ApplySync(List<float> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
-			data.Clear();
+			Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(stream.ReadFloat());
+				Add(stream.ReadFloat());
 			}
 		}
 
-		public static void RaiseChanged(List<float> data)
+		public void RaiseChanged()
 		{
 
 		}
 
-		public static void ClearChanged(List<float> data)
+		public void ClearChanged()
 		{
 
 		}
 	}
-	public static class Int32_list
+	public class Int32_list : IList<int>, ICollection<int>, IEnumerable<int>
 	{
-		public static string ToString(List<int> data, string indent)
+		private int[] array = [];
+
+		private int count = 0;
+
+		public int Count => count;
+
+		public bool IsReadOnly => false;
+
+		public int this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return array[index];
+			}
+			set
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				array[index] = value;
+			}
+		}
+
+		private void EnsureSize(int size)
+		{
+			if (array.Length < size)
+			{
+				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+				if (newCapacity < size)
+					newCapacity = size;
+				var newData = new int[newCapacity];
+				Array.Copy(array, newData, count);
+				array = newData;
+			}
+		}
+
+		public void Add(int item)
+		{
+			EnsureSize(count + 1);
+			array[count++] = item;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(array, 0, count);
+			count = 0;
+		}
+
+		public bool Contains(int item)
+		{
+			return IndexOf(item) != -1;
+		}
+
+		public void CopyTo(int[] array, int arrayIndex)
+		{
+			Array.Copy(array, 0, array, arrayIndex, count);
+		}
+
+		public bool Remove(int item)
+		{
+			var num = IndexOf(item);
+			if (num == -1)
+				return false;
+			Array.Copy(array, num + 1, array, num, count - num - 1);
+			count--;
+			array[count] = default;
+			return true;
+		}
+
+		public int IndexOf(int item)
+		{
+			return Array.IndexOf(array, item, 0, count);
+		}
+
+		public void Insert(int index, int item)
+		{
+			if (index < 0 || index > count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			EnsureSize(count + 1);
+			Array.Copy(array, index, array, index + 1, count - index);
+			array[index] = item;
+			count++;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index >= count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			count--;
+			array[count] = default;
+		}
+
+		public IEnumerator<int> GetEnumerator()
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return array[i];
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			foreach (var v in data)
+			for (int i = 0; i < count; i++)
 			{
+				var v = array[i];
 				sb.AppendLine(indent + "  " + v.ToString());
 			}
 			sb.Append(indent + "]");
 			return sb.ToString();
 		}
 
-		public static void ApplySync(List<int> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
-			data.Clear();
+			Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(stream.ReadInt32());
+				Add(stream.ReadInt32());
 			}
 		}
 
-		public static void RaiseChanged(List<int> data)
+		public void RaiseChanged()
 		{
 
 		}
 
-		public static void ClearChanged(List<int> data)
+		public void ClearChanged()
 		{
 
 		}
@@ -1191,36 +1821,141 @@ namespace kds
 			// FIXME:
 		}
 	}
-	public static class Int64_list
+	public class Int64_list : IList<long>, ICollection<long>, IEnumerable<long>
 	{
-		public static string ToString(List<long> data, string indent)
+		private long[] array = [];
+
+		private int count = 0;
+
+		public int Count => count;
+
+		public bool IsReadOnly => false;
+
+		public long this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return array[index];
+			}
+			set
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				array[index] = value;
+			}
+		}
+
+		private void EnsureSize(int size)
+		{
+			if (array.Length < size)
+			{
+				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+				if (newCapacity < size)
+					newCapacity = size;
+				var newData = new long[newCapacity];
+				Array.Copy(array, newData, count);
+				array = newData;
+			}
+		}
+
+		public void Add(long item)
+		{
+			EnsureSize(count + 1);
+			array[count++] = item;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(array, 0, count);
+			count = 0;
+		}
+
+		public bool Contains(long item)
+		{
+			return IndexOf(item) != -1;
+		}
+
+		public void CopyTo(long[] array, int arrayIndex)
+		{
+			Array.Copy(array, 0, array, arrayIndex, count);
+		}
+
+		public bool Remove(long item)
+		{
+			var num = IndexOf(item);
+			if (num == -1)
+				return false;
+			Array.Copy(array, num + 1, array, num, count - num - 1);
+			count--;
+			array[count] = default;
+			return true;
+		}
+
+		public int IndexOf(long item)
+		{
+			return Array.IndexOf(array, item, 0, count);
+		}
+
+		public void Insert(int index, long item)
+		{
+			if (index < 0 || index > count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			EnsureSize(count + 1);
+			Array.Copy(array, index, array, index + 1, count - index);
+			array[index] = item;
+			count++;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index >= count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			count--;
+			array[count] = default;
+		}
+
+		public IEnumerator<long> GetEnumerator()
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return array[i];
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			foreach (var v in data)
+			for (int i = 0; i < count; i++)
 			{
+				var v = array[i];
 				sb.AppendLine(indent + "  " + v.ToString());
 			}
 			sb.Append(indent + "]");
 			return sb.ToString();
 		}
 
-		public static void ApplySync(List<long> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
-			data.Clear();
+			Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(stream.ReadInt64());
+				Add(stream.ReadInt64());
 			}
 		}
 
-		public static void RaiseChanged(List<long> data)
+		public void RaiseChanged()
 		{
 
 		}
 
-		public static void ClearChanged(List<long> data)
+		public void ClearChanged()
 		{
 
 		}
@@ -1313,36 +2048,141 @@ namespace kds
 			// FIXME:
 		}
 	}
-	public static class String_list
+	public class String_list : IList<string>, ICollection<string>, IEnumerable<string>
 	{
-		public static string ToString(List<string> data, string indent)
+		private string[] array = [];
+
+		private int count = 0;
+
+		public int Count => count;
+
+		public bool IsReadOnly => false;
+
+		public string this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return array[index];
+			}
+			set
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				array[index] = value;
+			}
+		}
+
+		private void EnsureSize(int size)
+		{
+			if (array.Length < size)
+			{
+				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+				if (newCapacity < size)
+					newCapacity = size;
+				var newData = new string[newCapacity];
+				Array.Copy(array, newData, count);
+				array = newData;
+			}
+		}
+
+		public void Add(string item)
+		{
+			EnsureSize(count + 1);
+			array[count++] = item;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(array, 0, count);
+			count = 0;
+		}
+
+		public bool Contains(string item)
+		{
+			return IndexOf(item) != -1;
+		}
+
+		public void CopyTo(string[] array, int arrayIndex)
+		{
+			Array.Copy(array, 0, array, arrayIndex, count);
+		}
+
+		public bool Remove(string item)
+		{
+			var num = IndexOf(item);
+			if (num == -1)
+				return false;
+			Array.Copy(array, num + 1, array, num, count - num - 1);
+			count--;
+			array[count] = default;
+			return true;
+		}
+
+		public int IndexOf(string item)
+		{
+			return Array.IndexOf(array, item, 0, count);
+		}
+
+		public void Insert(int index, string item)
+		{
+			if (index < 0 || index > count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			EnsureSize(count + 1);
+			Array.Copy(array, index, array, index + 1, count - index);
+			array[index] = item;
+			count++;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index >= count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			count--;
+			array[count] = default;
+		}
+
+		public IEnumerator<string> GetEnumerator()
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return array[i];
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			foreach (var v in data)
+			for (int i = 0; i < count; i++)
 			{
+				var v = array[i];
 				sb.AppendLine(indent + "  " + v);
 			}
 			sb.Append(indent + "]");
 			return sb.ToString();
 		}
 
-		public static void ApplySync(List<string> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
-			data.Clear();
+			Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(stream.ReadString());
+				Add(stream.ReadString());
 			}
 		}
 
-		public static void RaiseChanged(List<string> data)
+		public void RaiseChanged()
 		{
 
 		}
 
-		public static void ClearChanged(List<string> data)
+		public void ClearChanged()
 		{
 
 		}
@@ -1702,36 +2542,141 @@ namespace kds
 			// FIXME:
 		}
 	}
-	public static class Timestamp_list
+	public class Timestamp_list : IList<Timestamp>, ICollection<Timestamp>, IEnumerable<Timestamp>
 	{
-		public static string ToString(List<Timestamp> data, string indent)
+		private Timestamp[] array = [];
+
+		private int count = 0;
+
+		public int Count => count;
+
+		public bool IsReadOnly => false;
+
+		public Timestamp this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return array[index];
+			}
+			set
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				array[index] = value;
+			}
+		}
+
+		private void EnsureSize(int size)
+		{
+			if (array.Length < size)
+			{
+				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+				if (newCapacity < size)
+					newCapacity = size;
+				var newData = new Timestamp[newCapacity];
+				Array.Copy(array, newData, count);
+				array = newData;
+			}
+		}
+
+		public void Add(Timestamp item)
+		{
+			EnsureSize(count + 1);
+			array[count++] = item;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(array, 0, count);
+			count = 0;
+		}
+
+		public bool Contains(Timestamp item)
+		{
+			return IndexOf(item) != -1;
+		}
+
+		public void CopyTo(Timestamp[] array, int arrayIndex)
+		{
+			Array.Copy(array, 0, array, arrayIndex, count);
+		}
+
+		public bool Remove(Timestamp item)
+		{
+			var num = IndexOf(item);
+			if (num == -1)
+				return false;
+			Array.Copy(array, num + 1, array, num, count - num - 1);
+			count--;
+			array[count] = default;
+			return true;
+		}
+
+		public int IndexOf(Timestamp item)
+		{
+			return Array.IndexOf(array, item, 0, count);
+		}
+
+		public void Insert(int index, Timestamp item)
+		{
+			if (index < 0 || index > count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			EnsureSize(count + 1);
+			Array.Copy(array, index, array, index + 1, count - index);
+			array[index] = item;
+			count++;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index >= count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			count--;
+			array[count] = default;
+		}
+
+		public IEnumerator<Timestamp> GetEnumerator()
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return array[i];
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			foreach (var v in data)
+			for (int i = 0; i < count; i++)
 			{
+				var v = array[i];
 				sb.AppendLine(indent + "  {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
 			}
 			sb.Append(indent + "]");
 			return sb.ToString();
 		}
 
-		public static void ApplySync(List<Timestamp> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
-			data.Clear();
+			Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add(Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
+				Add(Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
 			}
 		}
 
-		public static void RaiseChanged(List<Timestamp> data)
+		public void RaiseChanged()
 		{
 
 		}
 
-		public static void ClearChanged(List<Timestamp> data)
+		public void ClearChanged()
 		{
 
 		}
@@ -2099,36 +3044,141 @@ namespace kds
 		ItemTypePotion = 3,
 	}
 
-	public static class ItemType_list
+	public class ItemType_list : IList<ItemType>, ICollection<ItemType>, IEnumerable<ItemType>
 	{
-		public static string ToString(List<ItemType> data, string indent)
+		private ItemType[] array = [];
+
+		private int count = 0;
+
+		public int Count => count;
+
+		public bool IsReadOnly => false;
+
+		public ItemType this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return array[index];
+			}
+			set
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				array[index] = value;
+			}
+		}
+
+		private void EnsureSize(int size)
+		{
+			if (array.Length < size)
+			{
+				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+				if (newCapacity < size)
+					newCapacity = size;
+				var newData = new ItemType[newCapacity];
+				Array.Copy(array, newData, count);
+				array = newData;
+			}
+		}
+
+		public void Add(ItemType item)
+		{
+			EnsureSize(count + 1);
+			array[count++] = item;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(array, 0, count);
+			count = 0;
+		}
+
+		public bool Contains(ItemType item)
+		{
+			return IndexOf(item) != -1;
+		}
+
+		public void CopyTo(ItemType[] array, int arrayIndex)
+		{
+			Array.Copy(array, 0, array, arrayIndex, count);
+		}
+
+		public bool Remove(ItemType item)
+		{
+			var num = IndexOf(item);
+			if (num == -1)
+				return false;
+			Array.Copy(array, num + 1, array, num, count - num - 1);
+			count--;
+			array[count] = default;
+			return true;
+		}
+
+		public int IndexOf(ItemType item)
+		{
+			return Array.IndexOf(array, item, 0, count);
+		}
+
+		public void Insert(int index, ItemType item)
+		{
+			if (index < 0 || index > count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			EnsureSize(count + 1);
+			Array.Copy(array, index, array, index + 1, count - index);
+			array[index] = item;
+			count++;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index >= count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			count--;
+			array[count] = default;
+		}
+
+		public IEnumerator<ItemType> GetEnumerator()
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return array[i];
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			foreach (var v in data)
+			for (int i = 0; i < count; i++)
 			{
+				var v = array[i];
 				sb.AppendLine(indent + "  " + ((int)v).ToString());
 			}
 			sb.Append(indent + "]");
 			return sb.ToString();
 		}
 
-		public static void ApplySync(List<ItemType> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
-			data.Clear();
+			Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
-				data.Add((ItemType)stream.ReadEnum());
+				Add((ItemType)stream.ReadEnum());
 			}
 		}
 
-		public static void RaiseChanged(List<ItemType> data)
+		public void RaiseChanged()
 		{
 
 		}
 
-		public static void ClearChanged(List<ItemType> data)
+		public void ClearChanged()
 		{
 
 		}
@@ -2579,38 +3629,143 @@ namespace kds
 		}
 	}
 
-	public static class ItemData_list
+	public class ItemData_list : IList<ItemData>, ICollection<ItemData>, IEnumerable<ItemData>
 	{
-		public static string ToString(List<ItemData> data, string indent)
+		private ItemData[] array = [];
+
+		private int count = 0;
+
+		public int Count => count;
+
+		public bool IsReadOnly => false;
+
+		public ItemData this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return array[index];
+			}
+			set
+			{
+				if (index < 0 || index >= count)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				array[index] = value;
+			}
+		}
+
+		private void EnsureSize(int size)
+		{
+			if (array.Length < size)
+			{
+				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+				if (newCapacity < size)
+					newCapacity = size;
+				var newData = new ItemData[newCapacity];
+				Array.Copy(array, newData, count);
+				array = newData;
+			}
+		}
+
+		public void Add(ItemData item)
+		{
+			EnsureSize(count + 1);
+			array[count++] = item;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(array, 0, count);
+			count = 0;
+		}
+
+		public bool Contains(ItemData item)
+		{
+			return IndexOf(item) != -1;
+		}
+
+		public void CopyTo(ItemData[] array, int arrayIndex)
+		{
+			Array.Copy(array, 0, array, arrayIndex, count);
+		}
+
+		public bool Remove(ItemData item)
+		{
+			var num = IndexOf(item);
+			if (num == -1)
+				return false;
+			Array.Copy(array, num + 1, array, num, count - num - 1);
+			count--;
+			array[count] = default;
+			return true;
+		}
+
+		public int IndexOf(ItemData item)
+		{
+			return Array.IndexOf(array, item, 0, count);
+		}
+
+		public void Insert(int index, ItemData item)
+		{
+			if (index < 0 || index > count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			EnsureSize(count + 1);
+			Array.Copy(array, index, array, index + 1, count - index);
+			array[index] = item;
+			count++;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index >= count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			count--;
+			array[count] = default;
+		}
+
+		public IEnumerator<ItemData> GetEnumerator()
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return array[i];
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+		public string ToString(string indent)
 		{
 			var sb = new System.Text.StringBuilder();
 			sb.Append("[\n");
-			foreach (var v in data)
+			for (int i = 0; i < count; i++)
 			{
+				var v = array[i];
 				sb.AppendLine(indent + "  " + v.ToString(indent + "  "));
 			}
 			sb.Append(indent + "]");
 			return sb.ToString();
 		}
 
-		public static void ApplySync(List<ItemData> data, byte[] b)
+		public void ApplySync(byte[] b)
 		{
-			data.Clear();
+			Clear();
 			var stream = new CodedInputStream(b);
 			while (!stream.IsAtEnd)
 			{
 				var v = new ItemData();
 				v.ApplySync(stream.ReadBytes().ToByteArray());
-				data.Add(v);
+				Add(v);
 			}
 		}
 
-		public static void RaiseChanged(List<ItemData> data)
+		public void RaiseChanged()
 		{
 
 		}
 
-		public static void ClearChanged(List<ItemData> data)
+		public void ClearChanged()
 		{
 
 		}
