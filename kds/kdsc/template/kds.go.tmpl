@@ -349,6 +349,23 @@ func (x *{{.Name}}) Unmarshal(b []byte) error {
 	}
 	return nil
 }
+
+func (x *{{.Name}}) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	for _, v := range x.data {
+{{- if eq .TypeKind "component"}}
+		b = append(b, (indent + "  " + v.String(indent + "  ") + "\n")...)
+{{- else if eq .TypeKind "enum"}}
+		// FIXME: enum value string
+		b = append(b, (indent + "  " + wire.FormatInt32(int32(v)) + "\n")...)
+{{- else}}
+		b = append(b, (indent + "  " + wire.Format{{ucFirst .Type}}(v) + "\n")...)
+{{- end}}
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
 {{- end}}
 
 {{- /* MAP */ -}}
@@ -660,6 +677,35 @@ func (x *{{.Name}}) Unmarshal(b []byte) error {
 	}
 	return nil
 }
+
+func (x *{{.Name}}) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+{{- if eq .KeyType "bool"}}
+	keys := slices.SortedFunc(maps.Keys(x.data), func(a, b bool) int {
+		if a {
+			return 1
+		} else if b {
+			return -1
+		}
+		return 0
+	})
+{{- else}}
+	keys := slices.Sorted(maps.Keys(x.data))
+{{- end}}
+	for _, k := range keys {
+{{- if eq .TypeKind "component"}}
+		b = append(b, (indent + "  " + wire.Format{{ucFirst .KeyType}}(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
+{{- else if eq .TypeKind "enum"}}
+		// FIXME: enum value string
+		b = append(b, (indent + "  " + wire.Format{{ucFirst .KeyType}}(k) + " = " + wire.FormatInt32(int32(x.data[k])) + "\n")...)
+{{- else}}
+		b = append(b, (indent + "  " + wire.Format{{ucFirst .KeyType}}(k) + " = " + wire.Format{{ucFirst .Type}}(x.data[k]) + "\n")...)
+{{- end}}
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
 {{- end}}
 
 {{- /* ENUM */ -}}
@@ -852,6 +898,26 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *{{$MessageName}}) String(indent string) string {
+	var b []byte
+	b = append(b, "{\n"...)
+{{- range .Fields}}
+{{- if .Repeated}}
+	b = append(b, (indent + "  {{.Name}} = " + x.xxx_hidden_{{.Name}}.String(indent + "  ") + "\n")...)
+{{- else if .Map}}
+	b = append(b, (indent + "  {{.Name}} = " + x.xxx_hidden_{{.Name}}.String(indent + "  ") + "\n")...)
+{{- else if eq .TypeKind "component"}}
+	b = append(b, (indent + "  {{.Name}} = " + x.xxx_hidden_{{.Name}}.String(indent + "  ") + "\n")...)
+{{- else if eq .TypeKind "enum"}}
+	// FIXME: enum value string
+	b = append(b, (indent + "  {{.Name}} = " + wire.FormatInt32(int32(x.xxx_hidden_{{.Name}})) + "\n")...)
+{{- else}}
+	b = append(b, (indent + "  {{.Name}} = " + wire.Format{{ucFirst .Type}}(x.xxx_hidden_{{.Name}}) + "\n")...)
+{{- end}}
+{{- end}}
+	b = append(b, indent + "}\n"...)
+	return string(b)
+}
 {{- end}}
 
 {{- /* ENTITY */ -}}
@@ -1034,7 +1100,7 @@ import (
 {{- if len .MapTypes}}
 	"maps"
 {{- end}}
-{{- if len .ListTypes}}
+{{- if or (len .ListTypes) (len .MapTypes)}}
 	"slices"
 {{- end}}
 {{- $SpacesBefore = true}}

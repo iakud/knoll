@@ -188,6 +188,16 @@ func (x *Bool_list) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *Bool_list) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	for _, v := range x.data {
+		b = append(b, (indent + "  " + wire.FormatBool(v) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Double_list func()
 
 func (f dirtyParentFunc_Double_list) invoke() {
@@ -364,6 +374,16 @@ func (x *Double_list) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *Double_list) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	for _, v := range x.data {
+		b = append(b, (indent + "  " + wire.FormatDouble(v) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Duration_list func()
 
 func (f dirtyParentFunc_Duration_list) invoke() {
@@ -538,6 +558,16 @@ func (x *Duration_list) Unmarshal(b []byte) error {
 		x.Append(v)
 	}
 	return nil
+}
+
+func (x *Duration_list) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	for _, v := range x.data {
+		b = append(b, (indent + "  " + wire.FormatDuration(v) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_BoolDuration_map func()
@@ -754,6 +784,24 @@ func (x *BoolDuration_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *BoolDuration_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.SortedFunc(maps.Keys(x.data), func(a, b bool) int {
+		if a {
+			return 1
+		} else if b {
+			return -1
+		}
+		return 0
+	})
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + wire.FormatDuration(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Int32Duration_map func()
 
 func (f dirtyParentFunc_Int32Duration_map) invoke() {
@@ -966,6 +1014,17 @@ func (x *Int32Duration_map) Unmarshal(b []byte) error {
 		x.Set(k, v)
 	}
 	return nil
+}
+
+func (x *Int32Duration_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + wire.FormatDuration(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_Int64Duration_map func()
@@ -1182,6 +1241,17 @@ func (x *Int64Duration_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *Int64Duration_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + wire.FormatDuration(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_StringDuration_map func()
 
 func (f dirtyParentFunc_StringDuration_map) invoke() {
@@ -1396,6 +1466,17 @@ func (x *StringDuration_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *StringDuration_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + wire.FormatDuration(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Empty_list func()
 
 func (f dirtyParentFunc_Empty_list) invoke() {
@@ -1570,6 +1651,16 @@ func (x *Empty_list) Unmarshal(b []byte) error {
 		x.Append(v)
 	}
 	return nil
+}
+
+func (x *Empty_list) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	for _, v := range x.data {
+		b = append(b, (indent + "  " + wire.FormatEmpty(v) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_BoolEmpty_map func()
@@ -1786,6 +1877,24 @@ func (x *BoolEmpty_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *BoolEmpty_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.SortedFunc(maps.Keys(x.data), func(a, b bool) int {
+		if a {
+			return 1
+		} else if b {
+			return -1
+		}
+		return 0
+	})
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + wire.FormatEmpty(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Int32Empty_map func()
 
 func (f dirtyParentFunc_Int32Empty_map) invoke() {
@@ -1998,6 +2107,17 @@ func (x *Int32Empty_map) Unmarshal(b []byte) error {
 		x.Set(k, v)
 	}
 	return nil
+}
+
+func (x *Int32Empty_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + wire.FormatEmpty(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_Int64Empty_map func()
@@ -2214,6 +2334,17 @@ func (x *Int64Empty_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *Int64Empty_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + wire.FormatEmpty(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_StringEmpty_map func()
 
 func (f dirtyParentFunc_StringEmpty_map) invoke() {
@@ -2428,6 +2559,17 @@ func (x *StringEmpty_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *StringEmpty_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + wire.FormatEmpty(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Float_list func()
 
 func (f dirtyParentFunc_Float_list) invoke() {
@@ -2604,6 +2746,16 @@ func (x *Float_list) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *Float_list) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	for _, v := range x.data {
+		b = append(b, (indent + "  " + wire.FormatFloat(v) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Int32_list func()
 
 func (f dirtyParentFunc_Int32_list) invoke() {
@@ -2778,6 +2930,16 @@ func (x *Int32_list) Unmarshal(b []byte) error {
 		x.Append(v)
 	}
 	return nil
+}
+
+func (x *Int32_list) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	for _, v := range x.data {
+		b = append(b, (indent + "  " + wire.FormatInt32(v) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_BoolInt32_map func()
@@ -2994,6 +3156,24 @@ func (x *BoolInt32_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *BoolInt32_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.SortedFunc(maps.Keys(x.data), func(a, b bool) int {
+		if a {
+			return 1
+		} else if b {
+			return -1
+		}
+		return 0
+	})
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + wire.FormatInt32(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Int32Int32_map func()
 
 func (f dirtyParentFunc_Int32Int32_map) invoke() {
@@ -3206,6 +3386,17 @@ func (x *Int32Int32_map) Unmarshal(b []byte) error {
 		x.Set(k, v)
 	}
 	return nil
+}
+
+func (x *Int32Int32_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + wire.FormatInt32(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_StringInt32_map func()
@@ -3422,6 +3613,17 @@ func (x *StringInt32_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *StringInt32_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + wire.FormatInt32(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Int64_list func()
 
 func (f dirtyParentFunc_Int64_list) invoke() {
@@ -3596,6 +3798,16 @@ func (x *Int64_list) Unmarshal(b []byte) error {
 		x.Append(v)
 	}
 	return nil
+}
+
+func (x *Int64_list) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	for _, v := range x.data {
+		b = append(b, (indent + "  " + wire.FormatInt64(v) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_Int64Int64_map func()
@@ -3812,6 +4024,17 @@ func (x *Int64Int64_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *Int64Int64_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + wire.FormatInt64(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_String_list func()
 
 func (f dirtyParentFunc_String_list) invoke() {
@@ -3986,6 +4209,16 @@ func (x *String_list) Unmarshal(b []byte) error {
 		x.Append(v)
 	}
 	return nil
+}
+
+func (x *String_list) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	for _, v := range x.data {
+		b = append(b, (indent + "  " + wire.FormatString(v) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_BoolString_map func()
@@ -4202,6 +4435,24 @@ func (x *BoolString_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *BoolString_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.SortedFunc(maps.Keys(x.data), func(a, b bool) int {
+		if a {
+			return 1
+		} else if b {
+			return -1
+		}
+		return 0
+	})
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + wire.FormatString(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Int32String_map func()
 
 func (f dirtyParentFunc_Int32String_map) invoke() {
@@ -4414,6 +4665,17 @@ func (x *Int32String_map) Unmarshal(b []byte) error {
 		x.Set(k, v)
 	}
 	return nil
+}
+
+func (x *Int32String_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + wire.FormatString(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_Int64String_map func()
@@ -4630,6 +4892,17 @@ func (x *Int64String_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *Int64String_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + wire.FormatString(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_StringString_map func()
 
 func (f dirtyParentFunc_StringString_map) invoke() {
@@ -4844,6 +5117,17 @@ func (x *StringString_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *StringString_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + wire.FormatString(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Timestamp_list func()
 
 func (f dirtyParentFunc_Timestamp_list) invoke() {
@@ -5018,6 +5302,16 @@ func (x *Timestamp_list) Unmarshal(b []byte) error {
 		x.Append(v)
 	}
 	return nil
+}
+
+func (x *Timestamp_list) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	for _, v := range x.data {
+		b = append(b, (indent + "  " + wire.FormatTimestamp(v) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_BoolTimestamp_map func()
@@ -5234,6 +5528,24 @@ func (x *BoolTimestamp_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *BoolTimestamp_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.SortedFunc(maps.Keys(x.data), func(a, b bool) int {
+		if a {
+			return 1
+		} else if b {
+			return -1
+		}
+		return 0
+	})
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + wire.FormatTimestamp(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Int32Timestamp_map func()
 
 func (f dirtyParentFunc_Int32Timestamp_map) invoke() {
@@ -5446,6 +5758,17 @@ func (x *Int32Timestamp_map) Unmarshal(b []byte) error {
 		x.Set(k, v)
 	}
 	return nil
+}
+
+func (x *Int32Timestamp_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + wire.FormatTimestamp(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_Int64Timestamp_map func()
@@ -5662,6 +5985,17 @@ func (x *Int64Timestamp_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *Int64Timestamp_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + wire.FormatTimestamp(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_StringTimestamp_map func()
 
 func (f dirtyParentFunc_StringTimestamp_map) invoke() {
@@ -5876,6 +6210,17 @@ func (x *StringTimestamp_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *StringTimestamp_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + wire.FormatTimestamp(x.data[k]) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type ItemType int32
 
 const (
@@ -6059,6 +6404,17 @@ func (x *ItemType_list) Unmarshal(b []byte) error {
 		x.Append(ItemType(v))
 	}
 	return nil
+}
+
+func (x *ItemType_list) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	for _, v := range x.data {
+		// FIXME: enum value string
+		b = append(b, (indent + "  " + wire.FormatInt32(int32(v)) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_BoolItemType_map func()
@@ -6275,6 +6631,25 @@ func (x *BoolItemType_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *BoolItemType_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.SortedFunc(maps.Keys(x.data), func(a, b bool) int {
+		if a {
+			return 1
+		} else if b {
+			return -1
+		}
+		return 0
+	})
+	for _, k := range keys {
+		// FIXME: enum value string
+		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + wire.FormatInt32(int32(x.data[k])) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Int32ItemType_map func()
 
 func (f dirtyParentFunc_Int32ItemType_map) invoke() {
@@ -6487,6 +6862,18 @@ func (x *Int32ItemType_map) Unmarshal(b []byte) error {
 		x.Set(k, v)
 	}
 	return nil
+}
+
+func (x *Int32ItemType_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		// FIXME: enum value string
+		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + wire.FormatInt32(int32(x.data[k])) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_Int64ItemType_map func()
@@ -6703,6 +7090,18 @@ func (x *Int64ItemType_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *Int64ItemType_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		// FIXME: enum value string
+		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + wire.FormatInt32(int32(x.data[k])) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_StringItemType_map func()
 
 func (f dirtyParentFunc_StringItemType_map) invoke() {
@@ -6917,6 +7316,18 @@ func (x *StringItemType_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *StringItemType_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		// FIXME: enum value string
+		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + wire.FormatInt32(int32(x.data[k])) + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_ItemData func()
 
 func (f dirtyParentFunc_ItemData) invoke() {
@@ -7040,6 +7451,16 @@ func (x *ItemData) Unmarshal(b []byte) error {
 		b = b[tagLen+valLen:]
 	}
 	return nil
+}
+
+func (x *ItemData) String(indent string) string {
+	var b []byte
+	b = append(b, "{\n"...)
+	b = append(b, (indent + "  Id = " + wire.FormatInt32(x.xxx_hidden_Id) + "\n")...)
+	b = append(b, (indent + "  Name = " + wire.FormatString(x.xxx_hidden_Name) + "\n")...)
+	b = append(b, (indent + "  Count = " + wire.FormatInt32(x.xxx_hidden_Count) + "\n")...)
+	b = append(b, indent + "}\n"...)
+	return string(b)
 }
 
 func (x *ItemData) markAll() {
@@ -7320,6 +7741,16 @@ func (x *ItemData_list) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *ItemData_list) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	for _, v := range x.data {
+		b = append(b, (indent + "  " + v.String(indent + "  ") + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_BoolItemData_map func()
 
 func (f dirtyParentFunc_BoolItemData_map) invoke() {
@@ -7568,6 +7999,24 @@ func (x *BoolItemData_map) Unmarshal(b []byte) error {
 		}
 	}
 	return nil
+}
+
+func (x *BoolItemData_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.SortedFunc(maps.Keys(x.data), func(a, b bool) int {
+		if a {
+			return 1
+		} else if b {
+			return -1
+		}
+		return 0
+	})
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatBool(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type dirtyParentFunc_Int32ItemData_map func()
@@ -7820,6 +8269,17 @@ func (x *Int32ItemData_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *Int32ItemData_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt32(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_Int64ItemData_map func()
 
 func (f dirtyParentFunc_Int64ItemData_map) invoke() {
@@ -8070,6 +8530,17 @@ func (x *Int64ItemData_map) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *Int64ItemData_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
+}
+
 type dirtyParentFunc_StringItemData_map func()
 
 func (f dirtyParentFunc_StringItemData_map) invoke() {
@@ -8318,4 +8789,15 @@ func (x *StringItemData_map) Unmarshal(b []byte) error {
 		}
 	}
 	return nil
+}
+
+func (x *StringItemData_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatString(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }

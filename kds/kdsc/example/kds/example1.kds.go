@@ -6,6 +6,7 @@ package kds
 import (
 	"iter"
 	"maps"
+	"slices"
 	"time"
 
 	"github.com/iakud/knoll/kds/wire"
@@ -171,6 +172,16 @@ func (x *Player) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *Player) String(indent string) string {
+	var b []byte
+	b = append(b, "{\n"...)
+	b = append(b, (indent + "  Info = " + x.xxx_hidden_Info.String(indent + "  ") + "\n")...)
+	b = append(b, (indent + "  Hero = " + x.xxx_hidden_Hero.String(indent + "  ") + "\n")...)
+	b = append(b, (indent + "  Bag = " + x.xxx_hidden_Bag.String(indent + "  ") + "\n")...)
+	b = append(b, indent + "}\n"...)
+	return string(b)
+}
+
 func (x *Player) markAll() {
 	x.dirty = uint64(0x01)
 }
@@ -331,6 +342,16 @@ func (x *PlayerBasicInfo) Unmarshal(b []byte) error {
 	return nil
 }
 
+func (x *PlayerBasicInfo) String(indent string) string {
+	var b []byte
+	b = append(b, "{\n"...)
+	b = append(b, (indent + "  Name = " + wire.FormatString(x.xxx_hidden_Name) + "\n")...)
+	b = append(b, (indent + "  IsNew = " + wire.FormatBool(x.xxx_hidden_IsNew) + "\n")...)
+	b = append(b, (indent + "  CreateTime = " + wire.FormatTimestamp(x.xxx_hidden_CreateTime) + "\n")...)
+	b = append(b, indent + "}\n"...)
+	return string(b)
+}
+
 func (x *PlayerBasicInfo) markAll() {
 	x.dirty = uint64(0x01)
 }
@@ -433,6 +454,14 @@ func (x *PlayerHero) Unmarshal(b []byte) error {
 		b = b[tagLen+valLen:]
 	}
 	return nil
+}
+
+func (x *PlayerHero) String(indent string) string {
+	var b []byte
+	b = append(b, "{\n"...)
+	b = append(b, (indent + "  Heroes = " + x.xxx_hidden_Heroes.String(indent + "  ") + "\n")...)
+	b = append(b, indent + "}\n"...)
+	return string(b)
 }
 
 func (x *PlayerHero) markAll() {
@@ -540,6 +569,14 @@ func (x *PlayerBag) Unmarshal(b []byte) error {
 		b = b[tagLen+valLen:]
 	}
 	return nil
+}
+
+func (x *PlayerBag) String(indent string) string {
+	var b []byte
+	b = append(b, "{\n"...)
+	b = append(b, (indent + "  Resources = " + x.xxx_hidden_Resources.String(indent + "  ") + "\n")...)
+	b = append(b, indent + "}\n"...)
+	return string(b)
 }
 
 func (x *PlayerBag) markAll() {
@@ -717,6 +754,18 @@ func (x *Hero) Unmarshal(b []byte) error {
 		b = b[tagLen+valLen:]
 	}
 	return nil
+}
+
+func (x *Hero) String(indent string) string {
+	var b []byte
+	b = append(b, "{\n"...)
+	b = append(b, (indent + "  HeroId = " + wire.FormatInt32(x.xxx_hidden_HeroId) + "\n")...)
+	b = append(b, (indent + "  HeroLevel = " + wire.FormatInt32(x.xxx_hidden_HeroLevel) + "\n")...)
+	// FIXME: enum value string
+	b = append(b, (indent + "  Type = " + wire.FormatInt32(int32(x.xxx_hidden_Type)) + "\n")...)
+	b = append(b, (indent + "  NeedTime = " + wire.FormatDuration(x.xxx_hidden_NeedTime) + "\n")...)
+	b = append(b, indent + "}\n"...)
+	return string(b)
 }
 
 func (x *Hero) markAll() {
@@ -990,6 +1039,17 @@ func (x *Int64Hero_map) Unmarshal(b []byte) error {
 		}
 	}
 	return nil
+}
+
+func (x *Int64Hero_map) String(indent string) string {
+	var b []byte
+	b = append(b, "[\n"...)
+	keys := slices.Sorted(maps.Keys(x.data))
+	for _, k := range keys {
+		b = append(b, (indent + "  " + wire.FormatInt64(k) + " = " + x.data[k].String(indent + "  ") + "\n")...)
+	}
+	b = append(b, indent + "]\n"...)
+	return string(b)
 }
 
 type HeroType int32
