@@ -1,7 +1,7 @@
 package example
 
 import (
-	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -11,20 +11,64 @@ import (
 var all = kds.NewAll(0)
 
 func TestExample(t *testing.T) {
-	testInit()
-
-	testTypesUpdate()
-
-	testListsAdd()
-	testListsUpdate()
-	testListsDelete()
-
-	testMapsAdd()
-	testMapsUpdate()
-	testMapsDelete()
+	t.Run("Init", testInit)
+	t.Run("TypesUpdate", testTypesUpdate)
+	t.Run("ListsAdd", testListsAdd)
+	t.Run("ListsUpdate", testListsUpdate)
+	t.Run("ListsDelete", testListsDelete)
+	t.Run("MapsAdd", testMapsAdd)
+	t.Run("MapsUpdate", testMapsUpdate)
+	t.Run("MapsDelete", testMapsDelete)
 }
 
-func testInit() {
+func sync(t *testing.T) {
+	fullData, err := all.Marshal(nil)
+	if err != nil {
+		panic(err)
+	}
+	all.ClearDirty()
+	ApplySync(fullData)
+	// check
+	checkKds(t)
+}
+
+func syncUpdate(t *testing.T) {
+	dirtyData, err := all.MarshalDirty(nil)
+	if err != nil {
+		panic(err)
+	}
+	all.ClearDirty()
+	ApplySync(dirtyData)
+	// check
+	checkKds(t)
+}
+
+func checkKds(t *testing.T) {
+	goKds := all.String("")
+	csKds := ToString()
+
+	goLines := strings.Split(goKds, "\n")
+	csLines := strings.Split(csKds, "\n")
+
+	for i := 0; i < len(goLines) || i < len(csLines); i++ {
+		goLine := ""
+		if i < len(goLines) {
+			goLine = goLines[i]
+		}
+		csLine := ""
+		if i < len(csLines) {
+			csLine = csLines[i]
+		}
+		if goLine != csLine {
+			t.Logf("=== Go ===\n%s\n", goKds)
+			t.Logf("=== C# ===\n%s\n", csKds)
+			t.Logf("Line %d differ:\n  Go: %s\n  C#: %s\n", i+1, goLine, csLine)
+			t.Fatal("Kds mismatch!")
+		}
+	}
+}
+
+func testInit(t *testing.T) {
 	types := all.GetTypes()
 	types.SetInt32Val(32)
 	types.SetInt64Val(64)
@@ -120,472 +164,432 @@ func testInit() {
 	item5.SetCount(2)
 	maps.GetBoolItemData().Set(true, item5)
 	// sync
-	sync()
+	sync(t)
 }
 
-func sync() {
-	fullData, err := all.Marshal(nil)
-	if err != nil {
-		panic(err)
-	}
-	all.ClearDirty()
-	ApplySync(fullData)
-	// check
-	check()
-}
-
-func syncUpdate() {
-	dirtyData, err := all.MarshalDirty(nil)
-	if err != nil {
-		panic(err)
-	}
-	all.ClearDirty()
-	ApplySync(dirtyData)
-	// check
-	check()
-}
-
-func testTypesUpdate() {
+func testTypesUpdate(t *testing.T) {
 	// Types 修改
 	types := all.GetTypes()
 	types.SetInt32Val(33)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetInt64Val(65)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetUint32Val(33)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetUint64Val(65)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetSint32Val(-33)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetSint64Val(-65)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetFixed32Val(33)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetFixed64Val(65)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetSfixed32Val(-33)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetSfixed64Val(-65)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetFloatVal(3.15)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetDoubleVal(3.1415)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetBoolVal(false)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetStringVal("world")
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetBytesVal([]byte("hello"))
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetTimestampVal(time.Unix(9876543210, 0))
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetDurationVal(time.Minute)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.SetEnumVal(kds.ItemType_ItemTypeArmor)
-	syncUpdate()
+	syncUpdate(t)
 
 	types.GetItemData().SetId(2)
 	types.GetItemData().SetName("shield")
 	types.GetItemData().SetCount(20)
-	syncUpdate()
+	syncUpdate(t)
 }
 
-func testListsAdd() {
+func testListsAdd(t *testing.T) {
 	// Lists 新增
 	lists := all.GetLists()
 	lists.GetInt32List().Append(4)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetInt64List().Append(400)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetFloatList().Append(4.4)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetDoubleList().Append(4.44)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetBoolList().Append(true)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetStringList().Append("d")
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetTimestampList().Append(time.Unix(3000, 0))
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetDurationList().Append(time.Hour)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetEnumList().Append(kds.ItemType_ItemTypePotion)
-	syncUpdate()
+	syncUpdate(t)
 
 	itemNew := kds.NewItemData()
 	itemNew.SetId(6)
 	itemNew.SetName("ring")
 	itemNew.SetCount(3)
 	lists.GetItemList().Append(itemNew)
-	syncUpdate()
+	syncUpdate(t)
 }
 
-func testListsUpdate() {
+func testListsUpdate(t *testing.T) {
 	// Lists 修改
 	lists := all.GetLists()
 	lists.GetInt32List().Set(0, 10)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetInt64List().Set(0, 1000)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetFloatList().Set(0, 10.5)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetDoubleList().Set(0, 10.55)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetBoolList().Set(0, false)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetStringList().Set(0, "modified")
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetTimestampList().Set(0, time.Unix(5000, 0))
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetDurationList().Set(0, time.Hour*2)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetEnumList().Set(0, kds.ItemType_ItemTypePotion)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetItemList().Get(0).SetId(100)
 	lists.GetItemList().Get(0).SetName("modified_item")
 	lists.GetItemList().Get(0).SetCount(50)
-	syncUpdate()
+	syncUpdate(t)
 }
 
-func testListsDelete() {
+func testListsDelete(t *testing.T) {
 	// Lists 删除
 	lists := all.GetLists()
 	lists.GetInt32List().Delete(0, 1)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetInt64List().Delete(0, 1)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetFloatList().Delete(0, 1)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetDoubleList().Delete(0, 1)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetBoolList().Delete(0, 1)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetStringList().Delete(0, 1)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetTimestampList().Delete(0, 1)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetDurationList().Delete(0, 1)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetEnumList().Delete(0, 1)
-	syncUpdate()
+	syncUpdate(t)
 
 	lists.GetItemList().Delete(0, 1)
-	syncUpdate()
+	syncUpdate(t)
 }
 
-func testMapsAdd() {
+func testMapsAdd(t *testing.T) {
 	// Maps 新增
 	maps := all.GetMaps()
 	maps.GetInt32Int32().Set(3, 300)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32String().Set(3, "three")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32Timestamp().Set(2, time.Unix(2000, 0))
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32Duration().Set(2, time.Minute)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32Enum().Set(2, kds.ItemType_ItemTypeArmor)
-	syncUpdate()
+	syncUpdate(t)
 
 	itemMap2 := kds.NewItemData()
 	itemMap2.SetId(7)
 	itemMap2.SetName("boots")
 	itemMap2.SetCount(1)
 	maps.GetInt32ItemData().Set(2, itemMap2)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64Int64().Set(3, 3000)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64String().Set(3, "three")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64Timestamp().Set(2, time.Unix(2000, 0))
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64Duration().Set(2, time.Minute)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64Enum().Set(2, kds.ItemType_ItemTypeArmor)
-	syncUpdate()
+	syncUpdate(t)
 
 	itemMap3 := kds.NewItemData()
 	itemMap3.SetId(8)
 	itemMap3.SetName("gloves")
 	itemMap3.SetCount(2)
 	maps.GetInt64ItemData().Set(2, itemMap3)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringInt32().Set("c", 3)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringString().Set("c", "value_c")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringTimestamp().Set("b", time.Unix(2000, 0))
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringDuration().Set("b", time.Minute)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringEnum().Set("b", kds.ItemType_ItemTypeArmor)
-	syncUpdate()
+	syncUpdate(t)
 
 	itemMap4 := kds.NewItemData()
 	itemMap4.SetId(9)
 	itemMap4.SetName("belt")
 	itemMap4.SetCount(4)
 	maps.GetStringItemData().Set("b", itemMap4)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolInt32().Set(false, 2)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolString().Set(false, "no")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolTimestamp().Set(false, time.Unix(2000, 0))
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolDuration().Set(false, time.Minute)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolEnum().Set(false, kds.ItemType_ItemTypeArmor)
-	syncUpdate()
+	syncUpdate(t)
 
 	itemMap5 := kds.NewItemData()
 	itemMap5.SetId(10)
 	itemMap5.SetName("amulet")
 	itemMap5.SetCount(1)
 	maps.GetBoolItemData().Set(false, itemMap5)
-	syncUpdate()
+	syncUpdate(t)
 }
 
-func testMapsUpdate() {
+func testMapsUpdate(t *testing.T) {
 	// Maps 修改
 	maps := all.GetMaps()
 	maps.GetInt32Int32().Set(1, 999)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32String().Set(1, "modified_one")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32Timestamp().Set(1, time.Unix(8888, 0))
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32Duration().Set(1, time.Hour)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32Enum().Set(1, kds.ItemType_ItemTypePotion)
-	syncUpdate()
+	syncUpdate(t)
 
 	itemInt32, _ := maps.GetInt32ItemData().Get(1)
 	itemInt32.SetId(111)
 	itemInt32.SetName("modified_itemdata")
 	itemInt32.SetCount(55)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64Int64().Set(1, 9999)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64String().Set(1, "modified_one")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64Timestamp().Set(1, time.Unix(8888, 0))
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64Duration().Set(1, time.Hour)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64Enum().Set(1, kds.ItemType_ItemTypePotion)
-	syncUpdate()
+	syncUpdate(t)
 
 	itemInt64, _ := maps.GetInt64ItemData().Get(1)
 	itemInt64.SetId(112)
 	itemInt64.SetName("modified_itemdata2")
 	itemInt64.SetCount(56)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringInt32().Set("a", 999)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringString().Set("a", "modified_value_a")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringTimestamp().Set("a", time.Unix(9999, 0))
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringDuration().Set("a", time.Hour*3)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringEnum().Set("a", kds.ItemType_ItemTypePotion)
-	syncUpdate()
+	syncUpdate(t)
 
 	itemString, _ := maps.GetStringItemData().Get("a")
 	itemString.SetId(113)
 	itemString.SetName("modified_itemdata3")
 	itemString.SetCount(57)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolInt32().Set(true, 888)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolString().Set(true, "modified_true")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolTimestamp().Set(true, time.Unix(7777, 0))
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolDuration().Set(true, time.Hour*4)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolEnum().Set(true, kds.ItemType_ItemTypePotion)
-	syncUpdate()
+	syncUpdate(t)
 
 	itemBool, _ := maps.GetBoolItemData().Get(true)
 	itemBool.SetId(114)
 	itemBool.SetName("modified_itemdata4")
 	itemBool.SetCount(58)
-	syncUpdate()
+	syncUpdate(t)
 }
 
-func testMapsDelete() {
+func testMapsDelete(t *testing.T) {
 	// 删除 Map 元素
 	maps := all.GetMaps()
 	maps.GetInt32Int32().Delete(1)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32String().Delete(1)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32Timestamp().Delete(1)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32Duration().Delete(1)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32Enum().Delete(1)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt32ItemData().Delete(1)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64Int64().Delete(1)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64String().Delete(1)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64Timestamp().Delete(1)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64Duration().Delete(1)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64Enum().Delete(1)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetInt64ItemData().Delete(1)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringInt32().Delete("a")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringString().Delete("a")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringTimestamp().Delete("a")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringDuration().Delete("a")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringEnum().Delete("a")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetStringItemData().Delete("a")
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolInt32().Delete(true)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolString().Delete(true)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolTimestamp().Delete(true)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolDuration().Delete(true)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolEnum().Delete(true)
-	syncUpdate()
+	syncUpdate(t)
 
 	maps.GetBoolItemData().Delete(true)
-	syncUpdate()
-}
-
-func check() {
-	goDump := all.String("")
-	csharpDump := ToString()
-	if goDump != csharpDump {
-		fmt.Printf("=== Go ===\n%s\n", goDump)
-		fmt.Printf("=== C# ===\n%s\n", csharpDump)
-		// Find first difference
-		for i := 0; i < len(goDump) && i < len(csharpDump); i++ {
-			if goDump[i] != csharpDump[i] {
-				fmt.Printf("First diff at char %d: go='%c' (0x%x), cs='%c' (0x%x), ", i, goDump[i], goDump[i], csharpDump[i], csharpDump[i])
-				break
-			}
-		}
-		panic("Dump mismatch!")
-	}
-	fmt.Println("Dump match!")
+	syncUpdate(t)
 }
