@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Globalization;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
@@ -10,6 +12,18 @@ namespace kds
 {
 	public static class Bool_list
 	{
+		public static string ToString(List<bool> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+				sb.AppendLine(indent + "  " + v.ToString().ToLower());
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<bool> data, byte[] b)
 		{
 			data.Clear();
@@ -32,6 +46,18 @@ namespace kds
 	}
 	public static class Double_list
 	{
+		public static string ToString(List<double> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+				sb.AppendLine(indent + "  " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<double> data, byte[] b)
 		{
 			data.Clear();
@@ -54,6 +80,18 @@ namespace kds
 	}
 	public static class Duration_list
 	{
+		public static string ToString(List<Duration> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+				sb.AppendLine(indent + "  {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<Duration> data, byte[] b)
 		{
 			data.Clear();
@@ -76,6 +114,25 @@ namespace kds
 	}
 	public static class BoolDuration_map
 	{
+		public static string ToString(Dictionary<bool, Duration> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort((a, b) => {
+				if (a) return b ? 0 : 1;
+				return b ? -1 : 0;
+			});
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString().ToLower();
+				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<bool, Duration> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -148,6 +205,22 @@ namespace kds
 	}
 	public static class Int32Duration_map
 	{
+		public static string ToString(Dictionary<int, Duration> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<int, Duration> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -220,6 +293,22 @@ namespace kds
 	}
 	public static class Int64Duration_map
 	{
+		public static string ToString(Dictionary<long, Duration> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<long, Duration> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -292,6 +381,22 @@ namespace kds
 	}
 	public static class StringDuration_map
 	{
+		public static string ToString(Dictionary<string, Duration> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<string, Duration> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -364,6 +469,18 @@ namespace kds
 	}
 	public static class Empty_list
 	{
+		public static string ToString(List<Empty> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+				sb.AppendLine(indent + "  {}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<Empty> data, byte[] b)
 		{
 			data.Clear();
@@ -386,6 +503,25 @@ namespace kds
 	}
 	public static class BoolEmpty_map
 	{
+		public static string ToString(Dictionary<bool, Empty> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort((a, b) => {
+				if (a) return b ? 0 : 1;
+				return b ? -1 : 0;
+			});
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString().ToLower();
+				sb.AppendLine(indent + "  " + key + " = {}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<bool, Empty> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -458,6 +594,22 @@ namespace kds
 	}
 	public static class Int32Empty_map
 	{
+		public static string ToString(Dictionary<int, Empty> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = {}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<int, Empty> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -530,6 +682,22 @@ namespace kds
 	}
 	public static class Int64Empty_map
 	{
+		public static string ToString(Dictionary<long, Empty> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = {}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<long, Empty> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -602,6 +770,22 @@ namespace kds
 	}
 	public static class StringEmpty_map
 	{
+		public static string ToString(Dictionary<string, Empty> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = {}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<string, Empty> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -674,6 +858,18 @@ namespace kds
 	}
 	public static class Float_list
 	{
+		public static string ToString(List<float> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+				sb.AppendLine(indent + "  " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<float> data, byte[] b)
 		{
 			data.Clear();
@@ -696,6 +892,18 @@ namespace kds
 	}
 	public static class Int32_list
 	{
+		public static string ToString(List<int> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+				sb.AppendLine(indent + "  " + v.ToString());
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<int> data, byte[] b)
 		{
 			data.Clear();
@@ -718,6 +926,25 @@ namespace kds
 	}
 	public static class BoolInt32_map
 	{
+		public static string ToString(Dictionary<bool, int> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort((a, b) => {
+				if (a) return b ? 0 : 1;
+				return b ? -1 : 0;
+			});
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString().ToLower();
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<bool, int> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -790,6 +1017,22 @@ namespace kds
 	}
 	public static class Int32Int32_map
 	{
+		public static string ToString(Dictionary<int, int> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<int, int> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -862,6 +1105,22 @@ namespace kds
 	}
 	public static class StringInt32_map
 	{
+		public static string ToString(Dictionary<string, int> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<string, int> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -934,6 +1193,18 @@ namespace kds
 	}
 	public static class Int64_list
 	{
+		public static string ToString(List<long> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+				sb.AppendLine(indent + "  " + v.ToString());
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<long> data, byte[] b)
 		{
 			data.Clear();
@@ -956,6 +1227,22 @@ namespace kds
 	}
 	public static class Int64Int64_map
 	{
+		public static string ToString(Dictionary<long, long> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<long, long> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -1028,6 +1315,18 @@ namespace kds
 	}
 	public static class String_list
 	{
+		public static string ToString(List<string> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+				sb.AppendLine(indent + "  " + v);
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<string> data, byte[] b)
 		{
 			data.Clear();
@@ -1050,6 +1349,25 @@ namespace kds
 	}
 	public static class BoolString_map
 	{
+		public static string ToString(Dictionary<bool, string> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort((a, b) => {
+				if (a) return b ? 0 : 1;
+				return b ? -1 : 0;
+			});
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString().ToLower();
+				sb.AppendLine(indent + "  " + key + " = " + v);
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<bool, string> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -1122,6 +1440,22 @@ namespace kds
 	}
 	public static class Int32String_map
 	{
+		public static string ToString(Dictionary<int, string> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + v);
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<int, string> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -1194,6 +1528,22 @@ namespace kds
 	}
 	public static class Int64String_map
 	{
+		public static string ToString(Dictionary<long, string> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + v);
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<long, string> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -1266,6 +1616,22 @@ namespace kds
 	}
 	public static class StringString_map
 	{
+		public static string ToString(Dictionary<string, string> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + v);
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<string, string> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -1338,6 +1704,18 @@ namespace kds
 	}
 	public static class Timestamp_list
 	{
+		public static string ToString(List<Timestamp> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+				sb.AppendLine(indent + "  {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<Timestamp> data, byte[] b)
 		{
 			data.Clear();
@@ -1360,6 +1738,25 @@ namespace kds
 	}
 	public static class BoolTimestamp_map
 	{
+		public static string ToString(Dictionary<bool, Timestamp> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort((a, b) => {
+				if (a) return b ? 0 : 1;
+				return b ? -1 : 0;
+			});
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString().ToLower();
+				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<bool, Timestamp> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -1432,6 +1829,22 @@ namespace kds
 	}
 	public static class Int32Timestamp_map
 	{
+		public static string ToString(Dictionary<int, Timestamp> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<int, Timestamp> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -1504,6 +1917,22 @@ namespace kds
 	}
 	public static class Int64Timestamp_map
 	{
+		public static string ToString(Dictionary<long, Timestamp> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<long, Timestamp> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -1576,6 +2005,22 @@ namespace kds
 	}
 	public static class StringTimestamp_map
 	{
+		public static string ToString(Dictionary<string, Timestamp> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<string, Timestamp> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -1656,6 +2101,18 @@ namespace kds
 
 	public static class ItemType_list
 	{
+		public static string ToString(List<ItemType> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+				sb.AppendLine(indent + "  " + ((int)v).ToString());
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<ItemType> data, byte[] b)
 		{
 			data.Clear();
@@ -1679,6 +2136,25 @@ namespace kds
 
 	public static class BoolItemType_map
 	{
+		public static string ToString(Dictionary<bool, ItemType> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort((a, b) => {
+				if (a) return b ? 0 : 1;
+				return b ? -1 : 0;
+			});
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString().ToLower();
+				sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<bool, ItemType> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -1752,6 +2228,22 @@ namespace kds
 
 	public static class Int32ItemType_map
 	{
+		public static string ToString(Dictionary<int, ItemType> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<int, ItemType> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -1825,6 +2317,22 @@ namespace kds
 
 	public static class Int64ItemType_map
 	{
+		public static string ToString(Dictionary<long, ItemType> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<long, ItemType> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -1898,6 +2406,22 @@ namespace kds
 
 	public static class StringItemType_map
 	{
+		public static string ToString(Dictionary<string, ItemType> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<string, ItemType> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -2001,6 +2525,17 @@ namespace kds
 			}
 		}
 
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  Id = " + id_.ToString());
+			sb.AppendLine(indent + "  Name = " + name_);
+			sb.AppendLine(indent + "  Count = " + count_.ToString());
+			sb.Append(indent + "}");
+			return sb.ToString();
+		}
+
 		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -2046,6 +2581,18 @@ namespace kds
 
 	public static class ItemData_list
 	{
+		public static string ToString(List<ItemData> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+				sb.AppendLine(indent + "  " + v.ToString(indent + "  "));
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<ItemData> data, byte[] b)
 		{
 			data.Clear();
@@ -2071,6 +2618,25 @@ namespace kds
 
 	public static class BoolItemData_map
 	{
+		public static string ToString(Dictionary<bool, ItemData> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort((a, b) => {
+				if (a) return b ? 0 : 1;
+				return b ? -1 : 0;
+			});
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString().ToLower();
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<bool, ItemData> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -2153,6 +2719,22 @@ namespace kds
 
 	public static class Int32ItemData_map
 	{
+		public static string ToString(Dictionary<int, ItemData> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<int, ItemData> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -2235,6 +2817,22 @@ namespace kds
 
 	public static class Int64ItemData_map
 	{
+		public static string ToString(Dictionary<long, ItemData> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<long, ItemData> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -2317,6 +2915,22 @@ namespace kds
 
 	public static class StringItemData_map
 	{
+		public static string ToString(Dictionary<string, ItemData> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<string, ItemData> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);

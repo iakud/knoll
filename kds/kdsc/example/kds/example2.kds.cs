@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
@@ -58,6 +59,20 @@ namespace kds
 			{
 				_changed = changed;
 			}
+		}
+
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  PlayerId = " + playerId_.ToString());
+			sb.AppendLine(indent + "  PlayerBasicInfo = " + playerBasicInfo_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  CityInfo = " + cityInfo_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Troops = " + Int64_list.ToString(troops_, indent + "  "));
+			sb.AppendLine(indent + "  City = " + city_);
+			sb.AppendLine(indent + "  Id = " + id_.ToString());
+			sb.Append(indent + "}");
+			return sb.ToString();
 		}
 
 		public void ApplySync(byte[] b)
@@ -161,6 +176,17 @@ namespace kds
 			}
 		}
 
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  Positions = " + Vector_list.ToString(positions_, indent + "  "));
+			sb.AppendLine(indent + "  Troops = " + Int32Empty_map.ToString(troops_, indent + "  "));
+			sb.AppendLine(indent + "  BuildInfo = " + Convert.ToBase64String(buildInfo_));
+			sb.Append(indent + "}");
+			return sb.ToString();
+		}
+
 		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -239,6 +265,16 @@ namespace kds
 			}
 		}
 
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  X = " + x_.ToString());
+			sb.AppendLine(indent + "  Y = " + y_.ToString());
+			sb.Append(indent + "}");
+			return sb.ToString();
+		}
+
 		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -280,6 +316,18 @@ namespace kds
 
 	public static class Vector_list
 	{
+		public static string ToString(List<Vector> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+				sb.AppendLine(indent + "  " + v.ToString(indent + "  "));
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<Vector> data, byte[] b)
 		{
 			data.Clear();

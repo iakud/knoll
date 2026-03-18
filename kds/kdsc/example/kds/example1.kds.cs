@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
@@ -45,6 +46,17 @@ namespace kds
 			{
 				_changed = changed;
 			}
+		}
+
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  Info = " + info_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Hero = " + hero_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Bag = " + bag_.ToString(indent + "  "));
+			sb.Append(indent + "}");
+			return sb.ToString();
 		}
 
 		public void ApplySync(byte[] b)
@@ -134,6 +146,17 @@ namespace kds
 			}
 		}
 
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  Name = " + name_);
+			sb.AppendLine(indent + "  IsNew = " + isNew_.ToString().ToLower());
+			sb.AppendLine(indent + "  CreateTime = {Seconds: " + createTime_.Seconds + ", Nanos: " + createTime_.Nanos + "}");
+			sb.Append(indent + "}");
+			return sb.ToString();
+		}
+
 		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -201,6 +224,15 @@ namespace kds
 			}
 		}
 
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  Heroes = " + Int64Hero_map.ToString(heroes_, indent + "  "));
+			sb.Append(indent + "}");
+			return sb.ToString();
+		}
+
 		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -262,6 +294,15 @@ namespace kds
 			{
 				_changed = changed;
 			}
+		}
+
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  Resources = " + Int32Int32_map.ToString(resources_, indent + "  "));
+			sb.Append(indent + "}");
+			return sb.ToString();
 		}
 
 		public void ApplySync(byte[] b)
@@ -338,6 +379,18 @@ namespace kds
 			}
 		}
 
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  HeroId = " + heroId_.ToString());
+			sb.AppendLine(indent + "  HeroLevel = " + heroLevel_.ToString());
+			sb.AppendLine(indent + "  Type = " + ((int)type_).ToString());
+			sb.AppendLine(indent + "  NeedTime = {Seconds: " + needTime_.Seconds + ", Nanos: " + needTime_.Nanos + "}");
+			sb.Append(indent + "}");
+			return sb.ToString();
+		}
+
 		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -387,6 +440,22 @@ namespace kds
 
 	public static class Int64Hero_map
 	{
+		public static string ToString(Dictionary<long, Hero> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+			keys.Sort();
+			foreach (var k in keys)
+			{
+				var v = data[k];
+				var key = k.ToString();
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<long, Hero> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);

@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Globalization;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
@@ -45,6 +47,17 @@ namespace kds
 			{
 				_changed = changed;
 			}
+		}
+
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  Types = " + types_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Lists = " + lists_.ToString(indent + "  "));
+			sb.AppendLine(indent + "  Maps = " + maps_.ToString(indent + "  "));
+			sb.Append(indent + "}");
+			return sb.ToString();
 		}
 
 		public void ApplySync(byte[] b)
@@ -203,6 +216,34 @@ namespace kds
 			{
 				_changed = changed;
 			}
+		}
+
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  Int32Val = " + int32Val_.ToString());
+			sb.AppendLine(indent + "  Int64Val = " + int64Val_.ToString());
+			sb.AppendLine(indent + "  Uint32Val = " + uint32Val_.ToString());
+			sb.AppendLine(indent + "  Uint64Val = " + uint64Val_.ToString());
+			sb.AppendLine(indent + "  Sint32Val = " + sint32Val_.ToString());
+			sb.AppendLine(indent + "  Sint64Val = " + sint64Val_.ToString());
+			sb.AppendLine(indent + "  Fixed32Val = " + fixed32Val_.ToString());
+			sb.AppendLine(indent + "  Fixed64Val = " + fixed64Val_.ToString());
+			sb.AppendLine(indent + "  Sfixed32Val = " + sfixed32Val_.ToString());
+			sb.AppendLine(indent + "  Sfixed64Val = " + sfixed64Val_.ToString());
+			sb.AppendLine(indent + "  FloatVal = " + floatVal_.ToString(System.Globalization.CultureInfo.InvariantCulture));
+			sb.AppendLine(indent + "  DoubleVal = " + doubleVal_.ToString(System.Globalization.CultureInfo.InvariantCulture));
+			sb.AppendLine(indent + "  BoolVal = " + boolVal_.ToString().ToLower());
+			sb.AppendLine(indent + "  StringVal = " + stringVal_);
+			sb.AppendLine(indent + "  BytesVal = " + Convert.ToBase64String(bytesVal_));
+			sb.AppendLine(indent + "  TimestampVal = {Seconds: " + timestampVal_.Seconds + ", Nanos: " + timestampVal_.Nanos + "}");
+			sb.AppendLine(indent + "  DurationVal = {Seconds: " + durationVal_.Seconds + ", Nanos: " + durationVal_.Nanos + "}");
+			sb.AppendLine(indent + "  EmptyVal = {}");
+			sb.AppendLine(indent + "  EnumVal = " + ((int)enumVal_).ToString());
+			sb.AppendLine(indent + "  ItemData = " + itemData_.ToString(indent + "  "));
+			sb.Append(indent + "}");
+			return sb.ToString();
 		}
 
 		public void ApplySync(byte[] b)
@@ -392,6 +433,25 @@ namespace kds
 			{
 				_changed = changed;
 			}
+		}
+
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  Int32List = " + Int32_list.ToString(int32List_, indent + "  "));
+			sb.AppendLine(indent + "  Int64List = " + Int64_list.ToString(int64List_, indent + "  "));
+			sb.AppendLine(indent + "  FloatList = " + Float_list.ToString(floatList_, indent + "  "));
+			sb.AppendLine(indent + "  DoubleList = " + Double_list.ToString(doubleList_, indent + "  "));
+			sb.AppendLine(indent + "  BoolList = " + Bool_list.ToString(boolList_, indent + "  "));
+			sb.AppendLine(indent + "  StringList = " + String_list.ToString(stringList_, indent + "  "));
+			sb.AppendLine(indent + "  TimestampList = " + Timestamp_list.ToString(timestampList_, indent + "  "));
+			sb.AppendLine(indent + "  DurationList = " + Duration_list.ToString(durationList_, indent + "  "));
+			sb.AppendLine(indent + "  EmptyList = " + Empty_list.ToString(emptyList_, indent + "  "));
+			sb.AppendLine(indent + "  EnumList = " + ItemType_list.ToString(enumList_, indent + "  "));
+			sb.AppendLine(indent + "  ItemList = " + ItemData_list.ToString(itemList_, indent + "  "));
+			sb.Append(indent + "}");
+			return sb.ToString();
 		}
 
 		public void ApplySync(byte[] b)
@@ -670,6 +730,42 @@ namespace kds
 			{
 				_changed = changed;
 			}
+		}
+
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+			sb.AppendLine(indent + "  Int32Int32 = " + Int32Int32_map.ToString(int32Int32_, indent + "  "));
+			sb.AppendLine(indent + "  Int32String = " + Int32String_map.ToString(int32String_, indent + "  "));
+			sb.AppendLine(indent + "  Int32Timestamp = " + Int32Timestamp_map.ToString(int32Timestamp_, indent + "  "));
+			sb.AppendLine(indent + "  Int32Duration = " + Int32Duration_map.ToString(int32Duration_, indent + "  "));
+			sb.AppendLine(indent + "  Int32Empty = " + Int32Empty_map.ToString(int32Empty_, indent + "  "));
+			sb.AppendLine(indent + "  Int32Enum = " + Int32ItemType_map.ToString(int32Enum_, indent + "  "));
+			sb.AppendLine(indent + "  Int32ItemData = " + Int32ItemData_map.ToString(int32ItemData_, indent + "  "));
+			sb.AppendLine(indent + "  Int64Int64 = " + Int64Int64_map.ToString(int64Int64_, indent + "  "));
+			sb.AppendLine(indent + "  Int64String = " + Int64String_map.ToString(int64String_, indent + "  "));
+			sb.AppendLine(indent + "  Int64Timestamp = " + Int64Timestamp_map.ToString(int64Timestamp_, indent + "  "));
+			sb.AppendLine(indent + "  Int64Duration = " + Int64Duration_map.ToString(int64Duration_, indent + "  "));
+			sb.AppendLine(indent + "  Int64Empty = " + Int64Empty_map.ToString(int64Empty_, indent + "  "));
+			sb.AppendLine(indent + "  Int64Enum = " + Int64ItemType_map.ToString(int64Enum_, indent + "  "));
+			sb.AppendLine(indent + "  Int64ItemData = " + Int64ItemData_map.ToString(int64ItemData_, indent + "  "));
+			sb.AppendLine(indent + "  StringInt32 = " + StringInt32_map.ToString(stringInt32_, indent + "  "));
+			sb.AppendLine(indent + "  StringString = " + StringString_map.ToString(stringString_, indent + "  "));
+			sb.AppendLine(indent + "  StringTimestamp = " + StringTimestamp_map.ToString(stringTimestamp_, indent + "  "));
+			sb.AppendLine(indent + "  StringDuration = " + StringDuration_map.ToString(stringDuration_, indent + "  "));
+			sb.AppendLine(indent + "  StringEmpty = " + StringEmpty_map.ToString(stringEmpty_, indent + "  "));
+			sb.AppendLine(indent + "  StringEnum = " + StringItemType_map.ToString(stringEnum_, indent + "  "));
+			sb.AppendLine(indent + "  StringItemData = " + StringItemData_map.ToString(stringItemData_, indent + "  "));
+			sb.AppendLine(indent + "  BoolInt32 = " + BoolInt32_map.ToString(boolInt32_, indent + "  "));
+			sb.AppendLine(indent + "  BoolString = " + BoolString_map.ToString(boolString_, indent + "  "));
+			sb.AppendLine(indent + "  BoolTimestamp = " + BoolTimestamp_map.ToString(boolTimestamp_, indent + "  "));
+			sb.AppendLine(indent + "  BoolDuration = " + BoolDuration_map.ToString(boolDuration_, indent + "  "));
+			sb.AppendLine(indent + "  BoolEmpty = " + BoolEmpty_map.ToString(boolEmpty_, indent + "  "));
+			sb.AppendLine(indent + "  BoolEnum = " + BoolItemType_map.ToString(boolEnum_, indent + "  "));
+			sb.AppendLine(indent + "  BoolItemData = " + BoolItemData_map.ToString(boolItemData_, indent + "  "));
+			sb.Append(indent + "}");
+			return sb.ToString();
 		}
 
 		public void ApplySync(byte[] b)

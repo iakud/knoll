@@ -363,7 +363,7 @@ func (x *{{.Name}}) String(indent string) string {
 		b = append(b, (indent + "  " + wire.Format{{ucFirst .Type}}(v) + "\n")...)
 {{- end}}
 	}
-	b = append(b, indent+"]\n"...)
+	b = append(b, indent+"]"...)
 	return string(b)
 }
 {{- end}}
@@ -703,7 +703,7 @@ func (x *{{.Name}}) String(indent string) string {
 		b = append(b, (indent + "  " + wire.Format{{ucFirst .KeyType}}(k) + " = " + wire.Format{{ucFirst .Type}}(x.data[k]) + "\n")...)
 {{- end}}
 	}
-	b = append(b, indent+"]\n"...)
+	b = append(b, indent+"]"...)
 	return string(b)
 }
 {{- end}}
@@ -915,7 +915,7 @@ func (x *{{$MessageName}}) String(indent string) string {
 	b = append(b, (indent + "  {{.Name}} = " + wire.Format{{ucFirst .Type}}(x.xxx_hidden_{{.Name}}) + "\n")...)
 {{- end}}
 {{- end}}
-	b = append(b, indent+"}\n"...)
+	b = append(b, indent+"}"...)
 	return string(b)
 }
 {{- end}}

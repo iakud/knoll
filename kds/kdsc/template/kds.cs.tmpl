@@ -50,6 +50,58 @@
 {{- define "List"}}
 	public static class {{.Name}}
 	{
+		public static string ToString(List<{{template "ListValueType" .}}> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			foreach (var v in data)
+			{
+{{- if eq .TypeKind "component"}}
+				sb.AppendLine(indent + "  " + v.ToString(indent + "  "));
+{{- else if eq .TypeKind "enum"}}
+				sb.AppendLine(indent + "  " + ((int)v).ToString());
+{{- else if eq .Type "bool"}}
+				sb.AppendLine(indent + "  " + v.ToString().ToLower());
+{{- else if eq .Type "int32"}}
+				sb.AppendLine(indent + "  " + v.ToString());
+{{- else if eq .Type "sint32"}}
+				sb.AppendLine(indent + "  " + v.ToString());
+{{- else if eq .Type "uint32"}}
+				sb.AppendLine(indent + "  " + v.ToString());
+{{- else if eq .Type "int64"}}
+				sb.AppendLine(indent + "  " + v.ToString());
+{{- else if eq .Type "sint64"}}
+				sb.AppendLine(indent + "  " + v.ToString());
+{{- else if eq .Type "uint64"}}
+				sb.AppendLine(indent + "  " + v.ToString());
+{{- else if eq .Type "fixed32"}}
+				sb.AppendLine(indent + "  " + v.ToString());
+{{- else if eq .Type "sfixed32"}}
+				sb.AppendLine(indent + "  " + v.ToString());
+{{- else if eq .Type "fixed64"}}
+				sb.AppendLine(indent + "  " + v.ToString());
+{{- else if eq .Type "sfixed64"}}
+				sb.AppendLine(indent + "  " + v.ToString());
+{{- else if eq .Type "float"}}
+				sb.AppendLine(indent + "  " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
+{{- else if eq .Type "double"}}
+				sb.AppendLine(indent + "  " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
+{{- else if eq .Type "string"}}
+				sb.AppendLine(indent + "  " + v);
+{{- else if eq .Type "bytes"}}
+				sb.AppendLine(indent + "  " + Convert.ToBase64String(v));
+{{- else if eq .Type "timestamp"}}
+				sb.AppendLine(indent + "  {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+{{- else if eq .Type "duration"}}
+				sb.AppendLine(indent + "  {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+{{- else if eq .Type "empty"}}
+				sb.AppendLine(indent + "  {}");
+{{- end}}
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(List<{{template "ListValueType" .}}> data, byte[] b)
 		{
 			data.Clear();
@@ -118,6 +170,93 @@
 {{- define "Map"}}
 	public static class {{.Name}}
 	{
+		public static string ToString(Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> data, string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("[\n");
+			var keys = data.Keys.ToList();
+{{- if eq .KeyType "bool"}}
+			keys.Sort((a, b) => {
+				if (a) return b ? 0 : 1;
+				return b ? -1 : 0;
+			});
+{{- else if eq .KeyType "string"}}
+			keys.Sort();
+{{- else if eq .KeyType "int32"}}
+			keys.Sort();
+{{- else if eq .KeyType "sint32"}}
+			keys.Sort();
+{{- else if eq .KeyType "uint32"}}
+			keys.Sort();
+{{- else if eq .KeyType "int64"}}
+			keys.Sort();
+{{- else if eq .KeyType "sint64"}}
+			keys.Sort();
+{{- else if eq .KeyType "uint64"}}
+			keys.Sort();
+{{- else if eq .KeyType "fixed32"}}
+			keys.Sort();
+{{- else if eq .KeyType "sfixed32"}}
+			keys.Sort();
+{{- else if eq .KeyType "fixed64"}}
+			keys.Sort();
+{{- else if eq .KeyType "sfixed64"}}
+			keys.Sort();
+{{- end}}
+			foreach (var k in keys)
+			{
+				var v = data[k];
+{{- if eq .KeyType "bool"}}
+				var key = k.ToString().ToLower();
+{{- else}}
+				var key = k.ToString();
+{{- end}}
+{{- if eq .TypeKind "component"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
+{{- else if eq .TypeKind "enum"}}
+				sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
+{{- else if eq .Type "bool"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString().ToLower());
+{{- else if eq .Type "int32"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "sint32"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "uint32"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "int64"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "sint64"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "uint64"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "fixed32"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "sfixed32"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "fixed64"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "sfixed64"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "float"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
+{{- else if eq .Type "double"}}
+				sb.AppendLine(indent + "  " + key + " = " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
+{{- else if eq .Type "string"}}
+				sb.AppendLine(indent + "  " + key + " = " + v);
+{{- else if eq .Type "bytes"}}
+				sb.AppendLine(indent + "  " + key + " = " + Convert.ToBase64String(v));
+{{- else if eq .Type "timestamp"}}
+				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+{{- else if eq .Type "duration"}}
+				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+{{- else if eq .Type "empty"}}
+				sb.AppendLine(indent + "  " + key + " = {}");
+{{- end}}
+			}
+			sb.Append(indent + "]");
+			return sb.ToString();
+		}
+
 		public static void ApplySync(Dictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> data, byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -349,6 +488,61 @@
 			}
 		}
 
+		public string ToString(string indent)
+		{
+			var sb = new System.Text.StringBuilder();
+			sb.Append("{\n");
+{{- range .Fields}}
+{{- if .Repeated}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{.ListType}}.ToString({{template "FieldName" .}}, indent + "  "));
+{{- else if .Map}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{.MapType}}.ToString({{template "FieldName" .}}, indent + "  "));
+{{- else if eq .TypeKind "component"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
+{{- else if eq .TypeKind "enum"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + ((int){{template "FieldName" .}}).ToString());
+{{- else if eq .Type "bool"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString().ToLower());
+{{- else if eq .Type "int32"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "sint32"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "uint32"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "int64"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "sint64"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "uint64"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "fixed32"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "sfixed32"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "fixed64"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "sfixed64"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "float"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(System.Globalization.CultureInfo.InvariantCulture));
+{{- else if eq .Type "double"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(System.Globalization.CultureInfo.InvariantCulture));
+{{- else if eq .Type "string"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}});
+{{- else if eq .Type "bytes"}}
+			sb.AppendLine(indent + "  {{.Name}} = " + Convert.ToBase64String({{template "FieldName" .}}));
+{{- else if eq .Type "timestamp"}}
+			sb.AppendLine(indent + "  {{.Name}} = {Seconds: " + {{template "FieldName" .}}.Seconds + ", Nanos: " + {{template "FieldName" .}}.Nanos + "}");
+{{- else if eq .Type "duration"}}
+			sb.AppendLine(indent + "  {{.Name}} = {Seconds: " + {{template "FieldName" .}}.Seconds + ", Nanos: " + {{template "FieldName" .}}.Nanos + "}");
+{{- else if eq .Type "empty"}}
+			sb.AppendLine(indent + "  {{.Name}} = {}");
+{{- end}}
+{{- end}}
+			sb.Append(indent + "}");
+			return sb.ToString();
+		}
+
 		public void ApplySync(byte[] b)
 		{
 			var stream = new CodedInputStream(b);
@@ -524,6 +718,8 @@
 {{- $ImportSystem := false}}
 {{- $ImportGeneric := false}}
 {{- $ImportWellKnownTypes := false}}
+{{- $ImportLinq := false}}
+{{- $ImportCulture := false}}
 
 {{- $ImportSystem = true}}
 
@@ -534,9 +730,13 @@
 {{- end}}
 {{- if or .Repeated .Map}}
 {{- $ImportGeneric = true}}
+{{- $ImportLinq = true}}
 {{- end}}
 {{- if eq .Type "timestamp" "duration" "empty"}}
 {{- $ImportWellKnownTypes = true}}
+{{- end}}
+{{- if eq .Type "float" "double"}}
+{{- $ImportCulture = true}}
 {{- end}}
 {{- end}}
 {{- end}}
@@ -548,9 +748,13 @@
 {{- end}}
 {{- if or .Repeated .Map}}
 {{- $ImportGeneric = true}}
+{{- $ImportLinq = true}}
 {{- end}}
 {{- if eq .Type "timestamp" "duration" "empty"}}
 {{- $ImportWellKnownTypes = true}}
+{{- end}}
+{{- if eq .Type "float" "double"}}
+{{- $ImportCulture = true}}
 {{- end}}
 {{- end}}
 {{- end}}
@@ -563,6 +767,9 @@
 {{- if eq .Type "timestamp" "duration" "empty"}}
 {{- $ImportWellKnownTypes = true}}
 {{- end}}
+{{- if eq .Type "float" "double"}}
+{{- $ImportCulture = true}}
+{{- end}}
 {{- end}}
 {{- range .MapTypes}}
 {{- if eq .Type "timestamp" "duration"}}
@@ -571,8 +778,12 @@
 {{- if eq .Type "timestamp" "duration" "empty"}}
 {{- $ImportWellKnownTypes = true}}
 {{- end}}
+{{- if eq .Type "float" "double"}}
+{{- $ImportCulture = true}}
+{{- end}}
 {{- end}}
 {{- $ImportGeneric = true}}
+{{- $ImportLinq = true}}
 {{- end}}
 
 {{- if $ImportSystem}}
@@ -580,6 +791,12 @@ using System;
 {{- end}}
 {{- if $ImportGeneric}}
 using System.Collections.Generic;
+{{- end}}
+{{- if $ImportLinq}}
+using System.Linq;
+{{- end}}
+{{- if $ImportCulture}}
+using System.Globalization;
 {{- end}}
 using Google.Protobuf;
 {{- if $ImportWellKnownTypes}}
