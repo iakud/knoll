@@ -50,6 +50,8 @@
 {{- define "List"}}
 	public class {{.Name}} : IList<{{template "ListValueType" .}}>, ICollection<{{template "ListValueType" .}}>, IEnumerable<{{template "ListValueType" .}}>
 	{
+		private static readonly EqualityComparer<{{template "ListValueType" .}}> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<{{template "ListValueType" .}}>();
+
 		private {{template "ListValueType" .}}[] array = [];
 
 		private int count = 0;
@@ -122,7 +124,15 @@
 
 		public int IndexOf({{template "ListValueType" .}} item)
 		{
-			return Array.IndexOf(array, item, 0, count);
+			EqualityComparer<{{template "ListValueType" .}}> equalityComparer = EqualityComparer;
+			for (int i = 0; i < count; i++)
+			{
+				if (equalityComparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public void Insert(int index, {{template "ListValueType" .}} item)

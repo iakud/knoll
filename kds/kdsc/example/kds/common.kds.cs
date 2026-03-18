@@ -12,6 +12,8 @@ namespace kds
 {
 	public class Bool_list : IList<bool>, ICollection<bool>, IEnumerable<bool>
 	{
+		private static readonly EqualityComparer<bool> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
+
 		private bool[] array = [];
 
 		private int count = 0;
@@ -84,7 +86,15 @@ namespace kds
 
 		public int IndexOf(bool item)
 		{
-			return Array.IndexOf(array, item, 0, count);
+			EqualityComparer<bool> equalityComparer = EqualityComparer;
+			for (int i = 0; i < count; i++)
+			{
+				if (equalityComparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public void Insert(int index, bool item)
@@ -151,6 +161,8 @@ namespace kds
 	}
 	public class Double_list : IList<double>, ICollection<double>, IEnumerable<double>
 	{
+		private static readonly EqualityComparer<double> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<double>();
+
 		private double[] array = [];
 
 		private int count = 0;
@@ -223,7 +235,15 @@ namespace kds
 
 		public int IndexOf(double item)
 		{
-			return Array.IndexOf(array, item, 0, count);
+			EqualityComparer<double> equalityComparer = EqualityComparer;
+			for (int i = 0; i < count; i++)
+			{
+				if (equalityComparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public void Insert(int index, double item)
@@ -290,6 +310,8 @@ namespace kds
 	}
 	public class Duration_list : IList<Duration>, ICollection<Duration>, IEnumerable<Duration>
 	{
+		private static readonly EqualityComparer<Duration> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Duration>();
+
 		private Duration[] array = [];
 
 		private int count = 0;
@@ -362,7 +384,15 @@ namespace kds
 
 		public int IndexOf(Duration item)
 		{
-			return Array.IndexOf(array, item, 0, count);
+			EqualityComparer<Duration> equalityComparer = EqualityComparer;
+			for (int i = 0; i < count; i++)
+			{
+				if (equalityComparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public void Insert(int index, Duration item)
@@ -784,6 +814,8 @@ namespace kds
 	}
 	public class Empty_list : IList<Empty>, ICollection<Empty>, IEnumerable<Empty>
 	{
+		private static readonly EqualityComparer<Empty> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Empty>();
+
 		private Empty[] array = [];
 
 		private int count = 0;
@@ -856,7 +888,15 @@ namespace kds
 
 		public int IndexOf(Empty item)
 		{
-			return Array.IndexOf(array, item, 0, count);
+			EqualityComparer<Empty> equalityComparer = EqualityComparer;
+			for (int i = 0; i < count; i++)
+			{
+				if (equalityComparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public void Insert(int index, Empty item)
@@ -1278,6 +1318,8 @@ namespace kds
 	}
 	public class Float_list : IList<float>, ICollection<float>, IEnumerable<float>
 	{
+		private static readonly EqualityComparer<float> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<float>();
+
 		private float[] array = [];
 
 		private int count = 0;
@@ -1350,7 +1392,15 @@ namespace kds
 
 		public int IndexOf(float item)
 		{
-			return Array.IndexOf(array, item, 0, count);
+			EqualityComparer<float> equalityComparer = EqualityComparer;
+			for (int i = 0; i < count; i++)
+			{
+				if (equalityComparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public void Insert(int index, float item)
@@ -1417,6 +1467,8 @@ namespace kds
 	}
 	public class Int32_list : IList<int>, ICollection<int>, IEnumerable<int>
 	{
+		private static readonly EqualityComparer<int> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
+
 		private int[] array = [];
 
 		private int count = 0;
@@ -1489,7 +1541,15 @@ namespace kds
 
 		public int IndexOf(int item)
 		{
-			return Array.IndexOf(array, item, 0, count);
+			EqualityComparer<int> equalityComparer = EqualityComparer;
+			for (int i = 0; i < count; i++)
+			{
+				if (equalityComparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public void Insert(int index, int item)
@@ -1823,6 +1883,8 @@ namespace kds
 	}
 	public class Int64_list : IList<long>, ICollection<long>, IEnumerable<long>
 	{
+		private static readonly EqualityComparer<long> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
+
 		private long[] array = [];
 
 		private int count = 0;
@@ -1895,7 +1957,15 @@ namespace kds
 
 		public int IndexOf(long item)
 		{
-			return Array.IndexOf(array, item, 0, count);
+			EqualityComparer<long> equalityComparer = EqualityComparer;
+			for (int i = 0; i < count; i++)
+			{
+				if (equalityComparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public void Insert(int index, long item)
@@ -2050,6 +2120,8 @@ namespace kds
 	}
 	public class String_list : IList<string>, ICollection<string>, IEnumerable<string>
 	{
+		private static readonly EqualityComparer<string> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
+
 		private string[] array = [];
 
 		private int count = 0;
@@ -2122,7 +2194,15 @@ namespace kds
 
 		public int IndexOf(string item)
 		{
-			return Array.IndexOf(array, item, 0, count);
+			EqualityComparer<string> equalityComparer = EqualityComparer;
+			for (int i = 0; i < count; i++)
+			{
+				if (equalityComparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public void Insert(int index, string item)
@@ -2544,6 +2624,8 @@ namespace kds
 	}
 	public class Timestamp_list : IList<Timestamp>, ICollection<Timestamp>, IEnumerable<Timestamp>
 	{
+		private static readonly EqualityComparer<Timestamp> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Timestamp>();
+
 		private Timestamp[] array = [];
 
 		private int count = 0;
@@ -2616,7 +2698,15 @@ namespace kds
 
 		public int IndexOf(Timestamp item)
 		{
-			return Array.IndexOf(array, item, 0, count);
+			EqualityComparer<Timestamp> equalityComparer = EqualityComparer;
+			for (int i = 0; i < count; i++)
+			{
+				if (equalityComparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public void Insert(int index, Timestamp item)
@@ -3046,6 +3136,8 @@ namespace kds
 
 	public class ItemType_list : IList<ItemType>, ICollection<ItemType>, IEnumerable<ItemType>
 	{
+		private static readonly EqualityComparer<ItemType> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemType>();
+
 		private ItemType[] array = [];
 
 		private int count = 0;
@@ -3118,7 +3210,15 @@ namespace kds
 
 		public int IndexOf(ItemType item)
 		{
-			return Array.IndexOf(array, item, 0, count);
+			EqualityComparer<ItemType> equalityComparer = EqualityComparer;
+			for (int i = 0; i < count; i++)
+			{
+				if (equalityComparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public void Insert(int index, ItemType item)
@@ -3631,6 +3731,8 @@ namespace kds
 
 	public class ItemData_list : IList<ItemData>, ICollection<ItemData>, IEnumerable<ItemData>
 	{
+		private static readonly EqualityComparer<ItemData> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemData>();
+
 		private ItemData[] array = [];
 
 		private int count = 0;
@@ -3703,7 +3805,15 @@ namespace kds
 
 		public int IndexOf(ItemData item)
 		{
-			return Array.IndexOf(array, item, 0, count);
+			EqualityComparer<ItemData> equalityComparer = EqualityComparer;
+			for (int i = 0; i < count; i++)
+			{
+				if (equalityComparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public void Insert(int index, ItemData item)
