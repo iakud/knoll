@@ -59,7 +59,7 @@
 
 		private static readonly EqualityComparer<{{template "ListValueType" .}}> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<{{template "ListValueType" .}}>();
 
-		private {{template "ListValueType" .}}[] array = [];
+		private {{template "ListValueType" .}}[] array = new {{template "ListValueType" .}}[0];
 
 		private int count = 0;
 
@@ -624,7 +624,7 @@
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -686,7 +686,7 @@
 				{{template "Type" .KeyType}} k = default;
 {{- end}}
 {{- if eq .TypeKind "component"}}
-				byte[] v = [];
+				byte[] v = new byte[0];
 {{- else if eq .TypeKind "enum"}}
 				{{.Type}} v = default;
 {{- else if eq .Type "string"}}
@@ -1044,7 +1044,7 @@
 {{- else if eq .Type "string"}}
 			{{template "FieldName" .}} = string.Empty;
 {{- else if eq .Type "bytes"}}
-			{{template "FieldName" .}} = [];
+			{{template "FieldName" .}} = new byte[0];
 {{- else if eq .Type "timestamp" "duration" "empty"}}
 			{{template "FieldName" .}} = new {{template "Type" .Type}}();
 {{- else}}
@@ -1071,7 +1071,7 @@
 {{- else if eq .Type "string"}}
 			{{template "FieldName" .}} = string.Empty;
 {{- else if eq .Type "bytes"}}
-			{{template "FieldName" .}} = [];
+			{{template "FieldName" .}} = new byte[0];
 {{- else if eq .Type "timestamp" "duration" "empty"}}
 			{{template "FieldName" .}} = new {{template "Type" .Type}}();
 {{- else}}

@@ -119,7 +119,7 @@ namespace kds
 		public AllType()
 		{
 			stringVal_ = string.Empty;
-			bytesVal_ = [];
+			bytesVal_ = new byte[0];
 			timestampVal_ = new Timestamp();
 			durationVal_ = new Duration();
 			emptyVal_ = new Empty();

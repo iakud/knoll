@@ -21,7 +21,7 @@ namespace kds
 
 		private static readonly EqualityComparer<bool> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
 
-		private bool[] array = [];
+		private bool[] array = new bool[0];
 
 		private int count = 0;
 
@@ -181,7 +181,7 @@ namespace kds
 
 		private static readonly EqualityComparer<double> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<double>();
 
-		private double[] array = [];
+		private double[] array = new double[0];
 
 		private int count = 0;
 
@@ -341,7 +341,7 @@ namespace kds
 
 		private static readonly EqualityComparer<Duration> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Duration>();
 
-		private Duration[] array = [];
+		private Duration[] array = new Duration[0];
 
 		private int count = 0;
 
@@ -772,7 +772,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -1121,7 +1121,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -1470,7 +1470,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -1819,7 +1819,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -1900,7 +1900,7 @@ namespace kds
 
 		private static readonly EqualityComparer<Empty> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Empty>();
 
-		private Empty[] array = [];
+		private Empty[] array = new Empty[0];
 
 		private int count = 0;
 
@@ -2331,7 +2331,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -2680,7 +2680,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -3029,7 +3029,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -3378,7 +3378,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -3459,7 +3459,7 @@ namespace kds
 
 		private static readonly EqualityComparer<float> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<float>();
 
-		private float[] array = [];
+		private float[] array = new float[0];
 
 		private int count = 0;
 
@@ -3619,7 +3619,7 @@ namespace kds
 
 		private static readonly EqualityComparer<int> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
 
-		private int[] array = [];
+		private int[] array = new int[0];
 
 		private int count = 0;
 
@@ -4050,7 +4050,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -4399,7 +4399,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -4748,7 +4748,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -4829,7 +4829,7 @@ namespace kds
 
 		private static readonly EqualityComparer<long> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
 
-		private long[] array = [];
+		private long[] array = new long[0];
 
 		private int count = 0;
 
@@ -5257,7 +5257,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -5338,7 +5338,7 @@ namespace kds
 
 		private static readonly EqualityComparer<string> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
 
-		private string[] array = [];
+		private string[] array = new string[0];
 
 		private int count = 0;
 
@@ -5769,7 +5769,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -6118,7 +6118,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -6467,7 +6467,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -6816,7 +6816,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -6897,7 +6897,7 @@ namespace kds
 
 		private static readonly EqualityComparer<Timestamp> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Timestamp>();
 
-		private Timestamp[] array = [];
+		private Timestamp[] array = new Timestamp[0];
 
 		private int count = 0;
 
@@ -7328,7 +7328,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -7677,7 +7677,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -8026,7 +8026,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -8375,7 +8375,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -8464,7 +8464,7 @@ namespace kds
 
 		private static readonly EqualityComparer<ItemType> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemType>();
 
-		private ItemType[] array = [];
+		private ItemType[] array = new ItemType[0];
 
 		private int count = 0;
 
@@ -8896,7 +8896,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -9246,7 +9246,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -9596,7 +9596,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -9946,7 +9946,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -10114,7 +10114,7 @@ namespace kds
 
 		private static readonly EqualityComparer<ItemData> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemData>();
 
-		private ItemData[] array = [];
+		private ItemData[] array = new ItemData[0];
 
 		private int count = 0;
 
@@ -10548,7 +10548,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -10583,7 +10583,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				bool k = default;
-				byte[] v = [];
+				byte[] v = new byte[0];
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -10909,7 +10909,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -10944,7 +10944,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				int k = default;
-				byte[] v = [];
+				byte[] v = new byte[0];
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -11270,7 +11270,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -11305,7 +11305,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				long k = default;
-				byte[] v = [];
+				byte[] v = new byte[0];
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
@@ -11631,7 +11631,7 @@ namespace kds
 		{
 			var stream = new CodedInputStream(b);
 			var clear = false;
-			byte[] deletes = [];
+			byte[] deletes = new byte[0];
 			var entries = new List<byte[]>();
 			uint tag;
 			while ((tag = stream.ReadTag()) != 0)
@@ -11666,7 +11666,7 @@ namespace kds
 			{
 				stream = new CodedInputStream(entry);
 				string k = string.Empty;
-				byte[] v = [];
+				byte[] v = new byte[0];
 				while ((tag = stream.ReadTag()) != 0)
 				{
 					var num = WireFormat.GetTagFieldNumber(tag);
