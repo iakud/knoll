@@ -81,7 +81,7 @@ namespace kds
 
 		public void CopyTo(bool[] array, int arrayIndex)
 		{
-			Array.Copy(array, 0, array, arrayIndex, count);
+			Array.Copy(this.array, 0, array, arrayIndex, count);
 		}
 
 		public bool Remove(bool item)
@@ -241,7 +241,7 @@ namespace kds
 
 		public void CopyTo(double[] array, int arrayIndex)
 		{
-			Array.Copy(array, 0, array, arrayIndex, count);
+			Array.Copy(this.array, 0, array, arrayIndex, count);
 		}
 
 		public bool Remove(double item)
@@ -401,7 +401,7 @@ namespace kds
 
 		public void CopyTo(Duration[] array, int arrayIndex)
 		{
-			Array.Copy(array, 0, array, arrayIndex, count);
+			Array.Copy(this.array, 0, array, arrayIndex, count);
 		}
 
 		public bool Remove(Duration item)
@@ -1960,7 +1960,7 @@ namespace kds
 
 		public void CopyTo(Empty[] array, int arrayIndex)
 		{
-			Array.Copy(array, 0, array, arrayIndex, count);
+			Array.Copy(this.array, 0, array, arrayIndex, count);
 		}
 
 		public bool Remove(Empty item)
@@ -3519,7 +3519,7 @@ namespace kds
 
 		public void CopyTo(float[] array, int arrayIndex)
 		{
-			Array.Copy(array, 0, array, arrayIndex, count);
+			Array.Copy(this.array, 0, array, arrayIndex, count);
 		}
 
 		public bool Remove(float item)
@@ -3679,7 +3679,7 @@ namespace kds
 
 		public void CopyTo(int[] array, int arrayIndex)
 		{
-			Array.Copy(array, 0, array, arrayIndex, count);
+			Array.Copy(this.array, 0, array, arrayIndex, count);
 		}
 
 		public bool Remove(int item)
@@ -4889,7 +4889,7 @@ namespace kds
 
 		public void CopyTo(long[] array, int arrayIndex)
 		{
-			Array.Copy(array, 0, array, arrayIndex, count);
+			Array.Copy(this.array, 0, array, arrayIndex, count);
 		}
 
 		public bool Remove(long item)
@@ -5398,7 +5398,7 @@ namespace kds
 
 		public void CopyTo(string[] array, int arrayIndex)
 		{
-			Array.Copy(array, 0, array, arrayIndex, count);
+			Array.Copy(this.array, 0, array, arrayIndex, count);
 		}
 
 		public bool Remove(string item)
@@ -6957,7 +6957,7 @@ namespace kds
 
 		public void CopyTo(Timestamp[] array, int arrayIndex)
 		{
-			Array.Copy(array, 0, array, arrayIndex, count);
+			Array.Copy(this.array, 0, array, arrayIndex, count);
 		}
 
 		public bool Remove(Timestamp item)
@@ -8524,7 +8524,7 @@ namespace kds
 
 		public void CopyTo(ItemType[] array, int arrayIndex)
 		{
-			Array.Copy(array, 0, array, arrayIndex, count);
+			Array.Copy(this.array, 0, array, arrayIndex, count);
 		}
 
 		public bool Remove(ItemType item)
@@ -10174,7 +10174,7 @@ namespace kds
 
 		public void CopyTo(ItemData[] array, int arrayIndex)
 		{
-			Array.Copy(array, 0, array, arrayIndex, count);
+			Array.Copy(this.array, 0, array, arrayIndex, count);
 		}
 
 		public bool Remove(ItemData item)

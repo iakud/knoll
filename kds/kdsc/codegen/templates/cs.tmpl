@@ -119,7 +119,7 @@
 
 		public void CopyTo({{template "ListValueType" .}}[] array, int arrayIndex)
 		{
-			Array.Copy(array, 0, array, arrayIndex, count);
+			Array.Copy(this.array, 0, array, arrayIndex, count);
 		}
 
 		public bool Remove({{template "ListValueType" .}} item)
