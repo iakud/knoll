@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"log/slog"
 	"os"
@@ -30,32 +31,6 @@ func Parse(kdsFiles []string) *Context {
 	return ctx
 }
 
-func WriteProtobuf(ctx *Context, out string) {
-	tpl, err := template.New("protobuf").Funcs(Funcs(ctx)).Parse(TemplateProtobuf)
-	if err != nil {
-		panic(err)
-	}
-	for _, kds := range ctx.AllKds {
-		buf := bytes.NewBuffer(nil)
-		tpl.Execute(buf, kds)
-		outFile := filepath.Join(out, kds.Name+".proto")
-		os.WriteFile(outFile, buf.Bytes(), os.ModePerm)
-	}
-}
-
-func WriteKdsGo(ctx *Context, out string) {
-	tpl, err := template.New("kds").Funcs(Funcs(ctx)).Parse(TemplateKdsGo)
-	if err != nil {
-		panic(err)
-	}
-	for _, kds := range ctx.AllKds {
-		buf := bytes.NewBuffer(nil)
-		tpl.Execute(buf, kds)
-		outFile := filepath.Join(out, kds.Name+".kds.go")
-		os.WriteFile(outFile, buf.Bytes(), os.ModePerm)
-	}
-}
-
 func WriteTemplate(ctx *Context, filename string, out string) {
 	name := filepath.Base(filename)
 	ext := strings.TrimSuffix(name, filepath.Ext(name))
@@ -72,6 +47,30 @@ func WriteTemplate(ctx *Context, filename string, out string) {
 	for _, kds := range ctx.AllKds {
 		buf := bytes.NewBuffer(nil)
 		tpl.Execute(buf, kds)
+		outFile := filepath.Join(out, kds.Name+"."+ext)
+		os.WriteFile(outFile, buf.Bytes(), os.ModePerm)
+	}
+}
+
+//go:embed templates/*.tmpl
+var templateFS embed.FS
+
+func WriteTemplateFS(ctx *Context, kind string, out string) {
+	ext := kind
+	filename := fmt.Sprintf("templates/%s.tmpl", kind)
+	text, err := templateFS.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	tpl, err := template.New("kds").Funcs(Funcs(ctx)).Parse(string(text))
+	if err != nil {
+		panic(err)
+	}
+	for _, kds := range ctx.AllKds {
+		buf := bytes.NewBuffer(nil)
+		if err := tpl.Execute(buf, kds); err != nil {
+			panic(err)
+		}
 		outFile := filepath.Join(out, kds.Name+"."+ext)
 		os.WriteFile(outFile, buf.Bytes(), os.ModePerm)
 	}
