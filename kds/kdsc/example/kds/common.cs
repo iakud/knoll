@@ -8,11708 +8,9943 @@ using System.Globalization;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
-namespace kds
+namespace Kds;
+public class BoolDuration_map : IDictionary<bool, Kdsync.Duration>, ICollection<KeyValuePair<bool, Kdsync.Duration>>, IEnumerable<KeyValuePair<bool, Kdsync.Duration>>
 {
-	public class Bool_list : IList<bool>, ICollection<bool>, IEnumerable<bool>
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
 	{
-		public class EventChanged
+		private readonly BoolDuration_map parent;
+
+		private readonly Func<KeyValuePair<bool, Kdsync.Duration>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(BoolDuration_map parent, Func<KeyValuePair<bool, Kdsync.Duration>, T> projection, Func<T, bool> containsCheck)
 		{
-			public EventChanged()
-			{
-			}
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
 		}
 
-		private static readonly EqualityComparer<bool> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
-
-		private bool[] array = new bool[0];
-
-		private int count = 0;
-
-		public event Action<Bool_list, EventChanged>? OnChanged;
-
-		public int Count => count;
-
-		public bool IsReadOnly => false;
-
-		public bool this[int index]
+		public void Add(T item)
 		{
-			get
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				return array[index];
-			}
-			set
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				array[index] = value;
-			}
-		}
-
-		private void EnsureSize(int size)
-		{
-			if (array.Length < size)
-			{
-				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
-				if (newCapacity < size)
-					newCapacity = size;
-				var newData = new bool[newCapacity];
-				Array.Copy(array, newData, count);
-				array = newData;
-			}
-		}
-
-		public void Add(bool item)
-		{
-			EnsureSize(count + 1);
-			array[count++] = item;
+			throw new NotSupportedException();
 		}
 
 		public void Clear()
 		{
-			Array.Clear(array, 0, count);
-			count = 0;
+			throw new NotSupportedException();
 		}
 
-		public bool Contains(bool item)
+		public bool Contains(T item)
 		{
-			return IndexOf(item) != -1;
+			return containsCheck(item);
 		}
 
-		public void CopyTo(bool[] array, int arrayIndex)
+		public void CopyTo(T[] array, int arrayIndex)
 		{
-			Array.Copy(this.array, 0, array, arrayIndex, count);
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
 		}
 
-		public bool Remove(bool item)
+		public IEnumerator<T> GetEnumerator()
 		{
-			var num = IndexOf(item);
-			if (num == -1)
-				return false;
-			Array.Copy(array, num + 1, array, num, count - num - 1);
-			count--;
-			array[count] = default;
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<bool> _deletes;
+		public ICollection<bool> Deletes => _deletes;
+
+		private ICollection<bool> _updates;
+		public ICollection<bool> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<Kdsync.Duration> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Kdsync.Duration>();
+
+	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, Kdsync.Duration>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, Kdsync.Duration>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<bool, Kdsync.Duration>> list = new LinkedList<KeyValuePair<bool, Kdsync.Duration>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, Kdsync.Duration>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, Kdsync.Duration>>>(KeyEqualityComparer);
+
+	public event Action<BoolDuration_map, EventChanged>? OnChanged;
+
+	public Kdsync.Duration this[bool key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<bool, Kdsync.Duration> value2 = new KeyValuePair<bool, Kdsync.Duration>(key, value);
+			LinkedListNode<KeyValuePair<bool, Kdsync.Duration>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, Kdsync.Duration> pair) => pair.Key, ContainsKey);
+
+	public ICollection<Kdsync.Duration> Values => new MapView<Kdsync.Duration>(this, (KeyValuePair<bool, Kdsync.Duration> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(bool key, Kdsync.Duration value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(bool key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(Kdsync.Duration value)
+	{
+		return list.Any((KeyValuePair<bool, Kdsync.Duration> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(bool key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(bool key, out Kdsync.Duration value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, Kdsync.Duration>>.Add(KeyValuePair<bool, Kdsync.Duration> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<bool, Kdsync.Duration>>.Contains(KeyValuePair<bool, Kdsync.Duration> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, Kdsync.Duration>>.CopyTo(KeyValuePair<bool, Kdsync.Duration>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<bool, Kdsync.Duration>>.Remove(KeyValuePair<bool, Kdsync.Duration> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Kdsync.Duration>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
 			return true;
 		}
 
-		public int IndexOf(bool item)
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<bool, Kdsync.Duration>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<bool>(map.Keys);
+		sortedKeys.Sort((a, b) => {
+			if (a) return b ? 0 : 1;
+			return b ? -1 : 0;
+		});
+		foreach (var k in sortedKeys)
 		{
-			EqualityComparer<bool> equalityComparer = EqualityComparer;
-			for (int i = 0; i < count; i++)
+			var v = map[k].Value.Value;
+			var key = k.ToString().ToLower();
+			sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
 			{
-				if (equalityComparer.Equals(array[i], item))
-				{
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public void Insert(int index, bool item)
-		{
-			if (index < 0 || index > count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			EnsureSize(count + 1);
-			Array.Copy(array, index, array, index + 1, count - index);
-			array[index] = item;
-			count++;
-		}
-
-		public void RemoveAt(int index)
-		{
-			if (index < 0 || index >= count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			Array.Copy(array, index + 1, array, index, count - index - 1);
-			count--;
-			array[count] = default;
-		}
-
-		public IEnumerator<bool> GetEnumerator()
-		{
-			for (int i = 0; i < count; i++)
-			{
-				yield return array[i];
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
 			}
 		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			for (int i = 0; i < count; i++)
-			{
-				var v = array[i];
-				sb.AppendLine(indent + "  " + v.ToString().ToLower());
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
+		if (clear)
 		{
 			Clear();
-			var stream = new CodedInputStream(b);
-			while (!stream.IsAtEnd)
-			{
-				Add(stream.ReadBool());
-			}
 		}
-
-		public void RaiseChanged()
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
 		{
-			OnChanged?.Invoke(this, new EventChanged());
+			Remove(stream.ReadBool());
 		}
-
-		public void ClearChanged()
+		foreach (var entry in entries)
 		{
-
-		}
-	}
-	public class Double_list : IList<double>, ICollection<double>, IEnumerable<double>
-	{
-		public class EventChanged
-		{
-			public EventChanged()
-			{
-			}
-		}
-
-		private static readonly EqualityComparer<double> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<double>();
-
-		private double[] array = new double[0];
-
-		private int count = 0;
-
-		public event Action<Double_list, EventChanged>? OnChanged;
-
-		public int Count => count;
-
-		public bool IsReadOnly => false;
-
-		public double this[int index]
-		{
-			get
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				return array[index];
-			}
-			set
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				array[index] = value;
-			}
-		}
-
-		private void EnsureSize(int size)
-		{
-			if (array.Length < size)
-			{
-				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
-				if (newCapacity < size)
-					newCapacity = size;
-				var newData = new double[newCapacity];
-				Array.Copy(array, newData, count);
-				array = newData;
-			}
-		}
-
-		public void Add(double item)
-		{
-			EnsureSize(count + 1);
-			array[count++] = item;
-		}
-
-		public void Clear()
-		{
-			Array.Clear(array, 0, count);
-			count = 0;
-		}
-
-		public bool Contains(double item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		public void CopyTo(double[] array, int arrayIndex)
-		{
-			Array.Copy(this.array, 0, array, arrayIndex, count);
-		}
-
-		public bool Remove(double item)
-		{
-			var num = IndexOf(item);
-			if (num == -1)
-				return false;
-			Array.Copy(array, num + 1, array, num, count - num - 1);
-			count--;
-			array[count] = default;
-			return true;
-		}
-
-		public int IndexOf(double item)
-		{
-			EqualityComparer<double> equalityComparer = EqualityComparer;
-			for (int i = 0; i < count; i++)
-			{
-				if (equalityComparer.Equals(array[i], item))
-				{
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public void Insert(int index, double item)
-		{
-			if (index < 0 || index > count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			EnsureSize(count + 1);
-			Array.Copy(array, index, array, index + 1, count - index);
-			array[index] = item;
-			count++;
-		}
-
-		public void RemoveAt(int index)
-		{
-			if (index < 0 || index >= count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			Array.Copy(array, index + 1, array, index, count - index - 1);
-			count--;
-			array[count] = default;
-		}
-
-		public IEnumerator<double> GetEnumerator()
-		{
-			for (int i = 0; i < count; i++)
-			{
-				yield return array[i];
-			}
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			for (int i = 0; i < count; i++)
-			{
-				var v = array[i];
-				sb.AppendLine(indent + "  " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			Clear();
-			var stream = new CodedInputStream(b);
-			while (!stream.IsAtEnd)
-			{
-				Add(stream.ReadDouble());
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			OnChanged?.Invoke(this, new EventChanged());
-		}
-
-		public void ClearChanged()
-		{
-
-		}
-	}
-	public class Duration_list : IList<Duration>, ICollection<Duration>, IEnumerable<Duration>
-	{
-		public class EventChanged
-		{
-			public EventChanged()
-			{
-			}
-		}
-
-		private static readonly EqualityComparer<Duration> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Duration>();
-
-		private Duration[] array = new Duration[0];
-
-		private int count = 0;
-
-		public event Action<Duration_list, EventChanged>? OnChanged;
-
-		public int Count => count;
-
-		public bool IsReadOnly => false;
-
-		public Duration this[int index]
-		{
-			get
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				return array[index];
-			}
-			set
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				array[index] = value;
-			}
-		}
-
-		private void EnsureSize(int size)
-		{
-			if (array.Length < size)
-			{
-				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
-				if (newCapacity < size)
-					newCapacity = size;
-				var newData = new Duration[newCapacity];
-				Array.Copy(array, newData, count);
-				array = newData;
-			}
-		}
-
-		public void Add(Duration item)
-		{
-			EnsureSize(count + 1);
-			array[count++] = item;
-		}
-
-		public void Clear()
-		{
-			Array.Clear(array, 0, count);
-			count = 0;
-		}
-
-		public bool Contains(Duration item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		public void CopyTo(Duration[] array, int arrayIndex)
-		{
-			Array.Copy(this.array, 0, array, arrayIndex, count);
-		}
-
-		public bool Remove(Duration item)
-		{
-			var num = IndexOf(item);
-			if (num == -1)
-				return false;
-			Array.Copy(array, num + 1, array, num, count - num - 1);
-			count--;
-			array[count] = default;
-			return true;
-		}
-
-		public int IndexOf(Duration item)
-		{
-			EqualityComparer<Duration> equalityComparer = EqualityComparer;
-			for (int i = 0; i < count; i++)
-			{
-				if (equalityComparer.Equals(array[i], item))
-				{
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public void Insert(int index, Duration item)
-		{
-			if (index < 0 || index > count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			EnsureSize(count + 1);
-			Array.Copy(array, index, array, index + 1, count - index);
-			array[index] = item;
-			count++;
-		}
-
-		public void RemoveAt(int index)
-		{
-			if (index < 0 || index >= count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			Array.Copy(array, index + 1, array, index, count - index - 1);
-			count--;
-			array[count] = default;
-		}
-
-		public IEnumerator<Duration> GetEnumerator()
-		{
-			for (int i = 0; i < count; i++)
-			{
-				yield return array[i];
-			}
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			for (int i = 0; i < count; i++)
-			{
-				var v = array[i];
-				sb.AppendLine(indent + "  {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			Clear();
-			var stream = new CodedInputStream(b);
-			while (!stream.IsAtEnd)
-			{
-				Add(Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			OnChanged?.Invoke(this, new EventChanged());
-		}
-
-		public void ClearChanged()
-		{
-
-		}
-	}
-	public class BoolDuration_map : IDictionary<bool, Duration>, ICollection<KeyValuePair<bool, Duration>>, IEnumerable<KeyValuePair<bool, Duration>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly BoolDuration_map parent;
-
-			private readonly Func<KeyValuePair<bool, Duration>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(BoolDuration_map parent, Func<KeyValuePair<bool, Duration>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<bool> _deletes;
-			public ICollection<bool> Deletes => _deletes;
-
-			private ICollection<bool> _updates;
-			public ICollection<bool> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<Duration> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Duration>();
-
-    	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, Duration>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, Duration>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<bool, Duration>> list = new LinkedList<KeyValuePair<bool, Duration>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, Duration>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, Duration>>>(KeyEqualityComparer);
-
-		public event Action<BoolDuration_map, EventChanged>? OnChanged;
-
-		public Duration this[bool key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<bool, Duration> value2 = new KeyValuePair<bool, Duration>(key, value);
-				LinkedListNode<KeyValuePair<bool, Duration>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, Duration> pair) => pair.Key, ContainsKey);
-
-		public ICollection<Duration> Values => new MapView<Duration>(this, (KeyValuePair<bool, Duration> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(bool key, Duration value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(bool key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(Duration value)
-		{
-			return list.Any((KeyValuePair<bool, Duration> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(bool key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(bool key, out Duration value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, Duration>>.Add(KeyValuePair<bool, Duration> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<bool, Duration>>.Contains(KeyValuePair<bool, Duration> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, Duration>>.CopyTo(KeyValuePair<bool, Duration>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<bool, Duration>>.Remove(KeyValuePair<bool, Duration> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Duration>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<bool, Duration>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<bool>(map.Keys);
-			sortedKeys.Sort((a, b) => {
-				if (a) return b ? 0 : 1;
-				return b ? -1 : 0;
-			});
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString().ToLower();
-				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
+			stream = new CodedInputStream(entry);
+			bool k = default;
+			Kdsync.Duration v = new Kdsync.Duration();
 			while ((tag = stream.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadBool();
 					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
+				case 2: // MapEntryValueFieldNumber
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
 					break;
 				default:
 					stream.SkipLastField();
 					break;
 				}
 			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadBool());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				bool k = default;
-				Duration v = new Duration();
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadBool();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
+			this[k] = v;
 		}
 	}
-	public class Int32Duration_map : IDictionary<int, Duration>, ICollection<KeyValuePair<int, Duration>>, IEnumerable<KeyValuePair<int, Duration>>
+
+	public void RaiseChanged()
 	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int32Duration_map parent;
-
-			private readonly Func<KeyValuePair<int, Duration>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int32Duration_map parent, Func<KeyValuePair<int, Duration>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<int> _deletes;
-			public ICollection<int> Deletes => _deletes;
-
-			private ICollection<int> _updates;
-			public ICollection<int> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<Duration> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Duration>();
-
-    	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, Duration>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, Duration>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<int, Duration>> list = new LinkedList<KeyValuePair<int, Duration>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, Duration>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, Duration>>>(KeyEqualityComparer);
-
-		public event Action<Int32Duration_map, EventChanged>? OnChanged;
-
-		public Duration this[int key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<int, Duration> value2 = new KeyValuePair<int, Duration>(key, value);
-				LinkedListNode<KeyValuePair<int, Duration>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, Duration> pair) => pair.Key, ContainsKey);
-
-		public ICollection<Duration> Values => new MapView<Duration>(this, (KeyValuePair<int, Duration> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(int key, Duration value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(int key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(Duration value)
-		{
-			return list.Any((KeyValuePair<int, Duration> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(int key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(int key, out Duration value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, Duration>>.Add(KeyValuePair<int, Duration> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<int, Duration>>.Contains(KeyValuePair<int, Duration> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, Duration>>.CopyTo(KeyValuePair<int, Duration>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<int, Duration>>.Remove(KeyValuePair<int, Duration> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Duration>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<int, Duration>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<int>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt32());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				int k = default;
-				Duration v = new Duration();
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt32();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class Int64Duration_map : IDictionary<long, Duration>, ICollection<KeyValuePair<long, Duration>>, IEnumerable<KeyValuePair<long, Duration>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int64Duration_map parent;
-
-			private readonly Func<KeyValuePair<long, Duration>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int64Duration_map parent, Func<KeyValuePair<long, Duration>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<long> _deletes;
-			public ICollection<long> Deletes => _deletes;
-
-			private ICollection<long> _updates;
-			public ICollection<long> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<Duration> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Duration>();
-
-    	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, Duration>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, Duration>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<long, Duration>> list = new LinkedList<KeyValuePair<long, Duration>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, Duration>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, Duration>>>(KeyEqualityComparer);
-
-		public event Action<Int64Duration_map, EventChanged>? OnChanged;
-
-		public Duration this[long key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<long, Duration> value2 = new KeyValuePair<long, Duration>(key, value);
-				LinkedListNode<KeyValuePair<long, Duration>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, Duration> pair) => pair.Key, ContainsKey);
-
-		public ICollection<Duration> Values => new MapView<Duration>(this, (KeyValuePair<long, Duration> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(long key, Duration value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(long key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(Duration value)
-		{
-			return list.Any((KeyValuePair<long, Duration> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(long key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(long key, out Duration value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, Duration>>.Add(KeyValuePair<long, Duration> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<long, Duration>>.Contains(KeyValuePair<long, Duration> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, Duration>>.CopyTo(KeyValuePair<long, Duration>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<long, Duration>>.Remove(KeyValuePair<long, Duration> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Duration>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<long, Duration>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<long>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt64());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				long k = default;
-				Duration v = new Duration();
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt64();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class StringDuration_map : IDictionary<string, Duration>, ICollection<KeyValuePair<string, Duration>>, IEnumerable<KeyValuePair<string, Duration>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly StringDuration_map parent;
-
-			private readonly Func<KeyValuePair<string, Duration>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(StringDuration_map parent, Func<KeyValuePair<string, Duration>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<string> _deletes;
-			public ICollection<string> Deletes => _deletes;
-
-			private ICollection<string> _updates;
-			public ICollection<string> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<Duration> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Duration>();
-
-    	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, Duration>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, Duration>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<string, Duration>> list = new LinkedList<KeyValuePair<string, Duration>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, Duration>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, Duration>>>(KeyEqualityComparer);
-
-		public event Action<StringDuration_map, EventChanged>? OnChanged;
-
-		public Duration this[string key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<string, Duration> value2 = new KeyValuePair<string, Duration>(key, value);
-				LinkedListNode<KeyValuePair<string, Duration>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, Duration> pair) => pair.Key, ContainsKey);
-
-		public ICollection<Duration> Values => new MapView<Duration>(this, (KeyValuePair<string, Duration> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(string key, Duration value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(string key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(Duration value)
-		{
-			return list.Any((KeyValuePair<string, Duration> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(string key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(string key, out Duration value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, Duration>>.Add(KeyValuePair<string, Duration> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<string, Duration>>.Contains(KeyValuePair<string, Duration> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, Duration>>.CopyTo(KeyValuePair<string, Duration>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<string, Duration>>.Remove(KeyValuePair<string, Duration> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Duration>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<string, Duration>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<string>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadString());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				string k = string.Empty;
-				Duration v = new Duration();
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadString();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class Empty_list : IList<Empty>, ICollection<Empty>, IEnumerable<Empty>
-	{
-		public class EventChanged
-		{
-			public EventChanged()
-			{
-			}
-		}
-
-		private static readonly EqualityComparer<Empty> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Empty>();
-
-		private Empty[] array = new Empty[0];
-
-		private int count = 0;
-
-		public event Action<Empty_list, EventChanged>? OnChanged;
-
-		public int Count => count;
-
-		public bool IsReadOnly => false;
-
-		public Empty this[int index]
-		{
-			get
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				return array[index];
-			}
-			set
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				array[index] = value;
-			}
-		}
-
-		private void EnsureSize(int size)
-		{
-			if (array.Length < size)
-			{
-				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
-				if (newCapacity < size)
-					newCapacity = size;
-				var newData = new Empty[newCapacity];
-				Array.Copy(array, newData, count);
-				array = newData;
-			}
-		}
-
-		public void Add(Empty item)
-		{
-			EnsureSize(count + 1);
-			array[count++] = item;
-		}
-
-		public void Clear()
-		{
-			Array.Clear(array, 0, count);
-			count = 0;
-		}
-
-		public bool Contains(Empty item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		public void CopyTo(Empty[] array, int arrayIndex)
-		{
-			Array.Copy(this.array, 0, array, arrayIndex, count);
-		}
-
-		public bool Remove(Empty item)
-		{
-			var num = IndexOf(item);
-			if (num == -1)
-				return false;
-			Array.Copy(array, num + 1, array, num, count - num - 1);
-			count--;
-			array[count] = default;
-			return true;
-		}
-
-		public int IndexOf(Empty item)
-		{
-			EqualityComparer<Empty> equalityComparer = EqualityComparer;
-			for (int i = 0; i < count; i++)
-			{
-				if (equalityComparer.Equals(array[i], item))
-				{
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public void Insert(int index, Empty item)
-		{
-			if (index < 0 || index > count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			EnsureSize(count + 1);
-			Array.Copy(array, index, array, index + 1, count - index);
-			array[index] = item;
-			count++;
-		}
-
-		public void RemoveAt(int index)
-		{
-			if (index < 0 || index >= count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			Array.Copy(array, index + 1, array, index, count - index - 1);
-			count--;
-			array[count] = default;
-		}
-
-		public IEnumerator<Empty> GetEnumerator()
-		{
-			for (int i = 0; i < count; i++)
-			{
-				yield return array[i];
-			}
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			for (int i = 0; i < count; i++)
-			{
-				var v = array[i];
-				sb.AppendLine(indent + "  {}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			Clear();
-			var stream = new CodedInputStream(b);
-			while (!stream.IsAtEnd)
-			{
-				Add(Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			OnChanged?.Invoke(this, new EventChanged());
-		}
-
-		public void ClearChanged()
-		{
-
-		}
-	}
-	public class BoolEmpty_map : IDictionary<bool, Empty>, ICollection<KeyValuePair<bool, Empty>>, IEnumerable<KeyValuePair<bool, Empty>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly BoolEmpty_map parent;
-
-			private readonly Func<KeyValuePair<bool, Empty>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(BoolEmpty_map parent, Func<KeyValuePair<bool, Empty>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<bool> _deletes;
-			public ICollection<bool> Deletes => _deletes;
-
-			private ICollection<bool> _updates;
-			public ICollection<bool> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<Empty> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Empty>();
-
-    	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, Empty>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, Empty>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<bool, Empty>> list = new LinkedList<KeyValuePair<bool, Empty>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, Empty>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, Empty>>>(KeyEqualityComparer);
-
-		public event Action<BoolEmpty_map, EventChanged>? OnChanged;
-
-		public Empty this[bool key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<bool, Empty> value2 = new KeyValuePair<bool, Empty>(key, value);
-				LinkedListNode<KeyValuePair<bool, Empty>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, Empty> pair) => pair.Key, ContainsKey);
-
-		public ICollection<Empty> Values => new MapView<Empty>(this, (KeyValuePair<bool, Empty> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(bool key, Empty value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(bool key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(Empty value)
-		{
-			return list.Any((KeyValuePair<bool, Empty> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(bool key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(bool key, out Empty value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, Empty>>.Add(KeyValuePair<bool, Empty> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<bool, Empty>>.Contains(KeyValuePair<bool, Empty> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, Empty>>.CopyTo(KeyValuePair<bool, Empty>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<bool, Empty>>.Remove(KeyValuePair<bool, Empty> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Empty>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<bool, Empty>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<bool>(map.Keys);
-			sortedKeys.Sort((a, b) => {
-				if (a) return b ? 0 : 1;
-				return b ? -1 : 0;
-			});
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString().ToLower();
-				sb.AppendLine(indent + "  " + key + " = {}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadBool());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				bool k = default;
-				Empty v = new Empty();
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadBool();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class Int32Empty_map : IDictionary<int, Empty>, ICollection<KeyValuePair<int, Empty>>, IEnumerable<KeyValuePair<int, Empty>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int32Empty_map parent;
-
-			private readonly Func<KeyValuePair<int, Empty>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int32Empty_map parent, Func<KeyValuePair<int, Empty>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<int> _deletes;
-			public ICollection<int> Deletes => _deletes;
-
-			private ICollection<int> _updates;
-			public ICollection<int> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<Empty> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Empty>();
-
-    	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, Empty>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, Empty>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<int, Empty>> list = new LinkedList<KeyValuePair<int, Empty>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, Empty>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, Empty>>>(KeyEqualityComparer);
-
-		public event Action<Int32Empty_map, EventChanged>? OnChanged;
-
-		public Empty this[int key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<int, Empty> value2 = new KeyValuePair<int, Empty>(key, value);
-				LinkedListNode<KeyValuePair<int, Empty>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, Empty> pair) => pair.Key, ContainsKey);
-
-		public ICollection<Empty> Values => new MapView<Empty>(this, (KeyValuePair<int, Empty> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(int key, Empty value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(int key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(Empty value)
-		{
-			return list.Any((KeyValuePair<int, Empty> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(int key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(int key, out Empty value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, Empty>>.Add(KeyValuePair<int, Empty> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<int, Empty>>.Contains(KeyValuePair<int, Empty> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, Empty>>.CopyTo(KeyValuePair<int, Empty>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<int, Empty>>.Remove(KeyValuePair<int, Empty> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Empty>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<int, Empty>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<int>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = {}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt32());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				int k = default;
-				Empty v = new Empty();
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt32();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class Int64Empty_map : IDictionary<long, Empty>, ICollection<KeyValuePair<long, Empty>>, IEnumerable<KeyValuePair<long, Empty>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int64Empty_map parent;
-
-			private readonly Func<KeyValuePair<long, Empty>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int64Empty_map parent, Func<KeyValuePair<long, Empty>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<long> _deletes;
-			public ICollection<long> Deletes => _deletes;
-
-			private ICollection<long> _updates;
-			public ICollection<long> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<Empty> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Empty>();
-
-    	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, Empty>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, Empty>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<long, Empty>> list = new LinkedList<KeyValuePair<long, Empty>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, Empty>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, Empty>>>(KeyEqualityComparer);
-
-		public event Action<Int64Empty_map, EventChanged>? OnChanged;
-
-		public Empty this[long key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<long, Empty> value2 = new KeyValuePair<long, Empty>(key, value);
-				LinkedListNode<KeyValuePair<long, Empty>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, Empty> pair) => pair.Key, ContainsKey);
-
-		public ICollection<Empty> Values => new MapView<Empty>(this, (KeyValuePair<long, Empty> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(long key, Empty value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(long key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(Empty value)
-		{
-			return list.Any((KeyValuePair<long, Empty> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(long key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(long key, out Empty value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, Empty>>.Add(KeyValuePair<long, Empty> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<long, Empty>>.Contains(KeyValuePair<long, Empty> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, Empty>>.CopyTo(KeyValuePair<long, Empty>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<long, Empty>>.Remove(KeyValuePair<long, Empty> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Empty>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<long, Empty>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<long>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = {}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt64());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				long k = default;
-				Empty v = new Empty();
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt64();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class StringEmpty_map : IDictionary<string, Empty>, ICollection<KeyValuePair<string, Empty>>, IEnumerable<KeyValuePair<string, Empty>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly StringEmpty_map parent;
-
-			private readonly Func<KeyValuePair<string, Empty>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(StringEmpty_map parent, Func<KeyValuePair<string, Empty>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<string> _deletes;
-			public ICollection<string> Deletes => _deletes;
-
-			private ICollection<string> _updates;
-			public ICollection<string> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<Empty> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Empty>();
-
-    	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, Empty>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, Empty>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<string, Empty>> list = new LinkedList<KeyValuePair<string, Empty>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, Empty>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, Empty>>>(KeyEqualityComparer);
-
-		public event Action<StringEmpty_map, EventChanged>? OnChanged;
-
-		public Empty this[string key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<string, Empty> value2 = new KeyValuePair<string, Empty>(key, value);
-				LinkedListNode<KeyValuePair<string, Empty>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, Empty> pair) => pair.Key, ContainsKey);
-
-		public ICollection<Empty> Values => new MapView<Empty>(this, (KeyValuePair<string, Empty> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(string key, Empty value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(string key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(Empty value)
-		{
-			return list.Any((KeyValuePair<string, Empty> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(string key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(string key, out Empty value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, Empty>>.Add(KeyValuePair<string, Empty> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<string, Empty>>.Contains(KeyValuePair<string, Empty> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, Empty>>.CopyTo(KeyValuePair<string, Empty>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<string, Empty>>.Remove(KeyValuePair<string, Empty> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Empty>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<string, Empty>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<string>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = {}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadString());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				string k = string.Empty;
-				Empty v = new Empty();
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadString();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class Float_list : IList<float>, ICollection<float>, IEnumerable<float>
-	{
-		public class EventChanged
-		{
-			public EventChanged()
-			{
-			}
-		}
-
-		private static readonly EqualityComparer<float> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<float>();
-
-		private float[] array = new float[0];
-
-		private int count = 0;
-
-		public event Action<Float_list, EventChanged>? OnChanged;
-
-		public int Count => count;
-
-		public bool IsReadOnly => false;
-
-		public float this[int index]
-		{
-			get
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				return array[index];
-			}
-			set
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				array[index] = value;
-			}
-		}
-
-		private void EnsureSize(int size)
-		{
-			if (array.Length < size)
-			{
-				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
-				if (newCapacity < size)
-					newCapacity = size;
-				var newData = new float[newCapacity];
-				Array.Copy(array, newData, count);
-				array = newData;
-			}
-		}
-
-		public void Add(float item)
-		{
-			EnsureSize(count + 1);
-			array[count++] = item;
-		}
-
-		public void Clear()
-		{
-			Array.Clear(array, 0, count);
-			count = 0;
-		}
-
-		public bool Contains(float item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		public void CopyTo(float[] array, int arrayIndex)
-		{
-			Array.Copy(this.array, 0, array, arrayIndex, count);
-		}
-
-		public bool Remove(float item)
-		{
-			var num = IndexOf(item);
-			if (num == -1)
-				return false;
-			Array.Copy(array, num + 1, array, num, count - num - 1);
-			count--;
-			array[count] = default;
-			return true;
-		}
-
-		public int IndexOf(float item)
-		{
-			EqualityComparer<float> equalityComparer = EqualityComparer;
-			for (int i = 0; i < count; i++)
-			{
-				if (equalityComparer.Equals(array[i], item))
-				{
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public void Insert(int index, float item)
-		{
-			if (index < 0 || index > count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			EnsureSize(count + 1);
-			Array.Copy(array, index, array, index + 1, count - index);
-			array[index] = item;
-			count++;
-		}
-
-		public void RemoveAt(int index)
-		{
-			if (index < 0 || index >= count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			Array.Copy(array, index + 1, array, index, count - index - 1);
-			count--;
-			array[count] = default;
-		}
-
-		public IEnumerator<float> GetEnumerator()
-		{
-			for (int i = 0; i < count; i++)
-			{
-				yield return array[i];
-			}
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			for (int i = 0; i < count; i++)
-			{
-				var v = array[i];
-				sb.AppendLine(indent + "  " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			Clear();
-			var stream = new CodedInputStream(b);
-			while (!stream.IsAtEnd)
-			{
-				Add(stream.ReadFloat());
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			OnChanged?.Invoke(this, new EventChanged());
-		}
-
-		public void ClearChanged()
-		{
-
-		}
-	}
-	public class Int32_list : IList<int>, ICollection<int>, IEnumerable<int>
-	{
-		public class EventChanged
-		{
-			public EventChanged()
-			{
-			}
-		}
-
-		private static readonly EqualityComparer<int> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
-
-		private int[] array = new int[0];
-
-		private int count = 0;
-
-		public event Action<Int32_list, EventChanged>? OnChanged;
-
-		public int Count => count;
-
-		public bool IsReadOnly => false;
-
-		public int this[int index]
-		{
-			get
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				return array[index];
-			}
-			set
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				array[index] = value;
-			}
-		}
-
-		private void EnsureSize(int size)
-		{
-			if (array.Length < size)
-			{
-				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
-				if (newCapacity < size)
-					newCapacity = size;
-				var newData = new int[newCapacity];
-				Array.Copy(array, newData, count);
-				array = newData;
-			}
-		}
-
-		public void Add(int item)
-		{
-			EnsureSize(count + 1);
-			array[count++] = item;
-		}
-
-		public void Clear()
-		{
-			Array.Clear(array, 0, count);
-			count = 0;
-		}
-
-		public bool Contains(int item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		public void CopyTo(int[] array, int arrayIndex)
-		{
-			Array.Copy(this.array, 0, array, arrayIndex, count);
-		}
-
-		public bool Remove(int item)
-		{
-			var num = IndexOf(item);
-			if (num == -1)
-				return false;
-			Array.Copy(array, num + 1, array, num, count - num - 1);
-			count--;
-			array[count] = default;
-			return true;
-		}
-
-		public int IndexOf(int item)
-		{
-			EqualityComparer<int> equalityComparer = EqualityComparer;
-			for (int i = 0; i < count; i++)
-			{
-				if (equalityComparer.Equals(array[i], item))
-				{
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public void Insert(int index, int item)
-		{
-			if (index < 0 || index > count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			EnsureSize(count + 1);
-			Array.Copy(array, index, array, index + 1, count - index);
-			array[index] = item;
-			count++;
-		}
-
-		public void RemoveAt(int index)
-		{
-			if (index < 0 || index >= count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			Array.Copy(array, index + 1, array, index, count - index - 1);
-			count--;
-			array[count] = default;
-		}
-
-		public IEnumerator<int> GetEnumerator()
-		{
-			for (int i = 0; i < count; i++)
-			{
-				yield return array[i];
-			}
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			for (int i = 0; i < count; i++)
-			{
-				var v = array[i];
-				sb.AppendLine(indent + "  " + v.ToString());
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			Clear();
-			var stream = new CodedInputStream(b);
-			while (!stream.IsAtEnd)
-			{
-				Add(stream.ReadInt32());
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			OnChanged?.Invoke(this, new EventChanged());
-		}
-
-		public void ClearChanged()
-		{
-
-		}
-	}
-	public class BoolInt32_map : IDictionary<bool, int>, ICollection<KeyValuePair<bool, int>>, IEnumerable<KeyValuePair<bool, int>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly BoolInt32_map parent;
-
-			private readonly Func<KeyValuePair<bool, int>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(BoolInt32_map parent, Func<KeyValuePair<bool, int>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<bool> _deletes;
-			public ICollection<bool> Deletes => _deletes;
-
-			private ICollection<bool> _updates;
-			public ICollection<bool> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<int> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
-
-    	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, int>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, int>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<bool, int>> list = new LinkedList<KeyValuePair<bool, int>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, int>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, int>>>(KeyEqualityComparer);
-
-		public event Action<BoolInt32_map, EventChanged>? OnChanged;
-
-		public int this[bool key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<bool, int> value2 = new KeyValuePair<bool, int>(key, value);
-				LinkedListNode<KeyValuePair<bool, int>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, int> pair) => pair.Key, ContainsKey);
-
-		public ICollection<int> Values => new MapView<int>(this, (KeyValuePair<bool, int> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(bool key, int value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(bool key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(int value)
-		{
-			return list.Any((KeyValuePair<bool, int> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(bool key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(bool key, out int value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, int>>.Add(KeyValuePair<bool, int> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<bool, int>>.Contains(KeyValuePair<bool, int> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, int>>.CopyTo(KeyValuePair<bool, int>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<bool, int>>.Remove(KeyValuePair<bool, int> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<int>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<bool, int>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<bool>(map.Keys);
-			sortedKeys.Sort((a, b) => {
-				if (a) return b ? 0 : 1;
-				return b ? -1 : 0;
-			});
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString().ToLower();
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadBool());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				bool k = default;
-				int v = default;
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadBool();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = stream.ReadInt32();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class Int32Int32_map : IDictionary<int, int>, ICollection<KeyValuePair<int, int>>, IEnumerable<KeyValuePair<int, int>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int32Int32_map parent;
-
-			private readonly Func<KeyValuePair<int, int>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int32Int32_map parent, Func<KeyValuePair<int, int>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<int> _deletes;
-			public ICollection<int> Deletes => _deletes;
-
-			private ICollection<int> _updates;
-			public ICollection<int> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<int> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
-
-    	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, int>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, int>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<int, int>> list = new LinkedList<KeyValuePair<int, int>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, int>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, int>>>(KeyEqualityComparer);
-
-		public event Action<Int32Int32_map, EventChanged>? OnChanged;
-
-		public int this[int key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<int, int> value2 = new KeyValuePair<int, int>(key, value);
-				LinkedListNode<KeyValuePair<int, int>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, int> pair) => pair.Key, ContainsKey);
-
-		public ICollection<int> Values => new MapView<int>(this, (KeyValuePair<int, int> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(int key, int value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(int key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(int value)
-		{
-			return list.Any((KeyValuePair<int, int> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(int key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(int key, out int value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, int>>.Add(KeyValuePair<int, int> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<int, int>>.Contains(KeyValuePair<int, int> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, int>>.CopyTo(KeyValuePair<int, int>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<int, int>>.Remove(KeyValuePair<int, int> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<int>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<int, int>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<int>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt32());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				int k = default;
-				int v = default;
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt32();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = stream.ReadInt32();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class StringInt32_map : IDictionary<string, int>, ICollection<KeyValuePair<string, int>>, IEnumerable<KeyValuePair<string, int>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly StringInt32_map parent;
-
-			private readonly Func<KeyValuePair<string, int>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(StringInt32_map parent, Func<KeyValuePair<string, int>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<string> _deletes;
-			public ICollection<string> Deletes => _deletes;
-
-			private ICollection<string> _updates;
-			public ICollection<string> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<int> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
-
-    	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, int>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, int>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<string, int>> list = new LinkedList<KeyValuePair<string, int>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, int>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, int>>>(KeyEqualityComparer);
-
-		public event Action<StringInt32_map, EventChanged>? OnChanged;
-
-		public int this[string key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<string, int> value2 = new KeyValuePair<string, int>(key, value);
-				LinkedListNode<KeyValuePair<string, int>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, int> pair) => pair.Key, ContainsKey);
-
-		public ICollection<int> Values => new MapView<int>(this, (KeyValuePair<string, int> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(string key, int value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(string key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(int value)
-		{
-			return list.Any((KeyValuePair<string, int> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(string key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(string key, out int value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, int>>.Add(KeyValuePair<string, int> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<string, int>>.Contains(KeyValuePair<string, int> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, int>>.CopyTo(KeyValuePair<string, int>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<string, int>>.Remove(KeyValuePair<string, int> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<int>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<string, int>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<string>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadString());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				string k = string.Empty;
-				int v = default;
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadString();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = stream.ReadInt32();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class Int64_list : IList<long>, ICollection<long>, IEnumerable<long>
-	{
-		public class EventChanged
-		{
-			public EventChanged()
-			{
-			}
-		}
-
-		private static readonly EqualityComparer<long> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
-
-		private long[] array = new long[0];
-
-		private int count = 0;
-
-		public event Action<Int64_list, EventChanged>? OnChanged;
-
-		public int Count => count;
-
-		public bool IsReadOnly => false;
-
-		public long this[int index]
-		{
-			get
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				return array[index];
-			}
-			set
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				array[index] = value;
-			}
-		}
-
-		private void EnsureSize(int size)
-		{
-			if (array.Length < size)
-			{
-				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
-				if (newCapacity < size)
-					newCapacity = size;
-				var newData = new long[newCapacity];
-				Array.Copy(array, newData, count);
-				array = newData;
-			}
-		}
-
-		public void Add(long item)
-		{
-			EnsureSize(count + 1);
-			array[count++] = item;
-		}
-
-		public void Clear()
-		{
-			Array.Clear(array, 0, count);
-			count = 0;
-		}
-
-		public bool Contains(long item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		public void CopyTo(long[] array, int arrayIndex)
-		{
-			Array.Copy(this.array, 0, array, arrayIndex, count);
-		}
-
-		public bool Remove(long item)
-		{
-			var num = IndexOf(item);
-			if (num == -1)
-				return false;
-			Array.Copy(array, num + 1, array, num, count - num - 1);
-			count--;
-			array[count] = default;
-			return true;
-		}
-
-		public int IndexOf(long item)
-		{
-			EqualityComparer<long> equalityComparer = EqualityComparer;
-			for (int i = 0; i < count; i++)
-			{
-				if (equalityComparer.Equals(array[i], item))
-				{
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public void Insert(int index, long item)
-		{
-			if (index < 0 || index > count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			EnsureSize(count + 1);
-			Array.Copy(array, index, array, index + 1, count - index);
-			array[index] = item;
-			count++;
-		}
-
-		public void RemoveAt(int index)
-		{
-			if (index < 0 || index >= count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			Array.Copy(array, index + 1, array, index, count - index - 1);
-			count--;
-			array[count] = default;
-		}
-
-		public IEnumerator<long> GetEnumerator()
-		{
-			for (int i = 0; i < count; i++)
-			{
-				yield return array[i];
-			}
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			for (int i = 0; i < count; i++)
-			{
-				var v = array[i];
-				sb.AppendLine(indent + "  " + v.ToString());
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			Clear();
-			var stream = new CodedInputStream(b);
-			while (!stream.IsAtEnd)
-			{
-				Add(stream.ReadInt64());
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			OnChanged?.Invoke(this, new EventChanged());
-		}
-
-		public void ClearChanged()
-		{
-
-		}
-	}
-	public class Int64Int64_map : IDictionary<long, long>, ICollection<KeyValuePair<long, long>>, IEnumerable<KeyValuePair<long, long>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int64Int64_map parent;
-
-			private readonly Func<KeyValuePair<long, long>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int64Int64_map parent, Func<KeyValuePair<long, long>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<long> _deletes;
-			public ICollection<long> Deletes => _deletes;
-
-			private ICollection<long> _updates;
-			public ICollection<long> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<long> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
-
-    	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, long>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, long>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<long, long>> list = new LinkedList<KeyValuePair<long, long>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, long>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, long>>>(KeyEqualityComparer);
-
-		public event Action<Int64Int64_map, EventChanged>? OnChanged;
-
-		public long this[long key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<long, long> value2 = new KeyValuePair<long, long>(key, value);
-				LinkedListNode<KeyValuePair<long, long>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, long> pair) => pair.Key, ContainsKey);
-
-		public ICollection<long> Values => new MapView<long>(this, (KeyValuePair<long, long> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(long key, long value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(long key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(long value)
-		{
-			return list.Any((KeyValuePair<long, long> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(long key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(long key, out long value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, long>>.Add(KeyValuePair<long, long> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<long, long>>.Contains(KeyValuePair<long, long> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, long>>.CopyTo(KeyValuePair<long, long>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<long, long>>.Remove(KeyValuePair<long, long> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<long>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<long, long>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<long>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt64());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				long k = default;
-				long v = default;
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt64();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = stream.ReadInt64();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class String_list : IList<string>, ICollection<string>, IEnumerable<string>
-	{
-		public class EventChanged
-		{
-			public EventChanged()
-			{
-			}
-		}
-
-		private static readonly EqualityComparer<string> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
-
-		private string[] array = new string[0];
-
-		private int count = 0;
-
-		public event Action<String_list, EventChanged>? OnChanged;
-
-		public int Count => count;
-
-		public bool IsReadOnly => false;
-
-		public string this[int index]
-		{
-			get
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				return array[index];
-			}
-			set
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				array[index] = value;
-			}
-		}
-
-		private void EnsureSize(int size)
-		{
-			if (array.Length < size)
-			{
-				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
-				if (newCapacity < size)
-					newCapacity = size;
-				var newData = new string[newCapacity];
-				Array.Copy(array, newData, count);
-				array = newData;
-			}
-		}
-
-		public void Add(string item)
-		{
-			EnsureSize(count + 1);
-			array[count++] = item;
-		}
-
-		public void Clear()
-		{
-			Array.Clear(array, 0, count);
-			count = 0;
-		}
-
-		public bool Contains(string item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		public void CopyTo(string[] array, int arrayIndex)
-		{
-			Array.Copy(this.array, 0, array, arrayIndex, count);
-		}
-
-		public bool Remove(string item)
-		{
-			var num = IndexOf(item);
-			if (num == -1)
-				return false;
-			Array.Copy(array, num + 1, array, num, count - num - 1);
-			count--;
-			array[count] = default;
-			return true;
-		}
-
-		public int IndexOf(string item)
-		{
-			EqualityComparer<string> equalityComparer = EqualityComparer;
-			for (int i = 0; i < count; i++)
-			{
-				if (equalityComparer.Equals(array[i], item))
-				{
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public void Insert(int index, string item)
-		{
-			if (index < 0 || index > count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			EnsureSize(count + 1);
-			Array.Copy(array, index, array, index + 1, count - index);
-			array[index] = item;
-			count++;
-		}
-
-		public void RemoveAt(int index)
-		{
-			if (index < 0 || index >= count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			Array.Copy(array, index + 1, array, index, count - index - 1);
-			count--;
-			array[count] = default;
-		}
-
-		public IEnumerator<string> GetEnumerator()
-		{
-			for (int i = 0; i < count; i++)
-			{
-				yield return array[i];
-			}
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			for (int i = 0; i < count; i++)
-			{
-				var v = array[i];
-				sb.AppendLine(indent + "  " + v);
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			Clear();
-			var stream = new CodedInputStream(b);
-			while (!stream.IsAtEnd)
-			{
-				Add(stream.ReadString());
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			OnChanged?.Invoke(this, new EventChanged());
-		}
-
-		public void ClearChanged()
-		{
-
-		}
-	}
-	public class BoolString_map : IDictionary<bool, string>, ICollection<KeyValuePair<bool, string>>, IEnumerable<KeyValuePair<bool, string>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly BoolString_map parent;
-
-			private readonly Func<KeyValuePair<bool, string>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(BoolString_map parent, Func<KeyValuePair<bool, string>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<bool> _deletes;
-			public ICollection<bool> Deletes => _deletes;
-
-			private ICollection<bool> _updates;
-			public ICollection<bool> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<string> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
-
-    	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, string>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, string>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<bool, string>> list = new LinkedList<KeyValuePair<bool, string>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, string>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, string>>>(KeyEqualityComparer);
-
-		public event Action<BoolString_map, EventChanged>? OnChanged;
-
-		public string this[bool key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<bool, string> value2 = new KeyValuePair<bool, string>(key, value);
-				LinkedListNode<KeyValuePair<bool, string>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, string> pair) => pair.Key, ContainsKey);
-
-		public ICollection<string> Values => new MapView<string>(this, (KeyValuePair<bool, string> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(bool key, string value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(bool key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(string value)
-		{
-			return list.Any((KeyValuePair<bool, string> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(bool key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(bool key, out string value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, string>>.Add(KeyValuePair<bool, string> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<bool, string>>.Contains(KeyValuePair<bool, string> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, string>>.CopyTo(KeyValuePair<bool, string>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<bool, string>>.Remove(KeyValuePair<bool, string> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<string>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<bool, string>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<bool>(map.Keys);
-			sortedKeys.Sort((a, b) => {
-				if (a) return b ? 0 : 1;
-				return b ? -1 : 0;
-			});
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString().ToLower();
-				sb.AppendLine(indent + "  " + key + " = " + v);
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadBool());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				bool k = default;
-				string v = string.Empty;
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadBool();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = stream.ReadString();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class Int32String_map : IDictionary<int, string>, ICollection<KeyValuePair<int, string>>, IEnumerable<KeyValuePair<int, string>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int32String_map parent;
-
-			private readonly Func<KeyValuePair<int, string>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int32String_map parent, Func<KeyValuePair<int, string>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<int> _deletes;
-			public ICollection<int> Deletes => _deletes;
-
-			private ICollection<int> _updates;
-			public ICollection<int> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<string> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
-
-    	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, string>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, string>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<int, string>> list = new LinkedList<KeyValuePair<int, string>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, string>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, string>>>(KeyEqualityComparer);
-
-		public event Action<Int32String_map, EventChanged>? OnChanged;
-
-		public string this[int key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<int, string> value2 = new KeyValuePair<int, string>(key, value);
-				LinkedListNode<KeyValuePair<int, string>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, string> pair) => pair.Key, ContainsKey);
-
-		public ICollection<string> Values => new MapView<string>(this, (KeyValuePair<int, string> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(int key, string value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(int key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(string value)
-		{
-			return list.Any((KeyValuePair<int, string> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(int key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(int key, out string value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, string>>.Add(KeyValuePair<int, string> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<int, string>>.Contains(KeyValuePair<int, string> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, string>>.CopyTo(KeyValuePair<int, string>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<int, string>>.Remove(KeyValuePair<int, string> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<string>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<int, string>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<int>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = " + v);
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt32());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				int k = default;
-				string v = string.Empty;
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt32();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = stream.ReadString();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class Int64String_map : IDictionary<long, string>, ICollection<KeyValuePair<long, string>>, IEnumerable<KeyValuePair<long, string>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int64String_map parent;
-
-			private readonly Func<KeyValuePair<long, string>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int64String_map parent, Func<KeyValuePair<long, string>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<long> _deletes;
-			public ICollection<long> Deletes => _deletes;
-
-			private ICollection<long> _updates;
-			public ICollection<long> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<string> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
-
-    	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, string>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, string>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<long, string>> list = new LinkedList<KeyValuePair<long, string>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, string>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, string>>>(KeyEqualityComparer);
-
-		public event Action<Int64String_map, EventChanged>? OnChanged;
-
-		public string this[long key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<long, string> value2 = new KeyValuePair<long, string>(key, value);
-				LinkedListNode<KeyValuePair<long, string>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, string> pair) => pair.Key, ContainsKey);
-
-		public ICollection<string> Values => new MapView<string>(this, (KeyValuePair<long, string> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(long key, string value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(long key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(string value)
-		{
-			return list.Any((KeyValuePair<long, string> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(long key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(long key, out string value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, string>>.Add(KeyValuePair<long, string> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<long, string>>.Contains(KeyValuePair<long, string> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, string>>.CopyTo(KeyValuePair<long, string>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<long, string>>.Remove(KeyValuePair<long, string> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<string>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<long, string>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<long>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = " + v);
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt64());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				long k = default;
-				string v = string.Empty;
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt64();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = stream.ReadString();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class StringString_map : IDictionary<string, string>, ICollection<KeyValuePair<string, string>>, IEnumerable<KeyValuePair<string, string>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly StringString_map parent;
-
-			private readonly Func<KeyValuePair<string, string>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(StringString_map parent, Func<KeyValuePair<string, string>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<string> _deletes;
-			public ICollection<string> Deletes => _deletes;
-
-			private ICollection<string> _updates;
-			public ICollection<string> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<string> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
-
-    	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, string>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, string>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<string, string>> list = new LinkedList<KeyValuePair<string, string>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, string>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, string>>>(KeyEqualityComparer);
-
-		public event Action<StringString_map, EventChanged>? OnChanged;
-
-		public string this[string key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<string, string> value2 = new KeyValuePair<string, string>(key, value);
-				LinkedListNode<KeyValuePair<string, string>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, string> pair) => pair.Key, ContainsKey);
-
-		public ICollection<string> Values => new MapView<string>(this, (KeyValuePair<string, string> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(string key, string value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(string key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(string value)
-		{
-			return list.Any((KeyValuePair<string, string> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(string key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(string key, out string value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, string>>.Add(KeyValuePair<string, string> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<string, string>>.Contains(KeyValuePair<string, string> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, string>>.CopyTo(KeyValuePair<string, string>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<string, string>>.Remove(KeyValuePair<string, string> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<string>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<string>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = " + v);
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadString());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				string k = string.Empty;
-				string v = string.Empty;
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadString();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = stream.ReadString();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class Timestamp_list : IList<Timestamp>, ICollection<Timestamp>, IEnumerable<Timestamp>
-	{
-		public class EventChanged
-		{
-			public EventChanged()
-			{
-			}
-		}
-
-		private static readonly EqualityComparer<Timestamp> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Timestamp>();
-
-		private Timestamp[] array = new Timestamp[0];
-
-		private int count = 0;
-
-		public event Action<Timestamp_list, EventChanged>? OnChanged;
-
-		public int Count => count;
-
-		public bool IsReadOnly => false;
-
-		public Timestamp this[int index]
-		{
-			get
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				return array[index];
-			}
-			set
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				array[index] = value;
-			}
-		}
-
-		private void EnsureSize(int size)
-		{
-			if (array.Length < size)
-			{
-				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
-				if (newCapacity < size)
-					newCapacity = size;
-				var newData = new Timestamp[newCapacity];
-				Array.Copy(array, newData, count);
-				array = newData;
-			}
-		}
-
-		public void Add(Timestamp item)
-		{
-			EnsureSize(count + 1);
-			array[count++] = item;
-		}
-
-		public void Clear()
-		{
-			Array.Clear(array, 0, count);
-			count = 0;
-		}
-
-		public bool Contains(Timestamp item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		public void CopyTo(Timestamp[] array, int arrayIndex)
-		{
-			Array.Copy(this.array, 0, array, arrayIndex, count);
-		}
-
-		public bool Remove(Timestamp item)
-		{
-			var num = IndexOf(item);
-			if (num == -1)
-				return false;
-			Array.Copy(array, num + 1, array, num, count - num - 1);
-			count--;
-			array[count] = default;
-			return true;
-		}
-
-		public int IndexOf(Timestamp item)
-		{
-			EqualityComparer<Timestamp> equalityComparer = EqualityComparer;
-			for (int i = 0; i < count; i++)
-			{
-				if (equalityComparer.Equals(array[i], item))
-				{
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public void Insert(int index, Timestamp item)
-		{
-			if (index < 0 || index > count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			EnsureSize(count + 1);
-			Array.Copy(array, index, array, index + 1, count - index);
-			array[index] = item;
-			count++;
-		}
-
-		public void RemoveAt(int index)
-		{
-			if (index < 0 || index >= count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			Array.Copy(array, index + 1, array, index, count - index - 1);
-			count--;
-			array[count] = default;
-		}
-
-		public IEnumerator<Timestamp> GetEnumerator()
-		{
-			for (int i = 0; i < count; i++)
-			{
-				yield return array[i];
-			}
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			for (int i = 0; i < count; i++)
-			{
-				var v = array[i];
-				sb.AppendLine(indent + "  {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			Clear();
-			var stream = new CodedInputStream(b);
-			while (!stream.IsAtEnd)
-			{
-				Add(Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			OnChanged?.Invoke(this, new EventChanged());
-		}
-
-		public void ClearChanged()
-		{
-
-		}
-	}
-	public class BoolTimestamp_map : IDictionary<bool, Timestamp>, ICollection<KeyValuePair<bool, Timestamp>>, IEnumerable<KeyValuePair<bool, Timestamp>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly BoolTimestamp_map parent;
-
-			private readonly Func<KeyValuePair<bool, Timestamp>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(BoolTimestamp_map parent, Func<KeyValuePair<bool, Timestamp>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<bool> _deletes;
-			public ICollection<bool> Deletes => _deletes;
-
-			private ICollection<bool> _updates;
-			public ICollection<bool> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<Timestamp> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Timestamp>();
-
-    	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, Timestamp>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, Timestamp>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<bool, Timestamp>> list = new LinkedList<KeyValuePair<bool, Timestamp>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, Timestamp>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, Timestamp>>>(KeyEqualityComparer);
-
-		public event Action<BoolTimestamp_map, EventChanged>? OnChanged;
-
-		public Timestamp this[bool key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<bool, Timestamp> value2 = new KeyValuePair<bool, Timestamp>(key, value);
-				LinkedListNode<KeyValuePair<bool, Timestamp>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, Timestamp> pair) => pair.Key, ContainsKey);
-
-		public ICollection<Timestamp> Values => new MapView<Timestamp>(this, (KeyValuePair<bool, Timestamp> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(bool key, Timestamp value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(bool key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(Timestamp value)
-		{
-			return list.Any((KeyValuePair<bool, Timestamp> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(bool key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(bool key, out Timestamp value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, Timestamp>>.Add(KeyValuePair<bool, Timestamp> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<bool, Timestamp>>.Contains(KeyValuePair<bool, Timestamp> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, Timestamp>>.CopyTo(KeyValuePair<bool, Timestamp>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<bool, Timestamp>>.Remove(KeyValuePair<bool, Timestamp> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Timestamp>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<bool, Timestamp>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<bool>(map.Keys);
-			sortedKeys.Sort((a, b) => {
-				if (a) return b ? 0 : 1;
-				return b ? -1 : 0;
-			});
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString().ToLower();
-				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadBool());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				bool k = default;
-				Timestamp v = new Timestamp();
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadBool();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class Int32Timestamp_map : IDictionary<int, Timestamp>, ICollection<KeyValuePair<int, Timestamp>>, IEnumerable<KeyValuePair<int, Timestamp>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int32Timestamp_map parent;
-
-			private readonly Func<KeyValuePair<int, Timestamp>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int32Timestamp_map parent, Func<KeyValuePair<int, Timestamp>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<int> _deletes;
-			public ICollection<int> Deletes => _deletes;
-
-			private ICollection<int> _updates;
-			public ICollection<int> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<Timestamp> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Timestamp>();
-
-    	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, Timestamp>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, Timestamp>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<int, Timestamp>> list = new LinkedList<KeyValuePair<int, Timestamp>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, Timestamp>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, Timestamp>>>(KeyEqualityComparer);
-
-		public event Action<Int32Timestamp_map, EventChanged>? OnChanged;
-
-		public Timestamp this[int key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<int, Timestamp> value2 = new KeyValuePair<int, Timestamp>(key, value);
-				LinkedListNode<KeyValuePair<int, Timestamp>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, Timestamp> pair) => pair.Key, ContainsKey);
-
-		public ICollection<Timestamp> Values => new MapView<Timestamp>(this, (KeyValuePair<int, Timestamp> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(int key, Timestamp value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(int key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(Timestamp value)
-		{
-			return list.Any((KeyValuePair<int, Timestamp> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(int key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(int key, out Timestamp value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, Timestamp>>.Add(KeyValuePair<int, Timestamp> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<int, Timestamp>>.Contains(KeyValuePair<int, Timestamp> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, Timestamp>>.CopyTo(KeyValuePair<int, Timestamp>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<int, Timestamp>>.Remove(KeyValuePair<int, Timestamp> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Timestamp>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<int, Timestamp>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<int>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt32());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				int k = default;
-				Timestamp v = new Timestamp();
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt32();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class Int64Timestamp_map : IDictionary<long, Timestamp>, ICollection<KeyValuePair<long, Timestamp>>, IEnumerable<KeyValuePair<long, Timestamp>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int64Timestamp_map parent;
-
-			private readonly Func<KeyValuePair<long, Timestamp>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int64Timestamp_map parent, Func<KeyValuePair<long, Timestamp>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<long> _deletes;
-			public ICollection<long> Deletes => _deletes;
-
-			private ICollection<long> _updates;
-			public ICollection<long> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<Timestamp> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Timestamp>();
-
-    	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, Timestamp>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, Timestamp>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<long, Timestamp>> list = new LinkedList<KeyValuePair<long, Timestamp>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, Timestamp>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, Timestamp>>>(KeyEqualityComparer);
-
-		public event Action<Int64Timestamp_map, EventChanged>? OnChanged;
-
-		public Timestamp this[long key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<long, Timestamp> value2 = new KeyValuePair<long, Timestamp>(key, value);
-				LinkedListNode<KeyValuePair<long, Timestamp>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, Timestamp> pair) => pair.Key, ContainsKey);
-
-		public ICollection<Timestamp> Values => new MapView<Timestamp>(this, (KeyValuePair<long, Timestamp> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(long key, Timestamp value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(long key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(Timestamp value)
-		{
-			return list.Any((KeyValuePair<long, Timestamp> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(long key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(long key, out Timestamp value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, Timestamp>>.Add(KeyValuePair<long, Timestamp> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<long, Timestamp>>.Contains(KeyValuePair<long, Timestamp> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, Timestamp>>.CopyTo(KeyValuePair<long, Timestamp>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<long, Timestamp>>.Remove(KeyValuePair<long, Timestamp> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Timestamp>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<long, Timestamp>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<long>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt64());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				long k = default;
-				Timestamp v = new Timestamp();
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt64();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class StringTimestamp_map : IDictionary<string, Timestamp>, ICollection<KeyValuePair<string, Timestamp>>, IEnumerable<KeyValuePair<string, Timestamp>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly StringTimestamp_map parent;
-
-			private readonly Func<KeyValuePair<string, Timestamp>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(StringTimestamp_map parent, Func<KeyValuePair<string, Timestamp>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<string> _deletes;
-			public ICollection<string> Deletes => _deletes;
-
-			private ICollection<string> _updates;
-			public ICollection<string> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<Timestamp> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Timestamp>();
-
-    	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, Timestamp>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, Timestamp>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<string, Timestamp>> list = new LinkedList<KeyValuePair<string, Timestamp>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, Timestamp>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, Timestamp>>>(KeyEqualityComparer);
-
-		public event Action<StringTimestamp_map, EventChanged>? OnChanged;
-
-		public Timestamp this[string key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<string, Timestamp> value2 = new KeyValuePair<string, Timestamp>(key, value);
-				LinkedListNode<KeyValuePair<string, Timestamp>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, Timestamp> pair) => pair.Key, ContainsKey);
-
-		public ICollection<Timestamp> Values => new MapView<Timestamp>(this, (KeyValuePair<string, Timestamp> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(string key, Timestamp value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(string key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(Timestamp value)
-		{
-			return list.Any((KeyValuePair<string, Timestamp> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(string key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(string key, out Timestamp value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, Timestamp>>.Add(KeyValuePair<string, Timestamp> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<string, Timestamp>>.Contains(KeyValuePair<string, Timestamp> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, Timestamp>>.CopyTo(KeyValuePair<string, Timestamp>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<string, Timestamp>>.Remove(KeyValuePair<string, Timestamp> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Timestamp>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<string, Timestamp>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<string>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadString());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				string k = string.Empty;
-				Timestamp v = new Timestamp();
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadString();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public enum ItemType
-	{
-		ItemTypeNone = 0,
-		ItemTypeWeapon = 1,
-		ItemTypeArmor = 2,
-		ItemTypePotion = 3,
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
 	}
 
-	public class ItemType_list : IList<ItemType>, ICollection<ItemType>, IEnumerable<ItemType>
+	public void ClearChanged()
 	{
-		public class EventChanged
-		{
-			public EventChanged()
-			{
-			}
-		}
-
-		private static readonly EqualityComparer<ItemType> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemType>();
-
-		private ItemType[] array = new ItemType[0];
-
-		private int count = 0;
-
-		public event Action<ItemType_list, EventChanged>? OnChanged;
-
-		public int Count => count;
-
-		public bool IsReadOnly => false;
-
-		public ItemType this[int index]
-		{
-			get
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				return array[index];
-			}
-			set
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				array[index] = value;
-			}
-		}
-
-		private void EnsureSize(int size)
-		{
-			if (array.Length < size)
-			{
-				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
-				if (newCapacity < size)
-					newCapacity = size;
-				var newData = new ItemType[newCapacity];
-				Array.Copy(array, newData, count);
-				array = newData;
-			}
-		}
-
-		public void Add(ItemType item)
-		{
-			EnsureSize(count + 1);
-			array[count++] = item;
-		}
-
-		public void Clear()
-		{
-			Array.Clear(array, 0, count);
-			count = 0;
-		}
-
-		public bool Contains(ItemType item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		public void CopyTo(ItemType[] array, int arrayIndex)
-		{
-			Array.Copy(this.array, 0, array, arrayIndex, count);
-		}
-
-		public bool Remove(ItemType item)
-		{
-			var num = IndexOf(item);
-			if (num == -1)
-				return false;
-			Array.Copy(array, num + 1, array, num, count - num - 1);
-			count--;
-			array[count] = default;
-			return true;
-		}
-
-		public int IndexOf(ItemType item)
-		{
-			EqualityComparer<ItemType> equalityComparer = EqualityComparer;
-			for (int i = 0; i < count; i++)
-			{
-				if (equalityComparer.Equals(array[i], item))
-				{
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public void Insert(int index, ItemType item)
-		{
-			if (index < 0 || index > count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			EnsureSize(count + 1);
-			Array.Copy(array, index, array, index + 1, count - index);
-			array[index] = item;
-			count++;
-		}
-
-		public void RemoveAt(int index)
-		{
-			if (index < 0 || index >= count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			Array.Copy(array, index + 1, array, index, count - index - 1);
-			count--;
-			array[count] = default;
-		}
-
-		public IEnumerator<ItemType> GetEnumerator()
-		{
-			for (int i = 0; i < count; i++)
-			{
-				yield return array[i];
-			}
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			for (int i = 0; i < count; i++)
-			{
-				var v = array[i];
-				sb.AppendLine(indent + "  " + ((int)v).ToString());
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			Clear();
-			var stream = new CodedInputStream(b);
-			while (!stream.IsAtEnd)
-			{
-				Add((ItemType)stream.ReadEnum());
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			OnChanged?.Invoke(this, new EventChanged());
-		}
-
-		public void ClearChanged()
-		{
-
-		}
-	}
-
-	public class BoolItemType_map : IDictionary<bool, ItemType>, ICollection<KeyValuePair<bool, ItemType>>, IEnumerable<KeyValuePair<bool, ItemType>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly BoolItemType_map parent;
-
-			private readonly Func<KeyValuePair<bool, ItemType>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(BoolItemType_map parent, Func<KeyValuePair<bool, ItemType>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<bool> _deletes;
-			public ICollection<bool> Deletes => _deletes;
-
-			private ICollection<bool> _updates;
-			public ICollection<bool> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<ItemType> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemType>();
-
-    	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemType>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemType>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<bool, ItemType>> list = new LinkedList<KeyValuePair<bool, ItemType>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemType>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemType>>>(KeyEqualityComparer);
-
-		public event Action<BoolItemType_map, EventChanged>? OnChanged;
-
-		public ItemType this[bool key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<bool, ItemType> value2 = new KeyValuePair<bool, ItemType>(key, value);
-				LinkedListNode<KeyValuePair<bool, ItemType>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, ItemType> pair) => pair.Key, ContainsKey);
-
-		public ICollection<ItemType> Values => new MapView<ItemType>(this, (KeyValuePair<bool, ItemType> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(bool key, ItemType value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(bool key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(ItemType value)
-		{
-			return list.Any((KeyValuePair<bool, ItemType> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(bool key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(bool key, out ItemType value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, ItemType>>.Add(KeyValuePair<bool, ItemType> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<bool, ItemType>>.Contains(KeyValuePair<bool, ItemType> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, ItemType>>.CopyTo(KeyValuePair<bool, ItemType>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<bool, ItemType>>.Remove(KeyValuePair<bool, ItemType> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemType>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<bool, ItemType>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<bool>(map.Keys);
-			sortedKeys.Sort((a, b) => {
-				if (a) return b ? 0 : 1;
-				return b ? -1 : 0;
-			});
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString().ToLower();
-				sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadBool());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				bool k = default;
-				ItemType v = default;
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadBool();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = (ItemType)stream.ReadEnum();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-
-	public class Int32ItemType_map : IDictionary<int, ItemType>, ICollection<KeyValuePair<int, ItemType>>, IEnumerable<KeyValuePair<int, ItemType>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int32ItemType_map parent;
-
-			private readonly Func<KeyValuePair<int, ItemType>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int32ItemType_map parent, Func<KeyValuePair<int, ItemType>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<int> _deletes;
-			public ICollection<int> Deletes => _deletes;
-
-			private ICollection<int> _updates;
-			public ICollection<int> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<ItemType> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemType>();
-
-    	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, ItemType>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, ItemType>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<int, ItemType>> list = new LinkedList<KeyValuePair<int, ItemType>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, ItemType>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, ItemType>>>(KeyEqualityComparer);
-
-		public event Action<Int32ItemType_map, EventChanged>? OnChanged;
-
-		public ItemType this[int key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<int, ItemType> value2 = new KeyValuePair<int, ItemType>(key, value);
-				LinkedListNode<KeyValuePair<int, ItemType>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, ItemType> pair) => pair.Key, ContainsKey);
-
-		public ICollection<ItemType> Values => new MapView<ItemType>(this, (KeyValuePair<int, ItemType> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(int key, ItemType value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(int key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(ItemType value)
-		{
-			return list.Any((KeyValuePair<int, ItemType> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(int key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(int key, out ItemType value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, ItemType>>.Add(KeyValuePair<int, ItemType> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<int, ItemType>>.Contains(KeyValuePair<int, ItemType> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, ItemType>>.CopyTo(KeyValuePair<int, ItemType>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<int, ItemType>>.Remove(KeyValuePair<int, ItemType> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemType>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<int, ItemType>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<int>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt32());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				int k = default;
-				ItemType v = default;
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt32();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = (ItemType)stream.ReadEnum();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-
-	public class Int64ItemType_map : IDictionary<long, ItemType>, ICollection<KeyValuePair<long, ItemType>>, IEnumerable<KeyValuePair<long, ItemType>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int64ItemType_map parent;
-
-			private readonly Func<KeyValuePair<long, ItemType>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int64ItemType_map parent, Func<KeyValuePair<long, ItemType>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<long> _deletes;
-			public ICollection<long> Deletes => _deletes;
-
-			private ICollection<long> _updates;
-			public ICollection<long> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<ItemType> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemType>();
-
-    	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, ItemType>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, ItemType>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<long, ItemType>> list = new LinkedList<KeyValuePair<long, ItemType>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, ItemType>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, ItemType>>>(KeyEqualityComparer);
-
-		public event Action<Int64ItemType_map, EventChanged>? OnChanged;
-
-		public ItemType this[long key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<long, ItemType> value2 = new KeyValuePair<long, ItemType>(key, value);
-				LinkedListNode<KeyValuePair<long, ItemType>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, ItemType> pair) => pair.Key, ContainsKey);
-
-		public ICollection<ItemType> Values => new MapView<ItemType>(this, (KeyValuePair<long, ItemType> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(long key, ItemType value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(long key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(ItemType value)
-		{
-			return list.Any((KeyValuePair<long, ItemType> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(long key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(long key, out ItemType value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, ItemType>>.Add(KeyValuePair<long, ItemType> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<long, ItemType>>.Contains(KeyValuePair<long, ItemType> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, ItemType>>.CopyTo(KeyValuePair<long, ItemType>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<long, ItemType>>.Remove(KeyValuePair<long, ItemType> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemType>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<long, ItemType>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<long>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt64());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				long k = default;
-				ItemType v = default;
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt64();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = (ItemType)stream.ReadEnum();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-
-	public class StringItemType_map : IDictionary<string, ItemType>, ICollection<KeyValuePair<string, ItemType>>, IEnumerable<KeyValuePair<string, ItemType>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly StringItemType_map parent;
-
-			private readonly Func<KeyValuePair<string, ItemType>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(StringItemType_map parent, Func<KeyValuePair<string, ItemType>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<string> _deletes;
-			public ICollection<string> Deletes => _deletes;
-
-			private ICollection<string> _updates;
-			public ICollection<string> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<ItemType> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemType>();
-
-    	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, ItemType>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, ItemType>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<string, ItemType>> list = new LinkedList<KeyValuePair<string, ItemType>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, ItemType>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, ItemType>>>(KeyEqualityComparer);
-
-		public event Action<StringItemType_map, EventChanged>? OnChanged;
-
-		public ItemType this[string key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<string, ItemType> value2 = new KeyValuePair<string, ItemType>(key, value);
-				LinkedListNode<KeyValuePair<string, ItemType>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, ItemType> pair) => pair.Key, ContainsKey);
-
-		public ICollection<ItemType> Values => new MapView<ItemType>(this, (KeyValuePair<string, ItemType> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(string key, ItemType value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(string key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(ItemType value)
-		{
-			return list.Any((KeyValuePair<string, ItemType> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(string key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(string key, out ItemType value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, ItemType>>.Add(KeyValuePair<string, ItemType> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<string, ItemType>>.Contains(KeyValuePair<string, ItemType> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, ItemType>>.CopyTo(KeyValuePair<string, ItemType>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<string, ItemType>>.Remove(KeyValuePair<string, ItemType> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemType>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<string, ItemType>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<string>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadString());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				string k = string.Empty;
-				ItemType v = default;
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadString();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = (ItemType)stream.ReadEnum();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				this[k] = v;
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-	public class ItemData
-	{
-		public ItemData()
-		{
-			name_ = string.Empty;
-		}
-
-		private int id_;
-		public int Id => id_;
-
-		private string name_;
-		public string Name => name_;
-
-		private int count_;
-		public int Count => count_;
-
-		private long _changed;
-
-		public event Action<ItemData, EventChanged>? OnChanged;
-
-		public class EventChanged
-		{
-			public long _changed;
-			public bool Id => (_changed & (0x01 << 1)) != 0;
-			public bool Name => (_changed & (0x01 << 2)) != 0;
-			public bool Count => (_changed & (0x01 << 3)) != 0;
-
-			public EventChanged(long changed)
-			{
-				_changed = changed;
-			}
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("{\n");
-			sb.AppendLine(indent + "  Id = " + id_.ToString());
-			sb.AppendLine(indent + "  Name = " + name_);
-			sb.AppendLine(indent + "  Count = " + count_.ToString());
-			sb.Append(indent + "}");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1:
-					id_ = stream.ReadInt32();
-					_changed |= 0x01 << 1;
-					break;
-				case 2:
-					name_ = stream.ReadString();
-					_changed |= 0x01 << 2;
-					break;
-				case 3:
-					count_ = stream.ReadInt32();
-					_changed |= 0x01 << 3;
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (_changed == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_changed));
-		}
-
-		public void ClearChanged()
-		{
-			if (_changed == 0)
-				return;
-			_changed = 0;
-		}
-	}
-
-	public class ItemData_list : IList<ItemData>, ICollection<ItemData>, IEnumerable<ItemData>
-	{
-		public class EventChanged
-		{
-			public EventChanged()
-			{
-			}
-		}
-
-		private static readonly EqualityComparer<ItemData> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemData>();
-
-		private ItemData[] array = new ItemData[0];
-
-		private int count = 0;
-
-		public event Action<ItemData_list, EventChanged>? OnChanged;
-
-		public int Count => count;
-
-		public bool IsReadOnly => false;
-
-		public ItemData this[int index]
-		{
-			get
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				return array[index];
-			}
-			set
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				array[index] = value;
-			}
-		}
-
-		private void EnsureSize(int size)
-		{
-			if (array.Length < size)
-			{
-				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
-				if (newCapacity < size)
-					newCapacity = size;
-				var newData = new ItemData[newCapacity];
-				Array.Copy(array, newData, count);
-				array = newData;
-			}
-		}
-
-		public void Add(ItemData item)
-		{
-			EnsureSize(count + 1);
-			array[count++] = item;
-		}
-
-		public void Clear()
-		{
-			Array.Clear(array, 0, count);
-			count = 0;
-		}
-
-		public bool Contains(ItemData item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		public void CopyTo(ItemData[] array, int arrayIndex)
-		{
-			Array.Copy(this.array, 0, array, arrayIndex, count);
-		}
-
-		public bool Remove(ItemData item)
-		{
-			var num = IndexOf(item);
-			if (num == -1)
-				return false;
-			Array.Copy(array, num + 1, array, num, count - num - 1);
-			count--;
-			array[count] = default;
-			return true;
-		}
-
-		public int IndexOf(ItemData item)
-		{
-			EqualityComparer<ItemData> equalityComparer = EqualityComparer;
-			for (int i = 0; i < count; i++)
-			{
-				if (equalityComparer.Equals(array[i], item))
-				{
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public void Insert(int index, ItemData item)
-		{
-			if (index < 0 || index > count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			EnsureSize(count + 1);
-			Array.Copy(array, index, array, index + 1, count - index);
-			array[index] = item;
-			count++;
-		}
-
-		public void RemoveAt(int index)
-		{
-			if (index < 0 || index >= count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			Array.Copy(array, index + 1, array, index, count - index - 1);
-			count--;
-			array[count] = default;
-		}
-
-		public IEnumerator<ItemData> GetEnumerator()
-		{
-			for (int i = 0; i < count; i++)
-			{
-				yield return array[i];
-			}
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			for (int i = 0; i < count; i++)
-			{
-				var v = array[i];
-				sb.AppendLine(indent + "  " + v.ToString(indent + "  "));
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			Clear();
-			var stream = new CodedInputStream(b);
-			while (!stream.IsAtEnd)
-			{
-				var v = new ItemData();
-				v.ApplySync(stream.ReadBytes().ToByteArray());
-				Add(v);
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			OnChanged?.Invoke(this, new EventChanged());
-		}
-
-		public void ClearChanged()
-		{
-
-		}
-	}
-
-	public class BoolItemData_map : IDictionary<bool, ItemData>, ICollection<KeyValuePair<bool, ItemData>>, IEnumerable<KeyValuePair<bool, ItemData>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly BoolItemData_map parent;
-
-			private readonly Func<KeyValuePair<bool, ItemData>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(BoolItemData_map parent, Func<KeyValuePair<bool, ItemData>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<bool> _deletes;
-			public ICollection<bool> Deletes => _deletes;
-
-			private ICollection<bool> _updates;
-			public ICollection<bool> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<ItemData> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemData>();
-
-    	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemData>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemData>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<bool, ItemData>> list = new LinkedList<KeyValuePair<bool, ItemData>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
-
-		private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemData>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemData>>>(KeyEqualityComparer);
-
-		public event Action<BoolItemData_map, EventChanged>? OnChanged;
-
-		public ItemData this[bool key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<bool, ItemData> value2 = new KeyValuePair<bool, ItemData>(key, value);
-				LinkedListNode<KeyValuePair<bool, ItemData>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, ItemData> pair) => pair.Key, ContainsKey);
-
-		public ICollection<ItemData> Values => new MapView<ItemData>(this, (KeyValuePair<bool, ItemData> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(bool key, ItemData value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(bool key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(ItemData value)
-		{
-			return list.Any((KeyValuePair<bool, ItemData> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(bool key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(bool key, out ItemData value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, ItemData>>.Add(KeyValuePair<bool, ItemData> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<bool, ItemData>>.Contains(KeyValuePair<bool, ItemData> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<bool, ItemData>>.CopyTo(KeyValuePair<bool, ItemData>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<bool, ItemData>>.Remove(KeyValuePair<bool, ItemData> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemData>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<bool, ItemData>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<bool>(map.Keys);
-			sortedKeys.Sort((a, b) => {
-				if (a) return b ? 0 : 1;
-				return b ? -1 : 0;
-			});
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString().ToLower();
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadBool());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				bool k = default;
-				byte[] v = new byte[0];
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadBool();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = stream.ReadBytes().ToByteArray();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				if (TryGetValue(k, out var c))
-				{
-					c.ApplySync(v);
-				}
-				else
-				{
-					c = new ItemData();
-					c.ApplySync(v);
-					this[k] = c;
-				}
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			foreach (var v in _updates.Values)
-				v.Value.Value.RaiseChanged();
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-
-	public class Int32ItemData_map : IDictionary<int, ItemData>, ICollection<KeyValuePair<int, ItemData>>, IEnumerable<KeyValuePair<int, ItemData>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int32ItemData_map parent;
-
-			private readonly Func<KeyValuePair<int, ItemData>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int32ItemData_map parent, Func<KeyValuePair<int, ItemData>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<int> _deletes;
-			public ICollection<int> Deletes => _deletes;
-
-			private ICollection<int> _updates;
-			public ICollection<int> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<ItemData> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemData>();
-
-    	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, ItemData>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, ItemData>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<int, ItemData>> list = new LinkedList<KeyValuePair<int, ItemData>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
-
-		private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, ItemData>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, ItemData>>>(KeyEqualityComparer);
-
-		public event Action<Int32ItemData_map, EventChanged>? OnChanged;
-
-		public ItemData this[int key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<int, ItemData> value2 = new KeyValuePair<int, ItemData>(key, value);
-				LinkedListNode<KeyValuePair<int, ItemData>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, ItemData> pair) => pair.Key, ContainsKey);
-
-		public ICollection<ItemData> Values => new MapView<ItemData>(this, (KeyValuePair<int, ItemData> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(int key, ItemData value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(int key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(ItemData value)
-		{
-			return list.Any((KeyValuePair<int, ItemData> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(int key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(int key, out ItemData value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, ItemData>>.Add(KeyValuePair<int, ItemData> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<int, ItemData>>.Contains(KeyValuePair<int, ItemData> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<int, ItemData>>.CopyTo(KeyValuePair<int, ItemData>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<int, ItemData>>.Remove(KeyValuePair<int, ItemData> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemData>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<int, ItemData>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<int>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt32());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				int k = default;
-				byte[] v = new byte[0];
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt32();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = stream.ReadBytes().ToByteArray();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				if (TryGetValue(k, out var c))
-				{
-					c.ApplySync(v);
-				}
-				else
-				{
-					c = new ItemData();
-					c.ApplySync(v);
-					this[k] = c;
-				}
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			foreach (var v in _updates.Values)
-				v.Value.Value.RaiseChanged();
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-
-	public class Int64ItemData_map : IDictionary<long, ItemData>, ICollection<KeyValuePair<long, ItemData>>, IEnumerable<KeyValuePair<long, ItemData>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly Int64ItemData_map parent;
-
-			private readonly Func<KeyValuePair<long, ItemData>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(Int64ItemData_map parent, Func<KeyValuePair<long, ItemData>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<long> _deletes;
-			public ICollection<long> Deletes => _deletes;
-
-			private ICollection<long> _updates;
-			public ICollection<long> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<ItemData> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemData>();
-
-    	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, ItemData>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, ItemData>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<long, ItemData>> list = new LinkedList<KeyValuePair<long, ItemData>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
-
-		private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, ItemData>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, ItemData>>>(KeyEqualityComparer);
-
-		public event Action<Int64ItemData_map, EventChanged>? OnChanged;
-
-		public ItemData this[long key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<long, ItemData> value2 = new KeyValuePair<long, ItemData>(key, value);
-				LinkedListNode<KeyValuePair<long, ItemData>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, ItemData> pair) => pair.Key, ContainsKey);
-
-		public ICollection<ItemData> Values => new MapView<ItemData>(this, (KeyValuePair<long, ItemData> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(long key, ItemData value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(long key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(ItemData value)
-		{
-			return list.Any((KeyValuePair<long, ItemData> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(long key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(long key, out ItemData value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, ItemData>>.Add(KeyValuePair<long, ItemData> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<long, ItemData>>.Contains(KeyValuePair<long, ItemData> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<long, ItemData>>.CopyTo(KeyValuePair<long, ItemData>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<long, ItemData>>.Remove(KeyValuePair<long, ItemData> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemData>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<long, ItemData>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<long>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadInt64());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				long k = default;
-				byte[] v = new byte[0];
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadInt64();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = stream.ReadBytes().ToByteArray();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				if (TryGetValue(k, out var c))
-				{
-					c.ApplySync(v);
-				}
-				else
-				{
-					c = new ItemData();
-					c.ApplySync(v);
-					this[k] = c;
-				}
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			foreach (var v in _updates.Values)
-				v.Value.Value.RaiseChanged();
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
-	}
-
-	public class StringItemData_map : IDictionary<string, ItemData>, ICollection<KeyValuePair<string, ItemData>>, IEnumerable<KeyValuePair<string, ItemData>>
-	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
-		{
-			private readonly StringItemData_map parent;
-
-			private readonly Func<KeyValuePair<string, ItemData>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView(StringItemData_map parent, Func<KeyValuePair<string, ItemData>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
-		}
-
-		public class EventChanged
-		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<string> _deletes;
-			public ICollection<string> Deletes => _deletes;
-
-			private ICollection<string> _updates;
-			public ICollection<string> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<ItemData> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemData>();
-
-    	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, ItemData>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, ItemData>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<string, ItemData>> list = new LinkedList<KeyValuePair<string, ItemData>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
-
-		private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, ItemData>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, ItemData>>>(KeyEqualityComparer);
-
-		public event Action<StringItemData_map, EventChanged>? OnChanged;
-
-		public ItemData this[string key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<string, ItemData> value2 = new KeyValuePair<string, ItemData>(key, value);
-				LinkedListNode<KeyValuePair<string, ItemData>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, ItemData> pair) => pair.Key, ContainsKey);
-
-		public ICollection<ItemData> Values => new MapView<ItemData>(this, (KeyValuePair<string, ItemData> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add(string key, ItemData value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey(string key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue(ItemData value)
-		{
-			return list.Any((KeyValuePair<string, ItemData> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove(string key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue(string key, out ItemData value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, ItemData>>.Add(KeyValuePair<string, ItemData> item)
-		{
-			Add(item.Key, item.Value);
-		}
-
-		public void Clear()
-		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
-		}
-
-		bool ICollection<KeyValuePair<string, ItemData>>.Contains(KeyValuePair<string, ItemData> item)
-		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
-		}
-
-		void ICollection<KeyValuePair<string, ItemData>>.CopyTo(KeyValuePair<string, ItemData>[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<string, ItemData>>.Remove(KeyValuePair<string, ItemData> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemData>.Default.Equals(item.Value, value.Value.Value))
-			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
-			}
-
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<string, ItemData>> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<string>(map.Keys);
-			sortedKeys.Sort();
-			foreach (var k in sortedKeys)
-			{
-				var v = map[k].Value.Value;
-				var key = k.ToString();
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
-					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-			if (clear)
-			{
-				Clear();
-			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
-			{
-				Remove(stream.ReadString());
-			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-				string k = string.Empty;
-				byte[] v = new byte[0];
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-						k = stream.ReadString();
-						break;
-					case 2: // MapEntryValueFieldNumber
-						v = stream.ReadBytes().ToByteArray();
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-				if (TryGetValue(k, out var c))
-				{
-					c.ApplySync(v);
-				}
-				else
-				{
-					c = new ItemData();
-					c.ApplySync(v);
-					this[k] = c;
-				}
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-			foreach (var v in _updates.Values)
-				v.Value.Value.RaiseChanged();
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
-		}
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
 	}
 }
+public class Int32Duration_map : IDictionary<int, Kdsync.Duration>, ICollection<KeyValuePair<int, Kdsync.Duration>>, IEnumerable<KeyValuePair<int, Kdsync.Duration>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int32Duration_map parent;
+
+		private readonly Func<KeyValuePair<int, Kdsync.Duration>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int32Duration_map parent, Func<KeyValuePair<int, Kdsync.Duration>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<int> _deletes;
+		public ICollection<int> Deletes => _deletes;
+
+		private ICollection<int> _updates;
+		public ICollection<int> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<Kdsync.Duration> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Kdsync.Duration>();
+
+	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, Kdsync.Duration>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, Kdsync.Duration>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<int, Kdsync.Duration>> list = new LinkedList<KeyValuePair<int, Kdsync.Duration>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, Kdsync.Duration>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, Kdsync.Duration>>>(KeyEqualityComparer);
+
+	public event Action<Int32Duration_map, EventChanged>? OnChanged;
+
+	public Kdsync.Duration this[int key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<int, Kdsync.Duration> value2 = new KeyValuePair<int, Kdsync.Duration>(key, value);
+			LinkedListNode<KeyValuePair<int, Kdsync.Duration>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, Kdsync.Duration> pair) => pair.Key, ContainsKey);
+
+	public ICollection<Kdsync.Duration> Values => new MapView<Kdsync.Duration>(this, (KeyValuePair<int, Kdsync.Duration> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(int key, Kdsync.Duration value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(int key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(Kdsync.Duration value)
+	{
+		return list.Any((KeyValuePair<int, Kdsync.Duration> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(int key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(int key, out Kdsync.Duration value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, Kdsync.Duration>>.Add(KeyValuePair<int, Kdsync.Duration> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<int, Kdsync.Duration>>.Contains(KeyValuePair<int, Kdsync.Duration> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, Kdsync.Duration>>.CopyTo(KeyValuePair<int, Kdsync.Duration>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<int, Kdsync.Duration>>.Remove(KeyValuePair<int, Kdsync.Duration> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Kdsync.Duration>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<int, Kdsync.Duration>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<int>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt32());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			int k = default;
+			Kdsync.Duration v = new Kdsync.Duration();
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt32();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class Int64Duration_map : IDictionary<long, Kdsync.Duration>, ICollection<KeyValuePair<long, Kdsync.Duration>>, IEnumerable<KeyValuePair<long, Kdsync.Duration>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int64Duration_map parent;
+
+		private readonly Func<KeyValuePair<long, Kdsync.Duration>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int64Duration_map parent, Func<KeyValuePair<long, Kdsync.Duration>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<long> _deletes;
+		public ICollection<long> Deletes => _deletes;
+
+		private ICollection<long> _updates;
+		public ICollection<long> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<Kdsync.Duration> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Kdsync.Duration>();
+
+	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, Kdsync.Duration>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, Kdsync.Duration>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<long, Kdsync.Duration>> list = new LinkedList<KeyValuePair<long, Kdsync.Duration>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, Kdsync.Duration>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, Kdsync.Duration>>>(KeyEqualityComparer);
+
+	public event Action<Int64Duration_map, EventChanged>? OnChanged;
+
+	public Kdsync.Duration this[long key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<long, Kdsync.Duration> value2 = new KeyValuePair<long, Kdsync.Duration>(key, value);
+			LinkedListNode<KeyValuePair<long, Kdsync.Duration>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, Kdsync.Duration> pair) => pair.Key, ContainsKey);
+
+	public ICollection<Kdsync.Duration> Values => new MapView<Kdsync.Duration>(this, (KeyValuePair<long, Kdsync.Duration> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(long key, Kdsync.Duration value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(long key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(Kdsync.Duration value)
+	{
+		return list.Any((KeyValuePair<long, Kdsync.Duration> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(long key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(long key, out Kdsync.Duration value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, Kdsync.Duration>>.Add(KeyValuePair<long, Kdsync.Duration> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<long, Kdsync.Duration>>.Contains(KeyValuePair<long, Kdsync.Duration> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, Kdsync.Duration>>.CopyTo(KeyValuePair<long, Kdsync.Duration>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<long, Kdsync.Duration>>.Remove(KeyValuePair<long, Kdsync.Duration> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Kdsync.Duration>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<long, Kdsync.Duration>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<long>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt64());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			long k = default;
+			Kdsync.Duration v = new Kdsync.Duration();
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt64();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class StringDuration_map : IDictionary<string, Kdsync.Duration>, ICollection<KeyValuePair<string, Kdsync.Duration>>, IEnumerable<KeyValuePair<string, Kdsync.Duration>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly StringDuration_map parent;
+
+		private readonly Func<KeyValuePair<string, Kdsync.Duration>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(StringDuration_map parent, Func<KeyValuePair<string, Kdsync.Duration>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<string> _deletes;
+		public ICollection<string> Deletes => _deletes;
+
+		private ICollection<string> _updates;
+		public ICollection<string> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<Kdsync.Duration> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Kdsync.Duration>();
+
+	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, Kdsync.Duration>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, Kdsync.Duration>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<string, Kdsync.Duration>> list = new LinkedList<KeyValuePair<string, Kdsync.Duration>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, Kdsync.Duration>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, Kdsync.Duration>>>(KeyEqualityComparer);
+
+	public event Action<StringDuration_map, EventChanged>? OnChanged;
+
+	public Kdsync.Duration this[string key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<string, Kdsync.Duration> value2 = new KeyValuePair<string, Kdsync.Duration>(key, value);
+			LinkedListNode<KeyValuePair<string, Kdsync.Duration>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, Kdsync.Duration> pair) => pair.Key, ContainsKey);
+
+	public ICollection<Kdsync.Duration> Values => new MapView<Kdsync.Duration>(this, (KeyValuePair<string, Kdsync.Duration> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(string key, Kdsync.Duration value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(string key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(Kdsync.Duration value)
+	{
+		return list.Any((KeyValuePair<string, Kdsync.Duration> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(string key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(string key, out Kdsync.Duration value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, Kdsync.Duration>>.Add(KeyValuePair<string, Kdsync.Duration> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<string, Kdsync.Duration>>.Contains(KeyValuePair<string, Kdsync.Duration> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, Kdsync.Duration>>.CopyTo(KeyValuePair<string, Kdsync.Duration>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<string, Kdsync.Duration>>.Remove(KeyValuePair<string, Kdsync.Duration> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Kdsync.Duration>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<string, Kdsync.Duration>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<string>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadString());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			string k = string.Empty;
+			Kdsync.Duration v = new Kdsync.Duration();
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadString();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class BoolEmpty_map : IDictionary<bool, Kdsync.Empty>, ICollection<KeyValuePair<bool, Kdsync.Empty>>, IEnumerable<KeyValuePair<bool, Kdsync.Empty>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly BoolEmpty_map parent;
+
+		private readonly Func<KeyValuePair<bool, Kdsync.Empty>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(BoolEmpty_map parent, Func<KeyValuePair<bool, Kdsync.Empty>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<bool> _deletes;
+		public ICollection<bool> Deletes => _deletes;
+
+		private ICollection<bool> _updates;
+		public ICollection<bool> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<Kdsync.Empty> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Kdsync.Empty>();
+
+	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, Kdsync.Empty>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, Kdsync.Empty>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<bool, Kdsync.Empty>> list = new LinkedList<KeyValuePair<bool, Kdsync.Empty>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, Kdsync.Empty>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, Kdsync.Empty>>>(KeyEqualityComparer);
+
+	public event Action<BoolEmpty_map, EventChanged>? OnChanged;
+
+	public Kdsync.Empty this[bool key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<bool, Kdsync.Empty> value2 = new KeyValuePair<bool, Kdsync.Empty>(key, value);
+			LinkedListNode<KeyValuePair<bool, Kdsync.Empty>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, Kdsync.Empty> pair) => pair.Key, ContainsKey);
+
+	public ICollection<Kdsync.Empty> Values => new MapView<Kdsync.Empty>(this, (KeyValuePair<bool, Kdsync.Empty> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(bool key, Kdsync.Empty value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(bool key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(Kdsync.Empty value)
+	{
+		return list.Any((KeyValuePair<bool, Kdsync.Empty> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(bool key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(bool key, out Kdsync.Empty value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, Kdsync.Empty>>.Add(KeyValuePair<bool, Kdsync.Empty> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<bool, Kdsync.Empty>>.Contains(KeyValuePair<bool, Kdsync.Empty> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, Kdsync.Empty>>.CopyTo(KeyValuePair<bool, Kdsync.Empty>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<bool, Kdsync.Empty>>.Remove(KeyValuePair<bool, Kdsync.Empty> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Kdsync.Empty>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<bool, Kdsync.Empty>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<bool>(map.Keys);
+		sortedKeys.Sort((a, b) => {
+			if (a) return b ? 0 : 1;
+			return b ? -1 : 0;
+		});
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString().ToLower();
+			sb.AppendLine(indent + "  " + key + " = {}");
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadBool());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			bool k = default;
+			Kdsync.Empty v = new Kdsync.Empty();
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadBool();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class Int32Empty_map : IDictionary<int, Kdsync.Empty>, ICollection<KeyValuePair<int, Kdsync.Empty>>, IEnumerable<KeyValuePair<int, Kdsync.Empty>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int32Empty_map parent;
+
+		private readonly Func<KeyValuePair<int, Kdsync.Empty>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int32Empty_map parent, Func<KeyValuePair<int, Kdsync.Empty>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<int> _deletes;
+		public ICollection<int> Deletes => _deletes;
+
+		private ICollection<int> _updates;
+		public ICollection<int> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<Kdsync.Empty> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Kdsync.Empty>();
+
+	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, Kdsync.Empty>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, Kdsync.Empty>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<int, Kdsync.Empty>> list = new LinkedList<KeyValuePair<int, Kdsync.Empty>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, Kdsync.Empty>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, Kdsync.Empty>>>(KeyEqualityComparer);
+
+	public event Action<Int32Empty_map, EventChanged>? OnChanged;
+
+	public Kdsync.Empty this[int key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<int, Kdsync.Empty> value2 = new KeyValuePair<int, Kdsync.Empty>(key, value);
+			LinkedListNode<KeyValuePair<int, Kdsync.Empty>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, Kdsync.Empty> pair) => pair.Key, ContainsKey);
+
+	public ICollection<Kdsync.Empty> Values => new MapView<Kdsync.Empty>(this, (KeyValuePair<int, Kdsync.Empty> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(int key, Kdsync.Empty value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(int key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(Kdsync.Empty value)
+	{
+		return list.Any((KeyValuePair<int, Kdsync.Empty> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(int key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(int key, out Kdsync.Empty value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, Kdsync.Empty>>.Add(KeyValuePair<int, Kdsync.Empty> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<int, Kdsync.Empty>>.Contains(KeyValuePair<int, Kdsync.Empty> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, Kdsync.Empty>>.CopyTo(KeyValuePair<int, Kdsync.Empty>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<int, Kdsync.Empty>>.Remove(KeyValuePair<int, Kdsync.Empty> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Kdsync.Empty>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<int, Kdsync.Empty>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<int>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = {}");
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt32());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			int k = default;
+			Kdsync.Empty v = new Kdsync.Empty();
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt32();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class Int64Empty_map : IDictionary<long, Kdsync.Empty>, ICollection<KeyValuePair<long, Kdsync.Empty>>, IEnumerable<KeyValuePair<long, Kdsync.Empty>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int64Empty_map parent;
+
+		private readonly Func<KeyValuePair<long, Kdsync.Empty>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int64Empty_map parent, Func<KeyValuePair<long, Kdsync.Empty>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<long> _deletes;
+		public ICollection<long> Deletes => _deletes;
+
+		private ICollection<long> _updates;
+		public ICollection<long> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<Kdsync.Empty> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Kdsync.Empty>();
+
+	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, Kdsync.Empty>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, Kdsync.Empty>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<long, Kdsync.Empty>> list = new LinkedList<KeyValuePair<long, Kdsync.Empty>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, Kdsync.Empty>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, Kdsync.Empty>>>(KeyEqualityComparer);
+
+	public event Action<Int64Empty_map, EventChanged>? OnChanged;
+
+	public Kdsync.Empty this[long key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<long, Kdsync.Empty> value2 = new KeyValuePair<long, Kdsync.Empty>(key, value);
+			LinkedListNode<KeyValuePair<long, Kdsync.Empty>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, Kdsync.Empty> pair) => pair.Key, ContainsKey);
+
+	public ICollection<Kdsync.Empty> Values => new MapView<Kdsync.Empty>(this, (KeyValuePair<long, Kdsync.Empty> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(long key, Kdsync.Empty value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(long key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(Kdsync.Empty value)
+	{
+		return list.Any((KeyValuePair<long, Kdsync.Empty> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(long key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(long key, out Kdsync.Empty value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, Kdsync.Empty>>.Add(KeyValuePair<long, Kdsync.Empty> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<long, Kdsync.Empty>>.Contains(KeyValuePair<long, Kdsync.Empty> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, Kdsync.Empty>>.CopyTo(KeyValuePair<long, Kdsync.Empty>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<long, Kdsync.Empty>>.Remove(KeyValuePair<long, Kdsync.Empty> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Kdsync.Empty>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<long, Kdsync.Empty>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<long>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = {}");
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt64());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			long k = default;
+			Kdsync.Empty v = new Kdsync.Empty();
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt64();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class StringEmpty_map : IDictionary<string, Kdsync.Empty>, ICollection<KeyValuePair<string, Kdsync.Empty>>, IEnumerable<KeyValuePair<string, Kdsync.Empty>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly StringEmpty_map parent;
+
+		private readonly Func<KeyValuePair<string, Kdsync.Empty>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(StringEmpty_map parent, Func<KeyValuePair<string, Kdsync.Empty>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<string> _deletes;
+		public ICollection<string> Deletes => _deletes;
+
+		private ICollection<string> _updates;
+		public ICollection<string> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<Kdsync.Empty> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Kdsync.Empty>();
+
+	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, Kdsync.Empty>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, Kdsync.Empty>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<string, Kdsync.Empty>> list = new LinkedList<KeyValuePair<string, Kdsync.Empty>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, Kdsync.Empty>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, Kdsync.Empty>>>(KeyEqualityComparer);
+
+	public event Action<StringEmpty_map, EventChanged>? OnChanged;
+
+	public Kdsync.Empty this[string key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<string, Kdsync.Empty> value2 = new KeyValuePair<string, Kdsync.Empty>(key, value);
+			LinkedListNode<KeyValuePair<string, Kdsync.Empty>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, Kdsync.Empty> pair) => pair.Key, ContainsKey);
+
+	public ICollection<Kdsync.Empty> Values => new MapView<Kdsync.Empty>(this, (KeyValuePair<string, Kdsync.Empty> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(string key, Kdsync.Empty value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(string key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(Kdsync.Empty value)
+	{
+		return list.Any((KeyValuePair<string, Kdsync.Empty> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(string key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(string key, out Kdsync.Empty value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, Kdsync.Empty>>.Add(KeyValuePair<string, Kdsync.Empty> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<string, Kdsync.Empty>>.Contains(KeyValuePair<string, Kdsync.Empty> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, Kdsync.Empty>>.CopyTo(KeyValuePair<string, Kdsync.Empty>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<string, Kdsync.Empty>>.Remove(KeyValuePair<string, Kdsync.Empty> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Kdsync.Empty>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<string, Kdsync.Empty>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<string>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = {}");
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadString());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			string k = string.Empty;
+			Kdsync.Empty v = new Kdsync.Empty();
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadString();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class BoolInt32_map : IDictionary<bool, int>, ICollection<KeyValuePair<bool, int>>, IEnumerable<KeyValuePair<bool, int>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly BoolInt32_map parent;
+
+		private readonly Func<KeyValuePair<bool, int>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(BoolInt32_map parent, Func<KeyValuePair<bool, int>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<bool> _deletes;
+		public ICollection<bool> Deletes => _deletes;
+
+		private ICollection<bool> _updates;
+		public ICollection<bool> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<int> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
+
+	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, int>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, int>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<bool, int>> list = new LinkedList<KeyValuePair<bool, int>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, int>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, int>>>(KeyEqualityComparer);
+
+	public event Action<BoolInt32_map, EventChanged>? OnChanged;
+
+	public int this[bool key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<bool, int> value2 = new KeyValuePair<bool, int>(key, value);
+			LinkedListNode<KeyValuePair<bool, int>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, int> pair) => pair.Key, ContainsKey);
+
+	public ICollection<int> Values => new MapView<int>(this, (KeyValuePair<bool, int> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(bool key, int value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(bool key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(int value)
+	{
+		return list.Any((KeyValuePair<bool, int> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(bool key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(bool key, out int value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, int>>.Add(KeyValuePair<bool, int> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<bool, int>>.Contains(KeyValuePair<bool, int> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, int>>.CopyTo(KeyValuePair<bool, int>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<bool, int>>.Remove(KeyValuePair<bool, int> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<int>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<bool, int>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<bool>(map.Keys);
+		sortedKeys.Sort((a, b) => {
+			if (a) return b ? 0 : 1;
+			return b ? -1 : 0;
+		});
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString().ToLower();
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadBool());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			bool k = default;
+			int v = default;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadBool();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = stream.ReadInt32();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class Int32Int32_map : IDictionary<int, int>, ICollection<KeyValuePair<int, int>>, IEnumerable<KeyValuePair<int, int>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int32Int32_map parent;
+
+		private readonly Func<KeyValuePair<int, int>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int32Int32_map parent, Func<KeyValuePair<int, int>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<int> _deletes;
+		public ICollection<int> Deletes => _deletes;
+
+		private ICollection<int> _updates;
+		public ICollection<int> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<int> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
+
+	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, int>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, int>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<int, int>> list = new LinkedList<KeyValuePair<int, int>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, int>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, int>>>(KeyEqualityComparer);
+
+	public event Action<Int32Int32_map, EventChanged>? OnChanged;
+
+	public int this[int key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<int, int> value2 = new KeyValuePair<int, int>(key, value);
+			LinkedListNode<KeyValuePair<int, int>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, int> pair) => pair.Key, ContainsKey);
+
+	public ICollection<int> Values => new MapView<int>(this, (KeyValuePair<int, int> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(int key, int value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(int key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(int value)
+	{
+		return list.Any((KeyValuePair<int, int> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(int key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(int key, out int value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, int>>.Add(KeyValuePair<int, int> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<int, int>>.Contains(KeyValuePair<int, int> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, int>>.CopyTo(KeyValuePair<int, int>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<int, int>>.Remove(KeyValuePair<int, int> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<int>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<int, int>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<int>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt32());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			int k = default;
+			int v = default;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt32();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = stream.ReadInt32();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class StringInt32_map : IDictionary<string, int>, ICollection<KeyValuePair<string, int>>, IEnumerable<KeyValuePair<string, int>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly StringInt32_map parent;
+
+		private readonly Func<KeyValuePair<string, int>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(StringInt32_map parent, Func<KeyValuePair<string, int>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<string> _deletes;
+		public ICollection<string> Deletes => _deletes;
+
+		private ICollection<string> _updates;
+		public ICollection<string> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<int> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
+
+	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, int>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, int>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<string, int>> list = new LinkedList<KeyValuePair<string, int>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, int>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, int>>>(KeyEqualityComparer);
+
+	public event Action<StringInt32_map, EventChanged>? OnChanged;
+
+	public int this[string key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<string, int> value2 = new KeyValuePair<string, int>(key, value);
+			LinkedListNode<KeyValuePair<string, int>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, int> pair) => pair.Key, ContainsKey);
+
+	public ICollection<int> Values => new MapView<int>(this, (KeyValuePair<string, int> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(string key, int value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(string key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(int value)
+	{
+		return list.Any((KeyValuePair<string, int> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(string key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(string key, out int value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, int>>.Add(KeyValuePair<string, int> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<string, int>>.Contains(KeyValuePair<string, int> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, int>>.CopyTo(KeyValuePair<string, int>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<string, int>>.Remove(KeyValuePair<string, int> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<int>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<string, int>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<string>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadString());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			string k = string.Empty;
+			int v = default;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadString();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = stream.ReadInt32();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class Int64Int64_map : IDictionary<long, long>, ICollection<KeyValuePair<long, long>>, IEnumerable<KeyValuePair<long, long>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int64Int64_map parent;
+
+		private readonly Func<KeyValuePair<long, long>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int64Int64_map parent, Func<KeyValuePair<long, long>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<long> _deletes;
+		public ICollection<long> Deletes => _deletes;
+
+		private ICollection<long> _updates;
+		public ICollection<long> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<long> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
+
+	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, long>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, long>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<long, long>> list = new LinkedList<KeyValuePair<long, long>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, long>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, long>>>(KeyEqualityComparer);
+
+	public event Action<Int64Int64_map, EventChanged>? OnChanged;
+
+	public long this[long key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<long, long> value2 = new KeyValuePair<long, long>(key, value);
+			LinkedListNode<KeyValuePair<long, long>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, long> pair) => pair.Key, ContainsKey);
+
+	public ICollection<long> Values => new MapView<long>(this, (KeyValuePair<long, long> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(long key, long value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(long key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(long value)
+	{
+		return list.Any((KeyValuePair<long, long> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(long key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(long key, out long value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, long>>.Add(KeyValuePair<long, long> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<long, long>>.Contains(KeyValuePair<long, long> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, long>>.CopyTo(KeyValuePair<long, long>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<long, long>>.Remove(KeyValuePair<long, long> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<long>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<long, long>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<long>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt64());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			long k = default;
+			long v = default;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt64();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = stream.ReadInt64();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class BoolString_map : IDictionary<bool, string>, ICollection<KeyValuePair<bool, string>>, IEnumerable<KeyValuePair<bool, string>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly BoolString_map parent;
+
+		private readonly Func<KeyValuePair<bool, string>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(BoolString_map parent, Func<KeyValuePair<bool, string>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<bool> _deletes;
+		public ICollection<bool> Deletes => _deletes;
+
+		private ICollection<bool> _updates;
+		public ICollection<bool> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<string> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
+
+	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, string>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, string>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<bool, string>> list = new LinkedList<KeyValuePair<bool, string>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, string>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, string>>>(KeyEqualityComparer);
+
+	public event Action<BoolString_map, EventChanged>? OnChanged;
+
+	public string this[bool key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<bool, string> value2 = new KeyValuePair<bool, string>(key, value);
+			LinkedListNode<KeyValuePair<bool, string>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, string> pair) => pair.Key, ContainsKey);
+
+	public ICollection<string> Values => new MapView<string>(this, (KeyValuePair<bool, string> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(bool key, string value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(bool key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(string value)
+	{
+		return list.Any((KeyValuePair<bool, string> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(bool key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(bool key, out string value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, string>>.Add(KeyValuePair<bool, string> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<bool, string>>.Contains(KeyValuePair<bool, string> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, string>>.CopyTo(KeyValuePair<bool, string>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<bool, string>>.Remove(KeyValuePair<bool, string> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<string>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<bool, string>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<bool>(map.Keys);
+		sortedKeys.Sort((a, b) => {
+			if (a) return b ? 0 : 1;
+			return b ? -1 : 0;
+		});
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString().ToLower();
+			sb.AppendLine(indent + "  " + key + " = " + v);
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadBool());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			bool k = default;
+			string v = string.Empty;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadBool();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = stream.ReadString();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class Int32String_map : IDictionary<int, string>, ICollection<KeyValuePair<int, string>>, IEnumerable<KeyValuePair<int, string>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int32String_map parent;
+
+		private readonly Func<KeyValuePair<int, string>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int32String_map parent, Func<KeyValuePair<int, string>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<int> _deletes;
+		public ICollection<int> Deletes => _deletes;
+
+		private ICollection<int> _updates;
+		public ICollection<int> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<string> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
+
+	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, string>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, string>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<int, string>> list = new LinkedList<KeyValuePair<int, string>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, string>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, string>>>(KeyEqualityComparer);
+
+	public event Action<Int32String_map, EventChanged>? OnChanged;
+
+	public string this[int key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<int, string> value2 = new KeyValuePair<int, string>(key, value);
+			LinkedListNode<KeyValuePair<int, string>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, string> pair) => pair.Key, ContainsKey);
+
+	public ICollection<string> Values => new MapView<string>(this, (KeyValuePair<int, string> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(int key, string value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(int key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(string value)
+	{
+		return list.Any((KeyValuePair<int, string> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(int key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(int key, out string value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, string>>.Add(KeyValuePair<int, string> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<int, string>>.Contains(KeyValuePair<int, string> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, string>>.CopyTo(KeyValuePair<int, string>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<int, string>>.Remove(KeyValuePair<int, string> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<string>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<int, string>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<int>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = " + v);
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt32());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			int k = default;
+			string v = string.Empty;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt32();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = stream.ReadString();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class Int64String_map : IDictionary<long, string>, ICollection<KeyValuePair<long, string>>, IEnumerable<KeyValuePair<long, string>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int64String_map parent;
+
+		private readonly Func<KeyValuePair<long, string>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int64String_map parent, Func<KeyValuePair<long, string>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<long> _deletes;
+		public ICollection<long> Deletes => _deletes;
+
+		private ICollection<long> _updates;
+		public ICollection<long> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<string> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
+
+	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, string>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, string>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<long, string>> list = new LinkedList<KeyValuePair<long, string>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, string>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, string>>>(KeyEqualityComparer);
+
+	public event Action<Int64String_map, EventChanged>? OnChanged;
+
+	public string this[long key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<long, string> value2 = new KeyValuePair<long, string>(key, value);
+			LinkedListNode<KeyValuePair<long, string>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, string> pair) => pair.Key, ContainsKey);
+
+	public ICollection<string> Values => new MapView<string>(this, (KeyValuePair<long, string> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(long key, string value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(long key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(string value)
+	{
+		return list.Any((KeyValuePair<long, string> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(long key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(long key, out string value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, string>>.Add(KeyValuePair<long, string> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<long, string>>.Contains(KeyValuePair<long, string> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, string>>.CopyTo(KeyValuePair<long, string>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<long, string>>.Remove(KeyValuePair<long, string> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<string>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<long, string>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<long>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = " + v);
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt64());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			long k = default;
+			string v = string.Empty;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt64();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = stream.ReadString();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class StringString_map : IDictionary<string, string>, ICollection<KeyValuePair<string, string>>, IEnumerable<KeyValuePair<string, string>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly StringString_map parent;
+
+		private readonly Func<KeyValuePair<string, string>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(StringString_map parent, Func<KeyValuePair<string, string>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<string> _deletes;
+		public ICollection<string> Deletes => _deletes;
+
+		private ICollection<string> _updates;
+		public ICollection<string> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<string> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
+
+	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, string>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, string>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<string, string>> list = new LinkedList<KeyValuePair<string, string>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, string>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, string>>>(KeyEqualityComparer);
+
+	public event Action<StringString_map, EventChanged>? OnChanged;
+
+	public string this[string key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<string, string> value2 = new KeyValuePair<string, string>(key, value);
+			LinkedListNode<KeyValuePair<string, string>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, string> pair) => pair.Key, ContainsKey);
+
+	public ICollection<string> Values => new MapView<string>(this, (KeyValuePair<string, string> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(string key, string value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(string key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(string value)
+	{
+		return list.Any((KeyValuePair<string, string> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(string key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(string key, out string value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, string>>.Add(KeyValuePair<string, string> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<string, string>>.Contains(KeyValuePair<string, string> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, string>>.CopyTo(KeyValuePair<string, string>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<string, string>>.Remove(KeyValuePair<string, string> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<string>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<string>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = " + v);
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadString());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			string k = string.Empty;
+			string v = string.Empty;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadString();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = stream.ReadString();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class BoolTimestamp_map : IDictionary<bool, Kdsync.Timestamp>, ICollection<KeyValuePair<bool, Kdsync.Timestamp>>, IEnumerable<KeyValuePair<bool, Kdsync.Timestamp>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly BoolTimestamp_map parent;
+
+		private readonly Func<KeyValuePair<bool, Kdsync.Timestamp>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(BoolTimestamp_map parent, Func<KeyValuePair<bool, Kdsync.Timestamp>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<bool> _deletes;
+		public ICollection<bool> Deletes => _deletes;
+
+		private ICollection<bool> _updates;
+		public ICollection<bool> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<Kdsync.Timestamp> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Kdsync.Timestamp>();
+
+	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, Kdsync.Timestamp>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, Kdsync.Timestamp>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<bool, Kdsync.Timestamp>> list = new LinkedList<KeyValuePair<bool, Kdsync.Timestamp>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, Kdsync.Timestamp>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, Kdsync.Timestamp>>>(KeyEqualityComparer);
+
+	public event Action<BoolTimestamp_map, EventChanged>? OnChanged;
+
+	public Kdsync.Timestamp this[bool key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<bool, Kdsync.Timestamp> value2 = new KeyValuePair<bool, Kdsync.Timestamp>(key, value);
+			LinkedListNode<KeyValuePair<bool, Kdsync.Timestamp>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, Kdsync.Timestamp> pair) => pair.Key, ContainsKey);
+
+	public ICollection<Kdsync.Timestamp> Values => new MapView<Kdsync.Timestamp>(this, (KeyValuePair<bool, Kdsync.Timestamp> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(bool key, Kdsync.Timestamp value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(bool key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(Kdsync.Timestamp value)
+	{
+		return list.Any((KeyValuePair<bool, Kdsync.Timestamp> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(bool key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(bool key, out Kdsync.Timestamp value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, Kdsync.Timestamp>>.Add(KeyValuePair<bool, Kdsync.Timestamp> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<bool, Kdsync.Timestamp>>.Contains(KeyValuePair<bool, Kdsync.Timestamp> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, Kdsync.Timestamp>>.CopyTo(KeyValuePair<bool, Kdsync.Timestamp>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<bool, Kdsync.Timestamp>>.Remove(KeyValuePair<bool, Kdsync.Timestamp> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Kdsync.Timestamp>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<bool, Kdsync.Timestamp>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<bool>(map.Keys);
+		sortedKeys.Sort((a, b) => {
+			if (a) return b ? 0 : 1;
+			return b ? -1 : 0;
+		});
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString().ToLower();
+			sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadBool());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			bool k = default;
+			Kdsync.Timestamp v = new Kdsync.Timestamp();
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadBool();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class Int32Timestamp_map : IDictionary<int, Kdsync.Timestamp>, ICollection<KeyValuePair<int, Kdsync.Timestamp>>, IEnumerable<KeyValuePair<int, Kdsync.Timestamp>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int32Timestamp_map parent;
+
+		private readonly Func<KeyValuePair<int, Kdsync.Timestamp>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int32Timestamp_map parent, Func<KeyValuePair<int, Kdsync.Timestamp>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<int> _deletes;
+		public ICollection<int> Deletes => _deletes;
+
+		private ICollection<int> _updates;
+		public ICollection<int> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<Kdsync.Timestamp> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Kdsync.Timestamp>();
+
+	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, Kdsync.Timestamp>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, Kdsync.Timestamp>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<int, Kdsync.Timestamp>> list = new LinkedList<KeyValuePair<int, Kdsync.Timestamp>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, Kdsync.Timestamp>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, Kdsync.Timestamp>>>(KeyEqualityComparer);
+
+	public event Action<Int32Timestamp_map, EventChanged>? OnChanged;
+
+	public Kdsync.Timestamp this[int key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<int, Kdsync.Timestamp> value2 = new KeyValuePair<int, Kdsync.Timestamp>(key, value);
+			LinkedListNode<KeyValuePair<int, Kdsync.Timestamp>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, Kdsync.Timestamp> pair) => pair.Key, ContainsKey);
+
+	public ICollection<Kdsync.Timestamp> Values => new MapView<Kdsync.Timestamp>(this, (KeyValuePair<int, Kdsync.Timestamp> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(int key, Kdsync.Timestamp value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(int key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(Kdsync.Timestamp value)
+	{
+		return list.Any((KeyValuePair<int, Kdsync.Timestamp> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(int key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(int key, out Kdsync.Timestamp value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, Kdsync.Timestamp>>.Add(KeyValuePair<int, Kdsync.Timestamp> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<int, Kdsync.Timestamp>>.Contains(KeyValuePair<int, Kdsync.Timestamp> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, Kdsync.Timestamp>>.CopyTo(KeyValuePair<int, Kdsync.Timestamp>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<int, Kdsync.Timestamp>>.Remove(KeyValuePair<int, Kdsync.Timestamp> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Kdsync.Timestamp>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<int, Kdsync.Timestamp>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<int>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt32());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			int k = default;
+			Kdsync.Timestamp v = new Kdsync.Timestamp();
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt32();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class Int64Timestamp_map : IDictionary<long, Kdsync.Timestamp>, ICollection<KeyValuePair<long, Kdsync.Timestamp>>, IEnumerable<KeyValuePair<long, Kdsync.Timestamp>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int64Timestamp_map parent;
+
+		private readonly Func<KeyValuePair<long, Kdsync.Timestamp>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int64Timestamp_map parent, Func<KeyValuePair<long, Kdsync.Timestamp>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<long> _deletes;
+		public ICollection<long> Deletes => _deletes;
+
+		private ICollection<long> _updates;
+		public ICollection<long> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<Kdsync.Timestamp> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Kdsync.Timestamp>();
+
+	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, Kdsync.Timestamp>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, Kdsync.Timestamp>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<long, Kdsync.Timestamp>> list = new LinkedList<KeyValuePair<long, Kdsync.Timestamp>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, Kdsync.Timestamp>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, Kdsync.Timestamp>>>(KeyEqualityComparer);
+
+	public event Action<Int64Timestamp_map, EventChanged>? OnChanged;
+
+	public Kdsync.Timestamp this[long key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<long, Kdsync.Timestamp> value2 = new KeyValuePair<long, Kdsync.Timestamp>(key, value);
+			LinkedListNode<KeyValuePair<long, Kdsync.Timestamp>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, Kdsync.Timestamp> pair) => pair.Key, ContainsKey);
+
+	public ICollection<Kdsync.Timestamp> Values => new MapView<Kdsync.Timestamp>(this, (KeyValuePair<long, Kdsync.Timestamp> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(long key, Kdsync.Timestamp value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(long key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(Kdsync.Timestamp value)
+	{
+		return list.Any((KeyValuePair<long, Kdsync.Timestamp> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(long key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(long key, out Kdsync.Timestamp value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, Kdsync.Timestamp>>.Add(KeyValuePair<long, Kdsync.Timestamp> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<long, Kdsync.Timestamp>>.Contains(KeyValuePair<long, Kdsync.Timestamp> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, Kdsync.Timestamp>>.CopyTo(KeyValuePair<long, Kdsync.Timestamp>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<long, Kdsync.Timestamp>>.Remove(KeyValuePair<long, Kdsync.Timestamp> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Kdsync.Timestamp>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<long, Kdsync.Timestamp>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<long>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt64());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			long k = default;
+			Kdsync.Timestamp v = new Kdsync.Timestamp();
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt64();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class StringTimestamp_map : IDictionary<string, Kdsync.Timestamp>, ICollection<KeyValuePair<string, Kdsync.Timestamp>>, IEnumerable<KeyValuePair<string, Kdsync.Timestamp>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly StringTimestamp_map parent;
+
+		private readonly Func<KeyValuePair<string, Kdsync.Timestamp>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(StringTimestamp_map parent, Func<KeyValuePair<string, Kdsync.Timestamp>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<string> _deletes;
+		public ICollection<string> Deletes => _deletes;
+
+		private ICollection<string> _updates;
+		public ICollection<string> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<Kdsync.Timestamp> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<Kdsync.Timestamp>();
+
+	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, Kdsync.Timestamp>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, Kdsync.Timestamp>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<string, Kdsync.Timestamp>> list = new LinkedList<KeyValuePair<string, Kdsync.Timestamp>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, Kdsync.Timestamp>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, Kdsync.Timestamp>>>(KeyEqualityComparer);
+
+	public event Action<StringTimestamp_map, EventChanged>? OnChanged;
+
+	public Kdsync.Timestamp this[string key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<string, Kdsync.Timestamp> value2 = new KeyValuePair<string, Kdsync.Timestamp>(key, value);
+			LinkedListNode<KeyValuePair<string, Kdsync.Timestamp>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, Kdsync.Timestamp> pair) => pair.Key, ContainsKey);
+
+	public ICollection<Kdsync.Timestamp> Values => new MapView<Kdsync.Timestamp>(this, (KeyValuePair<string, Kdsync.Timestamp> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(string key, Kdsync.Timestamp value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(string key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(Kdsync.Timestamp value)
+	{
+		return list.Any((KeyValuePair<string, Kdsync.Timestamp> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(string key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(string key, out Kdsync.Timestamp value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, Kdsync.Timestamp>>.Add(KeyValuePair<string, Kdsync.Timestamp> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<string, Kdsync.Timestamp>>.Contains(KeyValuePair<string, Kdsync.Timestamp> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, Kdsync.Timestamp>>.CopyTo(KeyValuePair<string, Kdsync.Timestamp>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<string, Kdsync.Timestamp>>.Remove(KeyValuePair<string, Kdsync.Timestamp> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<Kdsync.Timestamp>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<string, Kdsync.Timestamp>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<string>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadString());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			string k = string.Empty;
+			Kdsync.Timestamp v = new Kdsync.Timestamp();
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadString();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public enum ItemType
+{
+	ItemTypeNone = 0,
+	ItemTypeWeapon = 1,
+	ItemTypeArmor = 2,
+	ItemTypePotion = 3,
+}
+
+public class BoolItemType_map : IDictionary<bool, ItemType>, ICollection<KeyValuePair<bool, ItemType>>, IEnumerable<KeyValuePair<bool, ItemType>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly BoolItemType_map parent;
+
+		private readonly Func<KeyValuePair<bool, ItemType>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(BoolItemType_map parent, Func<KeyValuePair<bool, ItemType>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<bool> _deletes;
+		public ICollection<bool> Deletes => _deletes;
+
+		private ICollection<bool> _updates;
+		public ICollection<bool> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<ItemType> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemType>();
+
+	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemType>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemType>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<bool, ItemType>> list = new LinkedList<KeyValuePair<bool, ItemType>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemType>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemType>>>(KeyEqualityComparer);
+
+	public event Action<BoolItemType_map, EventChanged>? OnChanged;
+
+	public ItemType this[bool key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<bool, ItemType> value2 = new KeyValuePair<bool, ItemType>(key, value);
+			LinkedListNode<KeyValuePair<bool, ItemType>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, ItemType> pair) => pair.Key, ContainsKey);
+
+	public ICollection<ItemType> Values => new MapView<ItemType>(this, (KeyValuePair<bool, ItemType> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(bool key, ItemType value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(bool key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(ItemType value)
+	{
+		return list.Any((KeyValuePair<bool, ItemType> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(bool key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(bool key, out ItemType value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, ItemType>>.Add(KeyValuePair<bool, ItemType> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<bool, ItemType>>.Contains(KeyValuePair<bool, ItemType> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, ItemType>>.CopyTo(KeyValuePair<bool, ItemType>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<bool, ItemType>>.Remove(KeyValuePair<bool, ItemType> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemType>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<bool, ItemType>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<bool>(map.Keys);
+		sortedKeys.Sort((a, b) => {
+			if (a) return b ? 0 : 1;
+			return b ? -1 : 0;
+		});
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString().ToLower();
+			sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadBool());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			bool k = default;
+			ItemType v = default;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadBool();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = (ItemType)stream.ReadEnum();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+
+public class Int32ItemType_map : IDictionary<int, ItemType>, ICollection<KeyValuePair<int, ItemType>>, IEnumerable<KeyValuePair<int, ItemType>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int32ItemType_map parent;
+
+		private readonly Func<KeyValuePair<int, ItemType>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int32ItemType_map parent, Func<KeyValuePair<int, ItemType>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<int> _deletes;
+		public ICollection<int> Deletes => _deletes;
+
+		private ICollection<int> _updates;
+		public ICollection<int> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<ItemType> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemType>();
+
+	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, ItemType>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, ItemType>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<int, ItemType>> list = new LinkedList<KeyValuePair<int, ItemType>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, ItemType>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, ItemType>>>(KeyEqualityComparer);
+
+	public event Action<Int32ItemType_map, EventChanged>? OnChanged;
+
+	public ItemType this[int key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<int, ItemType> value2 = new KeyValuePair<int, ItemType>(key, value);
+			LinkedListNode<KeyValuePair<int, ItemType>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, ItemType> pair) => pair.Key, ContainsKey);
+
+	public ICollection<ItemType> Values => new MapView<ItemType>(this, (KeyValuePair<int, ItemType> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(int key, ItemType value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(int key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(ItemType value)
+	{
+		return list.Any((KeyValuePair<int, ItemType> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(int key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(int key, out ItemType value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, ItemType>>.Add(KeyValuePair<int, ItemType> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<int, ItemType>>.Contains(KeyValuePair<int, ItemType> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, ItemType>>.CopyTo(KeyValuePair<int, ItemType>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<int, ItemType>>.Remove(KeyValuePair<int, ItemType> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemType>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<int, ItemType>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<int>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt32());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			int k = default;
+			ItemType v = default;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt32();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = (ItemType)stream.ReadEnum();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+
+public class Int64ItemType_map : IDictionary<long, ItemType>, ICollection<KeyValuePair<long, ItemType>>, IEnumerable<KeyValuePair<long, ItemType>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int64ItemType_map parent;
+
+		private readonly Func<KeyValuePair<long, ItemType>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int64ItemType_map parent, Func<KeyValuePair<long, ItemType>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<long> _deletes;
+		public ICollection<long> Deletes => _deletes;
+
+		private ICollection<long> _updates;
+		public ICollection<long> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<ItemType> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemType>();
+
+	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, ItemType>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, ItemType>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<long, ItemType>> list = new LinkedList<KeyValuePair<long, ItemType>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, ItemType>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, ItemType>>>(KeyEqualityComparer);
+
+	public event Action<Int64ItemType_map, EventChanged>? OnChanged;
+
+	public ItemType this[long key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<long, ItemType> value2 = new KeyValuePair<long, ItemType>(key, value);
+			LinkedListNode<KeyValuePair<long, ItemType>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, ItemType> pair) => pair.Key, ContainsKey);
+
+	public ICollection<ItemType> Values => new MapView<ItemType>(this, (KeyValuePair<long, ItemType> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(long key, ItemType value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(long key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(ItemType value)
+	{
+		return list.Any((KeyValuePair<long, ItemType> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(long key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(long key, out ItemType value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, ItemType>>.Add(KeyValuePair<long, ItemType> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<long, ItemType>>.Contains(KeyValuePair<long, ItemType> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, ItemType>>.CopyTo(KeyValuePair<long, ItemType>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<long, ItemType>>.Remove(KeyValuePair<long, ItemType> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemType>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<long, ItemType>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<long>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt64());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			long k = default;
+			ItemType v = default;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt64();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = (ItemType)stream.ReadEnum();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+
+public class StringItemType_map : IDictionary<string, ItemType>, ICollection<KeyValuePair<string, ItemType>>, IEnumerable<KeyValuePair<string, ItemType>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly StringItemType_map parent;
+
+		private readonly Func<KeyValuePair<string, ItemType>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(StringItemType_map parent, Func<KeyValuePair<string, ItemType>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<string> _deletes;
+		public ICollection<string> Deletes => _deletes;
+
+		private ICollection<string> _updates;
+		public ICollection<string> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<ItemType> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemType>();
+
+	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, ItemType>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, ItemType>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<string, ItemType>> list = new LinkedList<KeyValuePair<string, ItemType>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, ItemType>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, ItemType>>>(KeyEqualityComparer);
+
+	public event Action<StringItemType_map, EventChanged>? OnChanged;
+
+	public ItemType this[string key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<string, ItemType> value2 = new KeyValuePair<string, ItemType>(key, value);
+			LinkedListNode<KeyValuePair<string, ItemType>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, ItemType> pair) => pair.Key, ContainsKey);
+
+	public ICollection<ItemType> Values => new MapView<ItemType>(this, (KeyValuePair<string, ItemType> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(string key, ItemType value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(string key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(ItemType value)
+	{
+		return list.Any((KeyValuePair<string, ItemType> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(string key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(string key, out ItemType value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, ItemType>>.Add(KeyValuePair<string, ItemType> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<string, ItemType>>.Contains(KeyValuePair<string, ItemType> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, ItemType>>.CopyTo(KeyValuePair<string, ItemType>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<string, ItemType>>.Remove(KeyValuePair<string, ItemType> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemType>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<string, ItemType>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<string>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadString());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			string k = string.Empty;
+			ItemType v = default;
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadString();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = (ItemType)stream.ReadEnum();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			this[k] = v;
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+public class ItemData : Kdsync.IMessage
+{
+	public ItemData()
+	{
+		name_ = string.Empty;
+	}
+
+	private int id_;
+	public int Id => id_;
+
+	private string name_;
+	public string Name => name_;
+
+	private int count_;
+	public int Count => count_;
+
+	private long _changed;
+
+	public event Action<ItemData, EventChanged>? OnChanged;
+
+	public class EventChanged
+	{
+		public long _changed;
+		public bool Id => (_changed & (0x01 << 1)) != 0;
+		public bool Name => (_changed & (0x01 << 2)) != 0;
+		public bool Count => (_changed & (0x01 << 3)) != 0;
+
+		public EventChanged(long changed)
+		{
+			_changed = changed;
+		}
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("{\n");
+		sb.AppendLine(indent + "  Id = " + id_.ToString());
+		sb.AppendLine(indent + "  Name = " + name_);
+		sb.AppendLine(indent + "  Count = " + count_.ToString());
+		sb.Append(indent + "}");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1:
+				id_ = stream.ReadInt32();
+				_changed |= 0x01 << 1;
+				break;
+			case 2:
+				name_ = stream.ReadString();
+				_changed |= 0x01 << 2;
+				break;
+			case 3:
+				count_ = stream.ReadInt32();
+				_changed |= 0x01 << 3;
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (_changed == 0)
+			return;
+		OnChanged?.Invoke(this, new EventChanged(_changed));
+	}
+
+	public void ClearChanged()
+	{
+		if (_changed == 0)
+			return;
+		_changed = 0;
+	}
+}
+
+public class BoolItemData_map : IDictionary<bool, ItemData>, ICollection<KeyValuePair<bool, ItemData>>, IEnumerable<KeyValuePair<bool, ItemData>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly BoolItemData_map parent;
+
+		private readonly Func<KeyValuePair<bool, ItemData>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(BoolItemData_map parent, Func<KeyValuePair<bool, ItemData>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<bool> _deletes;
+		public ICollection<bool> Deletes => _deletes;
+
+		private ICollection<bool> _updates;
+		public ICollection<bool> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<bool> deletes, ICollection<bool> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<ItemData> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemData>();
+
+	private static readonly EqualityComparer<bool> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<bool>();
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemData>>> map = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemData>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<bool, ItemData>> list = new LinkedList<KeyValuePair<bool, ItemData>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<bool> _deletes = new HashSet<bool>(KeyEqualityComparer);
+
+	private readonly Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemData>>> _updates = new Dictionary<bool, LinkedListNode<KeyValuePair<bool, ItemData>>>(KeyEqualityComparer);
+
+	public event Action<BoolItemData_map, EventChanged>? OnChanged;
+
+	public ItemData this[bool key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<bool, ItemData> value2 = new KeyValuePair<bool, ItemData>(key, value);
+			LinkedListNode<KeyValuePair<bool, ItemData>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<bool> Keys => new MapView<bool>(this, (KeyValuePair<bool, ItemData> pair) => pair.Key, ContainsKey);
+
+	public ICollection<ItemData> Values => new MapView<ItemData>(this, (KeyValuePair<bool, ItemData> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(bool key, ItemData value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(bool key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(ItemData value)
+	{
+		return list.Any((KeyValuePair<bool, ItemData> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(bool key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(bool key, out ItemData value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, ItemData>>.Add(KeyValuePair<bool, ItemData> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<bool, ItemData>>.Contains(KeyValuePair<bool, ItemData> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<bool, ItemData>>.CopyTo(KeyValuePair<bool, ItemData>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<bool, ItemData>>.Remove(KeyValuePair<bool, ItemData> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemData>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<bool, ItemData>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<bool>(map.Keys);
+		sortedKeys.Sort((a, b) => {
+			if (a) return b ? 0 : 1;
+			return b ? -1 : 0;
+		});
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString().ToLower();
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadBool());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			bool k = default;
+			byte[] v = new byte[0];
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadBool();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = stream.ReadBytes().ToByteArray();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (TryGetValue(k, out var c))
+			{
+				c.MergeFrom(v);
+			}
+			else
+			{
+				c = new ItemData();
+				c.MergeFrom(v);
+				this[k] = c;
+			}
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		foreach (var v in _updates.Values)
+			v.Value.Value.RaiseChanged();
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+
+public class Int32ItemData_map : IDictionary<int, ItemData>, ICollection<KeyValuePair<int, ItemData>>, IEnumerable<KeyValuePair<int, ItemData>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int32ItemData_map parent;
+
+		private readonly Func<KeyValuePair<int, ItemData>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int32ItemData_map parent, Func<KeyValuePair<int, ItemData>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<int> _deletes;
+		public ICollection<int> Deletes => _deletes;
+
+		private ICollection<int> _updates;
+		public ICollection<int> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<int> deletes, ICollection<int> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<ItemData> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemData>();
+
+	private static readonly EqualityComparer<int> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<int>();
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, ItemData>>> map = new Dictionary<int, LinkedListNode<KeyValuePair<int, ItemData>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<int, ItemData>> list = new LinkedList<KeyValuePair<int, ItemData>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<int> _deletes = new HashSet<int>(KeyEqualityComparer);
+
+	private readonly Dictionary<int, LinkedListNode<KeyValuePair<int, ItemData>>> _updates = new Dictionary<int, LinkedListNode<KeyValuePair<int, ItemData>>>(KeyEqualityComparer);
+
+	public event Action<Int32ItemData_map, EventChanged>? OnChanged;
+
+	public ItemData this[int key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<int, ItemData> value2 = new KeyValuePair<int, ItemData>(key, value);
+			LinkedListNode<KeyValuePair<int, ItemData>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<int> Keys => new MapView<int>(this, (KeyValuePair<int, ItemData> pair) => pair.Key, ContainsKey);
+
+	public ICollection<ItemData> Values => new MapView<ItemData>(this, (KeyValuePair<int, ItemData> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(int key, ItemData value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(int key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(ItemData value)
+	{
+		return list.Any((KeyValuePair<int, ItemData> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(int key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(int key, out ItemData value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, ItemData>>.Add(KeyValuePair<int, ItemData> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<int, ItemData>>.Contains(KeyValuePair<int, ItemData> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<int, ItemData>>.CopyTo(KeyValuePair<int, ItemData>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<int, ItemData>>.Remove(KeyValuePair<int, ItemData> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemData>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<int, ItemData>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<int>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt32());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			int k = default;
+			byte[] v = new byte[0];
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt32();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = stream.ReadBytes().ToByteArray();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (TryGetValue(k, out var c))
+			{
+				c.MergeFrom(v);
+			}
+			else
+			{
+				c = new ItemData();
+				c.MergeFrom(v);
+				this[k] = c;
+			}
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		foreach (var v in _updates.Values)
+			v.Value.Value.RaiseChanged();
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+
+public class Int64ItemData_map : IDictionary<long, ItemData>, ICollection<KeyValuePair<long, ItemData>>, IEnumerable<KeyValuePair<long, ItemData>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly Int64ItemData_map parent;
+
+		private readonly Func<KeyValuePair<long, ItemData>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(Int64ItemData_map parent, Func<KeyValuePair<long, ItemData>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<long> _deletes;
+		public ICollection<long> Deletes => _deletes;
+
+		private ICollection<long> _updates;
+		public ICollection<long> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<long> deletes, ICollection<long> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<ItemData> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemData>();
+
+	private static readonly EqualityComparer<long> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<long>();
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, ItemData>>> map = new Dictionary<long, LinkedListNode<KeyValuePair<long, ItemData>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<long, ItemData>> list = new LinkedList<KeyValuePair<long, ItemData>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<long> _deletes = new HashSet<long>(KeyEqualityComparer);
+
+	private readonly Dictionary<long, LinkedListNode<KeyValuePair<long, ItemData>>> _updates = new Dictionary<long, LinkedListNode<KeyValuePair<long, ItemData>>>(KeyEqualityComparer);
+
+	public event Action<Int64ItemData_map, EventChanged>? OnChanged;
+
+	public ItemData this[long key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<long, ItemData> value2 = new KeyValuePair<long, ItemData>(key, value);
+			LinkedListNode<KeyValuePair<long, ItemData>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<long> Keys => new MapView<long>(this, (KeyValuePair<long, ItemData> pair) => pair.Key, ContainsKey);
+
+	public ICollection<ItemData> Values => new MapView<ItemData>(this, (KeyValuePair<long, ItemData> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(long key, ItemData value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(long key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(ItemData value)
+	{
+		return list.Any((KeyValuePair<long, ItemData> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(long key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(long key, out ItemData value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, ItemData>>.Add(KeyValuePair<long, ItemData> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<long, ItemData>>.Contains(KeyValuePair<long, ItemData> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<long, ItemData>>.CopyTo(KeyValuePair<long, ItemData>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<long, ItemData>>.Remove(KeyValuePair<long, ItemData> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemData>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<long, ItemData>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<long>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadInt64());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			long k = default;
+			byte[] v = new byte[0];
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadInt64();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = stream.ReadBytes().ToByteArray();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (TryGetValue(k, out var c))
+			{
+				c.MergeFrom(v);
+			}
+			else
+			{
+				c = new ItemData();
+				c.MergeFrom(v);
+				this[k] = c;
+			}
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		foreach (var v in _updates.Values)
+			v.Value.Value.RaiseChanged();
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+
+public class StringItemData_map : IDictionary<string, ItemData>, ICollection<KeyValuePair<string, ItemData>>, IEnumerable<KeyValuePair<string, ItemData>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
+	{
+		private readonly StringItemData_map parent;
+
+		private readonly Func<KeyValuePair<string, ItemData>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView(StringItemData_map parent, Func<KeyValuePair<string, ItemData>, T> projection, Func<T, bool> containsCheck)
+		{
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
+		}
+
+		public void Add(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		public bool Contains(T item)
+		{
+			return containsCheck(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (arrayIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
+
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<string> _deletes;
+		public ICollection<string> Deletes => _deletes;
+
+		private ICollection<string> _updates;
+		public ICollection<string> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<string> deletes, ICollection<string> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<ItemData> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<ItemData>();
+
+	private static readonly EqualityComparer<string> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<string>();
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, ItemData>>> map = new Dictionary<string, LinkedListNode<KeyValuePair<string, ItemData>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<string, ItemData>> list = new LinkedList<KeyValuePair<string, ItemData>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<string> _deletes = new HashSet<string>(KeyEqualityComparer);
+
+	private readonly Dictionary<string, LinkedListNode<KeyValuePair<string, ItemData>>> _updates = new Dictionary<string, LinkedListNode<KeyValuePair<string, ItemData>>>(KeyEqualityComparer);
+
+	public event Action<StringItemData_map, EventChanged>? OnChanged;
+
+	public ItemData this[string key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<string, ItemData> value2 = new KeyValuePair<string, ItemData>(key, value);
+			LinkedListNode<KeyValuePair<string, ItemData>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<string> Keys => new MapView<string>(this, (KeyValuePair<string, ItemData> pair) => pair.Key, ContainsKey);
+
+	public ICollection<ItemData> Values => new MapView<ItemData>(this, (KeyValuePair<string, ItemData> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add(string key, ItemData value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey(string key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue(ItemData value)
+	{
+		return list.Any((KeyValuePair<string, ItemData> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove(string key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue(string key, out ItemData value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, ItemData>>.Add(KeyValuePair<string, ItemData> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<string, ItemData>>.Contains(KeyValuePair<string, ItemData> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<string, ItemData>>.CopyTo(KeyValuePair<string, ItemData>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<string, ItemData>>.Remove(KeyValuePair<string, ItemData> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<ItemData>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
+		}
+
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<string, ItemData>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<string>(map.Keys);
+		sortedKeys.Sort();
+		foreach (var k in sortedKeys)
+		{
+			var v = map[k].Value.Value;
+			var key = k.ToString();
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+			Remove(stream.ReadString());
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+			string k = string.Empty;
+			byte[] v = new byte[0];
+			while ((tag = stream.ReadTag()) != 0)
+			{
+				var num = WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+				case 1: // MapEntryKeyFieldNumber
+					k = stream.ReadString();
+					break;
+				case 2: // MapEntryValueFieldNumber
+					v = stream.ReadBytes().ToByteArray();
+					break;
+				default:
+					stream.SkipLastField();
+					break;
+				}
+			}
+			if (TryGetValue(k, out var c))
+			{
+				c.MergeFrom(v);
+			}
+			else
+			{
+				c = new ItemData();
+				c.MergeFrom(v);
+				this[k] = c;
+			}
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+		foreach (var v in _updates.Values)
+			v.Value.Value.RaiseChanged();
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
+

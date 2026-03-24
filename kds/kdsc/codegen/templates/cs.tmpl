@@ -15,10 +15,34 @@
 {{- else if eq . "double"}}double
 {{- else if eq . "string"}}string
 {{- else if eq . "bytes"}}byte[]
-{{- else if eq . "timestamp"}}Timestamp
-{{- else if eq . "duration"}}Duration
-{{- else if eq . "empty"}}Empty
+{{- else if eq . "timestamp"}}Kdsync.Timestamp
+{{- else if eq . "duration"}}Kdsync.Duration
+{{- else if eq . "empty"}}Kdsync.Empty
 {{- else}}{{.}}
+{{- end}}
+{{- end}}
+
+{{- define "FieldCodec"}}
+{{- if eq .Type "bool"}}Kdsync.FieldCodec.ForBool({{.Number}})
+{{- else if eq .Type "int32"}}Kdsync.FieldCodec.ForInt32({{.Number}})
+{{- else if eq .Type "sint32"}}Kdsync.FieldCodec.ForSInt32({{.Number}})
+{{- else if eq .Type "uint32"}}Kdsync.FieldCodec.ForUInt32({{.Number}})
+{{- else if eq .Type "int64"}}Kdsync.FieldCodec.ForInt64({{.Number}})
+{{- else if eq .Type "sint64"}}Kdsync.FieldCodec.ForSInt64({{.Number}})
+{{- else if eq .Type "uint64"}}Kdsync.FieldCodec.ForUInt64({{.Number}})
+{{- else if eq .Type "sfixed32"}}Kdsync.FieldCodec.SFixed32({{.Number}})
+{{- else if eq .Type "fixed32"}}Kdsync.FieldCodec.Fixed32({{.Number}})
+{{- else if eq .Type "float"}}Kdsync.FieldCodec.ForFloat({{.Number}})
+{{- else if eq .Type "sfixed64"}}Kdsync.FieldCodec.ForSFixed64({{.Number}})
+{{- else if eq .Type "fixed64"}}Kdsync.FieldCodec.ForFixed64({{.Number}})
+{{- else if eq .Type "double"}}Kdsync.FieldCodec.ForDouble({{.Number}})
+{{- else if eq .Type "string"}}Kdsync.FieldCodec.ForString({{.Number}})
+{{- else if eq .Type "bytes"}}Kdsync.FieldCodec.ForBytes({{.Number}})
+{{- else if eq .Type "timestamp"}}Kdsync.FieldCodec.ForMessage<Kdsync.Timestamp>({{.Number}})
+{{- else if eq .Type "duration"}}Kdsync.FieldCodec.ForMessage<Kdsync.Duration>({{.Number}})
+{{- else if eq .Type "empty"}}Kdsync.FieldCodec.ForMessage<Kdsync.Empty>({{.Number}})
+{{- else if eq .TypeKind "enum"}}Kdsync.FieldCodec.ForEnum({{.Number}}, x => (int) x, x => ({{.Type}}) x)
+{{- else}}Kdsync.FieldCodec.ForMessage<{{.Type}}>({{.Number}})
 {{- end}}
 {{- end}}
 
@@ -26,7 +50,7 @@
 {{- /*Protobuf reserved "Types" "Descriptor" "Equals" "ToString" "GetHashCode" "WriteTo" "Clone" "CalculateSize" "MergeFrom" "OnConstruction" "Parser"*/ -}}
 {{- if eq .Name .Def.Name}}{{.Name}}_
 {{- else if and (eq .Def.Kind "entity") (eq .Name "Id")}}{{.Name}}_
-{{- else if eq .Name "Equals" "ToString" "GetHashCode" "ApplySync" "RaiseChanged" "ClearChanged"}}{{.Name}}_
+{{- else if eq .Name "Equals" "ToString" "GetHashCode" "MergeFrom" "RaiseChanged" "ClearChanged"}}{{.Name}}_
 {{- else}}{{.Name}}
 {{- end}}
 {{- end}}
@@ -46,506 +70,76 @@
 {{- end}}
 {{- end}}
 
-{{- /* LIST */ -}}
-{{- define "List"}}
-	public class {{.Name}} : IList<{{template "ListValueType" .}}>, ICollection<{{template "ListValueType" .}}>, IEnumerable<{{template "ListValueType" .}}>
-	{
-		public class EventChanged
-		{
-			public EventChanged()
-			{
-			}
-		}
-
-		private static readonly EqualityComparer<{{template "ListValueType" .}}> EqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<{{template "ListValueType" .}}>();
-
-		private {{template "ListValueType" .}}[] array = new {{template "ListValueType" .}}[0];
-
-		private int count = 0;
-
-		public event Action<{{.Name}}, EventChanged>? OnChanged;
-
-		public int Count => count;
-
-		public bool IsReadOnly => false;
-
-		public {{template "ListValueType" .}} this[int index]
-		{
-			get
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				return array[index];
-			}
-			set
-			{
-				if (index < 0 || index >= count)
-					throw new ArgumentOutOfRangeException(nameof(index));
-
-				array[index] = value;
-			}
-		}
-
-		private void EnsureSize(int size)
-		{
-			if (array.Length < size)
-			{
-				var newCapacity = array.Length == 0 ? 4 : array.Length * 2;
-				if (newCapacity < size)
-					newCapacity = size;
-				var newData = new {{template "ListValueType" .}}[newCapacity];
-				Array.Copy(array, newData, count);
-				array = newData;
-			}
-		}
-
-		public void Add({{template "ListValueType" .}} item)
-		{
-			EnsureSize(count + 1);
-			array[count++] = item;
-		}
-
-		public void Clear()
-		{
-			Array.Clear(array, 0, count);
-			count = 0;
-		}
-
-		public bool Contains({{template "ListValueType" .}} item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		public void CopyTo({{template "ListValueType" .}}[] array, int arrayIndex)
-		{
-			Array.Copy(this.array, 0, array, arrayIndex, count);
-		}
-
-		public bool Remove({{template "ListValueType" .}} item)
-		{
-			var num = IndexOf(item);
-			if (num == -1)
-				return false;
-			Array.Copy(array, num + 1, array, num, count - num - 1);
-			count--;
-			array[count] = default;
-			return true;
-		}
-
-		public int IndexOf({{template "ListValueType" .}} item)
-		{
-			EqualityComparer<{{template "ListValueType" .}}> equalityComparer = EqualityComparer;
-			for (int i = 0; i < count; i++)
-			{
-				if (equalityComparer.Equals(array[i], item))
-				{
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public void Insert(int index, {{template "ListValueType" .}} item)
-		{
-			if (index < 0 || index > count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			EnsureSize(count + 1);
-			Array.Copy(array, index, array, index + 1, count - index);
-			array[index] = item;
-			count++;
-		}
-
-		public void RemoveAt(int index)
-		{
-			if (index < 0 || index >= count)
-				throw new ArgumentOutOfRangeException(nameof(index));
-			Array.Copy(array, index + 1, array, index, count - index - 1);
-			count--;
-			array[count] = default;
-		}
-
-		public IEnumerator<{{template "ListValueType" .}}> GetEnumerator()
-		{
-			for (int i = 0; i < count; i++)
-			{
-				yield return array[i];
-			}
-		}
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			for (int i = 0; i < count; i++)
-			{
-				var v = array[i];
-{{- if eq .TypeKind "component"}}
-				sb.AppendLine(indent + "  " + v.ToString(indent + "  "));
-{{- else if eq .TypeKind "enum"}}
-				sb.AppendLine(indent + "  " + ((int)v).ToString());
-{{- else if eq .Type "bool"}}
-				sb.AppendLine(indent + "  " + v.ToString().ToLower());
-{{- else if eq .Type "int32"}}
-				sb.AppendLine(indent + "  " + v.ToString());
-{{- else if eq .Type "sint32"}}
-				sb.AppendLine(indent + "  " + v.ToString());
-{{- else if eq .Type "uint32"}}
-				sb.AppendLine(indent + "  " + v.ToString());
-{{- else if eq .Type "int64"}}
-				sb.AppendLine(indent + "  " + v.ToString());
-{{- else if eq .Type "sint64"}}
-				sb.AppendLine(indent + "  " + v.ToString());
-{{- else if eq .Type "uint64"}}
-				sb.AppendLine(indent + "  " + v.ToString());
-{{- else if eq .Type "fixed32"}}
-				sb.AppendLine(indent + "  " + v.ToString());
-{{- else if eq .Type "sfixed32"}}
-				sb.AppendLine(indent + "  " + v.ToString());
-{{- else if eq .Type "fixed64"}}
-				sb.AppendLine(indent + "  " + v.ToString());
-{{- else if eq .Type "sfixed64"}}
-				sb.AppendLine(indent + "  " + v.ToString());
-{{- else if eq .Type "float"}}
-				sb.AppendLine(indent + "  " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
-{{- else if eq .Type "double"}}
-				sb.AppendLine(indent + "  " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
-{{- else if eq .Type "string"}}
-				sb.AppendLine(indent + "  " + v);
-{{- else if eq .Type "bytes"}}
-				sb.AppendLine(indent + "  " + Convert.ToBase64String(v));
-{{- else if eq .Type "timestamp"}}
-				sb.AppendLine(indent + "  {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-{{- else if eq .Type "duration"}}
-				sb.AppendLine(indent + "  {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-{{- else if eq .Type "empty"}}
-				sb.AppendLine(indent + "  {}");
-{{- end}}
-			}
-			sb.Append(indent + "]");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			Clear();
-			var stream = new CodedInputStream(b);
-			while (!stream.IsAtEnd)
-			{
-{{- if eq .TypeKind "component"}}
-				var v = new {{.Type}}();
-				v.ApplySync(stream.ReadBytes().ToByteArray());
-				Add(v);
-{{- else if eq .TypeKind "enum"}}
-				Add(({{.Type}})stream.ReadEnum());
-{{- else if eq .Type "bool"}}
-				Add(stream.ReadBool());
-{{- else if eq .Type "int32"}}
-				Add(stream.ReadInt32());
-{{- else if eq .Type "sint32"}}
-				Add(stream.ReadSInt32());
-{{- else if eq .Type "uint32"}}
-				Add(stream.ReadUInt32());
-{{- else if eq .Type "int64"}}
-				Add(stream.ReadInt64());
-{{- else if eq .Type "sint64"}}
-				Add(stream.ReadSInt64());
-{{- else if eq .Type "uint64"}}
-				Add(stream.ReadUInt64());
-{{- else if eq .Type "fixed32"}}
-				Add(stream.ReadFixed32());
-{{- else if eq .Type "sfixed32"}}
-				Add(stream.ReadSFixed32());
-{{- else if eq .Type "fixed64"}}
-				Add(stream.ReadFixed64());
-{{- else if eq .Type "sfixed64"}}
-				Add(stream.ReadSFixed64());
-{{- else if eq .Type "float"}}
-				Add(stream.ReadFloat());
-{{- else if eq .Type "double"}}
-				Add(stream.ReadDouble());
-{{- else if eq .Type "string"}}
-				Add(stream.ReadString());
-{{- else if eq .Type "bytes"}}
-				Add(stream.ReadBytes());
-{{- else if eq .Type "timestamp"}}
-				Add(Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
-{{- else if eq .Type "duration"}}
-				Add(Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
-{{- else if eq .Type "empty"}}
-				Add(Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray()));
-{{- end}}
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			OnChanged?.Invoke(this, new EventChanged());
-		}
-
-		public void ClearChanged()
-		{
-
-		}
-	}
-{{- end}}
-
 {{- /* MAP */ -}}
 {{- define "Map"}}
-	public class {{.Name}} : IDictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>, ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>, IEnumerable<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>
+public class {{.Name}} : IDictionary<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>, ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>, IEnumerable<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>
+{
+	private class MapView<T> : ICollection<T>, IEnumerable<T>
 	{
-		private class MapView<T> : ICollection<T>, IEnumerable<T>
+		private readonly {{.Name}} parent;
+
+		private readonly Func<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>, T> projection;
+
+		private readonly Func<T, bool> containsCheck;
+
+		public int Count => parent.Count;
+
+		public bool IsReadOnly => true;
+
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => parent;
+
+		internal MapView({{.Name}} parent, Func<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>, T> projection, Func<T, bool> containsCheck)
 		{
-			private readonly {{.Name}} parent;
-
-			private readonly Func<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>, T> projection;
-
-			private readonly Func<T, bool> containsCheck;
-
-			public int Count => parent.Count;
-
-			public bool IsReadOnly => true;
-
-			public bool IsSynchronized => false;
-
-			public object SyncRoot => parent;
-
-			internal MapView({{.Name}} parent, Func<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>, T> projection, Func<T, bool> containsCheck)
-			{
-				this.parent = parent;
-				this.projection = projection;
-				this.containsCheck = containsCheck;
-			}
-
-			public void Add(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			public bool Contains(T item)
-			{
-				return containsCheck(item);
-			}
-
-			public void CopyTo(T[] array, int arrayIndex)
-			{
-				if (arrayIndex < 0)
-				{
-					throw new ArgumentOutOfRangeException("arrayIndex");
-				}
-
-				if (arrayIndex + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array[arrayIndex++] = current;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return parent.list.Select(projection).GetEnumerator();
-			}
-
-			public bool Remove(T item)
-			{
-				throw new NotSupportedException();
-			}
-
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			public void CopyTo(Array array, int index)
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
-
-				if (index + Count > array.Length)
-				{
-					throw new ArgumentException("Not enough space in the array", "array");
-				}
-
-				using IEnumerator<T> enumerator = GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					T current = enumerator.Current;
-					array.SetValue(current, index++);
-				}
-			}
+			this.parent = parent;
+			this.projection = projection;
+			this.containsCheck = containsCheck;
 		}
 
-		public class EventChanged
+		public void Add(T item)
 		{
-			private bool _clear;
-			public bool Clear => _clear;
-
-			private ICollection<{{template "Type" .KeyType}}> _deletes;
-			public ICollection<{{template "Type" .KeyType}}> Deletes => _deletes;
-
-			private ICollection<{{template "Type" .KeyType}}> _updates;
-			public ICollection<{{template "Type" .KeyType}}> Updates => _updates;
-
-			public EventChanged(bool clear, ICollection<{{template "Type" .KeyType}}> deletes, ICollection<{{template "Type" .KeyType}}> updates)
-			{
-				_clear = clear;
-				_deletes = deletes;
-				_updates = updates;
-			}
-		}
-
-		private static readonly EqualityComparer<{{template "MapValueType" .}}> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<{{template "MapValueType" .}}>();
-
-    	private static readonly EqualityComparer<{{template "Type" .KeyType}}> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<{{template "Type" .KeyType}}>();
-
-		private readonly Dictionary<{{template "Type" .KeyType}}, LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>> map = new Dictionary<{{template "Type" .KeyType}}, LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>>(KeyEqualityComparer);
-
-		private readonly LinkedList<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>> list = new LinkedList<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>();
-
-		private bool _clear = false;
-
-		private readonly HashSet<{{template "Type" .KeyType}}> _deletes = new HashSet<{{template "Type" .KeyType}}>(KeyEqualityComparer);
-
-		private readonly Dictionary<{{template "Type" .KeyType}}, LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>> _updates = new Dictionary<{{template "Type" .KeyType}}, LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>>(KeyEqualityComparer);
-
-		public event Action<{{.Name}}, EventChanged>? OnChanged;
-
-		public {{template "MapValueType" .}} this[{{template "Type" .KeyType}} key]
-		{
-			get
-			{
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException(nameof(key));
-			}
-			set
-			{
-				KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> value2 = new KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>(key, value);
-				LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>> value3;
-				if (map.TryGetValue(key, out value3))
-				{
-					value3.Value = value2;
-				}
-				else
-				{
-					value3 = list.AddLast(value2);
-					map[key] = value3;
-				}
-				_updates[key] = value3;
-				_deletes.Remove(key);
-			}
-		}
-
-		public ICollection<{{template "Type" .KeyType}}> Keys => new MapView<{{template "Type" .KeyType}}>(this, (KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> pair) => pair.Key, ContainsKey);
-
-		public ICollection<{{template "MapValueType" .}}> Values => new MapView<{{template "MapValueType" .}}>(this, (KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> pair) => pair.Value, ContainsValue);
-
-		public int Count => list.Count;
-
-		public bool IsReadOnly => false;
-
-		public void Add({{template "Type" .KeyType}} key, {{template "MapValueType" .}} value)
-		{
-			if (ContainsKey(key))
-				throw new ArgumentException("Key already exists in map", "key");
-			
-			this[key] = value;
-		}
-
-		public bool ContainsKey({{template "Type" .KeyType}} key)
-		{
-			return map.ContainsKey(key);
-		}
-
-		private bool ContainsValue({{template "MapValueType" .}} value)
-		{
-			return list.Any((KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> pair) => ValueEqualityComparer.Equals(pair.Value, value));
-		}
-
-		public bool Remove({{template "Type" .KeyType}} key)
-		{
-			if (map.TryGetValue(key, out var value))
-			{
-				map.Remove(key);
-				list.Remove(value);
-				_updates.Remove(key);
-				_deletes.Add(key);
-				return true;
-			}
-			return false;
-		}
-
-		public bool TryGetValue({{template "Type" .KeyType}} key, out {{template "MapValueType" .}} value)
-		{
-			if (map.TryGetValue(key, out var value2))
-			{
-				value = value2.Value.Value;
-				return true;
-			}
-			value = default;
-			return false;
-		}
-
-		void ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>.Add(KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> item)
-		{
-			Add(item.Key, item.Value);
+			throw new NotSupportedException();
 		}
 
 		public void Clear()
 		{
-			map.Clear();
-			list.Clear();
-			_updates.Clear();
-			_deletes.Clear();
-			_clear = true;
+			throw new NotSupportedException();
 		}
 
-		bool ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>.Contains(KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> item)
+		public bool Contains(T item)
 		{
-			if (TryGetValue(item.Key, out var value))
-				return ValueEqualityComparer.Equals(item.Value, value);
-
-			return false;
+			return containsCheck(item);
 		}
 
-		void ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>.CopyTo(KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>[] array, int arrayIndex)
+		public void CopyTo(T[] array, int arrayIndex)
 		{
-			list.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>.Remove(KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> item)
-		{
-			if (item.Key == null)
-				throw new ArgumentException("Key is null", "item");
-
-			if (map.TryGetValue(item.Key, out var value) && EqualityComparer<{{template "MapValueType" .}}>.Default.Equals(item.Value, value.Value.Value))
+			if (arrayIndex < 0)
 			{
-				map.Remove(item.Key);
-				value.List.Remove(value);
-				return true;
+				throw new ArgumentOutOfRangeException("arrayIndex");
 			}
 
-			return false;
+			if (arrayIndex + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array[arrayIndex++] = current;
+			}
 		}
 
-		public IEnumerator<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>> GetEnumerator()
+		public IEnumerator<T> GetEnumerator()
 		{
-			return list.GetEnumerator();
+			return parent.list.Select(projection).GetEnumerator();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotSupportedException();
 		}
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
@@ -553,274 +147,454 @@
 			return GetEnumerator();
 		}
 
-		public string ToString(string indent)
+		public void CopyTo(Array array, int index)
 		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("[\n");
-			var sortedKeys = new List<{{template "Type" .KeyType}}>(map.Keys);
-{{- if eq .KeyType "bool"}}
-			sortedKeys.Sort((a, b) => {
-				if (a) return b ? 0 : 1;
-				return b ? -1 : 0;
-			});
-{{- else}}
-			sortedKeys.Sort();
-{{- end}}
-			foreach (var k in sortedKeys)
+			if (index < 0)
 			{
-				var v = map[k].Value.Value;
-{{- if eq .KeyType "bool"}}
-				var key = k.ToString().ToLower();
-{{- else}}
-				var key = k.ToString();
-{{- end}}
-{{- if eq .TypeKind "component"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
-{{- else if eq .TypeKind "enum"}}
-				sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
-{{- else if eq .Type "bool"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString().ToLower());
-{{- else if eq .Type "int32"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-{{- else if eq .Type "sint32"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-{{- else if eq .Type "uint32"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-{{- else if eq .Type "int64"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-{{- else if eq .Type "sint64"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-{{- else if eq .Type "uint64"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-{{- else if eq .Type "fixed32"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-{{- else if eq .Type "sfixed32"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-{{- else if eq .Type "fixed64"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-{{- else if eq .Type "sfixed64"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString());
-{{- else if eq .Type "float"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
-{{- else if eq .Type "double"}}
-				sb.AppendLine(indent + "  " + key + " = " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
-{{- else if eq .Type "string"}}
-				sb.AppendLine(indent + "  " + key + " = " + v);
-{{- else if eq .Type "bytes"}}
-				sb.AppendLine(indent + "  " + key + " = " + Convert.ToBase64String(v));
-{{- else if eq .Type "timestamp"}}
-				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-{{- else if eq .Type "duration"}}
-				sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
-{{- else if eq .Type "empty"}}
-				sb.AppendLine(indent + "  " + key + " = {}");
-{{- end}}
+				throw new ArgumentOutOfRangeException("index");
 			}
-			sb.Append(indent + "]");
-			return sb.ToString();
+
+			if (index + Count > array.Length)
+			{
+				throw new ArgumentException("Not enough space in the array", "array");
+			}
+
+			using IEnumerator<T> enumerator = GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				T current = enumerator.Current;
+				array.SetValue(current, index++);
+			}
+		}
+	}
+
+	public class EventChanged
+	{
+		private bool _clear;
+		public bool Clear => _clear;
+
+		private ICollection<{{template "Type" .KeyType}}> _deletes;
+		public ICollection<{{template "Type" .KeyType}}> Deletes => _deletes;
+
+		private ICollection<{{template "Type" .KeyType}}> _updates;
+		public ICollection<{{template "Type" .KeyType}}> Updates => _updates;
+
+		public EventChanged(bool clear, ICollection<{{template "Type" .KeyType}}> deletes, ICollection<{{template "Type" .KeyType}}> updates)
+		{
+			_clear = clear;
+			_deletes = deletes;
+			_updates = updates;
+		}
+	}
+
+	private static readonly EqualityComparer<{{template "MapValueType" .}}> ValueEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<{{template "MapValueType" .}}>();
+
+	private static readonly EqualityComparer<{{template "Type" .KeyType}}> KeyEqualityComparer = Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer<{{template "Type" .KeyType}}>();
+
+	private readonly Dictionary<{{template "Type" .KeyType}}, LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>> map = new Dictionary<{{template "Type" .KeyType}}, LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>>(KeyEqualityComparer);
+
+	private readonly LinkedList<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>> list = new LinkedList<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>();
+
+	private bool _clear = false;
+
+	private readonly HashSet<{{template "Type" .KeyType}}> _deletes = new HashSet<{{template "Type" .KeyType}}>(KeyEqualityComparer);
+
+	private readonly Dictionary<{{template "Type" .KeyType}}, LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>> _updates = new Dictionary<{{template "Type" .KeyType}}, LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>>(KeyEqualityComparer);
+
+	public event Action<{{.Name}}, EventChanged>? OnChanged;
+
+	public {{template "MapValueType" .}} this[{{template "Type" .KeyType}} key]
+	{
+		get
+		{
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException(nameof(key));
+		}
+		set
+		{
+			KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> value2 = new KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>(key, value);
+			LinkedListNode<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>> value3;
+			if (map.TryGetValue(key, out value3))
+			{
+				value3.Value = value2;
+			}
+			else
+			{
+				value3 = list.AddLast(value2);
+				map[key] = value3;
+			}
+			_updates[key] = value3;
+			_deletes.Remove(key);
+		}
+	}
+
+	public ICollection<{{template "Type" .KeyType}}> Keys => new MapView<{{template "Type" .KeyType}}>(this, (KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> pair) => pair.Key, ContainsKey);
+
+	public ICollection<{{template "MapValueType" .}}> Values => new MapView<{{template "MapValueType" .}}>(this, (KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> pair) => pair.Value, ContainsValue);
+
+	public int Count => list.Count;
+
+	public bool IsReadOnly => false;
+
+	public void Add({{template "Type" .KeyType}} key, {{template "MapValueType" .}} value)
+	{
+		if (ContainsKey(key))
+			throw new ArgumentException("Key already exists in map", "key");
+		
+		this[key] = value;
+	}
+
+	public bool ContainsKey({{template "Type" .KeyType}} key)
+	{
+		return map.ContainsKey(key);
+	}
+
+	private bool ContainsValue({{template "MapValueType" .}} value)
+	{
+		return list.Any((KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> pair) => ValueEqualityComparer.Equals(pair.Value, value));
+	}
+
+	public bool Remove({{template "Type" .KeyType}} key)
+	{
+		if (map.TryGetValue(key, out var value))
+		{
+			map.Remove(key);
+			list.Remove(value);
+			_updates.Remove(key);
+			_deletes.Add(key);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryGetValue({{template "Type" .KeyType}} key, out {{template "MapValueType" .}} value)
+	{
+		if (map.TryGetValue(key, out var value2))
+		{
+			value = value2.Value.Value;
+			return true;
+		}
+		value = default;
+		return false;
+	}
+
+	void ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>.Add(KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> item)
+	{
+		Add(item.Key, item.Value);
+	}
+
+	public void Clear()
+	{
+		map.Clear();
+		list.Clear();
+		_updates.Clear();
+		_deletes.Clear();
+		_clear = true;
+	}
+
+	bool ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>.Contains(KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> item)
+	{
+		if (TryGetValue(item.Key, out var value))
+			return ValueEqualityComparer.Equals(item.Value, value);
+
+		return false;
+	}
+
+	void ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>.CopyTo(KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>[] array, int arrayIndex)
+	{
+		list.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>>.Remove(KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}> item)
+	{
+		if (item.Key == null)
+			throw new ArgumentException("Key is null", "item");
+
+		if (map.TryGetValue(item.Key, out var value) && EqualityComparer<{{template "MapValueType" .}}>.Default.Equals(item.Value, value.Value.Value))
+		{
+			map.Remove(item.Key);
+			value.List.Remove(value);
+			return true;
 		}
 
-		public void ApplySync(byte[] b)
+		return false;
+	}
+
+	public IEnumerator<KeyValuePair<{{template "Type" .KeyType}}, {{template "MapValueType" .}}>> GetEnumerator()
+	{
+		return list.GetEnumerator();
+	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[\n");
+		var sortedKeys = new List<{{template "Type" .KeyType}}>(map.Keys);
+{{- if eq .KeyType "bool"}}
+		sortedKeys.Sort((a, b) => {
+			if (a) return b ? 0 : 1;
+			return b ? -1 : 0;
+		});
+{{- else}}
+		sortedKeys.Sort();
+{{- end}}
+		foreach (var k in sortedKeys)
 		{
-			var stream = new CodedInputStream(b);
-			var clear = false;
-			byte[] deletes = new byte[0];
-			var entries = new List<byte[]>();
-			uint tag;
+			var v = map[k].Value.Value;
+{{- if eq .KeyType "bool"}}
+			var key = k.ToString().ToLower();
+{{- else}}
+			var key = k.ToString();
+{{- end}}
+{{- if eq .TypeKind "component"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString(indent + "  "));
+{{- else if eq .TypeKind "enum"}}
+			sb.AppendLine(indent + "  " + key + " = " + ((int)v).ToString());
+{{- else if eq .Type "bool"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString().ToLower());
+{{- else if eq .Type "int32"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "sint32"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "uint32"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "int64"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "sint64"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "uint64"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "fixed32"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "sfixed32"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "fixed64"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "sfixed64"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString());
+{{- else if eq .Type "float"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
+{{- else if eq .Type "double"}}
+			sb.AppendLine(indent + "  " + key + " = " + v.ToString(System.Globalization.CultureInfo.InvariantCulture));
+{{- else if eq .Type "string"}}
+			sb.AppendLine(indent + "  " + key + " = " + v);
+{{- else if eq .Type "bytes"}}
+			sb.AppendLine(indent + "  " + key + " = " + Convert.ToBase64String(v));
+{{- else if eq .Type "timestamp"}}
+			sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+{{- else if eq .Type "duration"}}
+			sb.AppendLine(indent + "  " + key + " = {Seconds: " + v.Seconds + ", Nanos: " + v.Nanos + "}");
+{{- else if eq .Type "empty"}}
+			sb.AppendLine(indent + "  " + key + " = {}");
+{{- end}}
+		}
+		sb.Append(indent + "]");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		var clear = false;
+		byte[] deletes = new byte[0];
+		var entries = new List<byte[]>();
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1: // MapClearFieldNumber
+				clear = stream.ReadBool();
+				break;
+			case 2: // MapDeleteFieldNumber
+				deletes = stream.ReadBytes().ToByteArray();
+				break;
+			case 3: // MapEntryFieldNumber
+				entries.Add(stream.ReadBytes().ToByteArray());
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+		if (clear)
+		{
+			Clear();
+		}
+		stream = new CodedInputStream(deletes);
+		while (!stream.IsAtEnd)
+		{
+{{- if eq .KeyType "int32"}}
+			Remove(stream.ReadInt32());
+{{- else if eq .KeyType "int64"}}
+			Remove(stream.ReadInt64());
+{{- else if eq .KeyType "uint32"}}
+			Remove(stream.ReadUInt32());
+{{- else if eq .KeyType "uint64"}}
+			Remove(stream.ReadUInt64());
+{{- else if eq .KeyType "sint64"}}
+			Remove(stream.ReadSInt32());
+{{- else if eq .KeyType "sint64"}}
+			Remove(stream.ReadSInt64());
+{{- else if eq .KeyType "sfixed32"}}
+			Remove(stream.ReadSFixed32());
+{{- else if eq .KeyType "sfixed64"}}
+			Remove(stream.ReadSFixed64());
+{{- else if eq .KeyType "bool"}}
+			Remove(stream.ReadBool());
+{{- else if eq .KeyType "string"}}
+			Remove(stream.ReadString());
+{{- else}}
+			stream.SkipLastField();
+{{- end}}
+		}
+		foreach (var entry in entries)
+		{
+			stream = new CodedInputStream(entry);
+{{- if eq .KeyType "string"}}
+			string k = string.Empty;
+{{- else}}
+			{{template "Type" .KeyType}} k = default;
+{{- end}}
+{{- if eq .TypeKind "component"}}
+			byte[] v = new byte[0];
+{{- else if eq .TypeKind "enum"}}
+			{{.Type}} v = default;
+{{- else if eq .Type "string"}}
+			string v = string.Empty;
+{{- else if eq .Type "timestamp" "duration" "empty"}}
+			{{template "MapValueType" .}} v = new {{template "MapValueType" .}}();
+{{- else}}
+			{{template "MapValueType" .}} v = default;
+{{- end}}
 			while ((tag = stream.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
-				case 1: // MapClearFieldNumber
-					clear = stream.ReadBool();
+				case 1: // MapEntryKeyFieldNumber
+{{- if eq .KeyType "int32"}}
+					k = stream.ReadInt32();
+{{- else if eq .KeyType "int64"}}
+					k = stream.ReadInt64();
+{{- else if eq .KeyType "uint32"}}
+					k = stream.ReadUInt32();
+{{- else if eq .KeyType "uint64"}}
+					k = stream.ReadUInt64();
+{{- else if eq .KeyType "sint64"}}
+					k = stream.ReadSInt32();
+{{- else if eq .KeyType "sint64"}}
+					k = stream.ReadSInt64();
+{{- else if eq .KeyType "sfixed32"}}
+					k = stream.ReadSFixed32();
+{{- else if eq .KeyType "sfixed64"}}
+					k = stream.ReadSFixed64();
+{{- else if eq .KeyType "bool"}}
+					k = stream.ReadBool();
+{{- else if eq .KeyType "string"}}
+					k = stream.ReadString();
+{{- else}}
+					stream.SkipLastField();
+{{- end}}
 					break;
-				case 2: // MapDeleteFieldNumber
-					deletes = stream.ReadBytes().ToByteArray();
-					break;
-				case 3: // MapEntryFieldNumber
-					entries.Add(stream.ReadBytes().ToByteArray());
+				case 2: // MapEntryValueFieldNumber
+{{- if eq .TypeKind "component"}}
+					v = stream.ReadBytes().ToByteArray();
+{{- else if eq .TypeKind "enum"}}
+					v = ({{.Type}})stream.ReadEnum();
+{{- else if eq .Type "bool"}}
+					v = stream.ReadBool();
+{{- else if eq .Type "int32"}}
+					v = stream.ReadInt32();
+{{- else if eq .Type "sint32"}}
+					v = stream.ReadSInt32();
+{{- else if eq .Type "uint32"}}
+					v = stream.ReadUInt32();
+{{- else if eq .Type "int64"}}
+					v = stream.ReadInt64();
+{{- else if eq .Type "sint64"}}
+					v = stream.ReadSInt64();
+{{- else if eq .Type "uint64"}}
+					v = stream.ReadUInt64();
+{{- else if eq .Type "fixed32"}}
+					v = stream.ReadFixed32();
+{{- else if eq .Type "sfixed32"}}
+					v = stream.ReadSFixed32();
+{{- else if eq .Type "fixed64"}}
+					v = stream.ReadFixed64();
+{{- else if eq .Type "sfixed64"}}
+					v = stream.ReadSFixed64();
+{{- else if eq .Type "float"}}
+					v = stream.ReadFloat();
+{{- else if eq .Type "double"}}
+					v = stream.ReadDouble();
+{{- else if eq .Type "string"}}
+					v = stream.ReadString();
+{{- else if eq .Type "bytes"}}
+					v = stream.ReadBytes().ToByteArray();
+{{- else if eq .Type "timestamp" "duration" "empty"}}
+					v.MergeFrom(stream.ReadBytes().ToByteArray());
+{{- else}}
+					stream.SkipLastField();
+{{- end}}
 					break;
 				default:
 					stream.SkipLastField();
 					break;
 				}
 			}
-			if (clear)
+{{- if eq .TypeKind "component"}}
+			if (TryGetValue(k, out var c))
 			{
-				Clear();
+				c.MergeFrom(v);
 			}
-			stream = new CodedInputStream(deletes);
-			while (!stream.IsAtEnd)
+			else
 			{
-{{- if eq .KeyType "int32"}}
-				Remove(stream.ReadInt32());
-{{- else if eq .KeyType "int64"}}
-				Remove(stream.ReadInt64());
-{{- else if eq .KeyType "uint32"}}
-				Remove(stream.ReadUInt32());
-{{- else if eq .KeyType "uint64"}}
-				Remove(stream.ReadUInt64());
-{{- else if eq .KeyType "sint64"}}
-				Remove(stream.ReadSInt32());
-{{- else if eq .KeyType "sint64"}}
-				Remove(stream.ReadSInt64());
-{{- else if eq .KeyType "sfixed32"}}
-				Remove(stream.ReadSFixed32());
-{{- else if eq .KeyType "sfixed64"}}
-				Remove(stream.ReadSFixed64());
-{{- else if eq .KeyType "bool"}}
-				Remove(stream.ReadBool());
-{{- else if eq .KeyType "string"}}
-				Remove(stream.ReadString());
-{{- else}}
-				stream.SkipLastField();
-{{- end}}
+				c = new {{.Type}}();
+				c.MergeFrom(v);
+				this[k] = c;
 			}
-			foreach (var entry in entries)
-			{
-				stream = new CodedInputStream(entry);
-{{- if eq .KeyType "string"}}
-				string k = string.Empty;
 {{- else}}
-				{{template "Type" .KeyType}} k = default;
+			this[k] = v;
 {{- end}}
-{{- if eq .TypeKind "component"}}
-				byte[] v = new byte[0];
-{{- else if eq .TypeKind "enum"}}
-				{{.Type}} v = default;
-{{- else if eq .Type "string"}}
-				string v = string.Empty;
-{{- else if eq .Type "timestamp" "duration" "empty"}}
-				{{template "MapValueType" .}} v = new {{template "MapValueType" .}}();
-{{- else}}
-				{{template "MapValueType" .}} v = default;
-{{- end}}
-				while ((tag = stream.ReadTag()) != 0)
-				{
-					var num = WireFormat.GetTagFieldNumber(tag);
-					switch (num)
-					{
-					case 1: // MapEntryKeyFieldNumber
-{{- if eq .KeyType "int32"}}
-						k = stream.ReadInt32();
-{{- else if eq .KeyType "int64"}}
-						k = stream.ReadInt64();
-{{- else if eq .KeyType "uint32"}}
-						k = stream.ReadUInt32();
-{{- else if eq .KeyType "uint64"}}
-						k = stream.ReadUInt64();
-{{- else if eq .KeyType "sint64"}}
-						k = stream.ReadSInt32();
-{{- else if eq .KeyType "sint64"}}
-						k = stream.ReadSInt64();
-{{- else if eq .KeyType "sfixed32"}}
-						k = stream.ReadSFixed32();
-{{- else if eq .KeyType "sfixed64"}}
-						k = stream.ReadSFixed64();
-{{- else if eq .KeyType "bool"}}
-						k = stream.ReadBool();
-{{- else if eq .KeyType "string"}}
-						k = stream.ReadString();
-{{- else}}
-						stream.SkipLastField();
-{{- end}}
-						break;
-					case 2: // MapEntryValueFieldNumber
-{{- if eq .TypeKind "component"}}
-						v = stream.ReadBytes().ToByteArray();
-{{- else if eq .TypeKind "enum"}}
-						v = ({{.Type}})stream.ReadEnum();
-{{- else if eq .Type "bool"}}
-						v = stream.ReadBool();
-{{- else if eq .Type "int32"}}
-						v = stream.ReadInt32();
-{{- else if eq .Type "sint32"}}
-						v = stream.ReadSInt32();
-{{- else if eq .Type "uint32"}}
-						v = stream.ReadUInt32();
-{{- else if eq .Type "int64"}}
-						v = stream.ReadInt64();
-{{- else if eq .Type "sint64"}}
-						v = stream.ReadSInt64();
-{{- else if eq .Type "uint64"}}
-						v = stream.ReadUInt64();
-{{- else if eq .Type "fixed32"}}
-						v = stream.ReadFixed32();
-{{- else if eq .Type "sfixed32"}}
-						v = stream.ReadSFixed32();
-{{- else if eq .Type "fixed64"}}
-						v = stream.ReadFixed64();
-{{- else if eq .Type "sfixed64"}}
-						v = stream.ReadSFixed64();
-{{- else if eq .Type "float"}}
-						v = stream.ReadFloat();
-{{- else if eq .Type "double"}}
-						v = stream.ReadDouble();
-{{- else if eq .Type "string"}}
-						v = stream.ReadString();
-{{- else if eq .Type "bytes"}}
-						v = stream.ReadBytes().ToByteArray();
-{{- else if eq .Type "timestamp"}}
-						v = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-{{- else if eq .Type "duration"}}
-						v = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-{{- else if eq .Type "empty"}}
-						v = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-{{- else}}
-						stream.SkipLastField();
-{{- end}}
-						break;
-					default:
-						stream.SkipLastField();
-						break;
-					}
-				}
-{{- if eq .TypeKind "component"}}
-				if (TryGetValue(k, out var c))
-				{
-					c.ApplySync(v);
-				}
-				else
-				{
-					c = new {{.Type}}();
-					c.ApplySync(v);
-					this[k] = c;
-				}
-{{- else}}
-				this[k] = v;
-{{- end}}
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
-				return;
-{{- if eq .TypeKind "component"}}
-			foreach (var v in _updates.Values)
-				v.Value.Value.RaiseChanged();
-{{- end}}
-			OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
-		}
-
-		public void ClearChanged()
-		{
-			_clear = false;
-			_deletes.Clear();
-			_updates.Clear();
 		}
 	}
+
+	public void RaiseChanged()
+	{
+		if (!_clear && _deletes.Count == 0 && _updates.Count == 0)
+			return;
+{{- if eq .TypeKind "component"}}
+		foreach (var v in _updates.Values)
+			v.Value.Value.RaiseChanged();
+{{- end}}
+		OnChanged?.Invoke(this, new EventChanged(_clear, _deletes, _updates.Keys));
+	}
+
+	public void ClearChanged()
+	{
+		_clear = false;
+		_deletes.Clear();
+		_updates.Clear();
+	}
+}
 {{- end}}
 
 {{- /* ENUM */ -}}
 {{- define "Enum"}}
-	public enum {{.Name}}
-	{
+public enum {{.Name}}
+{
 {{- range .EnumFields}}
-		{{.Name}} = {{.Value}},
+	{{.Name}} = {{.Value}},
 {{- end}}
-	}
+}
 {{- end}}
 
 {{- /* MESSAGE */ -}}
@@ -830,256 +604,254 @@
 {{- range .Fields}}
 {{/* EMPTY LINE */}}
 {{- if .Repeated}}
-		private {{.ListType}} {{template "FieldName" .}};
-		public {{.ListType}} {{template "PropertyName" .}} => {{template "FieldName" .}};
+	private static readonly Kdsync.FieldCodec<{{template "Type" .Type}}> _list_{{template "FieldName" .}}_codec = {{template "FieldCodec" .}};
+	private Kdsync.List<{{template "Type" .Type}}> {{template "FieldName" .}};
+	public Kdsync.List<{{template "Type" .Type}}> {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else if .Map}}
-		private {{.MapType}} {{template "FieldName" .}};
-		public {{.MapType}} {{template "PropertyName" .}} => {{template "FieldName" .}};
+	private {{.MapType}} {{template "FieldName" .}};
+	public {{.MapType}} {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else if eq .TypeKind "component"}}
-		private {{.Type}} {{template "FieldName" .}};
-		public {{.Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
+	private {{.Type}} {{template "FieldName" .}};
+	public {{.Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else}}
-		private {{template "Type" .Type}} {{template "FieldName" .}};
-		public {{template "Type" .Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
+	private {{template "Type" .Type}} {{template "FieldName" .}};
+	public {{template "Type" .Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- end}}
 {{- end}}
 
-		private long _changed;
+	private long _changed;
 
-		public event Action<{{$MessageName}}, EventChanged>? OnChanged;
+	public event Action<{{$MessageName}}, EventChanged>? OnChanged;
 
-		public class EventChanged
-		{
-			public long _changed;
+	public class EventChanged
+	{
+		public long _changed;
 {{- range .Fields}}
-			public bool {{.Name}} => (_changed & (0x01 << {{.Number}})) != 0;
+		public bool {{.Name}} => (_changed & (0x01 << {{.Number}})) != 0;
 {{- end}}
 
-			public EventChanged(long changed)
+		public EventChanged(long changed)
+		{
+			_changed = changed;
+		}
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("{\n");
+{{- range .Fields}}
+{{- if .Repeated}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
+{{- else if .Map}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
+{{- else if eq .TypeKind "component"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
+{{- else if eq .TypeKind "enum"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + ((int){{template "FieldName" .}}).ToString());
+{{- else if eq .Type "bool"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString().ToLower());
+{{- else if eq .Type "int32"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "sint32"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "uint32"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "int64"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "sint64"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "uint64"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "fixed32"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "sfixed32"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "fixed64"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "sfixed64"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
+{{- else if eq .Type "float"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(System.Globalization.CultureInfo.InvariantCulture));
+{{- else if eq .Type "double"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(System.Globalization.CultureInfo.InvariantCulture));
+{{- else if eq .Type "string"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}});
+{{- else if eq .Type "bytes"}}
+		sb.AppendLine(indent + "  {{.Name}} = " + Convert.ToBase64String({{template "FieldName" .}}));
+{{- else if eq .Type "timestamp"}}
+		sb.AppendLine(indent + "  {{.Name}} = {Seconds: " + {{template "FieldName" .}}.Seconds + ", Nanos: " + {{template "FieldName" .}}.Nanos + "}");
+{{- else if eq .Type "duration"}}
+		sb.AppendLine(indent + "  {{.Name}} = {Seconds: " + {{template "FieldName" .}}.Seconds + ", Nanos: " + {{template "FieldName" .}}.Nanos + "}");
+{{- else if eq .Type "empty"}}
+		sb.AppendLine(indent + "  {{.Name}} = {}");
+{{- end}}
+{{- end}}
+		sb.Append(indent + "}");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
 			{
-				_changed = changed;
+{{- range .Fields}}
+			case {{.Number}}:
+{{- if .Repeated}}
+				{{template "FieldName" .}}.MergeFrom(stream.ReadBytes().ToByteArray(), _list_{{template "FieldName" .}}_codec);
+{{- else if .Map}}
+				{{template "FieldName" .}}.MergeFrom(stream.ReadBytes().ToByteArray());
+{{- else if eq .TypeKind "component"}}
+				{{template "FieldName" .}}.MergeFrom(stream.ReadBytes().ToByteArray());
+{{- else if eq .TypeKind "enum"}}
+				{{template "FieldName" .}} = ({{.Type}})stream.ReadEnum();
+{{- else if eq .Type "bool"}}
+				{{template "FieldName" .}} = stream.ReadBool();
+{{- else if eq .Type "int32"}}
+				{{template "FieldName" .}} = stream.ReadInt32();
+{{- else if eq .Type "sint32"}}
+				{{template "FieldName" .}} = stream.ReadSInt32();
+{{- else if eq .Type "uint32"}}
+				{{template "FieldName" .}} = stream.ReadUInt32();
+{{- else if eq .Type "int64"}}
+				{{template "FieldName" .}} = stream.ReadInt64();
+{{- else if eq .Type "sint64"}}
+				{{template "FieldName" .}} = stream.ReadSInt64();
+{{- else if eq .Type "uint64"}}
+				{{template "FieldName" .}} = stream.ReadUInt64();
+{{- else if eq .Type "fixed32"}}
+				{{template "FieldName" .}} = stream.ReadFixed32();
+{{- else if eq .Type "sfixed32"}}
+				{{template "FieldName" .}} = stream.ReadSFixed32();
+{{- else if eq .Type "fixed64"}}
+				{{template "FieldName" .}} = stream.ReadFixed64();
+{{- else if eq .Type "sfixed64"}}
+				{{template "FieldName" .}} = stream.ReadSFixed64();
+{{- else if eq .Type "float"}}
+				{{template "FieldName" .}} = stream.ReadFloat();
+{{- else if eq .Type "double"}}
+				{{template "FieldName" .}} = stream.ReadDouble();
+{{- else if eq .Type "string"}}
+				{{template "FieldName" .}} = stream.ReadString();
+{{- else if eq .Type "bytes"}}
+				{{template "FieldName" .}} = stream.ReadBytes().ToByteArray();
+{{- else if eq .Type "timestamp" "duration" "empty"}}
+				{{template "FieldName" .}} = new {{template "Type" .Type}}();
+				{{template "FieldName" .}}.MergeFrom(stream.ReadBytes().ToByteArray());
+{{- else}}
+				stream.SkipLastField();
+{{- end}}
+				_changed |= 0x01 << {{.Number}};
+				break;
+{{- end}}
+			default:
+				stream.SkipLastField();
+				break;
 			}
 		}
+	}
 
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("{\n");
+	public void RaiseChanged()
+	{
+		if (_changed == 0)
+			return;
 {{- range .Fields}}
 {{- if .Repeated}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
+		if ((_changed & (0x01 << {{.Number}})) != 0)
+			{{template "FieldName" .}}.RaiseChanged();
 {{- else if .Map}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
+		if ((_changed & (0x01 << {{.Number}})) != 0)
+			{{template "FieldName" .}}.RaiseChanged();
 {{- else if eq .TypeKind "component"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
-{{- else if eq .TypeKind "enum"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + ((int){{template "FieldName" .}}).ToString());
-{{- else if eq .Type "bool"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString().ToLower());
-{{- else if eq .Type "int32"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "sint32"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "uint32"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "int64"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "sint64"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "uint64"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "fixed32"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "sfixed32"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "fixed64"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "sfixed64"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "float"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(System.Globalization.CultureInfo.InvariantCulture));
-{{- else if eq .Type "double"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(System.Globalization.CultureInfo.InvariantCulture));
-{{- else if eq .Type "string"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}});
-{{- else if eq .Type "bytes"}}
-			sb.AppendLine(indent + "  {{.Name}} = " + Convert.ToBase64String({{template "FieldName" .}}));
-{{- else if eq .Type "timestamp"}}
-			sb.AppendLine(indent + "  {{.Name}} = {Seconds: " + {{template "FieldName" .}}.Seconds + ", Nanos: " + {{template "FieldName" .}}.Nanos + "}");
-{{- else if eq .Type "duration"}}
-			sb.AppendLine(indent + "  {{.Name}} = {Seconds: " + {{template "FieldName" .}}.Seconds + ", Nanos: " + {{template "FieldName" .}}.Nanos + "}");
-{{- else if eq .Type "empty"}}
-			sb.AppendLine(indent + "  {{.Name}} = {}");
+		if ((_changed & (0x01 << {{.Number}})) != 0)
+			{{template "FieldName" .}}.RaiseChanged();
 {{- end}}
 {{- end}}
-			sb.Append(indent + "}");
-			return sb.ToString();
-		}
+		OnChanged?.Invoke(this, new EventChanged(_changed));
+	}
 
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-{{- range .Fields}}
-				case {{.Number}}:
-{{- if .Repeated}}
-					{{template "FieldName" .}}.ApplySync(stream.ReadBytes().ToByteArray());
-{{- else if .Map}}
-					{{template "FieldName" .}}.ApplySync(stream.ReadBytes().ToByteArray());
-{{- else if eq .TypeKind "component"}}
-					{{template "FieldName" .}}.ApplySync(stream.ReadBytes().ToByteArray());
-{{- else if eq .TypeKind "enum"}}
-					{{template "FieldName" .}} = ({{.Type}})stream.ReadEnum();
-{{- else if eq .Type "bool"}}
-					{{template "FieldName" .}} = stream.ReadBool();
-{{- else if eq .Type "int32"}}
-					{{template "FieldName" .}} = stream.ReadInt32();
-{{- else if eq .Type "sint32"}}
-					{{template "FieldName" .}} = stream.ReadSInt32();
-{{- else if eq .Type "uint32"}}
-					{{template "FieldName" .}} = stream.ReadUInt32();
-{{- else if eq .Type "int64"}}
-					{{template "FieldName" .}} = stream.ReadInt64();
-{{- else if eq .Type "sint64"}}
-					{{template "FieldName" .}} = stream.ReadSInt64();
-{{- else if eq .Type "uint64"}}
-					{{template "FieldName" .}} = stream.ReadUInt64();
-{{- else if eq .Type "fixed32"}}
-					{{template "FieldName" .}} = stream.ReadFixed32();
-{{- else if eq .Type "sfixed32"}}
-					{{template "FieldName" .}} = stream.ReadSFixed32();
-{{- else if eq .Type "fixed64"}}
-					{{template "FieldName" .}} = stream.ReadFixed64();
-{{- else if eq .Type "sfixed64"}}
-					{{template "FieldName" .}} = stream.ReadSFixed64();
-{{- else if eq .Type "float"}}
-					{{template "FieldName" .}} = stream.ReadFloat();
-{{- else if eq .Type "double"}}
-					{{template "FieldName" .}} = stream.ReadDouble();
-{{- else if eq .Type "string"}}
-					{{template "FieldName" .}} = stream.ReadString();
-{{- else if eq .Type "bytes"}}
-					{{template "FieldName" .}} = stream.ReadBytes().ToByteArray();
-{{- else if eq .Type "timestamp"}}
-					{{template "FieldName" .}} = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-{{- else if eq .Type "duration"}}
-					{{template "FieldName" .}} = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-{{- else if eq .Type "empty"}}
-					{{template "FieldName" .}} = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-{{- else}}
-					stream.SkipLastField();
-{{- end}}
-					_changed |= 0x01 << {{.Number}};
-					break;
-{{- end}}
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (_changed == 0)
-				return;
+	public void ClearChanged()
+	{
+		if (_changed == 0)
+			return;
 {{- range .Fields}}
 {{- if .Repeated}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
-				{{template "FieldName" .}}.RaiseChanged();
+		if ((_changed & (0x01 << {{.Number}})) != 0)
+			{{template "FieldName" .}}.ClearChanged();
 {{- else if .Map}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
-				{{template "FieldName" .}}.RaiseChanged();
+		if ((_changed & (0x01 << {{.Number}})) != 0)
+			{{template "FieldName" .}}.ClearChanged();
 {{- else if eq .TypeKind "component"}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
-				{{template "FieldName" .}}.RaiseChanged();
+		if ((_changed & (0x01 << {{.Number}})) != 0)
+			{{template "FieldName" .}}.ClearChanged();
 {{- end}}
 {{- end}}
-			OnChanged?.Invoke(this, new EventChanged(_changed));
-		}
-
-		public void ClearChanged()
-		{
-			if (_changed == 0)
-				return;
-{{- range .Fields}}
-{{- if .Repeated}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
-				{{template "FieldName" .}}.ClearChanged();
-{{- else if .Map}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
-				{{template "FieldName" .}}.ClearChanged();
-{{- else if eq .TypeKind "component"}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
-				{{template "FieldName" .}}.ClearChanged();
-{{- end}}
-{{- end}}
-			_changed = 0;
-		}
+		_changed = 0;
+	}
 {{- end}}
 
 {{- /* ENTITY */ -}}
 {{- define "Entity"}}
 {{- $EntityName := .Name}}
-	public class {{.Name}}
-	{
-		private readonly long _id;
-		public long Id => _id;
+public class {{.Name}}
+{
+	private readonly long _id;
+	public long Id => _id;
 
-		public {{.Name}}(long id)
-		{
-			_id = id;
+	public {{.Name}}(long id)
+	{
+		_id = id;
 {{- range .Fields}}
 {{- if .Repeated}}
-			{{template "FieldName" .}} = new {{.ListType}}();
+		{{template "FieldName" .}} = new Kdsync.List<{{template "Type" .Type}}>();
 {{- else if .Map}}
-			{{template "FieldName" .}} = new {{.MapType}}();
+		{{template "FieldName" .}} = new {{.MapType}}();
 {{- else if eq .TypeKind "component"}}
-			{{template "FieldName" .}} = new {{.Type}}();
+		{{template "FieldName" .}} = new {{.Type}}();
 {{- else if eq .Type "string"}}
-			{{template "FieldName" .}} = string.Empty;
+		{{template "FieldName" .}} = string.Empty;
 {{- else if eq .Type "bytes"}}
-			{{template "FieldName" .}} = new byte[0];
+		{{template "FieldName" .}} = new byte[0];
 {{- else if eq .Type "timestamp" "duration" "empty"}}
-			{{template "FieldName" .}} = new {{template "Type" .Type}}();
+		{{template "FieldName" .}} = new {{template "Type" .Type}}();
 {{- else}}
 {{- end}}
 {{- end}}
-		}
-{{- template "Message" .}}
 	}
+{{- template "Message" .}}
+}
 {{- end}}
 
 {{- /* COMPONENT */ -}}
 {{- define "Component"}}
-	public class {{.Name}}
+public class {{.Name}} : Kdsync.IMessage
+{
+	public {{.Name}}()
 	{
-		public {{.Name}}()
-		{
 {{- range .Fields}}
 {{- if .Repeated}}
-			{{template "FieldName" .}} = new {{.ListType}}();
+		{{template "FieldName" .}} = new Kdsync.List<{{template "Type" .Type}}>();
 {{- else if .Map}}
-			{{template "FieldName" .}} = new {{.MapType}}();
+		{{template "FieldName" .}} = new {{.MapType}}();
 {{- else if eq .TypeKind "component"}}
-			{{template "FieldName" .}} = new {{.Type}}();
+		{{template "FieldName" .}} = new {{.Type}}();
 {{- else if eq .Type "string"}}
-			{{template "FieldName" .}} = string.Empty;
+		{{template "FieldName" .}} = string.Empty;
 {{- else if eq .Type "bytes"}}
-			{{template "FieldName" .}} = new byte[0];
+		{{template "FieldName" .}} = new byte[0];
 {{- else if eq .Type "timestamp" "duration" "empty"}}
-			{{template "FieldName" .}} = new {{template "Type" .Type}}();
+		{{template "FieldName" .}} = new {{template "Type" .Type}}();
 {{- else}}
 {{- end}}
 {{- end}}
-		}
-{{- template "Message" .}}
 	}
+{{- template "Message" .}}
+}
 {{- end}}
 {{- /* END DEFINE */ -}}
 {{- /* BEGIN CS */ -}}
@@ -1178,20 +950,12 @@ using Google.Protobuf.WellKnownTypes;
 
 {{- end}}
 
-namespace {{.Package}}
-{
+namespace {{ucFirst .Package}};
+
 {{- $SpacesBefore := false}}
 {{- /* COMMON TYPES */ -}}
 {{- range .Types}}
 
-{{- with findList .}}
-{{- if .}}
-{{- if $SpacesBefore}}{{- $SpacesBefore = true}}
-{{/* EMPTY LINE */}}
-{{- end}}
-{{- template "List" .}}
-{{- end}}
-{{- end}}
 {{- range findMap .}}
 {{- if $SpacesBefore}}{{- $SpacesBefore = true}}
 {{/* EMPTY LINE */}}
@@ -1207,12 +971,6 @@ namespace {{.Package}}
 {{- end}}
 {{- if eq .Kind "enum"}}
 {{- template "Enum" .}}
-{{- with findList .Name}}
-{{- if .}}
-{{/* EMPTY LINE */}}
-{{- template "List" .}}
-{{- end}}
-{{- end}}
 {{- range findMap .Name}}
 {{/* EMPTY LINE */}}
 {{- template "Map" .}}
@@ -1223,12 +981,6 @@ namespace {{.Package}}
 
 {{- else if eq .Kind "component"}}
 {{- template "Component" .}}
-{{- with findList .Name}}
-{{- if .}}
-{{/* EMPTY LINE */}}
-{{- template "List" .}}
-{{- end}}
-{{- end}}
 {{- range findMap .Name}}
 {{/* EMPTY LINE */}}
 {{- template "Map" .}}
@@ -1236,6 +988,6 @@ namespace {{.Package}}
 {{- end}}
 
 {{- end}}
-}
+
 {{/* EMPTY LINE */}}
 {{- /* END CS */ -}}

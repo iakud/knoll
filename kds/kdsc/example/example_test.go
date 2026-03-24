@@ -27,7 +27,7 @@ func sync(t *testing.T) {
 		panic(err)
 	}
 	all.ClearDirty()
-	applySync(fullData)
+	mergeFrom(fullData)
 	// check
 	checkKds(t)
 }
@@ -38,7 +38,7 @@ func syncUpdate(t *testing.T) {
 		panic(err)
 	}
 	all.ClearDirty()
-	applySync(dirtyData)
+	mergeFrom(dirtyData)
 	// check
 	checkKds(t)
 }

@@ -8,1020 +8,1033 @@ using System.Globalization;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
-namespace kds
+namespace Kds;
+public class All
 {
-	public class All
+	private readonly long _id;
+	public long Id => _id;
+
+	public All(long id)
 	{
-		private readonly long _id;
-		public long Id => _id;
+		_id = id;
+		types_ = new AllType();
+		lists_ = new AllList();
+		maps_ = new AllMap();
+	}
 
-		public All(long id)
+	private AllType types_;
+	public AllType Types => types_;
+
+	private AllList lists_;
+	public AllList Lists => lists_;
+
+	private AllMap maps_;
+	public AllMap Maps => maps_;
+
+	private long _changed;
+
+	public event Action<All, EventChanged>? OnChanged;
+
+	public class EventChanged
+	{
+		public long _changed;
+		public bool Types => (_changed & (0x01 << 1)) != 0;
+		public bool Lists => (_changed & (0x01 << 2)) != 0;
+		public bool Maps => (_changed & (0x01 << 3)) != 0;
+
+		public EventChanged(long changed)
 		{
-			_id = id;
-			types_ = new AllType();
-			lists_ = new AllList();
-			maps_ = new AllMap();
-		}
-
-		private AllType types_;
-		public AllType Types => types_;
-
-		private AllList lists_;
-		public AllList Lists => lists_;
-
-		private AllMap maps_;
-		public AllMap Maps => maps_;
-
-		private long _changed;
-
-		public event Action<All, EventChanged>? OnChanged;
-
-		public class EventChanged
-		{
-			public long _changed;
-			public bool Types => (_changed & (0x01 << 1)) != 0;
-			public bool Lists => (_changed & (0x01 << 2)) != 0;
-			public bool Maps => (_changed & (0x01 << 3)) != 0;
-
-			public EventChanged(long changed)
-			{
-				_changed = changed;
-			}
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("{\n");
-			sb.AppendLine(indent + "  Types = " + types_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Lists = " + lists_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Maps = " + maps_.ToString(indent + "  "));
-			sb.Append(indent + "}");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1:
-					types_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 1;
-					break;
-				case 2:
-					lists_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 2;
-					break;
-				case 3:
-					maps_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 3;
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (_changed == 0)
-				return;
-			if ((_changed & (0x01 << 1)) != 0)
-				types_.RaiseChanged();
-			if ((_changed & (0x01 << 2)) != 0)
-				lists_.RaiseChanged();
-			if ((_changed & (0x01 << 3)) != 0)
-				maps_.RaiseChanged();
-			OnChanged?.Invoke(this, new EventChanged(_changed));
-		}
-
-		public void ClearChanged()
-		{
-			if (_changed == 0)
-				return;
-			if ((_changed & (0x01 << 1)) != 0)
-				types_.ClearChanged();
-			if ((_changed & (0x01 << 2)) != 0)
-				lists_.ClearChanged();
-			if ((_changed & (0x01 << 3)) != 0)
-				maps_.ClearChanged();
-			_changed = 0;
+			_changed = changed;
 		}
 	}
-	public class AllType
+
+	public string ToString(string indent)
 	{
-		public AllType()
+		var sb = new System.Text.StringBuilder();
+		sb.Append("{\n");
+		sb.AppendLine(indent + "  Types = " + types_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Lists = " + lists_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Maps = " + maps_.ToString(indent + "  "));
+		sb.Append(indent + "}");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
 		{
-			stringVal_ = string.Empty;
-			bytesVal_ = new byte[0];
-			timestampVal_ = new Timestamp();
-			durationVal_ = new Duration();
-			emptyVal_ = new Empty();
-			itemData_ = new ItemData();
-		}
-
-		private int int32Val_;
-		public int Int32Val => int32Val_;
-
-		private long int64Val_;
-		public long Int64Val => int64Val_;
-
-		private uint uint32Val_;
-		public uint Uint32Val => uint32Val_;
-
-		private ulong uint64Val_;
-		public ulong Uint64Val => uint64Val_;
-
-		private int sint32Val_;
-		public int Sint32Val => sint32Val_;
-
-		private long sint64Val_;
-		public long Sint64Val => sint64Val_;
-
-		private uint fixed32Val_;
-		public uint Fixed32Val => fixed32Val_;
-
-		private ulong fixed64Val_;
-		public ulong Fixed64Val => fixed64Val_;
-
-		private int sfixed32Val_;
-		public int Sfixed32Val => sfixed32Val_;
-
-		private long sfixed64Val_;
-		public long Sfixed64Val => sfixed64Val_;
-
-		private float floatVal_;
-		public float FloatVal => floatVal_;
-
-		private double doubleVal_;
-		public double DoubleVal => doubleVal_;
-
-		private bool boolVal_;
-		public bool BoolVal => boolVal_;
-
-		private string stringVal_;
-		public string StringVal => stringVal_;
-
-		private byte[] bytesVal_;
-		public byte[] BytesVal => bytesVal_;
-
-		private Timestamp timestampVal_;
-		public Timestamp TimestampVal => timestampVal_;
-
-		private Duration durationVal_;
-		public Duration DurationVal => durationVal_;
-
-		private Empty emptyVal_;
-		public Empty EmptyVal => emptyVal_;
-
-		private ItemType enumVal_;
-		public ItemType EnumVal => enumVal_;
-
-		private ItemData itemData_;
-		public ItemData ItemData => itemData_;
-
-		private long _changed;
-
-		public event Action<AllType, EventChanged>? OnChanged;
-
-		public class EventChanged
-		{
-			public long _changed;
-			public bool Int32Val => (_changed & (0x01 << 1)) != 0;
-			public bool Int64Val => (_changed & (0x01 << 2)) != 0;
-			public bool Uint32Val => (_changed & (0x01 << 3)) != 0;
-			public bool Uint64Val => (_changed & (0x01 << 4)) != 0;
-			public bool Sint32Val => (_changed & (0x01 << 5)) != 0;
-			public bool Sint64Val => (_changed & (0x01 << 6)) != 0;
-			public bool Fixed32Val => (_changed & (0x01 << 7)) != 0;
-			public bool Fixed64Val => (_changed & (0x01 << 8)) != 0;
-			public bool Sfixed32Val => (_changed & (0x01 << 9)) != 0;
-			public bool Sfixed64Val => (_changed & (0x01 << 10)) != 0;
-			public bool FloatVal => (_changed & (0x01 << 11)) != 0;
-			public bool DoubleVal => (_changed & (0x01 << 12)) != 0;
-			public bool BoolVal => (_changed & (0x01 << 13)) != 0;
-			public bool StringVal => (_changed & (0x01 << 14)) != 0;
-			public bool BytesVal => (_changed & (0x01 << 15)) != 0;
-			public bool TimestampVal => (_changed & (0x01 << 16)) != 0;
-			public bool DurationVal => (_changed & (0x01 << 17)) != 0;
-			public bool EmptyVal => (_changed & (0x01 << 18)) != 0;
-			public bool EnumVal => (_changed & (0x01 << 19)) != 0;
-			public bool ItemData => (_changed & (0x01 << 20)) != 0;
-
-			public EventChanged(long changed)
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
 			{
-				_changed = changed;
+			case 1:
+				types_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 1;
+				break;
+			case 2:
+				lists_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 2;
+				break;
+			case 3:
+				maps_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 3;
+				break;
+			default:
+				stream.SkipLastField();
+				break;
 			}
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("{\n");
-			sb.AppendLine(indent + "  Int32Val = " + int32Val_.ToString());
-			sb.AppendLine(indent + "  Int64Val = " + int64Val_.ToString());
-			sb.AppendLine(indent + "  Uint32Val = " + uint32Val_.ToString());
-			sb.AppendLine(indent + "  Uint64Val = " + uint64Val_.ToString());
-			sb.AppendLine(indent + "  Sint32Val = " + sint32Val_.ToString());
-			sb.AppendLine(indent + "  Sint64Val = " + sint64Val_.ToString());
-			sb.AppendLine(indent + "  Fixed32Val = " + fixed32Val_.ToString());
-			sb.AppendLine(indent + "  Fixed64Val = " + fixed64Val_.ToString());
-			sb.AppendLine(indent + "  Sfixed32Val = " + sfixed32Val_.ToString());
-			sb.AppendLine(indent + "  Sfixed64Val = " + sfixed64Val_.ToString());
-			sb.AppendLine(indent + "  FloatVal = " + floatVal_.ToString(System.Globalization.CultureInfo.InvariantCulture));
-			sb.AppendLine(indent + "  DoubleVal = " + doubleVal_.ToString(System.Globalization.CultureInfo.InvariantCulture));
-			sb.AppendLine(indent + "  BoolVal = " + boolVal_.ToString().ToLower());
-			sb.AppendLine(indent + "  StringVal = " + stringVal_);
-			sb.AppendLine(indent + "  BytesVal = " + Convert.ToBase64String(bytesVal_));
-			sb.AppendLine(indent + "  TimestampVal = {Seconds: " + timestampVal_.Seconds + ", Nanos: " + timestampVal_.Nanos + "}");
-			sb.AppendLine(indent + "  DurationVal = {Seconds: " + durationVal_.Seconds + ", Nanos: " + durationVal_.Nanos + "}");
-			sb.AppendLine(indent + "  EmptyVal = {}");
-			sb.AppendLine(indent + "  EnumVal = " + ((int)enumVal_).ToString());
-			sb.AppendLine(indent + "  ItemData = " + itemData_.ToString(indent + "  "));
-			sb.Append(indent + "}");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1:
-					int32Val_ = stream.ReadInt32();
-					_changed |= 0x01 << 1;
-					break;
-				case 2:
-					int64Val_ = stream.ReadInt64();
-					_changed |= 0x01 << 2;
-					break;
-				case 3:
-					uint32Val_ = stream.ReadUInt32();
-					_changed |= 0x01 << 3;
-					break;
-				case 4:
-					uint64Val_ = stream.ReadUInt64();
-					_changed |= 0x01 << 4;
-					break;
-				case 5:
-					sint32Val_ = stream.ReadSInt32();
-					_changed |= 0x01 << 5;
-					break;
-				case 6:
-					sint64Val_ = stream.ReadSInt64();
-					_changed |= 0x01 << 6;
-					break;
-				case 7:
-					fixed32Val_ = stream.ReadFixed32();
-					_changed |= 0x01 << 7;
-					break;
-				case 8:
-					fixed64Val_ = stream.ReadFixed64();
-					_changed |= 0x01 << 8;
-					break;
-				case 9:
-					sfixed32Val_ = stream.ReadSFixed32();
-					_changed |= 0x01 << 9;
-					break;
-				case 10:
-					sfixed64Val_ = stream.ReadSFixed64();
-					_changed |= 0x01 << 10;
-					break;
-				case 11:
-					floatVal_ = stream.ReadFloat();
-					_changed |= 0x01 << 11;
-					break;
-				case 12:
-					doubleVal_ = stream.ReadDouble();
-					_changed |= 0x01 << 12;
-					break;
-				case 13:
-					boolVal_ = stream.ReadBool();
-					_changed |= 0x01 << 13;
-					break;
-				case 14:
-					stringVal_ = stream.ReadString();
-					_changed |= 0x01 << 14;
-					break;
-				case 15:
-					bytesVal_ = stream.ReadBytes().ToByteArray();
-					_changed |= 0x01 << 15;
-					break;
-				case 16:
-					timestampVal_ = Timestamp.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 16;
-					break;
-				case 17:
-					durationVal_ = Duration.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 17;
-					break;
-				case 18:
-					emptyVal_ = Empty.Parser.ParseFrom(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 18;
-					break;
-				case 19:
-					enumVal_ = (ItemType)stream.ReadEnum();
-					_changed |= 0x01 << 19;
-					break;
-				case 20:
-					itemData_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 20;
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (_changed == 0)
-				return;
-			if ((_changed & (0x01 << 20)) != 0)
-				itemData_.RaiseChanged();
-			OnChanged?.Invoke(this, new EventChanged(_changed));
-		}
-
-		public void ClearChanged()
-		{
-			if (_changed == 0)
-				return;
-			if ((_changed & (0x01 << 20)) != 0)
-				itemData_.ClearChanged();
-			_changed = 0;
 		}
 	}
-	public class AllList
+
+	public void RaiseChanged()
 	{
-		public AllList()
-		{
-			int32List_ = new Int32_list();
-			int64List_ = new Int64_list();
-			floatList_ = new Float_list();
-			doubleList_ = new Double_list();
-			boolList_ = new Bool_list();
-			stringList_ = new String_list();
-			timestampList_ = new Timestamp_list();
-			durationList_ = new Duration_list();
-			emptyList_ = new Empty_list();
-			enumList_ = new ItemType_list();
-			itemList_ = new ItemData_list();
-		}
-
-		private Int32_list int32List_;
-		public Int32_list Int32List => int32List_;
-
-		private Int64_list int64List_;
-		public Int64_list Int64List => int64List_;
-
-		private Float_list floatList_;
-		public Float_list FloatList => floatList_;
-
-		private Double_list doubleList_;
-		public Double_list DoubleList => doubleList_;
-
-		private Bool_list boolList_;
-		public Bool_list BoolList => boolList_;
-
-		private String_list stringList_;
-		public String_list StringList => stringList_;
-
-		private Timestamp_list timestampList_;
-		public Timestamp_list TimestampList => timestampList_;
-
-		private Duration_list durationList_;
-		public Duration_list DurationList => durationList_;
-
-		private Empty_list emptyList_;
-		public Empty_list EmptyList => emptyList_;
-
-		private ItemType_list enumList_;
-		public ItemType_list EnumList => enumList_;
-
-		private ItemData_list itemList_;
-		public ItemData_list ItemList => itemList_;
-
-		private long _changed;
-
-		public event Action<AllList, EventChanged>? OnChanged;
-
-		public class EventChanged
-		{
-			public long _changed;
-			public bool Int32List => (_changed & (0x01 << 1)) != 0;
-			public bool Int64List => (_changed & (0x01 << 2)) != 0;
-			public bool FloatList => (_changed & (0x01 << 3)) != 0;
-			public bool DoubleList => (_changed & (0x01 << 4)) != 0;
-			public bool BoolList => (_changed & (0x01 << 5)) != 0;
-			public bool StringList => (_changed & (0x01 << 6)) != 0;
-			public bool TimestampList => (_changed & (0x01 << 7)) != 0;
-			public bool DurationList => (_changed & (0x01 << 8)) != 0;
-			public bool EmptyList => (_changed & (0x01 << 9)) != 0;
-			public bool EnumList => (_changed & (0x01 << 10)) != 0;
-			public bool ItemList => (_changed & (0x01 << 11)) != 0;
-
-			public EventChanged(long changed)
-			{
-				_changed = changed;
-			}
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("{\n");
-			sb.AppendLine(indent + "  Int32List = " + int32List_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int64List = " + int64List_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  FloatList = " + floatList_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  DoubleList = " + doubleList_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  BoolList = " + boolList_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  StringList = " + stringList_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  TimestampList = " + timestampList_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  DurationList = " + durationList_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  EmptyList = " + emptyList_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  EnumList = " + enumList_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  ItemList = " + itemList_.ToString(indent + "  "));
-			sb.Append(indent + "}");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1:
-					int32List_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 1;
-					break;
-				case 2:
-					int64List_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 2;
-					break;
-				case 3:
-					floatList_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 3;
-					break;
-				case 4:
-					doubleList_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 4;
-					break;
-				case 5:
-					boolList_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 5;
-					break;
-				case 6:
-					stringList_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 6;
-					break;
-				case 7:
-					timestampList_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 7;
-					break;
-				case 8:
-					durationList_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 8;
-					break;
-				case 9:
-					emptyList_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 9;
-					break;
-				case 10:
-					enumList_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 10;
-					break;
-				case 11:
-					itemList_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 11;
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (_changed == 0)
-				return;
-			if ((_changed & (0x01 << 1)) != 0)
-				int32List_.RaiseChanged();
-			if ((_changed & (0x01 << 2)) != 0)
-				int64List_.RaiseChanged();
-			if ((_changed & (0x01 << 3)) != 0)
-				floatList_.RaiseChanged();
-			if ((_changed & (0x01 << 4)) != 0)
-				doubleList_.RaiseChanged();
-			if ((_changed & (0x01 << 5)) != 0)
-				boolList_.RaiseChanged();
-			if ((_changed & (0x01 << 6)) != 0)
-				stringList_.RaiseChanged();
-			if ((_changed & (0x01 << 7)) != 0)
-				timestampList_.RaiseChanged();
-			if ((_changed & (0x01 << 8)) != 0)
-				durationList_.RaiseChanged();
-			if ((_changed & (0x01 << 9)) != 0)
-				emptyList_.RaiseChanged();
-			if ((_changed & (0x01 << 10)) != 0)
-				enumList_.RaiseChanged();
-			if ((_changed & (0x01 << 11)) != 0)
-				itemList_.RaiseChanged();
-			OnChanged?.Invoke(this, new EventChanged(_changed));
-		}
-
-		public void ClearChanged()
-		{
-			if (_changed == 0)
-				return;
-			if ((_changed & (0x01 << 1)) != 0)
-				int32List_.ClearChanged();
-			if ((_changed & (0x01 << 2)) != 0)
-				int64List_.ClearChanged();
-			if ((_changed & (0x01 << 3)) != 0)
-				floatList_.ClearChanged();
-			if ((_changed & (0x01 << 4)) != 0)
-				doubleList_.ClearChanged();
-			if ((_changed & (0x01 << 5)) != 0)
-				boolList_.ClearChanged();
-			if ((_changed & (0x01 << 6)) != 0)
-				stringList_.ClearChanged();
-			if ((_changed & (0x01 << 7)) != 0)
-				timestampList_.ClearChanged();
-			if ((_changed & (0x01 << 8)) != 0)
-				durationList_.ClearChanged();
-			if ((_changed & (0x01 << 9)) != 0)
-				emptyList_.ClearChanged();
-			if ((_changed & (0x01 << 10)) != 0)
-				enumList_.ClearChanged();
-			if ((_changed & (0x01 << 11)) != 0)
-				itemList_.ClearChanged();
-			_changed = 0;
-		}
+		if (_changed == 0)
+			return;
+		if ((_changed & (0x01 << 1)) != 0)
+			types_.RaiseChanged();
+		if ((_changed & (0x01 << 2)) != 0)
+			lists_.RaiseChanged();
+		if ((_changed & (0x01 << 3)) != 0)
+			maps_.RaiseChanged();
+		OnChanged?.Invoke(this, new EventChanged(_changed));
 	}
-	public class AllMap
+
+	public void ClearChanged()
 	{
-		public AllMap()
-		{
-			int32Int32_ = new Int32Int32_map();
-			int32String_ = new Int32String_map();
-			int32Timestamp_ = new Int32Timestamp_map();
-			int32Duration_ = new Int32Duration_map();
-			int32Empty_ = new Int32Empty_map();
-			int32Enum_ = new Int32ItemType_map();
-			int32ItemData_ = new Int32ItemData_map();
-			int64Int64_ = new Int64Int64_map();
-			int64String_ = new Int64String_map();
-			int64Timestamp_ = new Int64Timestamp_map();
-			int64Duration_ = new Int64Duration_map();
-			int64Empty_ = new Int64Empty_map();
-			int64Enum_ = new Int64ItemType_map();
-			int64ItemData_ = new Int64ItemData_map();
-			stringInt32_ = new StringInt32_map();
-			stringString_ = new StringString_map();
-			stringTimestamp_ = new StringTimestamp_map();
-			stringDuration_ = new StringDuration_map();
-			stringEmpty_ = new StringEmpty_map();
-			stringEnum_ = new StringItemType_map();
-			stringItemData_ = new StringItemData_map();
-			boolInt32_ = new BoolInt32_map();
-			boolString_ = new BoolString_map();
-			boolTimestamp_ = new BoolTimestamp_map();
-			boolDuration_ = new BoolDuration_map();
-			boolEmpty_ = new BoolEmpty_map();
-			boolEnum_ = new BoolItemType_map();
-			boolItemData_ = new BoolItemData_map();
-		}
-
-		private Int32Int32_map int32Int32_;
-		public Int32Int32_map Int32Int32 => int32Int32_;
-
-		private Int32String_map int32String_;
-		public Int32String_map Int32String => int32String_;
-
-		private Int32Timestamp_map int32Timestamp_;
-		public Int32Timestamp_map Int32Timestamp => int32Timestamp_;
-
-		private Int32Duration_map int32Duration_;
-		public Int32Duration_map Int32Duration => int32Duration_;
-
-		private Int32Empty_map int32Empty_;
-		public Int32Empty_map Int32Empty => int32Empty_;
-
-		private Int32ItemType_map int32Enum_;
-		public Int32ItemType_map Int32Enum => int32Enum_;
-
-		private Int32ItemData_map int32ItemData_;
-		public Int32ItemData_map Int32ItemData => int32ItemData_;
-
-		private Int64Int64_map int64Int64_;
-		public Int64Int64_map Int64Int64 => int64Int64_;
-
-		private Int64String_map int64String_;
-		public Int64String_map Int64String => int64String_;
-
-		private Int64Timestamp_map int64Timestamp_;
-		public Int64Timestamp_map Int64Timestamp => int64Timestamp_;
-
-		private Int64Duration_map int64Duration_;
-		public Int64Duration_map Int64Duration => int64Duration_;
-
-		private Int64Empty_map int64Empty_;
-		public Int64Empty_map Int64Empty => int64Empty_;
-
-		private Int64ItemType_map int64Enum_;
-		public Int64ItemType_map Int64Enum => int64Enum_;
-
-		private Int64ItemData_map int64ItemData_;
-		public Int64ItemData_map Int64ItemData => int64ItemData_;
-
-		private StringInt32_map stringInt32_;
-		public StringInt32_map StringInt32 => stringInt32_;
-
-		private StringString_map stringString_;
-		public StringString_map StringString => stringString_;
-
-		private StringTimestamp_map stringTimestamp_;
-		public StringTimestamp_map StringTimestamp => stringTimestamp_;
-
-		private StringDuration_map stringDuration_;
-		public StringDuration_map StringDuration => stringDuration_;
-
-		private StringEmpty_map stringEmpty_;
-		public StringEmpty_map StringEmpty => stringEmpty_;
-
-		private StringItemType_map stringEnum_;
-		public StringItemType_map StringEnum => stringEnum_;
-
-		private StringItemData_map stringItemData_;
-		public StringItemData_map StringItemData => stringItemData_;
-
-		private BoolInt32_map boolInt32_;
-		public BoolInt32_map BoolInt32 => boolInt32_;
-
-		private BoolString_map boolString_;
-		public BoolString_map BoolString => boolString_;
-
-		private BoolTimestamp_map boolTimestamp_;
-		public BoolTimestamp_map BoolTimestamp => boolTimestamp_;
-
-		private BoolDuration_map boolDuration_;
-		public BoolDuration_map BoolDuration => boolDuration_;
-
-		private BoolEmpty_map boolEmpty_;
-		public BoolEmpty_map BoolEmpty => boolEmpty_;
-
-		private BoolItemType_map boolEnum_;
-		public BoolItemType_map BoolEnum => boolEnum_;
-
-		private BoolItemData_map boolItemData_;
-		public BoolItemData_map BoolItemData => boolItemData_;
-
-		private long _changed;
-
-		public event Action<AllMap, EventChanged>? OnChanged;
-
-		public class EventChanged
-		{
-			public long _changed;
-			public bool Int32Int32 => (_changed & (0x01 << 1)) != 0;
-			public bool Int32String => (_changed & (0x01 << 2)) != 0;
-			public bool Int32Timestamp => (_changed & (0x01 << 3)) != 0;
-			public bool Int32Duration => (_changed & (0x01 << 4)) != 0;
-			public bool Int32Empty => (_changed & (0x01 << 5)) != 0;
-			public bool Int32Enum => (_changed & (0x01 << 6)) != 0;
-			public bool Int32ItemData => (_changed & (0x01 << 7)) != 0;
-			public bool Int64Int64 => (_changed & (0x01 << 8)) != 0;
-			public bool Int64String => (_changed & (0x01 << 9)) != 0;
-			public bool Int64Timestamp => (_changed & (0x01 << 10)) != 0;
-			public bool Int64Duration => (_changed & (0x01 << 11)) != 0;
-			public bool Int64Empty => (_changed & (0x01 << 12)) != 0;
-			public bool Int64Enum => (_changed & (0x01 << 13)) != 0;
-			public bool Int64ItemData => (_changed & (0x01 << 14)) != 0;
-			public bool StringInt32 => (_changed & (0x01 << 15)) != 0;
-			public bool StringString => (_changed & (0x01 << 16)) != 0;
-			public bool StringTimestamp => (_changed & (0x01 << 17)) != 0;
-			public bool StringDuration => (_changed & (0x01 << 18)) != 0;
-			public bool StringEmpty => (_changed & (0x01 << 19)) != 0;
-			public bool StringEnum => (_changed & (0x01 << 20)) != 0;
-			public bool StringItemData => (_changed & (0x01 << 21)) != 0;
-			public bool BoolInt32 => (_changed & (0x01 << 22)) != 0;
-			public bool BoolString => (_changed & (0x01 << 23)) != 0;
-			public bool BoolTimestamp => (_changed & (0x01 << 24)) != 0;
-			public bool BoolDuration => (_changed & (0x01 << 25)) != 0;
-			public bool BoolEmpty => (_changed & (0x01 << 26)) != 0;
-			public bool BoolEnum => (_changed & (0x01 << 27)) != 0;
-			public bool BoolItemData => (_changed & (0x01 << 28)) != 0;
-
-			public EventChanged(long changed)
-			{
-				_changed = changed;
-			}
-		}
-
-		public string ToString(string indent)
-		{
-			var sb = new System.Text.StringBuilder();
-			sb.Append("{\n");
-			sb.AppendLine(indent + "  Int32Int32 = " + int32Int32_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int32String = " + int32String_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int32Timestamp = " + int32Timestamp_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int32Duration = " + int32Duration_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int32Empty = " + int32Empty_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int32Enum = " + int32Enum_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int32ItemData = " + int32ItemData_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int64Int64 = " + int64Int64_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int64String = " + int64String_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int64Timestamp = " + int64Timestamp_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int64Duration = " + int64Duration_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int64Empty = " + int64Empty_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int64Enum = " + int64Enum_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  Int64ItemData = " + int64ItemData_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  StringInt32 = " + stringInt32_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  StringString = " + stringString_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  StringTimestamp = " + stringTimestamp_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  StringDuration = " + stringDuration_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  StringEmpty = " + stringEmpty_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  StringEnum = " + stringEnum_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  StringItemData = " + stringItemData_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  BoolInt32 = " + boolInt32_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  BoolString = " + boolString_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  BoolTimestamp = " + boolTimestamp_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  BoolDuration = " + boolDuration_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  BoolEmpty = " + boolEmpty_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  BoolEnum = " + boolEnum_.ToString(indent + "  "));
-			sb.AppendLine(indent + "  BoolItemData = " + boolItemData_.ToString(indent + "  "));
-			sb.Append(indent + "}");
-			return sb.ToString();
-		}
-
-		public void ApplySync(byte[] b)
-		{
-			var stream = new CodedInputStream(b);
-			uint tag;
-			while ((tag = stream.ReadTag()) != 0)
-			{
-				var num = WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-				case 1:
-					int32Int32_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 1;
-					break;
-				case 2:
-					int32String_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 2;
-					break;
-				case 3:
-					int32Timestamp_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 3;
-					break;
-				case 4:
-					int32Duration_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 4;
-					break;
-				case 5:
-					int32Empty_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 5;
-					break;
-				case 6:
-					int32Enum_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 6;
-					break;
-				case 7:
-					int32ItemData_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 7;
-					break;
-				case 8:
-					int64Int64_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 8;
-					break;
-				case 9:
-					int64String_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 9;
-					break;
-				case 10:
-					int64Timestamp_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 10;
-					break;
-				case 11:
-					int64Duration_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 11;
-					break;
-				case 12:
-					int64Empty_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 12;
-					break;
-				case 13:
-					int64Enum_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 13;
-					break;
-				case 14:
-					int64ItemData_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 14;
-					break;
-				case 15:
-					stringInt32_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 15;
-					break;
-				case 16:
-					stringString_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 16;
-					break;
-				case 17:
-					stringTimestamp_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 17;
-					break;
-				case 18:
-					stringDuration_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 18;
-					break;
-				case 19:
-					stringEmpty_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 19;
-					break;
-				case 20:
-					stringEnum_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 20;
-					break;
-				case 21:
-					stringItemData_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 21;
-					break;
-				case 22:
-					boolInt32_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 22;
-					break;
-				case 23:
-					boolString_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 23;
-					break;
-				case 24:
-					boolTimestamp_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 24;
-					break;
-				case 25:
-					boolDuration_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 25;
-					break;
-				case 26:
-					boolEmpty_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 26;
-					break;
-				case 27:
-					boolEnum_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 27;
-					break;
-				case 28:
-					boolItemData_.ApplySync(stream.ReadBytes().ToByteArray());
-					_changed |= 0x01 << 28;
-					break;
-				default:
-					stream.SkipLastField();
-					break;
-				}
-			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (_changed == 0)
-				return;
-			if ((_changed & (0x01 << 1)) != 0)
-				int32Int32_.RaiseChanged();
-			if ((_changed & (0x01 << 2)) != 0)
-				int32String_.RaiseChanged();
-			if ((_changed & (0x01 << 3)) != 0)
-				int32Timestamp_.RaiseChanged();
-			if ((_changed & (0x01 << 4)) != 0)
-				int32Duration_.RaiseChanged();
-			if ((_changed & (0x01 << 5)) != 0)
-				int32Empty_.RaiseChanged();
-			if ((_changed & (0x01 << 6)) != 0)
-				int32Enum_.RaiseChanged();
-			if ((_changed & (0x01 << 7)) != 0)
-				int32ItemData_.RaiseChanged();
-			if ((_changed & (0x01 << 8)) != 0)
-				int64Int64_.RaiseChanged();
-			if ((_changed & (0x01 << 9)) != 0)
-				int64String_.RaiseChanged();
-			if ((_changed & (0x01 << 10)) != 0)
-				int64Timestamp_.RaiseChanged();
-			if ((_changed & (0x01 << 11)) != 0)
-				int64Duration_.RaiseChanged();
-			if ((_changed & (0x01 << 12)) != 0)
-				int64Empty_.RaiseChanged();
-			if ((_changed & (0x01 << 13)) != 0)
-				int64Enum_.RaiseChanged();
-			if ((_changed & (0x01 << 14)) != 0)
-				int64ItemData_.RaiseChanged();
-			if ((_changed & (0x01 << 15)) != 0)
-				stringInt32_.RaiseChanged();
-			if ((_changed & (0x01 << 16)) != 0)
-				stringString_.RaiseChanged();
-			if ((_changed & (0x01 << 17)) != 0)
-				stringTimestamp_.RaiseChanged();
-			if ((_changed & (0x01 << 18)) != 0)
-				stringDuration_.RaiseChanged();
-			if ((_changed & (0x01 << 19)) != 0)
-				stringEmpty_.RaiseChanged();
-			if ((_changed & (0x01 << 20)) != 0)
-				stringEnum_.RaiseChanged();
-			if ((_changed & (0x01 << 21)) != 0)
-				stringItemData_.RaiseChanged();
-			if ((_changed & (0x01 << 22)) != 0)
-				boolInt32_.RaiseChanged();
-			if ((_changed & (0x01 << 23)) != 0)
-				boolString_.RaiseChanged();
-			if ((_changed & (0x01 << 24)) != 0)
-				boolTimestamp_.RaiseChanged();
-			if ((_changed & (0x01 << 25)) != 0)
-				boolDuration_.RaiseChanged();
-			if ((_changed & (0x01 << 26)) != 0)
-				boolEmpty_.RaiseChanged();
-			if ((_changed & (0x01 << 27)) != 0)
-				boolEnum_.RaiseChanged();
-			if ((_changed & (0x01 << 28)) != 0)
-				boolItemData_.RaiseChanged();
-			OnChanged?.Invoke(this, new EventChanged(_changed));
-		}
-
-		public void ClearChanged()
-		{
-			if (_changed == 0)
-				return;
-			if ((_changed & (0x01 << 1)) != 0)
-				int32Int32_.ClearChanged();
-			if ((_changed & (0x01 << 2)) != 0)
-				int32String_.ClearChanged();
-			if ((_changed & (0x01 << 3)) != 0)
-				int32Timestamp_.ClearChanged();
-			if ((_changed & (0x01 << 4)) != 0)
-				int32Duration_.ClearChanged();
-			if ((_changed & (0x01 << 5)) != 0)
-				int32Empty_.ClearChanged();
-			if ((_changed & (0x01 << 6)) != 0)
-				int32Enum_.ClearChanged();
-			if ((_changed & (0x01 << 7)) != 0)
-				int32ItemData_.ClearChanged();
-			if ((_changed & (0x01 << 8)) != 0)
-				int64Int64_.ClearChanged();
-			if ((_changed & (0x01 << 9)) != 0)
-				int64String_.ClearChanged();
-			if ((_changed & (0x01 << 10)) != 0)
-				int64Timestamp_.ClearChanged();
-			if ((_changed & (0x01 << 11)) != 0)
-				int64Duration_.ClearChanged();
-			if ((_changed & (0x01 << 12)) != 0)
-				int64Empty_.ClearChanged();
-			if ((_changed & (0x01 << 13)) != 0)
-				int64Enum_.ClearChanged();
-			if ((_changed & (0x01 << 14)) != 0)
-				int64ItemData_.ClearChanged();
-			if ((_changed & (0x01 << 15)) != 0)
-				stringInt32_.ClearChanged();
-			if ((_changed & (0x01 << 16)) != 0)
-				stringString_.ClearChanged();
-			if ((_changed & (0x01 << 17)) != 0)
-				stringTimestamp_.ClearChanged();
-			if ((_changed & (0x01 << 18)) != 0)
-				stringDuration_.ClearChanged();
-			if ((_changed & (0x01 << 19)) != 0)
-				stringEmpty_.ClearChanged();
-			if ((_changed & (0x01 << 20)) != 0)
-				stringEnum_.ClearChanged();
-			if ((_changed & (0x01 << 21)) != 0)
-				stringItemData_.ClearChanged();
-			if ((_changed & (0x01 << 22)) != 0)
-				boolInt32_.ClearChanged();
-			if ((_changed & (0x01 << 23)) != 0)
-				boolString_.ClearChanged();
-			if ((_changed & (0x01 << 24)) != 0)
-				boolTimestamp_.ClearChanged();
-			if ((_changed & (0x01 << 25)) != 0)
-				boolDuration_.ClearChanged();
-			if ((_changed & (0x01 << 26)) != 0)
-				boolEmpty_.ClearChanged();
-			if ((_changed & (0x01 << 27)) != 0)
-				boolEnum_.ClearChanged();
-			if ((_changed & (0x01 << 28)) != 0)
-				boolItemData_.ClearChanged();
-			_changed = 0;
-		}
+		if (_changed == 0)
+			return;
+		if ((_changed & (0x01 << 1)) != 0)
+			types_.ClearChanged();
+		if ((_changed & (0x01 << 2)) != 0)
+			lists_.ClearChanged();
+		if ((_changed & (0x01 << 3)) != 0)
+			maps_.ClearChanged();
+		_changed = 0;
 	}
 }
+public class AllType : Kdsync.IMessage
+{
+	public AllType()
+	{
+		stringVal_ = string.Empty;
+		bytesVal_ = new byte[0];
+		timestampVal_ = new Kdsync.Timestamp();
+		durationVal_ = new Kdsync.Duration();
+		emptyVal_ = new Kdsync.Empty();
+		itemData_ = new ItemData();
+	}
+
+	private int int32Val_;
+	public int Int32Val => int32Val_;
+
+	private long int64Val_;
+	public long Int64Val => int64Val_;
+
+	private uint uint32Val_;
+	public uint Uint32Val => uint32Val_;
+
+	private ulong uint64Val_;
+	public ulong Uint64Val => uint64Val_;
+
+	private int sint32Val_;
+	public int Sint32Val => sint32Val_;
+
+	private long sint64Val_;
+	public long Sint64Val => sint64Val_;
+
+	private uint fixed32Val_;
+	public uint Fixed32Val => fixed32Val_;
+
+	private ulong fixed64Val_;
+	public ulong Fixed64Val => fixed64Val_;
+
+	private int sfixed32Val_;
+	public int Sfixed32Val => sfixed32Val_;
+
+	private long sfixed64Val_;
+	public long Sfixed64Val => sfixed64Val_;
+
+	private float floatVal_;
+	public float FloatVal => floatVal_;
+
+	private double doubleVal_;
+	public double DoubleVal => doubleVal_;
+
+	private bool boolVal_;
+	public bool BoolVal => boolVal_;
+
+	private string stringVal_;
+	public string StringVal => stringVal_;
+
+	private byte[] bytesVal_;
+	public byte[] BytesVal => bytesVal_;
+
+	private Kdsync.Timestamp timestampVal_;
+	public Kdsync.Timestamp TimestampVal => timestampVal_;
+
+	private Kdsync.Duration durationVal_;
+	public Kdsync.Duration DurationVal => durationVal_;
+
+	private Kdsync.Empty emptyVal_;
+	public Kdsync.Empty EmptyVal => emptyVal_;
+
+	private ItemType enumVal_;
+	public ItemType EnumVal => enumVal_;
+
+	private ItemData itemData_;
+	public ItemData ItemData => itemData_;
+
+	private long _changed;
+
+	public event Action<AllType, EventChanged>? OnChanged;
+
+	public class EventChanged
+	{
+		public long _changed;
+		public bool Int32Val => (_changed & (0x01 << 1)) != 0;
+		public bool Int64Val => (_changed & (0x01 << 2)) != 0;
+		public bool Uint32Val => (_changed & (0x01 << 3)) != 0;
+		public bool Uint64Val => (_changed & (0x01 << 4)) != 0;
+		public bool Sint32Val => (_changed & (0x01 << 5)) != 0;
+		public bool Sint64Val => (_changed & (0x01 << 6)) != 0;
+		public bool Fixed32Val => (_changed & (0x01 << 7)) != 0;
+		public bool Fixed64Val => (_changed & (0x01 << 8)) != 0;
+		public bool Sfixed32Val => (_changed & (0x01 << 9)) != 0;
+		public bool Sfixed64Val => (_changed & (0x01 << 10)) != 0;
+		public bool FloatVal => (_changed & (0x01 << 11)) != 0;
+		public bool DoubleVal => (_changed & (0x01 << 12)) != 0;
+		public bool BoolVal => (_changed & (0x01 << 13)) != 0;
+		public bool StringVal => (_changed & (0x01 << 14)) != 0;
+		public bool BytesVal => (_changed & (0x01 << 15)) != 0;
+		public bool TimestampVal => (_changed & (0x01 << 16)) != 0;
+		public bool DurationVal => (_changed & (0x01 << 17)) != 0;
+		public bool EmptyVal => (_changed & (0x01 << 18)) != 0;
+		public bool EnumVal => (_changed & (0x01 << 19)) != 0;
+		public bool ItemData => (_changed & (0x01 << 20)) != 0;
+
+		public EventChanged(long changed)
+		{
+			_changed = changed;
+		}
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("{\n");
+		sb.AppendLine(indent + "  Int32Val = " + int32Val_.ToString());
+		sb.AppendLine(indent + "  Int64Val = " + int64Val_.ToString());
+		sb.AppendLine(indent + "  Uint32Val = " + uint32Val_.ToString());
+		sb.AppendLine(indent + "  Uint64Val = " + uint64Val_.ToString());
+		sb.AppendLine(indent + "  Sint32Val = " + sint32Val_.ToString());
+		sb.AppendLine(indent + "  Sint64Val = " + sint64Val_.ToString());
+		sb.AppendLine(indent + "  Fixed32Val = " + fixed32Val_.ToString());
+		sb.AppendLine(indent + "  Fixed64Val = " + fixed64Val_.ToString());
+		sb.AppendLine(indent + "  Sfixed32Val = " + sfixed32Val_.ToString());
+		sb.AppendLine(indent + "  Sfixed64Val = " + sfixed64Val_.ToString());
+		sb.AppendLine(indent + "  FloatVal = " + floatVal_.ToString(System.Globalization.CultureInfo.InvariantCulture));
+		sb.AppendLine(indent + "  DoubleVal = " + doubleVal_.ToString(System.Globalization.CultureInfo.InvariantCulture));
+		sb.AppendLine(indent + "  BoolVal = " + boolVal_.ToString().ToLower());
+		sb.AppendLine(indent + "  StringVal = " + stringVal_);
+		sb.AppendLine(indent + "  BytesVal = " + Convert.ToBase64String(bytesVal_));
+		sb.AppendLine(indent + "  TimestampVal = {Seconds: " + timestampVal_.Seconds + ", Nanos: " + timestampVal_.Nanos + "}");
+		sb.AppendLine(indent + "  DurationVal = {Seconds: " + durationVal_.Seconds + ", Nanos: " + durationVal_.Nanos + "}");
+		sb.AppendLine(indent + "  EmptyVal = {}");
+		sb.AppendLine(indent + "  EnumVal = " + ((int)enumVal_).ToString());
+		sb.AppendLine(indent + "  ItemData = " + itemData_.ToString(indent + "  "));
+		sb.Append(indent + "}");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1:
+				int32Val_ = stream.ReadInt32();
+				_changed |= 0x01 << 1;
+				break;
+			case 2:
+				int64Val_ = stream.ReadInt64();
+				_changed |= 0x01 << 2;
+				break;
+			case 3:
+				uint32Val_ = stream.ReadUInt32();
+				_changed |= 0x01 << 3;
+				break;
+			case 4:
+				uint64Val_ = stream.ReadUInt64();
+				_changed |= 0x01 << 4;
+				break;
+			case 5:
+				sint32Val_ = stream.ReadSInt32();
+				_changed |= 0x01 << 5;
+				break;
+			case 6:
+				sint64Val_ = stream.ReadSInt64();
+				_changed |= 0x01 << 6;
+				break;
+			case 7:
+				fixed32Val_ = stream.ReadFixed32();
+				_changed |= 0x01 << 7;
+				break;
+			case 8:
+				fixed64Val_ = stream.ReadFixed64();
+				_changed |= 0x01 << 8;
+				break;
+			case 9:
+				sfixed32Val_ = stream.ReadSFixed32();
+				_changed |= 0x01 << 9;
+				break;
+			case 10:
+				sfixed64Val_ = stream.ReadSFixed64();
+				_changed |= 0x01 << 10;
+				break;
+			case 11:
+				floatVal_ = stream.ReadFloat();
+				_changed |= 0x01 << 11;
+				break;
+			case 12:
+				doubleVal_ = stream.ReadDouble();
+				_changed |= 0x01 << 12;
+				break;
+			case 13:
+				boolVal_ = stream.ReadBool();
+				_changed |= 0x01 << 13;
+				break;
+			case 14:
+				stringVal_ = stream.ReadString();
+				_changed |= 0x01 << 14;
+				break;
+			case 15:
+				bytesVal_ = stream.ReadBytes().ToByteArray();
+				_changed |= 0x01 << 15;
+				break;
+			case 16:
+				timestampVal_ = new Kdsync.Timestamp();
+				timestampVal_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 16;
+				break;
+			case 17:
+				durationVal_ = new Kdsync.Duration();
+				durationVal_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 17;
+				break;
+			case 18:
+				emptyVal_ = new Kdsync.Empty();
+				emptyVal_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 18;
+				break;
+			case 19:
+				enumVal_ = (ItemType)stream.ReadEnum();
+				_changed |= 0x01 << 19;
+				break;
+			case 20:
+				itemData_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 20;
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (_changed == 0)
+			return;
+		if ((_changed & (0x01 << 20)) != 0)
+			itemData_.RaiseChanged();
+		OnChanged?.Invoke(this, new EventChanged(_changed));
+	}
+
+	public void ClearChanged()
+	{
+		if (_changed == 0)
+			return;
+		if ((_changed & (0x01 << 20)) != 0)
+			itemData_.ClearChanged();
+		_changed = 0;
+	}
+}
+public class AllList : Kdsync.IMessage
+{
+	public AllList()
+	{
+		int32List_ = new Kdsync.List<int>();
+		int64List_ = new Kdsync.List<long>();
+		floatList_ = new Kdsync.List<float>();
+		doubleList_ = new Kdsync.List<double>();
+		boolList_ = new Kdsync.List<bool>();
+		stringList_ = new Kdsync.List<string>();
+		timestampList_ = new Kdsync.List<Kdsync.Timestamp>();
+		durationList_ = new Kdsync.List<Kdsync.Duration>();
+		emptyList_ = new Kdsync.List<Kdsync.Empty>();
+		enumList_ = new Kdsync.List<ItemType>();
+		itemList_ = new Kdsync.List<ItemData>();
+	}
+
+	private static readonly Kdsync.FieldCodec<int> _list_int32List__codec = Kdsync.FieldCodec.ForInt32(1);
+	private Kdsync.List<int> int32List_;
+	public Kdsync.List<int> Int32List => int32List_;
+
+	private static readonly Kdsync.FieldCodec<long> _list_int64List__codec = Kdsync.FieldCodec.ForInt64(2);
+	private Kdsync.List<long> int64List_;
+	public Kdsync.List<long> Int64List => int64List_;
+
+	private static readonly Kdsync.FieldCodec<float> _list_floatList__codec = Kdsync.FieldCodec.ForFloat(3);
+	private Kdsync.List<float> floatList_;
+	public Kdsync.List<float> FloatList => floatList_;
+
+	private static readonly Kdsync.FieldCodec<double> _list_doubleList__codec = Kdsync.FieldCodec.ForDouble(4);
+	private Kdsync.List<double> doubleList_;
+	public Kdsync.List<double> DoubleList => doubleList_;
+
+	private static readonly Kdsync.FieldCodec<bool> _list_boolList__codec = Kdsync.FieldCodec.ForBool(5);
+	private Kdsync.List<bool> boolList_;
+	public Kdsync.List<bool> BoolList => boolList_;
+
+	private static readonly Kdsync.FieldCodec<string> _list_stringList__codec = Kdsync.FieldCodec.ForString(6);
+	private Kdsync.List<string> stringList_;
+	public Kdsync.List<string> StringList => stringList_;
+
+	private static readonly Kdsync.FieldCodec<Kdsync.Timestamp> _list_timestampList__codec = Kdsync.FieldCodec.ForMessage<Kdsync.Timestamp>(7);
+	private Kdsync.List<Kdsync.Timestamp> timestampList_;
+	public Kdsync.List<Kdsync.Timestamp> TimestampList => timestampList_;
+
+	private static readonly Kdsync.FieldCodec<Kdsync.Duration> _list_durationList__codec = Kdsync.FieldCodec.ForMessage<Kdsync.Duration>(8);
+	private Kdsync.List<Kdsync.Duration> durationList_;
+	public Kdsync.List<Kdsync.Duration> DurationList => durationList_;
+
+	private static readonly Kdsync.FieldCodec<Kdsync.Empty> _list_emptyList__codec = Kdsync.FieldCodec.ForMessage<Kdsync.Empty>(9);
+	private Kdsync.List<Kdsync.Empty> emptyList_;
+	public Kdsync.List<Kdsync.Empty> EmptyList => emptyList_;
+
+	private static readonly Kdsync.FieldCodec<ItemType> _list_enumList__codec = Kdsync.FieldCodec.ForEnum(10, x => (int) x, x => (ItemType) x);
+	private Kdsync.List<ItemType> enumList_;
+	public Kdsync.List<ItemType> EnumList => enumList_;
+
+	private static readonly Kdsync.FieldCodec<ItemData> _list_itemList__codec = Kdsync.FieldCodec.ForMessage<ItemData>(11);
+	private Kdsync.List<ItemData> itemList_;
+	public Kdsync.List<ItemData> ItemList => itemList_;
+
+	private long _changed;
+
+	public event Action<AllList, EventChanged>? OnChanged;
+
+	public class EventChanged
+	{
+		public long _changed;
+		public bool Int32List => (_changed & (0x01 << 1)) != 0;
+		public bool Int64List => (_changed & (0x01 << 2)) != 0;
+		public bool FloatList => (_changed & (0x01 << 3)) != 0;
+		public bool DoubleList => (_changed & (0x01 << 4)) != 0;
+		public bool BoolList => (_changed & (0x01 << 5)) != 0;
+		public bool StringList => (_changed & (0x01 << 6)) != 0;
+		public bool TimestampList => (_changed & (0x01 << 7)) != 0;
+		public bool DurationList => (_changed & (0x01 << 8)) != 0;
+		public bool EmptyList => (_changed & (0x01 << 9)) != 0;
+		public bool EnumList => (_changed & (0x01 << 10)) != 0;
+		public bool ItemList => (_changed & (0x01 << 11)) != 0;
+
+		public EventChanged(long changed)
+		{
+			_changed = changed;
+		}
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("{\n");
+		sb.AppendLine(indent + "  Int32List = " + int32List_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int64List = " + int64List_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  FloatList = " + floatList_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  DoubleList = " + doubleList_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  BoolList = " + boolList_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  StringList = " + stringList_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  TimestampList = " + timestampList_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  DurationList = " + durationList_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  EmptyList = " + emptyList_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  EnumList = " + enumList_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  ItemList = " + itemList_.ToString(indent + "  "));
+		sb.Append(indent + "}");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1:
+				int32List_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_int32List__codec);
+				_changed |= 0x01 << 1;
+				break;
+			case 2:
+				int64List_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_int64List__codec);
+				_changed |= 0x01 << 2;
+				break;
+			case 3:
+				floatList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_floatList__codec);
+				_changed |= 0x01 << 3;
+				break;
+			case 4:
+				doubleList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_doubleList__codec);
+				_changed |= 0x01 << 4;
+				break;
+			case 5:
+				boolList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_boolList__codec);
+				_changed |= 0x01 << 5;
+				break;
+			case 6:
+				stringList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_stringList__codec);
+				_changed |= 0x01 << 6;
+				break;
+			case 7:
+				timestampList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_timestampList__codec);
+				_changed |= 0x01 << 7;
+				break;
+			case 8:
+				durationList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_durationList__codec);
+				_changed |= 0x01 << 8;
+				break;
+			case 9:
+				emptyList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_emptyList__codec);
+				_changed |= 0x01 << 9;
+				break;
+			case 10:
+				enumList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_enumList__codec);
+				_changed |= 0x01 << 10;
+				break;
+			case 11:
+				itemList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_itemList__codec);
+				_changed |= 0x01 << 11;
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (_changed == 0)
+			return;
+		if ((_changed & (0x01 << 1)) != 0)
+			int32List_.RaiseChanged();
+		if ((_changed & (0x01 << 2)) != 0)
+			int64List_.RaiseChanged();
+		if ((_changed & (0x01 << 3)) != 0)
+			floatList_.RaiseChanged();
+		if ((_changed & (0x01 << 4)) != 0)
+			doubleList_.RaiseChanged();
+		if ((_changed & (0x01 << 5)) != 0)
+			boolList_.RaiseChanged();
+		if ((_changed & (0x01 << 6)) != 0)
+			stringList_.RaiseChanged();
+		if ((_changed & (0x01 << 7)) != 0)
+			timestampList_.RaiseChanged();
+		if ((_changed & (0x01 << 8)) != 0)
+			durationList_.RaiseChanged();
+		if ((_changed & (0x01 << 9)) != 0)
+			emptyList_.RaiseChanged();
+		if ((_changed & (0x01 << 10)) != 0)
+			enumList_.RaiseChanged();
+		if ((_changed & (0x01 << 11)) != 0)
+			itemList_.RaiseChanged();
+		OnChanged?.Invoke(this, new EventChanged(_changed));
+	}
+
+	public void ClearChanged()
+	{
+		if (_changed == 0)
+			return;
+		if ((_changed & (0x01 << 1)) != 0)
+			int32List_.ClearChanged();
+		if ((_changed & (0x01 << 2)) != 0)
+			int64List_.ClearChanged();
+		if ((_changed & (0x01 << 3)) != 0)
+			floatList_.ClearChanged();
+		if ((_changed & (0x01 << 4)) != 0)
+			doubleList_.ClearChanged();
+		if ((_changed & (0x01 << 5)) != 0)
+			boolList_.ClearChanged();
+		if ((_changed & (0x01 << 6)) != 0)
+			stringList_.ClearChanged();
+		if ((_changed & (0x01 << 7)) != 0)
+			timestampList_.ClearChanged();
+		if ((_changed & (0x01 << 8)) != 0)
+			durationList_.ClearChanged();
+		if ((_changed & (0x01 << 9)) != 0)
+			emptyList_.ClearChanged();
+		if ((_changed & (0x01 << 10)) != 0)
+			enumList_.ClearChanged();
+		if ((_changed & (0x01 << 11)) != 0)
+			itemList_.ClearChanged();
+		_changed = 0;
+	}
+}
+public class AllMap : Kdsync.IMessage
+{
+	public AllMap()
+	{
+		int32Int32_ = new Int32Int32_map();
+		int32String_ = new Int32String_map();
+		int32Timestamp_ = new Int32Timestamp_map();
+		int32Duration_ = new Int32Duration_map();
+		int32Empty_ = new Int32Empty_map();
+		int32Enum_ = new Int32ItemType_map();
+		int32ItemData_ = new Int32ItemData_map();
+		int64Int64_ = new Int64Int64_map();
+		int64String_ = new Int64String_map();
+		int64Timestamp_ = new Int64Timestamp_map();
+		int64Duration_ = new Int64Duration_map();
+		int64Empty_ = new Int64Empty_map();
+		int64Enum_ = new Int64ItemType_map();
+		int64ItemData_ = new Int64ItemData_map();
+		stringInt32_ = new StringInt32_map();
+		stringString_ = new StringString_map();
+		stringTimestamp_ = new StringTimestamp_map();
+		stringDuration_ = new StringDuration_map();
+		stringEmpty_ = new StringEmpty_map();
+		stringEnum_ = new StringItemType_map();
+		stringItemData_ = new StringItemData_map();
+		boolInt32_ = new BoolInt32_map();
+		boolString_ = new BoolString_map();
+		boolTimestamp_ = new BoolTimestamp_map();
+		boolDuration_ = new BoolDuration_map();
+		boolEmpty_ = new BoolEmpty_map();
+		boolEnum_ = new BoolItemType_map();
+		boolItemData_ = new BoolItemData_map();
+	}
+
+	private Int32Int32_map int32Int32_;
+	public Int32Int32_map Int32Int32 => int32Int32_;
+
+	private Int32String_map int32String_;
+	public Int32String_map Int32String => int32String_;
+
+	private Int32Timestamp_map int32Timestamp_;
+	public Int32Timestamp_map Int32Timestamp => int32Timestamp_;
+
+	private Int32Duration_map int32Duration_;
+	public Int32Duration_map Int32Duration => int32Duration_;
+
+	private Int32Empty_map int32Empty_;
+	public Int32Empty_map Int32Empty => int32Empty_;
+
+	private Int32ItemType_map int32Enum_;
+	public Int32ItemType_map Int32Enum => int32Enum_;
+
+	private Int32ItemData_map int32ItemData_;
+	public Int32ItemData_map Int32ItemData => int32ItemData_;
+
+	private Int64Int64_map int64Int64_;
+	public Int64Int64_map Int64Int64 => int64Int64_;
+
+	private Int64String_map int64String_;
+	public Int64String_map Int64String => int64String_;
+
+	private Int64Timestamp_map int64Timestamp_;
+	public Int64Timestamp_map Int64Timestamp => int64Timestamp_;
+
+	private Int64Duration_map int64Duration_;
+	public Int64Duration_map Int64Duration => int64Duration_;
+
+	private Int64Empty_map int64Empty_;
+	public Int64Empty_map Int64Empty => int64Empty_;
+
+	private Int64ItemType_map int64Enum_;
+	public Int64ItemType_map Int64Enum => int64Enum_;
+
+	private Int64ItemData_map int64ItemData_;
+	public Int64ItemData_map Int64ItemData => int64ItemData_;
+
+	private StringInt32_map stringInt32_;
+	public StringInt32_map StringInt32 => stringInt32_;
+
+	private StringString_map stringString_;
+	public StringString_map StringString => stringString_;
+
+	private StringTimestamp_map stringTimestamp_;
+	public StringTimestamp_map StringTimestamp => stringTimestamp_;
+
+	private StringDuration_map stringDuration_;
+	public StringDuration_map StringDuration => stringDuration_;
+
+	private StringEmpty_map stringEmpty_;
+	public StringEmpty_map StringEmpty => stringEmpty_;
+
+	private StringItemType_map stringEnum_;
+	public StringItemType_map StringEnum => stringEnum_;
+
+	private StringItemData_map stringItemData_;
+	public StringItemData_map StringItemData => stringItemData_;
+
+	private BoolInt32_map boolInt32_;
+	public BoolInt32_map BoolInt32 => boolInt32_;
+
+	private BoolString_map boolString_;
+	public BoolString_map BoolString => boolString_;
+
+	private BoolTimestamp_map boolTimestamp_;
+	public BoolTimestamp_map BoolTimestamp => boolTimestamp_;
+
+	private BoolDuration_map boolDuration_;
+	public BoolDuration_map BoolDuration => boolDuration_;
+
+	private BoolEmpty_map boolEmpty_;
+	public BoolEmpty_map BoolEmpty => boolEmpty_;
+
+	private BoolItemType_map boolEnum_;
+	public BoolItemType_map BoolEnum => boolEnum_;
+
+	private BoolItemData_map boolItemData_;
+	public BoolItemData_map BoolItemData => boolItemData_;
+
+	private long _changed;
+
+	public event Action<AllMap, EventChanged>? OnChanged;
+
+	public class EventChanged
+	{
+		public long _changed;
+		public bool Int32Int32 => (_changed & (0x01 << 1)) != 0;
+		public bool Int32String => (_changed & (0x01 << 2)) != 0;
+		public bool Int32Timestamp => (_changed & (0x01 << 3)) != 0;
+		public bool Int32Duration => (_changed & (0x01 << 4)) != 0;
+		public bool Int32Empty => (_changed & (0x01 << 5)) != 0;
+		public bool Int32Enum => (_changed & (0x01 << 6)) != 0;
+		public bool Int32ItemData => (_changed & (0x01 << 7)) != 0;
+		public bool Int64Int64 => (_changed & (0x01 << 8)) != 0;
+		public bool Int64String => (_changed & (0x01 << 9)) != 0;
+		public bool Int64Timestamp => (_changed & (0x01 << 10)) != 0;
+		public bool Int64Duration => (_changed & (0x01 << 11)) != 0;
+		public bool Int64Empty => (_changed & (0x01 << 12)) != 0;
+		public bool Int64Enum => (_changed & (0x01 << 13)) != 0;
+		public bool Int64ItemData => (_changed & (0x01 << 14)) != 0;
+		public bool StringInt32 => (_changed & (0x01 << 15)) != 0;
+		public bool StringString => (_changed & (0x01 << 16)) != 0;
+		public bool StringTimestamp => (_changed & (0x01 << 17)) != 0;
+		public bool StringDuration => (_changed & (0x01 << 18)) != 0;
+		public bool StringEmpty => (_changed & (0x01 << 19)) != 0;
+		public bool StringEnum => (_changed & (0x01 << 20)) != 0;
+		public bool StringItemData => (_changed & (0x01 << 21)) != 0;
+		public bool BoolInt32 => (_changed & (0x01 << 22)) != 0;
+		public bool BoolString => (_changed & (0x01 << 23)) != 0;
+		public bool BoolTimestamp => (_changed & (0x01 << 24)) != 0;
+		public bool BoolDuration => (_changed & (0x01 << 25)) != 0;
+		public bool BoolEmpty => (_changed & (0x01 << 26)) != 0;
+		public bool BoolEnum => (_changed & (0x01 << 27)) != 0;
+		public bool BoolItemData => (_changed & (0x01 << 28)) != 0;
+
+		public EventChanged(long changed)
+		{
+			_changed = changed;
+		}
+	}
+
+	public string ToString(string indent)
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("{\n");
+		sb.AppendLine(indent + "  Int32Int32 = " + int32Int32_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int32String = " + int32String_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int32Timestamp = " + int32Timestamp_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int32Duration = " + int32Duration_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int32Empty = " + int32Empty_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int32Enum = " + int32Enum_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int32ItemData = " + int32ItemData_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int64Int64 = " + int64Int64_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int64String = " + int64String_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int64Timestamp = " + int64Timestamp_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int64Duration = " + int64Duration_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int64Empty = " + int64Empty_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int64Enum = " + int64Enum_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  Int64ItemData = " + int64ItemData_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  StringInt32 = " + stringInt32_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  StringString = " + stringString_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  StringTimestamp = " + stringTimestamp_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  StringDuration = " + stringDuration_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  StringEmpty = " + stringEmpty_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  StringEnum = " + stringEnum_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  StringItemData = " + stringItemData_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  BoolInt32 = " + boolInt32_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  BoolString = " + boolString_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  BoolTimestamp = " + boolTimestamp_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  BoolDuration = " + boolDuration_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  BoolEmpty = " + boolEmpty_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  BoolEnum = " + boolEnum_.ToString(indent + "  "));
+		sb.AppendLine(indent + "  BoolItemData = " + boolItemData_.ToString(indent + "  "));
+		sb.Append(indent + "}");
+		return sb.ToString();
+	}
+
+	public void MergeFrom(byte[] b)
+	{
+		var stream = new CodedInputStream(b);
+		uint tag;
+		while ((tag = stream.ReadTag()) != 0)
+		{
+			var num = WireFormat.GetTagFieldNumber(tag);
+			switch (num)
+			{
+			case 1:
+				int32Int32_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 1;
+				break;
+			case 2:
+				int32String_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 2;
+				break;
+			case 3:
+				int32Timestamp_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 3;
+				break;
+			case 4:
+				int32Duration_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 4;
+				break;
+			case 5:
+				int32Empty_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 5;
+				break;
+			case 6:
+				int32Enum_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 6;
+				break;
+			case 7:
+				int32ItemData_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 7;
+				break;
+			case 8:
+				int64Int64_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 8;
+				break;
+			case 9:
+				int64String_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 9;
+				break;
+			case 10:
+				int64Timestamp_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 10;
+				break;
+			case 11:
+				int64Duration_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 11;
+				break;
+			case 12:
+				int64Empty_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 12;
+				break;
+			case 13:
+				int64Enum_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 13;
+				break;
+			case 14:
+				int64ItemData_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 14;
+				break;
+			case 15:
+				stringInt32_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 15;
+				break;
+			case 16:
+				stringString_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 16;
+				break;
+			case 17:
+				stringTimestamp_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 17;
+				break;
+			case 18:
+				stringDuration_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 18;
+				break;
+			case 19:
+				stringEmpty_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 19;
+				break;
+			case 20:
+				stringEnum_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 20;
+				break;
+			case 21:
+				stringItemData_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 21;
+				break;
+			case 22:
+				boolInt32_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 22;
+				break;
+			case 23:
+				boolString_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 23;
+				break;
+			case 24:
+				boolTimestamp_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 24;
+				break;
+			case 25:
+				boolDuration_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 25;
+				break;
+			case 26:
+				boolEmpty_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 26;
+				break;
+			case 27:
+				boolEnum_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 27;
+				break;
+			case 28:
+				boolItemData_.MergeFrom(stream.ReadBytes().ToByteArray());
+				_changed |= 0x01 << 28;
+				break;
+			default:
+				stream.SkipLastField();
+				break;
+			}
+		}
+	}
+
+	public void RaiseChanged()
+	{
+		if (_changed == 0)
+			return;
+		if ((_changed & (0x01 << 1)) != 0)
+			int32Int32_.RaiseChanged();
+		if ((_changed & (0x01 << 2)) != 0)
+			int32String_.RaiseChanged();
+		if ((_changed & (0x01 << 3)) != 0)
+			int32Timestamp_.RaiseChanged();
+		if ((_changed & (0x01 << 4)) != 0)
+			int32Duration_.RaiseChanged();
+		if ((_changed & (0x01 << 5)) != 0)
+			int32Empty_.RaiseChanged();
+		if ((_changed & (0x01 << 6)) != 0)
+			int32Enum_.RaiseChanged();
+		if ((_changed & (0x01 << 7)) != 0)
+			int32ItemData_.RaiseChanged();
+		if ((_changed & (0x01 << 8)) != 0)
+			int64Int64_.RaiseChanged();
+		if ((_changed & (0x01 << 9)) != 0)
+			int64String_.RaiseChanged();
+		if ((_changed & (0x01 << 10)) != 0)
+			int64Timestamp_.RaiseChanged();
+		if ((_changed & (0x01 << 11)) != 0)
+			int64Duration_.RaiseChanged();
+		if ((_changed & (0x01 << 12)) != 0)
+			int64Empty_.RaiseChanged();
+		if ((_changed & (0x01 << 13)) != 0)
+			int64Enum_.RaiseChanged();
+		if ((_changed & (0x01 << 14)) != 0)
+			int64ItemData_.RaiseChanged();
+		if ((_changed & (0x01 << 15)) != 0)
+			stringInt32_.RaiseChanged();
+		if ((_changed & (0x01 << 16)) != 0)
+			stringString_.RaiseChanged();
+		if ((_changed & (0x01 << 17)) != 0)
+			stringTimestamp_.RaiseChanged();
+		if ((_changed & (0x01 << 18)) != 0)
+			stringDuration_.RaiseChanged();
+		if ((_changed & (0x01 << 19)) != 0)
+			stringEmpty_.RaiseChanged();
+		if ((_changed & (0x01 << 20)) != 0)
+			stringEnum_.RaiseChanged();
+		if ((_changed & (0x01 << 21)) != 0)
+			stringItemData_.RaiseChanged();
+		if ((_changed & (0x01 << 22)) != 0)
+			boolInt32_.RaiseChanged();
+		if ((_changed & (0x01 << 23)) != 0)
+			boolString_.RaiseChanged();
+		if ((_changed & (0x01 << 24)) != 0)
+			boolTimestamp_.RaiseChanged();
+		if ((_changed & (0x01 << 25)) != 0)
+			boolDuration_.RaiseChanged();
+		if ((_changed & (0x01 << 26)) != 0)
+			boolEmpty_.RaiseChanged();
+		if ((_changed & (0x01 << 27)) != 0)
+			boolEnum_.RaiseChanged();
+		if ((_changed & (0x01 << 28)) != 0)
+			boolItemData_.RaiseChanged();
+		OnChanged?.Invoke(this, new EventChanged(_changed));
+	}
+
+	public void ClearChanged()
+	{
+		if (_changed == 0)
+			return;
+		if ((_changed & (0x01 << 1)) != 0)
+			int32Int32_.ClearChanged();
+		if ((_changed & (0x01 << 2)) != 0)
+			int32String_.ClearChanged();
+		if ((_changed & (0x01 << 3)) != 0)
+			int32Timestamp_.ClearChanged();
+		if ((_changed & (0x01 << 4)) != 0)
+			int32Duration_.ClearChanged();
+		if ((_changed & (0x01 << 5)) != 0)
+			int32Empty_.ClearChanged();
+		if ((_changed & (0x01 << 6)) != 0)
+			int32Enum_.ClearChanged();
+		if ((_changed & (0x01 << 7)) != 0)
+			int32ItemData_.ClearChanged();
+		if ((_changed & (0x01 << 8)) != 0)
+			int64Int64_.ClearChanged();
+		if ((_changed & (0x01 << 9)) != 0)
+			int64String_.ClearChanged();
+		if ((_changed & (0x01 << 10)) != 0)
+			int64Timestamp_.ClearChanged();
+		if ((_changed & (0x01 << 11)) != 0)
+			int64Duration_.ClearChanged();
+		if ((_changed & (0x01 << 12)) != 0)
+			int64Empty_.ClearChanged();
+		if ((_changed & (0x01 << 13)) != 0)
+			int64Enum_.ClearChanged();
+		if ((_changed & (0x01 << 14)) != 0)
+			int64ItemData_.ClearChanged();
+		if ((_changed & (0x01 << 15)) != 0)
+			stringInt32_.ClearChanged();
+		if ((_changed & (0x01 << 16)) != 0)
+			stringString_.ClearChanged();
+		if ((_changed & (0x01 << 17)) != 0)
+			stringTimestamp_.ClearChanged();
+		if ((_changed & (0x01 << 18)) != 0)
+			stringDuration_.ClearChanged();
+		if ((_changed & (0x01 << 19)) != 0)
+			stringEmpty_.ClearChanged();
+		if ((_changed & (0x01 << 20)) != 0)
+			stringEnum_.ClearChanged();
+		if ((_changed & (0x01 << 21)) != 0)
+			stringItemData_.ClearChanged();
+		if ((_changed & (0x01 << 22)) != 0)
+			boolInt32_.ClearChanged();
+		if ((_changed & (0x01 << 23)) != 0)
+			boolString_.ClearChanged();
+		if ((_changed & (0x01 << 24)) != 0)
+			boolTimestamp_.ClearChanged();
+		if ((_changed & (0x01 << 25)) != 0)
+			boolDuration_.ClearChanged();
+		if ((_changed & (0x01 << 26)) != 0)
+			boolEmpty_.ClearChanged();
+		if ((_changed & (0x01 << 27)) != 0)
+			boolEnum_.ClearChanged();
+		if ((_changed & (0x01 << 28)) != 0)
+			boolItemData_.ClearChanged();
+		_changed = 0;
+	}
+}
+
