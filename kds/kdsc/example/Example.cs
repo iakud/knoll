@@ -72,16 +72,16 @@ public static class Example
             var data = new byte[length];
             Marshal.Copy(dataPtr, data, 0, length);
 
-            _all.MergeFrom(data);
+            _all.MergeFrom(new Kdsync.CodedInputStream(data));
             _all.RaiseChanged();
             _all.ClearChanged();
 
-            Console.Out.WriteLine($"ApplySync: {length} bytes");
+            Console.Out.WriteLine($"MergeFrom: {length} bytes");
             return 0;
         }
         catch (Exception ex)
         {
-            Console.Out.WriteLine($"ApplySync error: {ex.Message}, stack: {ex.StackTrace}");
+            Console.Out.WriteLine($"MergeFrom error: {ex.Message}, stack: {ex.StackTrace}");
             return 1;
         }
     }

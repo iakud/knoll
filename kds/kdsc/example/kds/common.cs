@@ -289,27 +289,27 @@ public class BoolDuration_map : IDictionary<bool, Kdsync.Duration>, ICollection<
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -317,29 +317,29 @@ public class BoolDuration_map : IDictionary<bool, Kdsync.Duration>, ICollection<
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadBool());
+			Remove(input.ReadBool());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			bool k = default;
 			Kdsync.Duration v = new Kdsync.Duration();
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadBool();
+					k = input.ReadBool();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -638,27 +638,27 @@ public class Int32Duration_map : IDictionary<int, Kdsync.Duration>, ICollection<
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -666,29 +666,29 @@ public class Int32Duration_map : IDictionary<int, Kdsync.Duration>, ICollection<
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt32());
+			Remove(input.ReadInt32());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			int k = default;
 			Kdsync.Duration v = new Kdsync.Duration();
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt32();
+					k = input.ReadInt32();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -987,27 +987,27 @@ public class Int64Duration_map : IDictionary<long, Kdsync.Duration>, ICollection
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -1015,29 +1015,29 @@ public class Int64Duration_map : IDictionary<long, Kdsync.Duration>, ICollection
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt64());
+			Remove(input.ReadInt64());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			long k = default;
 			Kdsync.Duration v = new Kdsync.Duration();
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt64();
+					k = input.ReadInt64();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -1336,27 +1336,27 @@ public class StringDuration_map : IDictionary<string, Kdsync.Duration>, ICollect
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -1364,29 +1364,29 @@ public class StringDuration_map : IDictionary<string, Kdsync.Duration>, ICollect
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadString());
+			Remove(input.ReadString());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			string k = string.Empty;
 			Kdsync.Duration v = new Kdsync.Duration();
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadString();
+					k = input.ReadString();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -1688,27 +1688,27 @@ public class BoolEmpty_map : IDictionary<bool, Kdsync.Empty>, ICollection<KeyVal
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -1716,29 +1716,29 @@ public class BoolEmpty_map : IDictionary<bool, Kdsync.Empty>, ICollection<KeyVal
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadBool());
+			Remove(input.ReadBool());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			bool k = default;
 			Kdsync.Empty v = new Kdsync.Empty();
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadBool();
+					k = input.ReadBool();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -2037,27 +2037,27 @@ public class Int32Empty_map : IDictionary<int, Kdsync.Empty>, ICollection<KeyVal
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -2065,29 +2065,29 @@ public class Int32Empty_map : IDictionary<int, Kdsync.Empty>, ICollection<KeyVal
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt32());
+			Remove(input.ReadInt32());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			int k = default;
 			Kdsync.Empty v = new Kdsync.Empty();
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt32();
+					k = input.ReadInt32();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -2386,27 +2386,27 @@ public class Int64Empty_map : IDictionary<long, Kdsync.Empty>, ICollection<KeyVa
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -2414,29 +2414,29 @@ public class Int64Empty_map : IDictionary<long, Kdsync.Empty>, ICollection<KeyVa
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt64());
+			Remove(input.ReadInt64());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			long k = default;
 			Kdsync.Empty v = new Kdsync.Empty();
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt64();
+					k = input.ReadInt64();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -2735,27 +2735,27 @@ public class StringEmpty_map : IDictionary<string, Kdsync.Empty>, ICollection<Ke
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -2763,29 +2763,29 @@ public class StringEmpty_map : IDictionary<string, Kdsync.Empty>, ICollection<Ke
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadString());
+			Remove(input.ReadString());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			string k = string.Empty;
 			Kdsync.Empty v = new Kdsync.Empty();
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadString();
+					k = input.ReadString();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -3087,27 +3087,27 @@ public class BoolInt32_map : IDictionary<bool, int>, ICollection<KeyValuePair<bo
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -3115,29 +3115,29 @@ public class BoolInt32_map : IDictionary<bool, int>, ICollection<KeyValuePair<bo
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadBool());
+			Remove(input.ReadBool());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			bool k = default;
 			int v = default;
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadBool();
+					k = input.ReadBool();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = stream.ReadInt32();
+					v = input.ReadInt32();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -3436,27 +3436,27 @@ public class Int32Int32_map : IDictionary<int, int>, ICollection<KeyValuePair<in
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -3464,29 +3464,29 @@ public class Int32Int32_map : IDictionary<int, int>, ICollection<KeyValuePair<in
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt32());
+			Remove(input.ReadInt32());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			int k = default;
 			int v = default;
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt32();
+					k = input.ReadInt32();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = stream.ReadInt32();
+					v = input.ReadInt32();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -3785,27 +3785,27 @@ public class StringInt32_map : IDictionary<string, int>, ICollection<KeyValuePai
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -3813,29 +3813,29 @@ public class StringInt32_map : IDictionary<string, int>, ICollection<KeyValuePai
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadString());
+			Remove(input.ReadString());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			string k = string.Empty;
 			int v = default;
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadString();
+					k = input.ReadString();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = stream.ReadInt32();
+					v = input.ReadInt32();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -4134,27 +4134,27 @@ public class Int64Int64_map : IDictionary<long, long>, ICollection<KeyValuePair<
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -4162,29 +4162,29 @@ public class Int64Int64_map : IDictionary<long, long>, ICollection<KeyValuePair<
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt64());
+			Remove(input.ReadInt64());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			long k = default;
 			long v = default;
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt64();
+					k = input.ReadInt64();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = stream.ReadInt64();
+					v = input.ReadInt64();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -4486,27 +4486,27 @@ public class BoolString_map : IDictionary<bool, string>, ICollection<KeyValuePai
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -4514,29 +4514,29 @@ public class BoolString_map : IDictionary<bool, string>, ICollection<KeyValuePai
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadBool());
+			Remove(input.ReadBool());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			bool k = default;
 			string v = string.Empty;
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadBool();
+					k = input.ReadBool();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = stream.ReadString();
+					v = input.ReadString();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -4835,27 +4835,27 @@ public class Int32String_map : IDictionary<int, string>, ICollection<KeyValuePai
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -4863,29 +4863,29 @@ public class Int32String_map : IDictionary<int, string>, ICollection<KeyValuePai
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt32());
+			Remove(input.ReadInt32());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			int k = default;
 			string v = string.Empty;
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt32();
+					k = input.ReadInt32();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = stream.ReadString();
+					v = input.ReadString();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -5184,27 +5184,27 @@ public class Int64String_map : IDictionary<long, string>, ICollection<KeyValuePa
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -5212,29 +5212,29 @@ public class Int64String_map : IDictionary<long, string>, ICollection<KeyValuePa
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt64());
+			Remove(input.ReadInt64());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			long k = default;
 			string v = string.Empty;
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt64();
+					k = input.ReadInt64();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = stream.ReadString();
+					v = input.ReadString();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -5533,27 +5533,27 @@ public class StringString_map : IDictionary<string, string>, ICollection<KeyValu
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -5561,29 +5561,29 @@ public class StringString_map : IDictionary<string, string>, ICollection<KeyValu
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadString());
+			Remove(input.ReadString());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			string k = string.Empty;
 			string v = string.Empty;
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadString();
+					k = input.ReadString();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = stream.ReadString();
+					v = input.ReadString();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -5885,27 +5885,27 @@ public class BoolTimestamp_map : IDictionary<bool, Kdsync.Timestamp>, ICollectio
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -5913,29 +5913,29 @@ public class BoolTimestamp_map : IDictionary<bool, Kdsync.Timestamp>, ICollectio
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadBool());
+			Remove(input.ReadBool());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			bool k = default;
 			Kdsync.Timestamp v = new Kdsync.Timestamp();
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadBool();
+					k = input.ReadBool();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -6234,27 +6234,27 @@ public class Int32Timestamp_map : IDictionary<int, Kdsync.Timestamp>, ICollectio
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -6262,29 +6262,29 @@ public class Int32Timestamp_map : IDictionary<int, Kdsync.Timestamp>, ICollectio
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt32());
+			Remove(input.ReadInt32());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			int k = default;
 			Kdsync.Timestamp v = new Kdsync.Timestamp();
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt32();
+					k = input.ReadInt32();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -6583,27 +6583,27 @@ public class Int64Timestamp_map : IDictionary<long, Kdsync.Timestamp>, ICollecti
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -6611,29 +6611,29 @@ public class Int64Timestamp_map : IDictionary<long, Kdsync.Timestamp>, ICollecti
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt64());
+			Remove(input.ReadInt64());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			long k = default;
 			Kdsync.Timestamp v = new Kdsync.Timestamp();
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt64();
+					k = input.ReadInt64();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -6932,27 +6932,27 @@ public class StringTimestamp_map : IDictionary<string, Kdsync.Timestamp>, IColle
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -6960,29 +6960,29 @@ public class StringTimestamp_map : IDictionary<string, Kdsync.Timestamp>, IColle
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadString());
+			Remove(input.ReadString());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			string k = string.Empty;
 			Kdsync.Timestamp v = new Kdsync.Timestamp();
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadString();
+					k = input.ReadString();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -7292,27 +7292,27 @@ public class BoolItemType_map : IDictionary<bool, ItemType>, ICollection<KeyValu
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -7320,29 +7320,29 @@ public class BoolItemType_map : IDictionary<bool, ItemType>, ICollection<KeyValu
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadBool());
+			Remove(input.ReadBool());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			bool k = default;
 			ItemType v = default;
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadBool();
+					k = input.ReadBool();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = (ItemType)stream.ReadEnum();
+					v = (ItemType)input.ReadEnum();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -7642,27 +7642,27 @@ public class Int32ItemType_map : IDictionary<int, ItemType>, ICollection<KeyValu
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -7670,29 +7670,29 @@ public class Int32ItemType_map : IDictionary<int, ItemType>, ICollection<KeyValu
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt32());
+			Remove(input.ReadInt32());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			int k = default;
 			ItemType v = default;
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt32();
+					k = input.ReadInt32();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = (ItemType)stream.ReadEnum();
+					v = (ItemType)input.ReadEnum();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -7992,27 +7992,27 @@ public class Int64ItemType_map : IDictionary<long, ItemType>, ICollection<KeyVal
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -8020,29 +8020,29 @@ public class Int64ItemType_map : IDictionary<long, ItemType>, ICollection<KeyVal
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt64());
+			Remove(input.ReadInt64());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			long k = default;
 			ItemType v = default;
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt64();
+					k = input.ReadInt64();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = (ItemType)stream.ReadEnum();
+					v = (ItemType)input.ReadEnum();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -8342,27 +8342,27 @@ public class StringItemType_map : IDictionary<string, ItemType>, ICollection<Key
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -8370,29 +8370,29 @@ public class StringItemType_map : IDictionary<string, ItemType>, ICollection<Key
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadString());
+			Remove(input.ReadString());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			string k = string.Empty;
 			ItemType v = default;
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadString();
+					k = input.ReadString();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = (ItemType)stream.ReadEnum();
+					v = (ItemType)input.ReadEnum();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
@@ -8458,32 +8458,40 @@ public class ItemData : Kdsync.IMessage
 		return sb.ToString();
 	}
 
-	public void MergeFrom(byte[] b)
+	public void MergeFrom(Kdsync.CodedInputStream input)
 	{
-		var stream = new CodedInputStream(b);
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1:
-				id_ = stream.ReadInt32();
+				id_ = input.ReadInt32();
 				_changed |= 0x01 << 1;
 				break;
 			case 2:
-				name_ = stream.ReadString();
+				name_ = input.ReadString();
 				_changed |= 0x01 << 2;
 				break;
 			case 3:
-				count_ = stream.ReadInt32();
+				count_ = input.ReadInt32();
 				_changed |= 0x01 << 3;
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
+	}
+
+	public void WriteTo(Kdsync.CodedOutputStream output)
+	{
+	}
+
+    public int CalculateSize()
+	{
+		return 0;
 	}
 
 	public void RaiseChanged()
@@ -8781,27 +8789,27 @@ public class BoolItemData_map : IDictionary<bool, ItemData>, ICollection<KeyValu
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -8809,40 +8817,40 @@ public class BoolItemData_map : IDictionary<bool, ItemData>, ICollection<KeyValu
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadBool());
+			Remove(input.ReadBool());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			bool k = default;
 			byte[] v = new byte[0];
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadBool();
+					k = input.ReadBool();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = stream.ReadBytes().ToByteArray();
+					v = input.ReadBytes();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
 			if (TryGetValue(k, out var c))
 			{
-				c.MergeFrom(v);
+				c.MergeFrom(new Kdsync.CodedInputStream(v));
 			}
 			else
 			{
 				c = new ItemData();
-				c.MergeFrom(v);
+				c.MergeFrom(new Kdsync.CodedInputStream(v));
 				this[k] = c;
 			}
 		}
@@ -9142,27 +9150,27 @@ public class Int32ItemData_map : IDictionary<int, ItemData>, ICollection<KeyValu
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -9170,40 +9178,40 @@ public class Int32ItemData_map : IDictionary<int, ItemData>, ICollection<KeyValu
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt32());
+			Remove(input.ReadInt32());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			int k = default;
 			byte[] v = new byte[0];
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt32();
+					k = input.ReadInt32();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = stream.ReadBytes().ToByteArray();
+					v = input.ReadBytes();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
 			if (TryGetValue(k, out var c))
 			{
-				c.MergeFrom(v);
+				c.MergeFrom(new Kdsync.CodedInputStream(v));
 			}
 			else
 			{
 				c = new ItemData();
-				c.MergeFrom(v);
+				c.MergeFrom(new Kdsync.CodedInputStream(v));
 				this[k] = c;
 			}
 		}
@@ -9503,27 +9511,27 @@ public class Int64ItemData_map : IDictionary<long, ItemData>, ICollection<KeyVal
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -9531,40 +9539,40 @@ public class Int64ItemData_map : IDictionary<long, ItemData>, ICollection<KeyVal
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadInt64());
+			Remove(input.ReadInt64());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			long k = default;
 			byte[] v = new byte[0];
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadInt64();
+					k = input.ReadInt64();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = stream.ReadBytes().ToByteArray();
+					v = input.ReadBytes();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
 			if (TryGetValue(k, out var c))
 			{
-				c.MergeFrom(v);
+				c.MergeFrom(new Kdsync.CodedInputStream(v));
 			}
 			else
 			{
 				c = new ItemData();
-				c.MergeFrom(v);
+				c.MergeFrom(new Kdsync.CodedInputStream(v));
 				this[k] = c;
 			}
 		}
@@ -9864,27 +9872,27 @@ public class StringItemData_map : IDictionary<string, ItemData>, ICollection<Key
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -9892,40 +9900,40 @@ public class StringItemData_map : IDictionary<string, ItemData>, ICollection<Key
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
-			Remove(stream.ReadString());
+			Remove(input.ReadString());
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 			string k = string.Empty;
 			byte[] v = new byte[0];
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
-					k = stream.ReadString();
+					k = input.ReadString();
 					break;
 				case 2: // MapEntryValueFieldNumber
-					v = stream.ReadBytes().ToByteArray();
+					v = input.ReadBytes();
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
 			if (TryGetValue(k, out var c))
 			{
-				c.MergeFrom(v);
+				c.MergeFrom(new Kdsync.CodedInputStream(v));
 			}
 			else
 			{
 				c = new ItemData();
-				c.MergeFrom(v);
+				c.MergeFrom(new Kdsync.CodedInputStream(v));
 				this[k] = c;
 			}
 		}

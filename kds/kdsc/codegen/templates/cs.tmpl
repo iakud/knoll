@@ -400,27 +400,27 @@ public class {{.Name}} : IDictionary<{{template "Type" .KeyType}}, {{template "M
 
 	public void MergeFrom(byte[] b)
 	{
-		var stream = new CodedInputStream(b);
+		var input = new Kdsync.CodedInputStream(b);
 		var clear = false;
 		byte[] deletes = new byte[0];
 		var entries = new List<byte[]>();
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1: // MapClearFieldNumber
-				clear = stream.ReadBool();
+				clear = input.ReadBool();
 				break;
 			case 2: // MapDeleteFieldNumber
-				deletes = stream.ReadBytes().ToByteArray();
+				deletes = input.ReadBytes();
 				break;
 			case 3: // MapEntryFieldNumber
-				entries.Add(stream.ReadBytes().ToByteArray());
+				entries.Add(input.ReadBytes());
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
@@ -428,36 +428,36 @@ public class {{.Name}} : IDictionary<{{template "Type" .KeyType}}, {{template "M
 		{
 			Clear();
 		}
-		stream = new CodedInputStream(deletes);
-		while (!stream.IsAtEnd)
+		input = new Kdsync.CodedInputStream(deletes);
+		while (!input.IsAtEnd)
 		{
 {{- if eq .KeyType "int32"}}
-			Remove(stream.ReadInt32());
+			Remove(input.ReadInt32());
 {{- else if eq .KeyType "int64"}}
-			Remove(stream.ReadInt64());
+			Remove(input.ReadInt64());
 {{- else if eq .KeyType "uint32"}}
-			Remove(stream.ReadUInt32());
+			Remove(input.ReadUInt32());
 {{- else if eq .KeyType "uint64"}}
-			Remove(stream.ReadUInt64());
+			Remove(input.ReadUInt64());
 {{- else if eq .KeyType "sint64"}}
-			Remove(stream.ReadSInt32());
+			Remove(input.ReadSInt32());
 {{- else if eq .KeyType "sint64"}}
-			Remove(stream.ReadSInt64());
+			Remove(input.ReadSInt64());
 {{- else if eq .KeyType "sfixed32"}}
-			Remove(stream.ReadSFixed32());
+			Remove(input.ReadSFixed32());
 {{- else if eq .KeyType "sfixed64"}}
-			Remove(stream.ReadSFixed64());
+			Remove(input.ReadSFixed64());
 {{- else if eq .KeyType "bool"}}
-			Remove(stream.ReadBool());
+			Remove(input.ReadBool());
 {{- else if eq .KeyType "string"}}
-			Remove(stream.ReadString());
+			Remove(input.ReadString());
 {{- else}}
-			stream.SkipLastField();
+			input.SkipLastField();
 {{- end}}
 		}
 		foreach (var entry in entries)
 		{
-			stream = new CodedInputStream(entry);
+			input = new Kdsync.CodedInputStream(entry);
 {{- if eq .KeyType "string"}}
 			string k = string.Empty;
 {{- else}}
@@ -474,91 +474,91 @@ public class {{.Name}} : IDictionary<{{template "Type" .KeyType}}, {{template "M
 {{- else}}
 			{{template "MapValueType" .}} v = default;
 {{- end}}
-			while ((tag = stream.ReadTag()) != 0)
+			while ((tag = input.ReadTag()) != 0)
 			{
 				var num = WireFormat.GetTagFieldNumber(tag);
 				switch (num)
 				{
 				case 1: // MapEntryKeyFieldNumber
 {{- if eq .KeyType "int32"}}
-					k = stream.ReadInt32();
+					k = input.ReadInt32();
 {{- else if eq .KeyType "int64"}}
-					k = stream.ReadInt64();
+					k = input.ReadInt64();
 {{- else if eq .KeyType "uint32"}}
-					k = stream.ReadUInt32();
+					k = input.ReadUInt32();
 {{- else if eq .KeyType "uint64"}}
-					k = stream.ReadUInt64();
+					k = input.ReadUInt64();
 {{- else if eq .KeyType "sint64"}}
-					k = stream.ReadSInt32();
+					k = input.ReadSInt32();
 {{- else if eq .KeyType "sint64"}}
-					k = stream.ReadSInt64();
+					k = input.ReadSInt64();
 {{- else if eq .KeyType "sfixed32"}}
-					k = stream.ReadSFixed32();
+					k = input.ReadSFixed32();
 {{- else if eq .KeyType "sfixed64"}}
-					k = stream.ReadSFixed64();
+					k = input.ReadSFixed64();
 {{- else if eq .KeyType "bool"}}
-					k = stream.ReadBool();
+					k = input.ReadBool();
 {{- else if eq .KeyType "string"}}
-					k = stream.ReadString();
+					k = input.ReadString();
 {{- else}}
-					stream.SkipLastField();
+					input.SkipLastField();
 {{- end}}
 					break;
 				case 2: // MapEntryValueFieldNumber
 {{- if eq .TypeKind "component"}}
-					v = stream.ReadBytes().ToByteArray();
+					v = input.ReadBytes();
 {{- else if eq .TypeKind "enum"}}
-					v = ({{.Type}})stream.ReadEnum();
+					v = ({{.Type}})input.ReadEnum();
 {{- else if eq .Type "bool"}}
-					v = stream.ReadBool();
+					v = input.ReadBool();
 {{- else if eq .Type "int32"}}
-					v = stream.ReadInt32();
+					v = input.ReadInt32();
 {{- else if eq .Type "sint32"}}
-					v = stream.ReadSInt32();
+					v = input.ReadSInt32();
 {{- else if eq .Type "uint32"}}
-					v = stream.ReadUInt32();
+					v = input.ReadUInt32();
 {{- else if eq .Type "int64"}}
-					v = stream.ReadInt64();
+					v = input.ReadInt64();
 {{- else if eq .Type "sint64"}}
-					v = stream.ReadSInt64();
+					v = input.ReadSInt64();
 {{- else if eq .Type "uint64"}}
-					v = stream.ReadUInt64();
+					v = input.ReadUInt64();
 {{- else if eq .Type "fixed32"}}
-					v = stream.ReadFixed32();
+					v = input.ReadFixed32();
 {{- else if eq .Type "sfixed32"}}
-					v = stream.ReadSFixed32();
+					v = input.ReadSFixed32();
 {{- else if eq .Type "fixed64"}}
-					v = stream.ReadFixed64();
+					v = input.ReadFixed64();
 {{- else if eq .Type "sfixed64"}}
-					v = stream.ReadSFixed64();
+					v = input.ReadSFixed64();
 {{- else if eq .Type "float"}}
-					v = stream.ReadFloat();
+					v = input.ReadFloat();
 {{- else if eq .Type "double"}}
-					v = stream.ReadDouble();
+					v = input.ReadDouble();
 {{- else if eq .Type "string"}}
-					v = stream.ReadString();
+					v = input.ReadString();
 {{- else if eq .Type "bytes"}}
-					v = stream.ReadBytes().ToByteArray();
+					v = input.ReadBytes();
 {{- else if eq .Type "timestamp" "duration" "empty"}}
-					v.MergeFrom(stream.ReadBytes().ToByteArray());
+					v.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 {{- else}}
-					stream.SkipLastField();
+					input.SkipLastField();
 {{- end}}
 					break;
 				default:
-					stream.SkipLastField();
+					input.SkipLastField();
 					break;
 				}
 			}
 {{- if eq .TypeKind "component"}}
 			if (TryGetValue(k, out var c))
 			{
-				c.MergeFrom(v);
+				c.MergeFrom(new Kdsync.CodedInputStream(v));
 			}
 			else
 			{
 				c = new {{.Type}}();
-				c.MergeFrom(v);
+				c.MergeFrom(new Kdsync.CodedInputStream(v));
 				this[k] = c;
 			}
 {{- else}}
@@ -691,11 +691,10 @@ public enum {{.Name}}
 		return sb.ToString();
 	}
 
-	public void MergeFrom(byte[] b)
+	public void MergeFrom(Kdsync.CodedInputStream input)
 	{
-		var stream = new CodedInputStream(b);
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
@@ -703,57 +702,66 @@ public enum {{.Name}}
 {{- range .Fields}}
 			case {{.Number}}:
 {{- if .Repeated}}
-				{{template "FieldName" .}}.MergeFrom(stream.ReadBytes().ToByteArray(), _list_{{template "FieldName" .}}_codec);
+				{{template "FieldName" .}}.AddEntriesFrom(input, _list_{{template "FieldName" .}}_codec);
 {{- else if .Map}}
-				{{template "FieldName" .}}.MergeFrom(stream.ReadBytes().ToByteArray());
+				{{template "FieldName" .}}.MergeFrom(input.ReadBytes());
 {{- else if eq .TypeKind "component"}}
-				{{template "FieldName" .}}.MergeFrom(stream.ReadBytes().ToByteArray());
+				input.ReadMessage({{template "FieldName" .}});
 {{- else if eq .TypeKind "enum"}}
-				{{template "FieldName" .}} = ({{.Type}})stream.ReadEnum();
+				{{template "FieldName" .}} = ({{.Type}})input.ReadEnum();
 {{- else if eq .Type "bool"}}
-				{{template "FieldName" .}} = stream.ReadBool();
+				{{template "FieldName" .}} = input.ReadBool();
 {{- else if eq .Type "int32"}}
-				{{template "FieldName" .}} = stream.ReadInt32();
+				{{template "FieldName" .}} = input.ReadInt32();
 {{- else if eq .Type "sint32"}}
-				{{template "FieldName" .}} = stream.ReadSInt32();
+				{{template "FieldName" .}} = input.ReadSInt32();
 {{- else if eq .Type "uint32"}}
-				{{template "FieldName" .}} = stream.ReadUInt32();
+				{{template "FieldName" .}} = input.ReadUInt32();
 {{- else if eq .Type "int64"}}
-				{{template "FieldName" .}} = stream.ReadInt64();
+				{{template "FieldName" .}} = input.ReadInt64();
 {{- else if eq .Type "sint64"}}
-				{{template "FieldName" .}} = stream.ReadSInt64();
+				{{template "FieldName" .}} = input.ReadSInt64();
 {{- else if eq .Type "uint64"}}
-				{{template "FieldName" .}} = stream.ReadUInt64();
+				{{template "FieldName" .}} = input.ReadUInt64();
 {{- else if eq .Type "fixed32"}}
-				{{template "FieldName" .}} = stream.ReadFixed32();
+				{{template "FieldName" .}} = input.ReadFixed32();
 {{- else if eq .Type "sfixed32"}}
-				{{template "FieldName" .}} = stream.ReadSFixed32();
+				{{template "FieldName" .}} = input.ReadSFixed32();
 {{- else if eq .Type "fixed64"}}
-				{{template "FieldName" .}} = stream.ReadFixed64();
+				{{template "FieldName" .}} = input.ReadFixed64();
 {{- else if eq .Type "sfixed64"}}
-				{{template "FieldName" .}} = stream.ReadSFixed64();
+				{{template "FieldName" .}} = input.ReadSFixed64();
 {{- else if eq .Type "float"}}
-				{{template "FieldName" .}} = stream.ReadFloat();
+				{{template "FieldName" .}} = input.ReadFloat();
 {{- else if eq .Type "double"}}
-				{{template "FieldName" .}} = stream.ReadDouble();
+				{{template "FieldName" .}} = input.ReadDouble();
 {{- else if eq .Type "string"}}
-				{{template "FieldName" .}} = stream.ReadString();
+				{{template "FieldName" .}} = input.ReadString();
 {{- else if eq .Type "bytes"}}
-				{{template "FieldName" .}} = stream.ReadBytes().ToByteArray();
+				{{template "FieldName" .}} = input.ReadBytes();
 {{- else if eq .Type "timestamp" "duration" "empty"}}
 				{{template "FieldName" .}} = new {{template "Type" .Type}}();
-				{{template "FieldName" .}}.MergeFrom(stream.ReadBytes().ToByteArray());
+				{{template "FieldName" .}}.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 {{- else}}
-				stream.SkipLastField();
+				input.SkipLastField();
 {{- end}}
 				_changed |= 0x01 << {{.Number}};
 				break;
 {{- end}}
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
+	}
+
+	public void WriteTo(Kdsync.CodedOutputStream output)
+	{
+	}
+
+    public int CalculateSize()
+	{
+		return 0;
 	}
 
 	public void RaiseChanged()

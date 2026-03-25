@@ -59,32 +59,40 @@ public class All
 		return sb.ToString();
 	}
 
-	public void MergeFrom(byte[] b)
+	public void MergeFrom(Kdsync.CodedInputStream input)
 	{
-		var stream = new CodedInputStream(b);
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1:
-				types_.MergeFrom(stream.ReadBytes().ToByteArray());
+				input.ReadMessage(types_);
 				_changed |= 0x01 << 1;
 				break;
 			case 2:
-				lists_.MergeFrom(stream.ReadBytes().ToByteArray());
+				input.ReadMessage(lists_);
 				_changed |= 0x01 << 2;
 				break;
 			case 3:
-				maps_.MergeFrom(stream.ReadBytes().ToByteArray());
+				input.ReadMessage(maps_);
 				_changed |= 0x01 << 3;
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
+	}
+
+	public void WriteTo(Kdsync.CodedOutputStream output)
+	{
+	}
+
+    public int CalculateSize()
+	{
+		return 0;
 	}
 
 	public void RaiseChanged()
@@ -247,103 +255,111 @@ public class AllType : Kdsync.IMessage
 		return sb.ToString();
 	}
 
-	public void MergeFrom(byte[] b)
+	public void MergeFrom(Kdsync.CodedInputStream input)
 	{
-		var stream = new CodedInputStream(b);
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1:
-				int32Val_ = stream.ReadInt32();
+				int32Val_ = input.ReadInt32();
 				_changed |= 0x01 << 1;
 				break;
 			case 2:
-				int64Val_ = stream.ReadInt64();
+				int64Val_ = input.ReadInt64();
 				_changed |= 0x01 << 2;
 				break;
 			case 3:
-				uint32Val_ = stream.ReadUInt32();
+				uint32Val_ = input.ReadUInt32();
 				_changed |= 0x01 << 3;
 				break;
 			case 4:
-				uint64Val_ = stream.ReadUInt64();
+				uint64Val_ = input.ReadUInt64();
 				_changed |= 0x01 << 4;
 				break;
 			case 5:
-				sint32Val_ = stream.ReadSInt32();
+				sint32Val_ = input.ReadSInt32();
 				_changed |= 0x01 << 5;
 				break;
 			case 6:
-				sint64Val_ = stream.ReadSInt64();
+				sint64Val_ = input.ReadSInt64();
 				_changed |= 0x01 << 6;
 				break;
 			case 7:
-				fixed32Val_ = stream.ReadFixed32();
+				fixed32Val_ = input.ReadFixed32();
 				_changed |= 0x01 << 7;
 				break;
 			case 8:
-				fixed64Val_ = stream.ReadFixed64();
+				fixed64Val_ = input.ReadFixed64();
 				_changed |= 0x01 << 8;
 				break;
 			case 9:
-				sfixed32Val_ = stream.ReadSFixed32();
+				sfixed32Val_ = input.ReadSFixed32();
 				_changed |= 0x01 << 9;
 				break;
 			case 10:
-				sfixed64Val_ = stream.ReadSFixed64();
+				sfixed64Val_ = input.ReadSFixed64();
 				_changed |= 0x01 << 10;
 				break;
 			case 11:
-				floatVal_ = stream.ReadFloat();
+				floatVal_ = input.ReadFloat();
 				_changed |= 0x01 << 11;
 				break;
 			case 12:
-				doubleVal_ = stream.ReadDouble();
+				doubleVal_ = input.ReadDouble();
 				_changed |= 0x01 << 12;
 				break;
 			case 13:
-				boolVal_ = stream.ReadBool();
+				boolVal_ = input.ReadBool();
 				_changed |= 0x01 << 13;
 				break;
 			case 14:
-				stringVal_ = stream.ReadString();
+				stringVal_ = input.ReadString();
 				_changed |= 0x01 << 14;
 				break;
 			case 15:
-				bytesVal_ = stream.ReadBytes().ToByteArray();
+				bytesVal_ = input.ReadBytes();
 				_changed |= 0x01 << 15;
 				break;
 			case 16:
 				timestampVal_ = new Kdsync.Timestamp();
-				timestampVal_.MergeFrom(stream.ReadBytes().ToByteArray());
+				timestampVal_.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 				_changed |= 0x01 << 16;
 				break;
 			case 17:
 				durationVal_ = new Kdsync.Duration();
-				durationVal_.MergeFrom(stream.ReadBytes().ToByteArray());
+				durationVal_.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 				_changed |= 0x01 << 17;
 				break;
 			case 18:
 				emptyVal_ = new Kdsync.Empty();
-				emptyVal_.MergeFrom(stream.ReadBytes().ToByteArray());
+				emptyVal_.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
 				_changed |= 0x01 << 18;
 				break;
 			case 19:
-				enumVal_ = (ItemType)stream.ReadEnum();
+				enumVal_ = (ItemType)input.ReadEnum();
 				_changed |= 0x01 << 19;
 				break;
 			case 20:
-				itemData_.MergeFrom(stream.ReadBytes().ToByteArray());
+				input.ReadMessage(itemData_);
 				_changed |= 0x01 << 20;
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
+	}
+
+	public void WriteTo(Kdsync.CodedOutputStream output)
+	{
+	}
+
+    public int CalculateSize()
+	{
+		return 0;
 	}
 
 	public void RaiseChanged()
@@ -469,64 +485,72 @@ public class AllList : Kdsync.IMessage
 		return sb.ToString();
 	}
 
-	public void MergeFrom(byte[] b)
+	public void MergeFrom(Kdsync.CodedInputStream input)
 	{
-		var stream = new CodedInputStream(b);
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1:
-				int32List_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_int32List__codec);
+				int32List_.AddEntriesFrom(input, _list_int32List__codec);
 				_changed |= 0x01 << 1;
 				break;
 			case 2:
-				int64List_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_int64List__codec);
+				int64List_.AddEntriesFrom(input, _list_int64List__codec);
 				_changed |= 0x01 << 2;
 				break;
 			case 3:
-				floatList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_floatList__codec);
+				floatList_.AddEntriesFrom(input, _list_floatList__codec);
 				_changed |= 0x01 << 3;
 				break;
 			case 4:
-				doubleList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_doubleList__codec);
+				doubleList_.AddEntriesFrom(input, _list_doubleList__codec);
 				_changed |= 0x01 << 4;
 				break;
 			case 5:
-				boolList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_boolList__codec);
+				boolList_.AddEntriesFrom(input, _list_boolList__codec);
 				_changed |= 0x01 << 5;
 				break;
 			case 6:
-				stringList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_stringList__codec);
+				stringList_.AddEntriesFrom(input, _list_stringList__codec);
 				_changed |= 0x01 << 6;
 				break;
 			case 7:
-				timestampList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_timestampList__codec);
+				timestampList_.AddEntriesFrom(input, _list_timestampList__codec);
 				_changed |= 0x01 << 7;
 				break;
 			case 8:
-				durationList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_durationList__codec);
+				durationList_.AddEntriesFrom(input, _list_durationList__codec);
 				_changed |= 0x01 << 8;
 				break;
 			case 9:
-				emptyList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_emptyList__codec);
+				emptyList_.AddEntriesFrom(input, _list_emptyList__codec);
 				_changed |= 0x01 << 9;
 				break;
 			case 10:
-				enumList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_enumList__codec);
+				enumList_.AddEntriesFrom(input, _list_enumList__codec);
 				_changed |= 0x01 << 10;
 				break;
 			case 11:
-				itemList_.MergeFrom(stream.ReadBytes().ToByteArray(), _list_itemList__codec);
+				itemList_.AddEntriesFrom(input, _list_itemList__codec);
 				_changed |= 0x01 << 11;
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
+	}
+
+	public void WriteTo(Kdsync.CodedOutputStream output)
+	{
+	}
+
+    public int CalculateSize()
+	{
+		return 0;
 	}
 
 	public void RaiseChanged()
@@ -783,132 +807,140 @@ public class AllMap : Kdsync.IMessage
 		return sb.ToString();
 	}
 
-	public void MergeFrom(byte[] b)
+	public void MergeFrom(Kdsync.CodedInputStream input)
 	{
-		var stream = new CodedInputStream(b);
 		uint tag;
-		while ((tag = stream.ReadTag()) != 0)
+		while ((tag = input.ReadTag()) != 0)
 		{
 			var num = WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1:
-				int32Int32_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int32Int32_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 1;
 				break;
 			case 2:
-				int32String_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int32String_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 2;
 				break;
 			case 3:
-				int32Timestamp_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int32Timestamp_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 3;
 				break;
 			case 4:
-				int32Duration_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int32Duration_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 4;
 				break;
 			case 5:
-				int32Empty_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int32Empty_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 5;
 				break;
 			case 6:
-				int32Enum_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int32Enum_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 6;
 				break;
 			case 7:
-				int32ItemData_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int32ItemData_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 7;
 				break;
 			case 8:
-				int64Int64_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int64Int64_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 8;
 				break;
 			case 9:
-				int64String_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int64String_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 9;
 				break;
 			case 10:
-				int64Timestamp_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int64Timestamp_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 10;
 				break;
 			case 11:
-				int64Duration_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int64Duration_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 11;
 				break;
 			case 12:
-				int64Empty_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int64Empty_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 12;
 				break;
 			case 13:
-				int64Enum_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int64Enum_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 13;
 				break;
 			case 14:
-				int64ItemData_.MergeFrom(stream.ReadBytes().ToByteArray());
+				int64ItemData_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 14;
 				break;
 			case 15:
-				stringInt32_.MergeFrom(stream.ReadBytes().ToByteArray());
+				stringInt32_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 15;
 				break;
 			case 16:
-				stringString_.MergeFrom(stream.ReadBytes().ToByteArray());
+				stringString_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 16;
 				break;
 			case 17:
-				stringTimestamp_.MergeFrom(stream.ReadBytes().ToByteArray());
+				stringTimestamp_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 17;
 				break;
 			case 18:
-				stringDuration_.MergeFrom(stream.ReadBytes().ToByteArray());
+				stringDuration_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 18;
 				break;
 			case 19:
-				stringEmpty_.MergeFrom(stream.ReadBytes().ToByteArray());
+				stringEmpty_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 19;
 				break;
 			case 20:
-				stringEnum_.MergeFrom(stream.ReadBytes().ToByteArray());
+				stringEnum_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 20;
 				break;
 			case 21:
-				stringItemData_.MergeFrom(stream.ReadBytes().ToByteArray());
+				stringItemData_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 21;
 				break;
 			case 22:
-				boolInt32_.MergeFrom(stream.ReadBytes().ToByteArray());
+				boolInt32_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 22;
 				break;
 			case 23:
-				boolString_.MergeFrom(stream.ReadBytes().ToByteArray());
+				boolString_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 23;
 				break;
 			case 24:
-				boolTimestamp_.MergeFrom(stream.ReadBytes().ToByteArray());
+				boolTimestamp_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 24;
 				break;
 			case 25:
-				boolDuration_.MergeFrom(stream.ReadBytes().ToByteArray());
+				boolDuration_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 25;
 				break;
 			case 26:
-				boolEmpty_.MergeFrom(stream.ReadBytes().ToByteArray());
+				boolEmpty_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 26;
 				break;
 			case 27:
-				boolEnum_.MergeFrom(stream.ReadBytes().ToByteArray());
+				boolEnum_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 27;
 				break;
 			case 28:
-				boolItemData_.MergeFrom(stream.ReadBytes().ToByteArray());
+				boolItemData_.MergeFrom(input.ReadBytes());
 				_changed |= 0x01 << 28;
 				break;
 			default:
-				stream.SkipLastField();
+				input.SkipLastField();
 				break;
 			}
 		}
+	}
+
+	public void WriteTo(Kdsync.CodedOutputStream output)
+	{
+	}
+
+    public int CalculateSize()
+	{
+		return 0;
 	}
 
 	public void RaiseChanged()
