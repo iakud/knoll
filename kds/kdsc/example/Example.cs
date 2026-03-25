@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Kds;
@@ -64,7 +63,9 @@ public static class Example
         _all.Maps.BoolItemData.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.BoolItemData.Changed");
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "merge_from", CallConvs = new[] { typeof(CallConvCdecl) })]
+#if NET10_0_OR_GREATER
+    [System.Runtime.InteropServices.UnmanagedCallersOnly(EntryPoint = "merge_from", CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+#endif
     public static int MergeFrom(IntPtr dataPtr, int length)
     {
         try
@@ -86,7 +87,9 @@ public static class Example
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "get_string", CallConvs = new[] { typeof(CallConvCdecl) })]
+#if NET10_0_OR_GREATER
+    [System.Runtime.InteropServices.UnmanagedCallersOnly(EntryPoint = "get_string", CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+#endif
     public static IntPtr GetString()
     {
         return Marshal.StringToHGlobalAnsi(_all.ToString(""));
