@@ -71,15 +71,6 @@ public class ItemData : Kdsync.IMessage
 		}
 	}
 
-	public void WriteTo(Kdsync.CodedOutputStream output)
-	{
-	}
-
-    public int CalculateSize()
-	{
-		return 0;
-	}
-
 	public void RaiseChanged()
 	{
 		if (_changed == 0)

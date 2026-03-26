@@ -69,15 +69,6 @@ public class All : Kdsync.IMessage
 		}
 	}
 
-	public void WriteTo(Kdsync.CodedOutputStream output)
-	{
-	}
-
-    public int CalculateSize()
-	{
-		return 0;
-	}
-
 	public void RaiseChanged()
 	{
 		if (_changed == 0)
@@ -324,15 +315,6 @@ public class AllType : Kdsync.IMessage
 		}
 	}
 
-	public void WriteTo(Kdsync.CodedOutputStream output)
-	{
-	}
-
-    public int CalculateSize()
-	{
-		return 0;
-	}
-
 	public void RaiseChanged()
 	{
 		if (_changed == 0)
@@ -526,15 +508,6 @@ public class AllList : Kdsync.IMessage
 				break;
 			}
 		}
-	}
-
-	public void WriteTo(Kdsync.CodedOutputStream output)
-	{
-	}
-
-    public int CalculateSize()
-	{
-		return 0;
 	}
 
 	public void RaiseChanged()
@@ -931,15 +904,6 @@ public class AllMap : Kdsync.IMessage
 				break;
 			}
 		}
-	}
-
-	public void WriteTo(Kdsync.CodedOutputStream output)
-	{
-	}
-
-    public int CalculateSize()
-	{
-		return 0;
 	}
 
 	public void RaiseChanged()

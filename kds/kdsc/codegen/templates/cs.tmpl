@@ -94,7 +94,7 @@
 {{- /*Protobuf reserved "Types" "Descriptor" "Equals" "ToString" "GetHashCode" "WriteTo" "Clone" "CalculateSize" "MergeFrom" "OnConstruction" "Parser"*/ -}}
 {{- if eq .Name .Def.Name}}{{.Name}}_
 {{- else if and (eq .Def.Kind "entity") (eq .Name "Id")}}{{.Name}}_
-{{- else if eq .Name "Equals" "ToString" "GetHashCode" "MergeFrom" "WriteTo" "CalculateSize" "RaiseChanged" "ClearChanged"}}{{.Name}}_
+{{- else if eq .Name "Equals" "ToString" "GetHashCode" "WriteTo" "Clone" "CalculateSize" "MergeFrom" "RaiseChanged" "ClearChanged"}}{{.Name}}_
 {{- else}}{{.Name}}
 {{- end}}
 {{- end}}
@@ -229,15 +229,6 @@ public enum {{.Name}}
 				break;
 			}
 		}
-	}
-
-	public void WriteTo(Kdsync.CodedOutputStream output)
-	{
-	}
-
-    public int CalculateSize()
-	{
-		return 0;
 	}
 
 	public void RaiseChanged()
