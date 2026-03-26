@@ -99,4 +99,3 @@ public class ItemData : Kdsync.IMessage
 		return Kdsync.JsonFormatter.Format(this);
 	}
 }
-

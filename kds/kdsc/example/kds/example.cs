@@ -418,7 +418,7 @@ public class AllList : Kdsync.IMessage
 	private Kdsync.Repeated<Kdsync.Empty> emptyList_;
 	public Kdsync.Repeated<Kdsync.Empty> EmptyList => emptyList_;
 
-	private static readonly Kdsync.FieldCodec<ItemType> _list_enumList__codec = Kdsync.FieldCodec.ForEnum(10, x => (int) x, x => (ItemType) x);
+	private static readonly Kdsync.FieldCodec<ItemType> _list_enumList__codec = Kdsync.FieldCodec.ForEnum(10, x => (int)x, x => (ItemType)x);
 	private Kdsync.Repeated<ItemType> enumList_;
 	public Kdsync.Repeated<ItemType> EnumList => enumList_;
 
@@ -645,7 +645,7 @@ public class AllMap : Kdsync.IMessage
 	private Kdsync.Map<int, Kdsync.Empty> int32Empty_;
 	public Kdsync.Map<int, Kdsync.Empty> Int32Empty => int32Empty_;
 
-	private static readonly Kdsync.Map<int, ItemType>.Codec _map_int32Enum__codec = new Kdsync.Map<int, ItemType>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForEnum(2, x => (int) x, x => (ItemType) x), 6);
+	private static readonly Kdsync.Map<int, ItemType>.Codec _map_int32Enum__codec = new Kdsync.Map<int, ItemType>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForEnum(2, x => (int)x, x => (ItemType)x), 6);
 	private Kdsync.Map<int, ItemType> int32Enum_;
 	public Kdsync.Map<int, ItemType> Int32Enum => int32Enum_;
 
@@ -673,7 +673,7 @@ public class AllMap : Kdsync.IMessage
 	private Kdsync.Map<long, Kdsync.Empty> int64Empty_;
 	public Kdsync.Map<long, Kdsync.Empty> Int64Empty => int64Empty_;
 
-	private static readonly Kdsync.Map<long, ItemType>.Codec _map_int64Enum__codec = new Kdsync.Map<long, ItemType>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForEnum(2, x => (int) x, x => (ItemType) x), 13);
+	private static readonly Kdsync.Map<long, ItemType>.Codec _map_int64Enum__codec = new Kdsync.Map<long, ItemType>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForEnum(2, x => (int)x, x => (ItemType)x), 13);
 	private Kdsync.Map<long, ItemType> int64Enum_;
 	public Kdsync.Map<long, ItemType> Int64Enum => int64Enum_;
 
@@ -701,7 +701,7 @@ public class AllMap : Kdsync.IMessage
 	private Kdsync.Map<string, Kdsync.Empty> stringEmpty_;
 	public Kdsync.Map<string, Kdsync.Empty> StringEmpty => stringEmpty_;
 
-	private static readonly Kdsync.Map<string, ItemType>.Codec _map_stringEnum__codec = new Kdsync.Map<string, ItemType>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForEnum(2, x => (int) x, x => (ItemType) x), 20);
+	private static readonly Kdsync.Map<string, ItemType>.Codec _map_stringEnum__codec = new Kdsync.Map<string, ItemType>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForEnum(2, x => (int)x, x => (ItemType)x), 20);
 	private Kdsync.Map<string, ItemType> stringEnum_;
 	public Kdsync.Map<string, ItemType> StringEnum => stringEnum_;
 
@@ -729,7 +729,7 @@ public class AllMap : Kdsync.IMessage
 	private Kdsync.Map<bool, Kdsync.Empty> boolEmpty_;
 	public Kdsync.Map<bool, Kdsync.Empty> BoolEmpty => boolEmpty_;
 
-	private static readonly Kdsync.Map<bool, ItemType>.Codec _map_boolEnum__codec = new Kdsync.Map<bool, ItemType>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForEnum(2, x => (int) x, x => (ItemType) x), 27);
+	private static readonly Kdsync.Map<bool, ItemType>.Codec _map_boolEnum__codec = new Kdsync.Map<bool, ItemType>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForEnum(2, x => (int)x, x => (ItemType)x), 27);
 	private Kdsync.Map<bool, ItemType> boolEnum_;
 	public Kdsync.Map<bool, ItemType> BoolEnum => boolEnum_;
 
@@ -1071,4 +1071,3 @@ public class AllMap : Kdsync.IMessage
 		return Kdsync.JsonFormatter.Format(this);
 	}
 }
-

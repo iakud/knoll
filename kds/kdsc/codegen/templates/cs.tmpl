@@ -41,7 +41,7 @@
 {{- else if eq .Type "timestamp"}}Kdsync.FieldCodec.ForTimestamp({{.Number}})
 {{- else if eq .Type "duration"}}Kdsync.FieldCodec.ForDuration({{.Number}})
 {{- else if eq .Type "empty"}}Kdsync.FieldCodec.ForEmpty({{.Number}})
-{{- else if eq .TypeKind "enum"}}Kdsync.FieldCodec.ForEnum({{.Number}}, x => (int) x, x => ({{.Type}}) x)
+{{- else if eq .TypeKind "enum"}}Kdsync.FieldCodec.ForEnum({{.Number}}, x => (int)x, x => ({{.Type}})x)
 {{- else}}Kdsync.FieldCodec.ForMessage<{{.Type}}>({{.Number}})
 {{- end}}
 {{- end}}
@@ -82,7 +82,7 @@
 {{- else if eq .Type "timestamp"}}Kdsync.FieldCodec.ForTimestamp(2)
 {{- else if eq .Type "duration"}}Kdsync.FieldCodec.ForDuration(2)
 {{- else if eq .Type "empty"}}Kdsync.FieldCodec.ForEmpty(2)
-{{- else if eq .TypeKind "enum"}}Kdsync.FieldCodec.ForEnum(2, x => (int) x, x => ({{.Type}}) x)
+{{- else if eq .TypeKind "enum"}}Kdsync.FieldCodec.ForEnum(2, x => (int)x, x => ({{.Type}})x)
 {{- else}}Kdsync.FieldCodec.ForMessage<{{.Type}}>(2)
 {{- end}}
 {{- end}}
@@ -372,6 +372,5 @@ namespace {{ucFirst .Package}};
 {{- end}}
 
 {{- end}}
-
 {{/* EMPTY LINE */}}
 {{- /* END CS */ -}}
