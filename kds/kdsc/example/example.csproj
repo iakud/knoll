@@ -11,11 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="kdsync-net\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="kdsync-net\kdsync-net.csproj" />
+    <PackageReference Include="kdsync-net" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
