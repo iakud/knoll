@@ -173,60 +173,60 @@ public enum {{.Name}}
 			switch (num)
 			{
 {{- range .Fields}}
-			case {{.Number}}:
+				case {{.Number}}:
 {{- if .Repeated}}
-				{{template "FieldName" .}}.AddEntriesFrom(ref ctx, _list_{{template "FieldName" .}}_codec);
+					{{template "FieldName" .}}.AddEntriesFrom(ref ctx, _list_{{template "FieldName" .}}_codec);
 {{- else if .Map}}
-				{{template "FieldName" .}}.AddEntriesFrom(ref ctx, _map_{{template "FieldName" .}}_codec);
+					{{template "FieldName" .}}.AddEntriesFrom(ref ctx, _map_{{template "FieldName" .}}_codec);
 {{- else if eq .TypeKind "component"}}
-				ctx.ReadMessage({{template "FieldName" .}});
+					ctx.ReadMessage({{template "FieldName" .}});
 {{- else if eq .TypeKind "enum"}}
-				{{template "FieldName" .}} = ({{.Type}})ctx.ReadEnum();
+					{{template "FieldName" .}} = ({{.Type}})ctx.ReadEnum();
 {{- else if eq .Type "bool"}}
-				{{template "FieldName" .}} = ctx.ReadBool();
+					{{template "FieldName" .}} = ctx.ReadBool();
 {{- else if eq .Type "int32"}}
-				{{template "FieldName" .}} = ctx.ReadInt32();
+					{{template "FieldName" .}} = ctx.ReadInt32();
 {{- else if eq .Type "sint32"}}
-				{{template "FieldName" .}} = ctx.ReadSInt32();
+					{{template "FieldName" .}} = ctx.ReadSInt32();
 {{- else if eq .Type "uint32"}}
-				{{template "FieldName" .}} = ctx.ReadUInt32();
+					{{template "FieldName" .}} = ctx.ReadUInt32();
 {{- else if eq .Type "int64"}}
-				{{template "FieldName" .}} = ctx.ReadInt64();
+					{{template "FieldName" .}} = ctx.ReadInt64();
 {{- else if eq .Type "sint64"}}
-				{{template "FieldName" .}} = ctx.ReadSInt64();
+					{{template "FieldName" .}} = ctx.ReadSInt64();
 {{- else if eq .Type "uint64"}}
-				{{template "FieldName" .}} = ctx.ReadUInt64();
+					{{template "FieldName" .}} = ctx.ReadUInt64();
 {{- else if eq .Type "fixed32"}}
-				{{template "FieldName" .}} = ctx.ReadFixed32();
+					{{template "FieldName" .}} = ctx.ReadFixed32();
 {{- else if eq .Type "sfixed32"}}
-				{{template "FieldName" .}} = ctx.ReadSFixed32();
+					{{template "FieldName" .}} = ctx.ReadSFixed32();
 {{- else if eq .Type "fixed64"}}
-				{{template "FieldName" .}} = ctx.ReadFixed64();
+					{{template "FieldName" .}} = ctx.ReadFixed64();
 {{- else if eq .Type "sfixed64"}}
-				{{template "FieldName" .}} = ctx.ReadSFixed64();
+					{{template "FieldName" .}} = ctx.ReadSFixed64();
 {{- else if eq .Type "float"}}
-				{{template "FieldName" .}} = ctx.ReadFloat();
+					{{template "FieldName" .}} = ctx.ReadFloat();
 {{- else if eq .Type "double"}}
-				{{template "FieldName" .}} = ctx.ReadDouble();
+					{{template "FieldName" .}} = ctx.ReadDouble();
 {{- else if eq .Type "string"}}
-				{{template "FieldName" .}} = ctx.ReadString();
+					{{template "FieldName" .}} = ctx.ReadString();
 {{- else if eq .Type "bytes"}}
-				{{template "FieldName" .}} = ctx.ReadBytes();
+					{{template "FieldName" .}} = ctx.ReadBytes();
 {{- else if eq .Type "timestamp"}}
-				{{template "FieldName" .}} = ctx.ReadTimestamp();
+					{{template "FieldName" .}} = ctx.ReadTimestamp();
 {{- else if eq .Type "duration"}}
-				{{template "FieldName" .}} = ctx.ReadDuration();
+					{{template "FieldName" .}} = ctx.ReadDuration();
 {{- else if eq .Type "empty"}}
-				{{template "FieldName" .}} = ctx.ReadEmpty();
+					{{template "FieldName" .}} = ctx.ReadEmpty();
 {{- else}}
-				ctx.SkipLastField();
+					ctx.SkipLastField();
 {{- end}}
-				_changed |= 0x01 << {{.Number}};
-				break;
+					_changed |= 0x01 << {{.Number}};
+					break;
 {{- end}}
-			default:
-				ctx.SkipLastField();
-				break;
+				default:
+					ctx.SkipLastField();
+					break;
 			}
 		}
 	}

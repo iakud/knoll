@@ -52,21 +52,21 @@ public class ItemData : Kdsync.IMessage
 			var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
-			case 1:
-				id_ = ctx.ReadInt32();
-				_changed |= 0x01 << 1;
-				break;
-			case 2:
-				name_ = ctx.ReadString();
-				_changed |= 0x01 << 2;
-				break;
-			case 3:
-				count_ = ctx.ReadInt32();
-				_changed |= 0x01 << 3;
-				break;
-			default:
-				ctx.SkipLastField();
-				break;
+				case 1:
+					id_ = ctx.ReadInt32();
+					_changed |= 0x01 << 1;
+					break;
+				case 2:
+					name_ = ctx.ReadString();
+					_changed |= 0x01 << 2;
+					break;
+				case 3:
+					count_ = ctx.ReadInt32();
+					_changed |= 0x01 << 3;
+					break;
+				default:
+					ctx.SkipLastField();
+					break;
 			}
 		}
 	}
