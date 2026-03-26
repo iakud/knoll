@@ -44,17 +44,6 @@ public class ItemData : Kdsync.IMessage
 		}
 	}
 
-	public string ToString(string indent)
-	{
-		var sb = new System.Text.StringBuilder();
-		sb.Append("{\n");
-		sb.AppendLine(indent + "  Id = " + id_.ToString());
-		sb.AppendLine(indent + "  Name = " + name_);
-		sb.AppendLine(indent + "  Count = " + count_.ToString());
-		sb.Append(indent + "}");
-		return sb.ToString();
-	}
-
 	public void MergeFrom(ref Kdsync.ParseContext ctx)
 	{
 		uint tag;
@@ -103,6 +92,20 @@ public class ItemData : Kdsync.IMessage
 		if (_changed == 0)
 			return;
 		_changed = 0;
+	}
+
+	public IEnumerable<KeyValuePair<string, object>> GetFields()
+	{
+		var fields = new List<KeyValuePair<string, object>>();
+		fields.Add(new KeyValuePair<string, object>("Id", id_));
+		fields.Add(new KeyValuePair<string, object>("Name", name_));
+		fields.Add(new KeyValuePair<string, object>("Count", count_));
+		return fields;
+	}
+
+	public override string ToString()
+	{
+		return Kdsync.JsonFormatter.Format(this);
 	}
 }
 

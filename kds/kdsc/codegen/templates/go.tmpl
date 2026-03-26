@@ -351,16 +351,26 @@ func (x *{{.Name}}) Unmarshal(b []byte) error {
 }
 
 func (x *{{.Name}}) String(indent string) string {
+	if len(x.data) == 0 {
+		return "[]"
+	}
+
 	var b []byte
 	b = append(b, "[\n"...)
-	for _, v := range x.data {
+	for i, v := range x.data {
+		sep := ""
+		if i + 1 < len(x.data) {
+			sep = ","
+		}
 {{- if eq .TypeKind "component"}}
-		b = append(b, (indent + "  " + v.String(indent+"  ") + "\n")...)
+		b = append(b, (indent + "  " + v.String(indent+"  ") + sep + "\n")...)
 {{- else if eq .TypeKind "enum"}}
 		// FIXME: enum value string
-		b = append(b, (indent + "  " + wire.FormatInt32(int32(v)) + "\n")...)
+		b = append(b, (indent + "  " + wire.FormatInt32(int32(v)) + sep + "\n")...)
+{{- else if eq .Type "int64" "sint64" "uint64" "sfixed64" "fixed64" "string" "bytes"}}
+		b = append(b, (indent + "  \"" + wire.Format{{ucFirst .Type}}(v) + "\"" + sep + "\n")...)
 {{- else}}
-		b = append(b, (indent + "  " + wire.Format{{ucFirst .Type}}(v) + "\n")...)
+		b = append(b, (indent + "  " + wire.Format{{ucFirst .Type}}(v) + sep + "\n")...)
 {{- end}}
 	}
 	b = append(b, indent+"]"...)
@@ -679,8 +689,11 @@ func (x *{{.Name}}) Unmarshal(b []byte) error {
 }
 
 func (x *{{.Name}}) String(indent string) string {
+	if len(x.data) == 0 {
+		return "{}"
+	}
 	var b []byte
-	b = append(b, "[\n"...)
+	b = append(b, "{\n"...)
 {{- if eq .KeyType "bool"}}
 	keys := slices.SortedFunc(maps.Keys(x.data), func(a, b bool) int {
 		if a {
@@ -693,17 +706,25 @@ func (x *{{.Name}}) String(indent string) string {
 {{- else}}
 	keys := slices.Sorted(maps.Keys(x.data))
 {{- end}}
+	i := 0
 	for _, k := range keys {
+		i = i + 1
+		sep := ""
+		if i < len(keys) {
+			sep = ","
+		}
 {{- if eq .TypeKind "component"}}
-		b = append(b, (indent + "  " + wire.Format{{ucFirst .KeyType}}(k) + " = " + x.data[k].String(indent+"  ") + "\n")...)
+		b = append(b, (indent + "  \"" + wire.Format{{ucFirst .KeyType}}(k) + "\": " + x.data[k].String(indent+"  ") + sep + "\n")...)
 {{- else if eq .TypeKind "enum"}}
 		// FIXME: enum value string
-		b = append(b, (indent + "  " + wire.Format{{ucFirst .KeyType}}(k) + " = " + wire.FormatInt32(int32(x.data[k])) + "\n")...)
+		b = append(b, (indent + "  \"" + wire.Format{{ucFirst .KeyType}}(k) + "\": " + wire.FormatInt32(int32(x.data[k])) + sep + "\n")...)
+{{- else if eq .Type "int64" "sint64" "uint64" "sfixed64" "fixed64" "string" "bytes"}}
+		b = append(b, (indent + "  \"" + wire.Format{{ucFirst .KeyType}}(k) + "\": \"" + wire.Format{{ucFirst .Type}}(x.data[k]) + "\"" + sep + "\n")...)
 {{- else}}
-		b = append(b, (indent + "  " + wire.Format{{ucFirst .KeyType}}(k) + " = " + wire.Format{{ucFirst .Type}}(x.data[k]) + "\n")...)
+		b = append(b, (indent + "  \"" + wire.Format{{ucFirst .KeyType}}(k) + "\": " + wire.Format{{ucFirst .Type}}(x.data[k]) + sep + "\n")...)
 {{- end}}
 	}
-	b = append(b, indent+"]"...)
+	b = append(b, indent+"}"...)
 	return string(b)
 }
 {{- end}}
@@ -901,18 +922,25 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 func (x *{{$MessageName}}) String(indent string) string {
 	var b []byte
 	b = append(b, "{\n"...)
+{{- if len .Fields}}
+{{- $Count := len .Fields}}
+{{- $Num := ""}}
 {{- range .Fields}}
+{{- $Num = print $Num " "}}
 {{- if .Repeated}}
-	b = append(b, (indent + "  {{.Name}} = " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "\n")...)
+	b = append(b, (indent + "  \"{{.Name}}\": " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
 {{- else if .Map}}
-	b = append(b, (indent + "  {{.Name}} = " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "\n")...)
+	b = append(b, (indent + "  \"{{.Name}}\": " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
 {{- else if eq .TypeKind "component"}}
-	b = append(b, (indent + "  {{.Name}} = " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "\n")...)
+	b = append(b, (indent + "  \"{{.Name}}\": " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
 {{- else if eq .TypeKind "enum"}}
 	// FIXME: enum value string
-	b = append(b, (indent + "  {{.Name}} = " + wire.FormatInt32(int32(x.xxx_hidden_{{.Name}})) + "\n")...)
+	b = append(b, (indent + "  \"{{.Name}}\": " + wire.FormatInt32(int32(x.xxx_hidden_{{.Name}})) + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
+{{- else if eq .Type "int64" "sint64" "uint64" "sfixed64" "fixed64" "string" "bytes"}}
+	b = append(b, (indent + "  \"{{.Name}}\": \"" + wire.Format{{ucFirst .Type}}(x.xxx_hidden_{{.Name}}) + "\"{{- if lt (len $Num) $Count}},{{- end}}\n")...)
 {{- else}}
-	b = append(b, (indent + "  {{.Name}} = " + wire.Format{{ucFirst .Type}}(x.xxx_hidden_{{.Name}}) + "\n")...)
+	b = append(b, (indent + "  \"{{.Name}}\": " + wire.Format{{ucFirst .Type}}(x.xxx_hidden_{{.Name}}) + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
+{{- end}}
 {{- end}}
 {{- end}}
 	b = append(b, indent+"}"...)

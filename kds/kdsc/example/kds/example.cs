@@ -3,7 +3,7 @@
 
 namespace Kds;
 
-public class All
+public class All : Kdsync.IMessage
 {
 	private readonly long _id;
 	public long Id => _id;
@@ -40,17 +40,6 @@ public class All
 		{
 			_changed = changed;
 		}
-	}
-
-	public string ToString(string indent)
-	{
-		var sb = new System.Text.StringBuilder();
-		sb.Append("{\n");
-		sb.AppendLine(indent + "  Types = " + types_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Lists = " + lists_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Maps = " + maps_.ToString(indent + "  "));
-		sb.Append(indent + "}");
-		return sb.ToString();
 	}
 
 	public void MergeFrom(ref Kdsync.ParseContext ctx)
@@ -113,6 +102,20 @@ public class All
 		if ((_changed & (0x01 << 3)) != 0)
 			maps_.ClearChanged();
 		_changed = 0;
+	}
+
+	public IEnumerable<KeyValuePair<string, object>> GetFields()
+	{
+		var fields = new List<KeyValuePair<string, object>>();
+		fields.Add(new KeyValuePair<string, object>("Types", types_));
+		fields.Add(new KeyValuePair<string, object>("Lists", lists_));
+		fields.Add(new KeyValuePair<string, object>("Maps", maps_));
+		return fields;
+	}
+
+	public override string ToString()
+	{
+		return Kdsync.JsonFormatter.Format(this);
 	}
 
 	public void MergeFrom(byte[] buffer)
@@ -224,34 +227,6 @@ public class AllType : Kdsync.IMessage
 		{
 			_changed = changed;
 		}
-	}
-
-	public string ToString(string indent)
-	{
-		var sb = new System.Text.StringBuilder();
-		sb.Append("{\n");
-		sb.AppendLine(indent + "  Int32Val = " + int32Val_.ToString());
-		sb.AppendLine(indent + "  Int64Val = " + int64Val_.ToString());
-		sb.AppendLine(indent + "  Uint32Val = " + uint32Val_.ToString());
-		sb.AppendLine(indent + "  Uint64Val = " + uint64Val_.ToString());
-		sb.AppendLine(indent + "  Sint32Val = " + sint32Val_.ToString());
-		sb.AppendLine(indent + "  Sint64Val = " + sint64Val_.ToString());
-		sb.AppendLine(indent + "  Fixed32Val = " + fixed32Val_.ToString());
-		sb.AppendLine(indent + "  Fixed64Val = " + fixed64Val_.ToString());
-		sb.AppendLine(indent + "  Sfixed32Val = " + sfixed32Val_.ToString());
-		sb.AppendLine(indent + "  Sfixed64Val = " + sfixed64Val_.ToString());
-		sb.AppendLine(indent + "  FloatVal = " + floatVal_.ToString(System.Globalization.CultureInfo.InvariantCulture));
-		sb.AppendLine(indent + "  DoubleVal = " + doubleVal_.ToString(System.Globalization.CultureInfo.InvariantCulture));
-		sb.AppendLine(indent + "  BoolVal = " + boolVal_.ToString().ToLower());
-		sb.AppendLine(indent + "  StringVal = " + stringVal_);
-		sb.AppendLine(indent + "  BytesVal = " + Convert.ToBase64String(bytesVal_));
-		sb.AppendLine(indent + "  TimestampVal = {Seconds: " + timestampVal_.Seconds + ", Nanos: " + timestampVal_.Nanos + "}");
-		sb.AppendLine(indent + "  DurationVal = {Seconds: " + durationVal_.Seconds + ", Nanos: " + durationVal_.Nanos + "}");
-		sb.AppendLine(indent + "  EmptyVal = {}");
-		sb.AppendLine(indent + "  EnumVal = " + ((int)enumVal_).ToString());
-		sb.AppendLine(indent + "  ItemData = " + itemData_.ToString(indent + "  "));
-		sb.Append(indent + "}");
-		return sb.ToString();
 	}
 
 	public void MergeFrom(ref Kdsync.ParseContext ctx)
@@ -375,6 +350,37 @@ public class AllType : Kdsync.IMessage
 			itemData_.ClearChanged();
 		_changed = 0;
 	}
+
+	public IEnumerable<KeyValuePair<string, object>> GetFields()
+	{
+		var fields = new List<KeyValuePair<string, object>>();
+		fields.Add(new KeyValuePair<string, object>("Int32Val", int32Val_));
+		fields.Add(new KeyValuePair<string, object>("Int64Val", int64Val_));
+		fields.Add(new KeyValuePair<string, object>("Uint32Val", uint32Val_));
+		fields.Add(new KeyValuePair<string, object>("Uint64Val", uint64Val_));
+		fields.Add(new KeyValuePair<string, object>("Sint32Val", sint32Val_));
+		fields.Add(new KeyValuePair<string, object>("Sint64Val", sint64Val_));
+		fields.Add(new KeyValuePair<string, object>("Fixed32Val", fixed32Val_));
+		fields.Add(new KeyValuePair<string, object>("Fixed64Val", fixed64Val_));
+		fields.Add(new KeyValuePair<string, object>("Sfixed32Val", sfixed32Val_));
+		fields.Add(new KeyValuePair<string, object>("Sfixed64Val", sfixed64Val_));
+		fields.Add(new KeyValuePair<string, object>("FloatVal", floatVal_));
+		fields.Add(new KeyValuePair<string, object>("DoubleVal", doubleVal_));
+		fields.Add(new KeyValuePair<string, object>("BoolVal", boolVal_));
+		fields.Add(new KeyValuePair<string, object>("StringVal", stringVal_));
+		fields.Add(new KeyValuePair<string, object>("BytesVal", bytesVal_));
+		fields.Add(new KeyValuePair<string, object>("TimestampVal", timestampVal_));
+		fields.Add(new KeyValuePair<string, object>("DurationVal", durationVal_));
+		fields.Add(new KeyValuePair<string, object>("EmptyVal", emptyVal_));
+		fields.Add(new KeyValuePair<string, object>("EnumVal", enumVal_));
+		fields.Add(new KeyValuePair<string, object>("ItemData", itemData_));
+		return fields;
+	}
+
+	public override string ToString()
+	{
+		return Kdsync.JsonFormatter.Format(this);
+	}
 }
 
 public class AllList : Kdsync.IMessage
@@ -461,25 +467,6 @@ public class AllList : Kdsync.IMessage
 		{
 			_changed = changed;
 		}
-	}
-
-	public string ToString(string indent)
-	{
-		var sb = new System.Text.StringBuilder();
-		sb.Append("{\n");
-		sb.AppendLine(indent + "  Int32List = " + int32List_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int64List = " + int64List_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  FloatList = " + floatList_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  DoubleList = " + doubleList_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  BoolList = " + boolList_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  StringList = " + stringList_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  TimestampList = " + timestampList_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  DurationList = " + durationList_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  EmptyList = " + emptyList_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  EnumList = " + enumList_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  ItemList = " + itemList_.ToString(indent + "  "));
-		sb.Append(indent + "}");
-		return sb.ToString();
 	}
 
 	public void MergeFrom(ref Kdsync.ParseContext ctx)
@@ -606,6 +593,28 @@ public class AllList : Kdsync.IMessage
 		if ((_changed & (0x01 << 11)) != 0)
 			itemList_.ClearChanged();
 		_changed = 0;
+	}
+
+	public IEnumerable<KeyValuePair<string, object>> GetFields()
+	{
+		var fields = new List<KeyValuePair<string, object>>();
+		fields.Add(new KeyValuePair<string, object>("Int32List", int32List_));
+		fields.Add(new KeyValuePair<string, object>("Int64List", int64List_));
+		fields.Add(new KeyValuePair<string, object>("FloatList", floatList_));
+		fields.Add(new KeyValuePair<string, object>("DoubleList", doubleList_));
+		fields.Add(new KeyValuePair<string, object>("BoolList", boolList_));
+		fields.Add(new KeyValuePair<string, object>("StringList", stringList_));
+		fields.Add(new KeyValuePair<string, object>("TimestampList", timestampList_));
+		fields.Add(new KeyValuePair<string, object>("DurationList", durationList_));
+		fields.Add(new KeyValuePair<string, object>("EmptyList", emptyList_));
+		fields.Add(new KeyValuePair<string, object>("EnumList", enumList_));
+		fields.Add(new KeyValuePair<string, object>("ItemList", itemList_));
+		return fields;
+	}
+
+	public override string ToString()
+	{
+		return Kdsync.JsonFormatter.Format(this);
 	}
 }
 
@@ -795,42 +804,6 @@ public class AllMap : Kdsync.IMessage
 		{
 			_changed = changed;
 		}
-	}
-
-	public string ToString(string indent)
-	{
-		var sb = new System.Text.StringBuilder();
-		sb.Append("{\n");
-		sb.AppendLine(indent + "  Int32Int32 = " + int32Int32_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int32String = " + int32String_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int32Timestamp = " + int32Timestamp_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int32Duration = " + int32Duration_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int32Empty = " + int32Empty_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int32Enum = " + int32Enum_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int32ItemData = " + int32ItemData_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int64Int64 = " + int64Int64_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int64String = " + int64String_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int64Timestamp = " + int64Timestamp_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int64Duration = " + int64Duration_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int64Empty = " + int64Empty_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int64Enum = " + int64Enum_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  Int64ItemData = " + int64ItemData_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  StringInt32 = " + stringInt32_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  StringString = " + stringString_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  StringTimestamp = " + stringTimestamp_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  StringDuration = " + stringDuration_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  StringEmpty = " + stringEmpty_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  StringEnum = " + stringEnum_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  StringItemData = " + stringItemData_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  BoolInt32 = " + boolInt32_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  BoolString = " + boolString_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  BoolTimestamp = " + boolTimestamp_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  BoolDuration = " + boolDuration_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  BoolEmpty = " + boolEmpty_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  BoolEnum = " + boolEnum_.ToString(indent + "  "));
-		sb.AppendLine(indent + "  BoolItemData = " + boolItemData_.ToString(indent + "  "));
-		sb.Append(indent + "}");
-		return sb.ToString();
 	}
 
 	public void MergeFrom(ref Kdsync.ParseContext ctx)
@@ -1093,6 +1066,45 @@ public class AllMap : Kdsync.IMessage
 		if ((_changed & (0x01 << 28)) != 0)
 			boolItemData_.ClearChanged();
 		_changed = 0;
+	}
+
+	public IEnumerable<KeyValuePair<string, object>> GetFields()
+	{
+		var fields = new List<KeyValuePair<string, object>>();
+		fields.Add(new KeyValuePair<string, object>("Int32Int32", int32Int32_));
+		fields.Add(new KeyValuePair<string, object>("Int32String", int32String_));
+		fields.Add(new KeyValuePair<string, object>("Int32Timestamp", int32Timestamp_));
+		fields.Add(new KeyValuePair<string, object>("Int32Duration", int32Duration_));
+		fields.Add(new KeyValuePair<string, object>("Int32Empty", int32Empty_));
+		fields.Add(new KeyValuePair<string, object>("Int32Enum", int32Enum_));
+		fields.Add(new KeyValuePair<string, object>("Int32ItemData", int32ItemData_));
+		fields.Add(new KeyValuePair<string, object>("Int64Int64", int64Int64_));
+		fields.Add(new KeyValuePair<string, object>("Int64String", int64String_));
+		fields.Add(new KeyValuePair<string, object>("Int64Timestamp", int64Timestamp_));
+		fields.Add(new KeyValuePair<string, object>("Int64Duration", int64Duration_));
+		fields.Add(new KeyValuePair<string, object>("Int64Empty", int64Empty_));
+		fields.Add(new KeyValuePair<string, object>("Int64Enum", int64Enum_));
+		fields.Add(new KeyValuePair<string, object>("Int64ItemData", int64ItemData_));
+		fields.Add(new KeyValuePair<string, object>("StringInt32", stringInt32_));
+		fields.Add(new KeyValuePair<string, object>("StringString", stringString_));
+		fields.Add(new KeyValuePair<string, object>("StringTimestamp", stringTimestamp_));
+		fields.Add(new KeyValuePair<string, object>("StringDuration", stringDuration_));
+		fields.Add(new KeyValuePair<string, object>("StringEmpty", stringEmpty_));
+		fields.Add(new KeyValuePair<string, object>("StringEnum", stringEnum_));
+		fields.Add(new KeyValuePair<string, object>("StringItemData", stringItemData_));
+		fields.Add(new KeyValuePair<string, object>("BoolInt32", boolInt32_));
+		fields.Add(new KeyValuePair<string, object>("BoolString", boolString_));
+		fields.Add(new KeyValuePair<string, object>("BoolTimestamp", boolTimestamp_));
+		fields.Add(new KeyValuePair<string, object>("BoolDuration", boolDuration_));
+		fields.Add(new KeyValuePair<string, object>("BoolEmpty", boolEmpty_));
+		fields.Add(new KeyValuePair<string, object>("BoolEnum", boolEnum_));
+		fields.Add(new KeyValuePair<string, object>("BoolItemData", boolItemData_));
+		return fields;
+	}
+
+	public override string ToString()
+	{
+		return Kdsync.JsonFormatter.Format(this);
 	}
 }
 

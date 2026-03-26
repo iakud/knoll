@@ -92,6 +92,6 @@ public static class Example
 #endif
     public static IntPtr GetString()
     {
-        return Marshal.StringToHGlobalAnsi(_all.ToString(""));
+        return Marshal.StringToHGlobalAnsi(_all.ToString());
     }
 }

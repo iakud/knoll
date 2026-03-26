@@ -164,61 +164,6 @@ public enum {{.Name}}
 		}
 	}
 
-	public string ToString(string indent)
-	{
-		var sb = new System.Text.StringBuilder();
-		sb.Append("{\n");
-{{- range .Fields}}
-{{- if .Repeated}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
-{{- else if .Map}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
-{{- else if eq .TypeKind "component"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(indent + "  "));
-{{- else if eq .TypeKind "enum"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + ((int){{template "FieldName" .}}).ToString());
-{{- else if eq .Type "bool"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString().ToLower());
-{{- else if eq .Type "int32"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "sint32"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "uint32"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "int64"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "sint64"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "uint64"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "fixed32"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "sfixed32"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "fixed64"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "sfixed64"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString());
-{{- else if eq .Type "float"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(System.Globalization.CultureInfo.InvariantCulture));
-{{- else if eq .Type "double"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}}.ToString(System.Globalization.CultureInfo.InvariantCulture));
-{{- else if eq .Type "string"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + {{template "FieldName" .}});
-{{- else if eq .Type "bytes"}}
-		sb.AppendLine(indent + "  {{.Name}} = " + Convert.ToBase64String({{template "FieldName" .}}));
-{{- else if eq .Type "timestamp"}}
-		sb.AppendLine(indent + "  {{.Name}} = {Seconds: " + {{template "FieldName" .}}.Seconds + ", Nanos: " + {{template "FieldName" .}}.Nanos + "}");
-{{- else if eq .Type "duration"}}
-		sb.AppendLine(indent + "  {{.Name}} = {Seconds: " + {{template "FieldName" .}}.Seconds + ", Nanos: " + {{template "FieldName" .}}.Nanos + "}");
-{{- else if eq .Type "empty"}}
-		sb.AppendLine(indent + "  {{.Name}} = {}");
-{{- end}}
-{{- end}}
-		sb.Append(indent + "}");
-		return sb.ToString();
-	}
-
 	public void MergeFrom(ref Kdsync.ParseContext ctx)
 	{
 		uint tag;
@@ -332,12 +277,26 @@ public enum {{.Name}}
 {{- end}}
 		_changed = 0;
 	}
+
+	public IEnumerable<KeyValuePair<string, object>> GetFields()
+	{
+		var fields = new List<KeyValuePair<string, object>>();
+{{- range .Fields}}
+		fields.Add(new KeyValuePair<string, object>("{{.Name}}", {{template "FieldName" .}}));
+{{- end}}
+		return fields;
+	}
+
+	public override string ToString()
+	{
+		return Kdsync.JsonFormatter.Format(this);
+	}
 {{- end}}
 
 {{- /* ENTITY */ -}}
 {{- define "Entity"}}
 {{- $EntityName := .Name}}
-public class {{.Name}}
+public class {{.Name}} : Kdsync.IMessage
 {
 	private readonly long _id;
 	public long Id => _id;
