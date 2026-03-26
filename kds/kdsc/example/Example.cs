@@ -73,7 +73,7 @@ public static class Example
             var data = new byte[length];
             Marshal.Copy(dataPtr, data, 0, length);
 
-            _all.MergeFrom(new Kdsync.CodedInputStream(data));
+            _all.MergeFrom(data);
             _all.RaiseChanged();
             _all.ClearChanged();
 

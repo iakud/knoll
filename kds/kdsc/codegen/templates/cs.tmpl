@@ -219,65 +219,65 @@ public enum {{.Name}}
 		return sb.ToString();
 	}
 
-	public void MergeFrom(Kdsync.CodedInputStream input)
+	public void MergeFrom(ref Kdsync.ParseContext ctx)
 	{
 		uint tag;
-		while ((tag = input.ReadTag()) != 0)
+		while ((tag = ctx.ReadTag()) != 0)
 		{
-			var num = WireFormat.GetTagFieldNumber(tag);
+			var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 {{- range .Fields}}
 			case {{.Number}}:
 {{- if .Repeated}}
-				{{template "FieldName" .}}.AddEntriesFrom(input, _list_{{template "FieldName" .}}_codec);
+				{{template "FieldName" .}}.AddEntriesFrom(ref ctx, _list_{{template "FieldName" .}}_codec);
 {{- else if .Map}}
-				{{template "FieldName" .}}.AddEntriesFrom(input, _map_{{template "FieldName" .}}_codec);
+				{{template "FieldName" .}}.AddEntriesFrom(ref ctx, _map_{{template "FieldName" .}}_codec);
 {{- else if eq .TypeKind "component"}}
-				input.ReadMessage({{template "FieldName" .}});
+				ctx.ReadMessage({{template "FieldName" .}});
 {{- else if eq .TypeKind "enum"}}
-				{{template "FieldName" .}} = ({{.Type}})input.ReadEnum();
+				{{template "FieldName" .}} = ({{.Type}})ctx.ReadEnum();
 {{- else if eq .Type "bool"}}
-				{{template "FieldName" .}} = input.ReadBool();
+				{{template "FieldName" .}} = ctx.ReadBool();
 {{- else if eq .Type "int32"}}
-				{{template "FieldName" .}} = input.ReadInt32();
+				{{template "FieldName" .}} = ctx.ReadInt32();
 {{- else if eq .Type "sint32"}}
-				{{template "FieldName" .}} = input.ReadSInt32();
+				{{template "FieldName" .}} = ctx.ReadSInt32();
 {{- else if eq .Type "uint32"}}
-				{{template "FieldName" .}} = input.ReadUInt32();
+				{{template "FieldName" .}} = ctx.ReadUInt32();
 {{- else if eq .Type "int64"}}
-				{{template "FieldName" .}} = input.ReadInt64();
+				{{template "FieldName" .}} = ctx.ReadInt64();
 {{- else if eq .Type "sint64"}}
-				{{template "FieldName" .}} = input.ReadSInt64();
+				{{template "FieldName" .}} = ctx.ReadSInt64();
 {{- else if eq .Type "uint64"}}
-				{{template "FieldName" .}} = input.ReadUInt64();
+				{{template "FieldName" .}} = ctx.ReadUInt64();
 {{- else if eq .Type "fixed32"}}
-				{{template "FieldName" .}} = input.ReadFixed32();
+				{{template "FieldName" .}} = ctx.ReadFixed32();
 {{- else if eq .Type "sfixed32"}}
-				{{template "FieldName" .}} = input.ReadSFixed32();
+				{{template "FieldName" .}} = ctx.ReadSFixed32();
 {{- else if eq .Type "fixed64"}}
-				{{template "FieldName" .}} = input.ReadFixed64();
+				{{template "FieldName" .}} = ctx.ReadFixed64();
 {{- else if eq .Type "sfixed64"}}
-				{{template "FieldName" .}} = input.ReadSFixed64();
+				{{template "FieldName" .}} = ctx.ReadSFixed64();
 {{- else if eq .Type "float"}}
-				{{template "FieldName" .}} = input.ReadFloat();
+				{{template "FieldName" .}} = ctx.ReadFloat();
 {{- else if eq .Type "double"}}
-				{{template "FieldName" .}} = input.ReadDouble();
+				{{template "FieldName" .}} = ctx.ReadDouble();
 {{- else if eq .Type "string"}}
-				{{template "FieldName" .}} = input.ReadString();
+				{{template "FieldName" .}} = ctx.ReadString();
 {{- else if eq .Type "bytes"}}
-				{{template "FieldName" .}} = input.ReadBytes();
+				{{template "FieldName" .}} = ctx.ReadBytes();
 {{- else if eq .Type "timestamp" "duration" "empty"}}
 				{{template "FieldName" .}} = new {{template "Type" .Type}}();
-				{{template "FieldName" .}}.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
+				ctx.ReadMessage({{template "FieldName" .}});
 {{- else}}
-				input.SkipLastField();
+				ctx.SkipLastField();
 {{- end}}
 				_changed |= 0x01 << {{.Number}};
 				break;
 {{- end}}
 			default:
-				input.SkipLastField();
+				ctx.SkipLastField();
 				break;
 			}
 		}
@@ -360,6 +360,13 @@ public class {{.Name}}
 {{- end}}
 	}
 {{- template "Message" .}}
+
+	public void MergeFrom(byte[] buffer)
+	{
+		ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(buffer);
+		Kdsync.ParseContext.Initialize(readOnlySpan, out var ctx);
+		MergeFrom(ref ctx);
+	}
 }
 {{- end}}
 

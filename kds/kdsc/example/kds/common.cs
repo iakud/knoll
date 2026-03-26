@@ -62,28 +62,28 @@ public class ItemData : Kdsync.IMessage
 		return sb.ToString();
 	}
 
-	public void MergeFrom(Kdsync.CodedInputStream input)
+	public void MergeFrom(ref Kdsync.ParseContext ctx)
 	{
 		uint tag;
-		while ((tag = input.ReadTag()) != 0)
+		while ((tag = ctx.ReadTag()) != 0)
 		{
-			var num = WireFormat.GetTagFieldNumber(tag);
+			var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1:
-				id_ = input.ReadInt32();
+				id_ = ctx.ReadInt32();
 				_changed |= 0x01 << 1;
 				break;
 			case 2:
-				name_ = input.ReadString();
+				name_ = ctx.ReadString();
 				_changed |= 0x01 << 2;
 				break;
 			case 3:
-				count_ = input.ReadInt32();
+				count_ = ctx.ReadInt32();
 				_changed |= 0x01 << 3;
 				break;
 			default:
-				input.SkipLastField();
+				ctx.SkipLastField();
 				break;
 			}
 		}

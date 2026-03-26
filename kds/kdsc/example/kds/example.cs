@@ -60,28 +60,28 @@ public class All
 		return sb.ToString();
 	}
 
-	public void MergeFrom(Kdsync.CodedInputStream input)
+	public void MergeFrom(ref Kdsync.ParseContext ctx)
 	{
 		uint tag;
-		while ((tag = input.ReadTag()) != 0)
+		while ((tag = ctx.ReadTag()) != 0)
 		{
-			var num = WireFormat.GetTagFieldNumber(tag);
+			var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1:
-				input.ReadMessage(types_);
+				ctx.ReadMessage(types_);
 				_changed |= 0x01 << 1;
 				break;
 			case 2:
-				input.ReadMessage(lists_);
+				ctx.ReadMessage(lists_);
 				_changed |= 0x01 << 2;
 				break;
 			case 3:
-				input.ReadMessage(maps_);
+				ctx.ReadMessage(maps_);
 				_changed |= 0x01 << 3;
 				break;
 			default:
-				input.SkipLastField();
+				ctx.SkipLastField();
 				break;
 			}
 		}
@@ -120,6 +120,13 @@ public class All
 		if ((_changed & (0x01 << 3)) != 0)
 			maps_.ClearChanged();
 		_changed = 0;
+	}
+
+	public void MergeFrom(byte[] buffer)
+	{
+		ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(buffer);
+		Kdsync.ParseContext.Initialize(readOnlySpan, out var ctx);
+		MergeFrom(ref ctx);
 	}
 }
 
@@ -257,99 +264,99 @@ public class AllType : Kdsync.IMessage
 		return sb.ToString();
 	}
 
-	public void MergeFrom(Kdsync.CodedInputStream input)
+	public void MergeFrom(ref Kdsync.ParseContext ctx)
 	{
 		uint tag;
-		while ((tag = input.ReadTag()) != 0)
+		while ((tag = ctx.ReadTag()) != 0)
 		{
-			var num = WireFormat.GetTagFieldNumber(tag);
+			var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1:
-				int32Val_ = input.ReadInt32();
+				int32Val_ = ctx.ReadInt32();
 				_changed |= 0x01 << 1;
 				break;
 			case 2:
-				int64Val_ = input.ReadInt64();
+				int64Val_ = ctx.ReadInt64();
 				_changed |= 0x01 << 2;
 				break;
 			case 3:
-				uint32Val_ = input.ReadUInt32();
+				uint32Val_ = ctx.ReadUInt32();
 				_changed |= 0x01 << 3;
 				break;
 			case 4:
-				uint64Val_ = input.ReadUInt64();
+				uint64Val_ = ctx.ReadUInt64();
 				_changed |= 0x01 << 4;
 				break;
 			case 5:
-				sint32Val_ = input.ReadSInt32();
+				sint32Val_ = ctx.ReadSInt32();
 				_changed |= 0x01 << 5;
 				break;
 			case 6:
-				sint64Val_ = input.ReadSInt64();
+				sint64Val_ = ctx.ReadSInt64();
 				_changed |= 0x01 << 6;
 				break;
 			case 7:
-				fixed32Val_ = input.ReadFixed32();
+				fixed32Val_ = ctx.ReadFixed32();
 				_changed |= 0x01 << 7;
 				break;
 			case 8:
-				fixed64Val_ = input.ReadFixed64();
+				fixed64Val_ = ctx.ReadFixed64();
 				_changed |= 0x01 << 8;
 				break;
 			case 9:
-				sfixed32Val_ = input.ReadSFixed32();
+				sfixed32Val_ = ctx.ReadSFixed32();
 				_changed |= 0x01 << 9;
 				break;
 			case 10:
-				sfixed64Val_ = input.ReadSFixed64();
+				sfixed64Val_ = ctx.ReadSFixed64();
 				_changed |= 0x01 << 10;
 				break;
 			case 11:
-				floatVal_ = input.ReadFloat();
+				floatVal_ = ctx.ReadFloat();
 				_changed |= 0x01 << 11;
 				break;
 			case 12:
-				doubleVal_ = input.ReadDouble();
+				doubleVal_ = ctx.ReadDouble();
 				_changed |= 0x01 << 12;
 				break;
 			case 13:
-				boolVal_ = input.ReadBool();
+				boolVal_ = ctx.ReadBool();
 				_changed |= 0x01 << 13;
 				break;
 			case 14:
-				stringVal_ = input.ReadString();
+				stringVal_ = ctx.ReadString();
 				_changed |= 0x01 << 14;
 				break;
 			case 15:
-				bytesVal_ = input.ReadBytes();
+				bytesVal_ = ctx.ReadBytes();
 				_changed |= 0x01 << 15;
 				break;
 			case 16:
 				timestampVal_ = new Kdsync.Timestamp();
-				timestampVal_.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
+				ctx.ReadMessage(timestampVal_);
 				_changed |= 0x01 << 16;
 				break;
 			case 17:
 				durationVal_ = new Kdsync.Duration();
-				durationVal_.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
+				ctx.ReadMessage(durationVal_);
 				_changed |= 0x01 << 17;
 				break;
 			case 18:
 				emptyVal_ = new Kdsync.Empty();
-				emptyVal_.MergeFrom(new Kdsync.CodedInputStream(input.ReadBytes()));
+				ctx.ReadMessage(emptyVal_);
 				_changed |= 0x01 << 18;
 				break;
 			case 19:
-				enumVal_ = (ItemType)input.ReadEnum();
+				enumVal_ = (ItemType)ctx.ReadEnum();
 				_changed |= 0x01 << 19;
 				break;
 			case 20:
-				input.ReadMessage(itemData_);
+				ctx.ReadMessage(itemData_);
 				_changed |= 0x01 << 20;
 				break;
 			default:
-				input.SkipLastField();
+				ctx.SkipLastField();
 				break;
 			}
 		}
@@ -488,60 +495,60 @@ public class AllList : Kdsync.IMessage
 		return sb.ToString();
 	}
 
-	public void MergeFrom(Kdsync.CodedInputStream input)
+	public void MergeFrom(ref Kdsync.ParseContext ctx)
 	{
 		uint tag;
-		while ((tag = input.ReadTag()) != 0)
+		while ((tag = ctx.ReadTag()) != 0)
 		{
-			var num = WireFormat.GetTagFieldNumber(tag);
+			var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1:
-				int32List_.AddEntriesFrom(input, _list_int32List__codec);
+				int32List_.AddEntriesFrom(ref ctx, _list_int32List__codec);
 				_changed |= 0x01 << 1;
 				break;
 			case 2:
-				int64List_.AddEntriesFrom(input, _list_int64List__codec);
+				int64List_.AddEntriesFrom(ref ctx, _list_int64List__codec);
 				_changed |= 0x01 << 2;
 				break;
 			case 3:
-				floatList_.AddEntriesFrom(input, _list_floatList__codec);
+				floatList_.AddEntriesFrom(ref ctx, _list_floatList__codec);
 				_changed |= 0x01 << 3;
 				break;
 			case 4:
-				doubleList_.AddEntriesFrom(input, _list_doubleList__codec);
+				doubleList_.AddEntriesFrom(ref ctx, _list_doubleList__codec);
 				_changed |= 0x01 << 4;
 				break;
 			case 5:
-				boolList_.AddEntriesFrom(input, _list_boolList__codec);
+				boolList_.AddEntriesFrom(ref ctx, _list_boolList__codec);
 				_changed |= 0x01 << 5;
 				break;
 			case 6:
-				stringList_.AddEntriesFrom(input, _list_stringList__codec);
+				stringList_.AddEntriesFrom(ref ctx, _list_stringList__codec);
 				_changed |= 0x01 << 6;
 				break;
 			case 7:
-				timestampList_.AddEntriesFrom(input, _list_timestampList__codec);
+				timestampList_.AddEntriesFrom(ref ctx, _list_timestampList__codec);
 				_changed |= 0x01 << 7;
 				break;
 			case 8:
-				durationList_.AddEntriesFrom(input, _list_durationList__codec);
+				durationList_.AddEntriesFrom(ref ctx, _list_durationList__codec);
 				_changed |= 0x01 << 8;
 				break;
 			case 9:
-				emptyList_.AddEntriesFrom(input, _list_emptyList__codec);
+				emptyList_.AddEntriesFrom(ref ctx, _list_emptyList__codec);
 				_changed |= 0x01 << 9;
 				break;
 			case 10:
-				enumList_.AddEntriesFrom(input, _list_enumList__codec);
+				enumList_.AddEntriesFrom(ref ctx, _list_enumList__codec);
 				_changed |= 0x01 << 10;
 				break;
 			case 11:
-				itemList_.AddEntriesFrom(input, _list_itemList__codec);
+				itemList_.AddEntriesFrom(ref ctx, _list_itemList__codec);
 				_changed |= 0x01 << 11;
 				break;
 			default:
-				input.SkipLastField();
+				ctx.SkipLastField();
 				break;
 			}
 		}
@@ -839,128 +846,128 @@ public class AllMap : Kdsync.IMessage
 		return sb.ToString();
 	}
 
-	public void MergeFrom(Kdsync.CodedInputStream input)
+	public void MergeFrom(ref Kdsync.ParseContext ctx)
 	{
 		uint tag;
-		while ((tag = input.ReadTag()) != 0)
+		while ((tag = ctx.ReadTag()) != 0)
 		{
-			var num = WireFormat.GetTagFieldNumber(tag);
+			var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
 			switch (num)
 			{
 			case 1:
-				int32Int32_.AddEntriesFrom(input, _map_int32Int32__codec);
+				int32Int32_.AddEntriesFrom(ref ctx, _map_int32Int32__codec);
 				_changed |= 0x01 << 1;
 				break;
 			case 2:
-				int32String_.AddEntriesFrom(input, _map_int32String__codec);
+				int32String_.AddEntriesFrom(ref ctx, _map_int32String__codec);
 				_changed |= 0x01 << 2;
 				break;
 			case 3:
-				int32Timestamp_.AddEntriesFrom(input, _map_int32Timestamp__codec);
+				int32Timestamp_.AddEntriesFrom(ref ctx, _map_int32Timestamp__codec);
 				_changed |= 0x01 << 3;
 				break;
 			case 4:
-				int32Duration_.AddEntriesFrom(input, _map_int32Duration__codec);
+				int32Duration_.AddEntriesFrom(ref ctx, _map_int32Duration__codec);
 				_changed |= 0x01 << 4;
 				break;
 			case 5:
-				int32Empty_.AddEntriesFrom(input, _map_int32Empty__codec);
+				int32Empty_.AddEntriesFrom(ref ctx, _map_int32Empty__codec);
 				_changed |= 0x01 << 5;
 				break;
 			case 6:
-				int32Enum_.AddEntriesFrom(input, _map_int32Enum__codec);
+				int32Enum_.AddEntriesFrom(ref ctx, _map_int32Enum__codec);
 				_changed |= 0x01 << 6;
 				break;
 			case 7:
-				int32ItemData_.AddEntriesFrom(input, _map_int32ItemData__codec);
+				int32ItemData_.AddEntriesFrom(ref ctx, _map_int32ItemData__codec);
 				_changed |= 0x01 << 7;
 				break;
 			case 8:
-				int64Int64_.AddEntriesFrom(input, _map_int64Int64__codec);
+				int64Int64_.AddEntriesFrom(ref ctx, _map_int64Int64__codec);
 				_changed |= 0x01 << 8;
 				break;
 			case 9:
-				int64String_.AddEntriesFrom(input, _map_int64String__codec);
+				int64String_.AddEntriesFrom(ref ctx, _map_int64String__codec);
 				_changed |= 0x01 << 9;
 				break;
 			case 10:
-				int64Timestamp_.AddEntriesFrom(input, _map_int64Timestamp__codec);
+				int64Timestamp_.AddEntriesFrom(ref ctx, _map_int64Timestamp__codec);
 				_changed |= 0x01 << 10;
 				break;
 			case 11:
-				int64Duration_.AddEntriesFrom(input, _map_int64Duration__codec);
+				int64Duration_.AddEntriesFrom(ref ctx, _map_int64Duration__codec);
 				_changed |= 0x01 << 11;
 				break;
 			case 12:
-				int64Empty_.AddEntriesFrom(input, _map_int64Empty__codec);
+				int64Empty_.AddEntriesFrom(ref ctx, _map_int64Empty__codec);
 				_changed |= 0x01 << 12;
 				break;
 			case 13:
-				int64Enum_.AddEntriesFrom(input, _map_int64Enum__codec);
+				int64Enum_.AddEntriesFrom(ref ctx, _map_int64Enum__codec);
 				_changed |= 0x01 << 13;
 				break;
 			case 14:
-				int64ItemData_.AddEntriesFrom(input, _map_int64ItemData__codec);
+				int64ItemData_.AddEntriesFrom(ref ctx, _map_int64ItemData__codec);
 				_changed |= 0x01 << 14;
 				break;
 			case 15:
-				stringInt32_.AddEntriesFrom(input, _map_stringInt32__codec);
+				stringInt32_.AddEntriesFrom(ref ctx, _map_stringInt32__codec);
 				_changed |= 0x01 << 15;
 				break;
 			case 16:
-				stringString_.AddEntriesFrom(input, _map_stringString__codec);
+				stringString_.AddEntriesFrom(ref ctx, _map_stringString__codec);
 				_changed |= 0x01 << 16;
 				break;
 			case 17:
-				stringTimestamp_.AddEntriesFrom(input, _map_stringTimestamp__codec);
+				stringTimestamp_.AddEntriesFrom(ref ctx, _map_stringTimestamp__codec);
 				_changed |= 0x01 << 17;
 				break;
 			case 18:
-				stringDuration_.AddEntriesFrom(input, _map_stringDuration__codec);
+				stringDuration_.AddEntriesFrom(ref ctx, _map_stringDuration__codec);
 				_changed |= 0x01 << 18;
 				break;
 			case 19:
-				stringEmpty_.AddEntriesFrom(input, _map_stringEmpty__codec);
+				stringEmpty_.AddEntriesFrom(ref ctx, _map_stringEmpty__codec);
 				_changed |= 0x01 << 19;
 				break;
 			case 20:
-				stringEnum_.AddEntriesFrom(input, _map_stringEnum__codec);
+				stringEnum_.AddEntriesFrom(ref ctx, _map_stringEnum__codec);
 				_changed |= 0x01 << 20;
 				break;
 			case 21:
-				stringItemData_.AddEntriesFrom(input, _map_stringItemData__codec);
+				stringItemData_.AddEntriesFrom(ref ctx, _map_stringItemData__codec);
 				_changed |= 0x01 << 21;
 				break;
 			case 22:
-				boolInt32_.AddEntriesFrom(input, _map_boolInt32__codec);
+				boolInt32_.AddEntriesFrom(ref ctx, _map_boolInt32__codec);
 				_changed |= 0x01 << 22;
 				break;
 			case 23:
-				boolString_.AddEntriesFrom(input, _map_boolString__codec);
+				boolString_.AddEntriesFrom(ref ctx, _map_boolString__codec);
 				_changed |= 0x01 << 23;
 				break;
 			case 24:
-				boolTimestamp_.AddEntriesFrom(input, _map_boolTimestamp__codec);
+				boolTimestamp_.AddEntriesFrom(ref ctx, _map_boolTimestamp__codec);
 				_changed |= 0x01 << 24;
 				break;
 			case 25:
-				boolDuration_.AddEntriesFrom(input, _map_boolDuration__codec);
+				boolDuration_.AddEntriesFrom(ref ctx, _map_boolDuration__codec);
 				_changed |= 0x01 << 25;
 				break;
 			case 26:
-				boolEmpty_.AddEntriesFrom(input, _map_boolEmpty__codec);
+				boolEmpty_.AddEntriesFrom(ref ctx, _map_boolEmpty__codec);
 				_changed |= 0x01 << 26;
 				break;
 			case 27:
-				boolEnum_.AddEntriesFrom(input, _map_boolEnum__codec);
+				boolEnum_.AddEntriesFrom(ref ctx, _map_boolEnum__codec);
 				_changed |= 0x01 << 27;
 				break;
 			case 28:
-				boolItemData_.AddEntriesFrom(input, _map_boolItemData__codec);
+				boolItemData_.AddEntriesFrom(ref ctx, _map_boolItemData__codec);
 				_changed |= 0x01 << 28;
 				break;
 			default:
-				input.SkipLastField();
+				ctx.SkipLastField();
 				break;
 			}
 		}
