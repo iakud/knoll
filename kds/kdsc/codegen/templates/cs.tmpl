@@ -38,9 +38,9 @@
 {{- else if eq .Type "double"}}Kdsync.FieldCodec.ForDouble({{.Number}})
 {{- else if eq .Type "string"}}Kdsync.FieldCodec.ForString({{.Number}})
 {{- else if eq .Type "bytes"}}Kdsync.FieldCodec.ForBytes({{.Number}})
-{{- else if eq .Type "timestamp"}}Kdsync.FieldCodec.ForMessage<Kdsync.Timestamp>({{.Number}})
-{{- else if eq .Type "duration"}}Kdsync.FieldCodec.ForMessage<Kdsync.Duration>({{.Number}})
-{{- else if eq .Type "empty"}}Kdsync.FieldCodec.ForMessage<Kdsync.Empty>({{.Number}})
+{{- else if eq .Type "timestamp"}}Kdsync.FieldCodec.ForTimestamp({{.Number}})
+{{- else if eq .Type "duration"}}Kdsync.FieldCodec.ForDuration({{.Number}})
+{{- else if eq .Type "empty"}}Kdsync.FieldCodec.ForEmpty({{.Number}})
 {{- else if eq .TypeKind "enum"}}Kdsync.FieldCodec.ForEnum({{.Number}}, x => (int) x, x => ({{.Type}}) x)
 {{- else}}Kdsync.FieldCodec.ForMessage<{{.Type}}>({{.Number}})
 {{- end}}
@@ -79,9 +79,9 @@
 {{- else if eq .Type "double"}}Kdsync.FieldCodec.ForDouble(2)
 {{- else if eq .Type "string"}}Kdsync.FieldCodec.ForString(2)
 {{- else if eq .Type "bytes"}}Kdsync.FieldCodec.ForBytes(2)
-{{- else if eq .Type "timestamp"}}Kdsync.FieldCodec.ForMessage<Kdsync.Timestamp>(2)
-{{- else if eq .Type "duration"}}Kdsync.FieldCodec.ForMessage<Kdsync.Duration>(2)
-{{- else if eq .Type "empty"}}Kdsync.FieldCodec.ForMessage<Kdsync.Empty>(2)
+{{- else if eq .Type "timestamp"}}Kdsync.FieldCodec.ForTimestamp(2)
+{{- else if eq .Type "duration"}}Kdsync.FieldCodec.ForDuration(2)
+{{- else if eq .Type "empty"}}Kdsync.FieldCodec.ForEmpty(2)
 {{- else if eq .TypeKind "enum"}}Kdsync.FieldCodec.ForEnum(2, x => (int) x, x => ({{.Type}}) x)
 {{- else}}Kdsync.FieldCodec.ForMessage<{{.Type}}>(2)
 {{- end}}
@@ -94,7 +94,7 @@
 {{- /*Protobuf reserved "Types" "Descriptor" "Equals" "ToString" "GetHashCode" "WriteTo" "Clone" "CalculateSize" "MergeFrom" "OnConstruction" "Parser"*/ -}}
 {{- if eq .Name .Def.Name}}{{.Name}}_
 {{- else if and (eq .Def.Kind "entity") (eq .Name "Id")}}{{.Name}}_
-{{- else if eq .Name "Equals" "ToString" "GetHashCode" "MergeFrom" "RaiseChanged" "ClearChanged"}}{{.Name}}_
+{{- else if eq .Name "Equals" "ToString" "GetHashCode" "MergeFrom" "WriteTo" "CalculateSize" "RaiseChanged" "ClearChanged"}}{{.Name}}_
 {{- else}}{{.Name}}
 {{- end}}
 {{- end}}
@@ -267,9 +267,12 @@ public enum {{.Name}}
 				{{template "FieldName" .}} = ctx.ReadString();
 {{- else if eq .Type "bytes"}}
 				{{template "FieldName" .}} = ctx.ReadBytes();
-{{- else if eq .Type "timestamp" "duration" "empty"}}
-				{{template "FieldName" .}} = new {{template "Type" .Type}}();
-				ctx.ReadMessage({{template "FieldName" .}});
+{{- else if eq .Type "timestamp"}}
+				{{template "FieldName" .}} = ctx.ReadTimestamp();
+{{- else if eq .Type "duration"}}
+				{{template "FieldName" .}} = ctx.ReadDuration();
+{{- else if eq .Type "empty"}}
+				{{template "FieldName" .}} = ctx.ReadEmpty();
 {{- else}}
 				ctx.SkipLastField();
 {{- end}}
@@ -353,8 +356,6 @@ public class {{.Name}}
 		{{template "FieldName" .}} = string.Empty;
 {{- else if eq .Type "bytes"}}
 		{{template "FieldName" .}} = new byte[0];
-{{- else if eq .Type "timestamp" "duration" "empty"}}
-		{{template "FieldName" .}} = new {{template "Type" .Type}}();
 {{- else}}
 {{- end}}
 {{- end}}
@@ -387,8 +388,6 @@ public class {{.Name}} : Kdsync.IMessage
 		{{template "FieldName" .}} = string.Empty;
 {{- else if eq .Type "bytes"}}
 		{{template "FieldName" .}} = new byte[0];
-{{- else if eq .Type "timestamp" "duration" "empty"}}
-		{{template "FieldName" .}} = new {{template "Type" .Type}}();
 {{- else}}
 {{- end}}
 {{- end}}

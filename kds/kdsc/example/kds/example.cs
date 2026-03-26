@@ -136,9 +136,6 @@ public class AllType : Kdsync.IMessage
 	{
 		stringVal_ = string.Empty;
 		bytesVal_ = new byte[0];
-		timestampVal_ = new Kdsync.Timestamp();
-		durationVal_ = new Kdsync.Duration();
-		emptyVal_ = new Kdsync.Empty();
 		itemData_ = new ItemData();
 	}
 
@@ -333,18 +330,15 @@ public class AllType : Kdsync.IMessage
 				_changed |= 0x01 << 15;
 				break;
 			case 16:
-				timestampVal_ = new Kdsync.Timestamp();
-				ctx.ReadMessage(timestampVal_);
+				timestampVal_ = ctx.ReadTimestamp();
 				_changed |= 0x01 << 16;
 				break;
 			case 17:
-				durationVal_ = new Kdsync.Duration();
-				ctx.ReadMessage(durationVal_);
+				durationVal_ = ctx.ReadDuration();
 				_changed |= 0x01 << 17;
 				break;
 			case 18:
-				emptyVal_ = new Kdsync.Empty();
-				ctx.ReadMessage(emptyVal_);
+				emptyVal_ = ctx.ReadEmpty();
 				_changed |= 0x01 << 18;
 				break;
 			case 19:
@@ -431,15 +425,15 @@ public class AllList : Kdsync.IMessage
 	private Kdsync.Repeated<string> stringList_;
 	public Kdsync.Repeated<string> StringList => stringList_;
 
-	private static readonly Kdsync.FieldCodec<Kdsync.Timestamp> _list_timestampList__codec = Kdsync.FieldCodec.ForMessage<Kdsync.Timestamp>(7);
+	private static readonly Kdsync.FieldCodec<Kdsync.Timestamp> _list_timestampList__codec = Kdsync.FieldCodec.ForTimestamp(7);
 	private Kdsync.Repeated<Kdsync.Timestamp> timestampList_;
 	public Kdsync.Repeated<Kdsync.Timestamp> TimestampList => timestampList_;
 
-	private static readonly Kdsync.FieldCodec<Kdsync.Duration> _list_durationList__codec = Kdsync.FieldCodec.ForMessage<Kdsync.Duration>(8);
+	private static readonly Kdsync.FieldCodec<Kdsync.Duration> _list_durationList__codec = Kdsync.FieldCodec.ForDuration(8);
 	private Kdsync.Repeated<Kdsync.Duration> durationList_;
 	public Kdsync.Repeated<Kdsync.Duration> DurationList => durationList_;
 
-	private static readonly Kdsync.FieldCodec<Kdsync.Empty> _list_emptyList__codec = Kdsync.FieldCodec.ForMessage<Kdsync.Empty>(9);
+	private static readonly Kdsync.FieldCodec<Kdsync.Empty> _list_emptyList__codec = Kdsync.FieldCodec.ForEmpty(9);
 	private Kdsync.Repeated<Kdsync.Empty> emptyList_;
 	public Kdsync.Repeated<Kdsync.Empty> EmptyList => emptyList_;
 
@@ -664,15 +658,15 @@ public class AllMap : Kdsync.IMessage
 	private Kdsync.Map<int, string> int32String_;
 	public Kdsync.Map<int, string> Int32String => int32String_;
 
-	private static readonly Kdsync.Map<int, Kdsync.Timestamp>.Codec _map_int32Timestamp__codec = new Kdsync.Map<int, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForMessage<Kdsync.Timestamp>(2), 3);
+	private static readonly Kdsync.Map<int, Kdsync.Timestamp>.Codec _map_int32Timestamp__codec = new Kdsync.Map<int, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForTimestamp(2), 3);
 	private Kdsync.Map<int, Kdsync.Timestamp> int32Timestamp_;
 	public Kdsync.Map<int, Kdsync.Timestamp> Int32Timestamp => int32Timestamp_;
 
-	private static readonly Kdsync.Map<int, Kdsync.Duration>.Codec _map_int32Duration__codec = new Kdsync.Map<int, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForMessage<Kdsync.Duration>(2), 4);
+	private static readonly Kdsync.Map<int, Kdsync.Duration>.Codec _map_int32Duration__codec = new Kdsync.Map<int, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForDuration(2), 4);
 	private Kdsync.Map<int, Kdsync.Duration> int32Duration_;
 	public Kdsync.Map<int, Kdsync.Duration> Int32Duration => int32Duration_;
 
-	private static readonly Kdsync.Map<int, Kdsync.Empty>.Codec _map_int32Empty__codec = new Kdsync.Map<int, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForMessage<Kdsync.Empty>(2), 5);
+	private static readonly Kdsync.Map<int, Kdsync.Empty>.Codec _map_int32Empty__codec = new Kdsync.Map<int, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForEmpty(2), 5);
 	private Kdsync.Map<int, Kdsync.Empty> int32Empty_;
 	public Kdsync.Map<int, Kdsync.Empty> Int32Empty => int32Empty_;
 
@@ -692,15 +686,15 @@ public class AllMap : Kdsync.IMessage
 	private Kdsync.Map<long, string> int64String_;
 	public Kdsync.Map<long, string> Int64String => int64String_;
 
-	private static readonly Kdsync.Map<long, Kdsync.Timestamp>.Codec _map_int64Timestamp__codec = new Kdsync.Map<long, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForMessage<Kdsync.Timestamp>(2), 10);
+	private static readonly Kdsync.Map<long, Kdsync.Timestamp>.Codec _map_int64Timestamp__codec = new Kdsync.Map<long, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForTimestamp(2), 10);
 	private Kdsync.Map<long, Kdsync.Timestamp> int64Timestamp_;
 	public Kdsync.Map<long, Kdsync.Timestamp> Int64Timestamp => int64Timestamp_;
 
-	private static readonly Kdsync.Map<long, Kdsync.Duration>.Codec _map_int64Duration__codec = new Kdsync.Map<long, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForMessage<Kdsync.Duration>(2), 11);
+	private static readonly Kdsync.Map<long, Kdsync.Duration>.Codec _map_int64Duration__codec = new Kdsync.Map<long, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForDuration(2), 11);
 	private Kdsync.Map<long, Kdsync.Duration> int64Duration_;
 	public Kdsync.Map<long, Kdsync.Duration> Int64Duration => int64Duration_;
 
-	private static readonly Kdsync.Map<long, Kdsync.Empty>.Codec _map_int64Empty__codec = new Kdsync.Map<long, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForMessage<Kdsync.Empty>(2), 12);
+	private static readonly Kdsync.Map<long, Kdsync.Empty>.Codec _map_int64Empty__codec = new Kdsync.Map<long, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForEmpty(2), 12);
 	private Kdsync.Map<long, Kdsync.Empty> int64Empty_;
 	public Kdsync.Map<long, Kdsync.Empty> Int64Empty => int64Empty_;
 
@@ -720,15 +714,15 @@ public class AllMap : Kdsync.IMessage
 	private Kdsync.Map<string, string> stringString_;
 	public Kdsync.Map<string, string> StringString => stringString_;
 
-	private static readonly Kdsync.Map<string, Kdsync.Timestamp>.Codec _map_stringTimestamp__codec = new Kdsync.Map<string, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForMessage<Kdsync.Timestamp>(2), 17);
+	private static readonly Kdsync.Map<string, Kdsync.Timestamp>.Codec _map_stringTimestamp__codec = new Kdsync.Map<string, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForTimestamp(2), 17);
 	private Kdsync.Map<string, Kdsync.Timestamp> stringTimestamp_;
 	public Kdsync.Map<string, Kdsync.Timestamp> StringTimestamp => stringTimestamp_;
 
-	private static readonly Kdsync.Map<string, Kdsync.Duration>.Codec _map_stringDuration__codec = new Kdsync.Map<string, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForMessage<Kdsync.Duration>(2), 18);
+	private static readonly Kdsync.Map<string, Kdsync.Duration>.Codec _map_stringDuration__codec = new Kdsync.Map<string, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForDuration(2), 18);
 	private Kdsync.Map<string, Kdsync.Duration> stringDuration_;
 	public Kdsync.Map<string, Kdsync.Duration> StringDuration => stringDuration_;
 
-	private static readonly Kdsync.Map<string, Kdsync.Empty>.Codec _map_stringEmpty__codec = new Kdsync.Map<string, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForMessage<Kdsync.Empty>(2), 19);
+	private static readonly Kdsync.Map<string, Kdsync.Empty>.Codec _map_stringEmpty__codec = new Kdsync.Map<string, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForEmpty(2), 19);
 	private Kdsync.Map<string, Kdsync.Empty> stringEmpty_;
 	public Kdsync.Map<string, Kdsync.Empty> StringEmpty => stringEmpty_;
 
@@ -748,15 +742,15 @@ public class AllMap : Kdsync.IMessage
 	private Kdsync.Map<bool, string> boolString_;
 	public Kdsync.Map<bool, string> BoolString => boolString_;
 
-	private static readonly Kdsync.Map<bool, Kdsync.Timestamp>.Codec _map_boolTimestamp__codec = new Kdsync.Map<bool, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForMessage<Kdsync.Timestamp>(2), 24);
+	private static readonly Kdsync.Map<bool, Kdsync.Timestamp>.Codec _map_boolTimestamp__codec = new Kdsync.Map<bool, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForTimestamp(2), 24);
 	private Kdsync.Map<bool, Kdsync.Timestamp> boolTimestamp_;
 	public Kdsync.Map<bool, Kdsync.Timestamp> BoolTimestamp => boolTimestamp_;
 
-	private static readonly Kdsync.Map<bool, Kdsync.Duration>.Codec _map_boolDuration__codec = new Kdsync.Map<bool, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForMessage<Kdsync.Duration>(2), 25);
+	private static readonly Kdsync.Map<bool, Kdsync.Duration>.Codec _map_boolDuration__codec = new Kdsync.Map<bool, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForDuration(2), 25);
 	private Kdsync.Map<bool, Kdsync.Duration> boolDuration_;
 	public Kdsync.Map<bool, Kdsync.Duration> BoolDuration => boolDuration_;
 
-	private static readonly Kdsync.Map<bool, Kdsync.Empty>.Codec _map_boolEmpty__codec = new Kdsync.Map<bool, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForMessage<Kdsync.Empty>(2), 26);
+	private static readonly Kdsync.Map<bool, Kdsync.Empty>.Codec _map_boolEmpty__codec = new Kdsync.Map<bool, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForEmpty(2), 26);
 	private Kdsync.Map<bool, Kdsync.Empty> boolEmpty_;
 	public Kdsync.Map<bool, Kdsync.Empty> BoolEmpty => boolEmpty_;
 
