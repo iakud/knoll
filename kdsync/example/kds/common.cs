@@ -91,7 +91,7 @@ public class ItemData : Kdsync.IMessage
 		{
 			new KeyValuePair<string, object>("Id", id_),
 			new KeyValuePair<string, object>("Name", name_),
-			new KeyValuePair<string, object>("Count", count_)
+			new KeyValuePair<string, object>("Count", count_),
 		};
 		return fields;
 	}

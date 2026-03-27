@@ -101,7 +101,7 @@ public class All : Kdsync.IMessage
 		{
 			new KeyValuePair<string, object>("Types", types_),
 			new KeyValuePair<string, object>("Lists", lists_),
-			new KeyValuePair<string, object>("Maps", maps_)
+			new KeyValuePair<string, object>("Maps", maps_),
 		};
 		return fields;
 	}
@@ -358,7 +358,7 @@ public class AllType : Kdsync.IMessage
 			new KeyValuePair<string, object>("DurationVal", durationVal_),
 			new KeyValuePair<string, object>("EmptyVal", emptyVal_),
 			new KeyValuePair<string, object>("EnumVal", enumVal_),
-			new KeyValuePair<string, object>("ItemData", itemData_)
+			new KeyValuePair<string, object>("ItemData", itemData_),
 		};
 		return fields;
 	}
@@ -586,7 +586,7 @@ public class AllList : Kdsync.IMessage
 			new KeyValuePair<string, object>("DurationList", durationList_),
 			new KeyValuePair<string, object>("EmptyList", emptyList_),
 			new KeyValuePair<string, object>("EnumList", enumList_),
-			new KeyValuePair<string, object>("ItemList", itemList_)
+			new KeyValuePair<string, object>("ItemList", itemList_),
 		};
 		return fields;
 	}
@@ -1069,7 +1069,7 @@ public class AllMap : Kdsync.IMessage
 			new KeyValuePair<string, object>("BoolDuration", boolDuration_),
 			new KeyValuePair<string, object>("BoolEmpty", boolEmpty_),
 			new KeyValuePair<string, object>("BoolEnum", boolEnum_),
-			new KeyValuePair<string, object>("BoolItemData", boolItemData_)
+			new KeyValuePair<string, object>("BoolItemData", boolItemData_),
 		};
 		return fields;
 	}

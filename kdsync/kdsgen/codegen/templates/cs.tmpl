@@ -250,9 +250,9 @@ public enum {{.Name}}
 {{- if len .Fields}}
 		var fields = new List<KeyValuePair<string, object>>()
 		{
-{{- $fields := .Fields}}
+{{- $lastIndex := len .Fields}}
 {{- range $index, $value := .Fields}}
-			new KeyValuePair<string, object>("{{.Name}}", {{template "FieldName" .}}){{- if gt (len (slice $fields $index)) 1}},{{- end}}
+			new KeyValuePair<string, object>("{{.Name}}", {{template "FieldName" .}}){{- if ne $index $lastIndex}},{{- end}}
 {{- end}}
 		};
 		return fields;
