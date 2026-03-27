@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iakud/knoll/kds/kdsc/example/kds"
+	"github.com/iakud/knoll/kdsync/kdsgen/example/kds"
 )
 
 var all = kds.NewAll(0)

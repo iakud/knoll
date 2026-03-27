@@ -6,7 +6,7 @@ package kds
 import (
 	"time"
 
-	"github.com/iakud/knoll/kds/wire"
+	"github.com/iakud/knoll/kdsync/wire"
 )
 
 type All struct {

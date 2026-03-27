@@ -9,7 +9,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/iakud/knoll/kds/wire"
+	"github.com/iakud/knoll/kdsync/wire"
 )
 
 type dirtyParentFunc_Bool_list func()

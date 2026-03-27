@@ -28,13 +28,11 @@ function printUsage() {
     $colorful && tput setaf 7
 }
 
-source ../../../var.sh
+source ../../var.sh
 
 rm -rf kds/*.kds.cs kds/*.kds.go
 
-# kdsc --out=kds --tmpl=../template/kds.go.tmpl kds/*.kds
-go run ../ --out=kds --kind=go kds/*.kds
-# kdsc --out=kds --tmpl=../template/kds.cs.tmpl kds/*.kds
-go run ../ --out=kds --kind=cs kds/*.kds
+go run ../kdsgen --out=kds --kind=go kds/*.kds
+go run ../kdsgen --out=kds --kind=cs kds/*.kds
 
 dotnet publish -c Release -o bin --use-current-runtime .
