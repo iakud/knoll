@@ -87,10 +87,12 @@ public class ItemData : Kdsync.IMessage
 
 	public IEnumerable<KeyValuePair<string, object>> GetFields()
 	{
-		var fields = new List<KeyValuePair<string, object>>();
-		fields.Add(new KeyValuePair<string, object>("Id", id_));
-		fields.Add(new KeyValuePair<string, object>("Name", name_));
-		fields.Add(new KeyValuePair<string, object>("Count", count_));
+		var fields = new List<KeyValuePair<string, object>>()
+		{
+			new KeyValuePair<string, object>("Id", id_),
+			new KeyValuePair<string, object>("Name", name_),
+			new KeyValuePair<string, object>("Count", count_)
+		};
 		return fields;
 	}
 

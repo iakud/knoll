@@ -97,10 +97,12 @@ public class All : Kdsync.IMessage
 
 	public IEnumerable<KeyValuePair<string, object>> GetFields()
 	{
-		var fields = new List<KeyValuePair<string, object>>();
-		fields.Add(new KeyValuePair<string, object>("Types", types_));
-		fields.Add(new KeyValuePair<string, object>("Lists", lists_));
-		fields.Add(new KeyValuePair<string, object>("Maps", maps_));
+		var fields = new List<KeyValuePair<string, object>>()
+		{
+			new KeyValuePair<string, object>("Types", types_),
+			new KeyValuePair<string, object>("Lists", lists_),
+			new KeyValuePair<string, object>("Maps", maps_)
+		};
 		return fields;
 	}
 
@@ -335,27 +337,29 @@ public class AllType : Kdsync.IMessage
 
 	public IEnumerable<KeyValuePair<string, object>> GetFields()
 	{
-		var fields = new List<KeyValuePair<string, object>>();
-		fields.Add(new KeyValuePair<string, object>("Int32Val", int32Val_));
-		fields.Add(new KeyValuePair<string, object>("Int64Val", int64Val_));
-		fields.Add(new KeyValuePair<string, object>("Uint32Val", uint32Val_));
-		fields.Add(new KeyValuePair<string, object>("Uint64Val", uint64Val_));
-		fields.Add(new KeyValuePair<string, object>("Sint32Val", sint32Val_));
-		fields.Add(new KeyValuePair<string, object>("Sint64Val", sint64Val_));
-		fields.Add(new KeyValuePair<string, object>("Fixed32Val", fixed32Val_));
-		fields.Add(new KeyValuePair<string, object>("Fixed64Val", fixed64Val_));
-		fields.Add(new KeyValuePair<string, object>("Sfixed32Val", sfixed32Val_));
-		fields.Add(new KeyValuePair<string, object>("Sfixed64Val", sfixed64Val_));
-		fields.Add(new KeyValuePair<string, object>("FloatVal", floatVal_));
-		fields.Add(new KeyValuePair<string, object>("DoubleVal", doubleVal_));
-		fields.Add(new KeyValuePair<string, object>("BoolVal", boolVal_));
-		fields.Add(new KeyValuePair<string, object>("StringVal", stringVal_));
-		fields.Add(new KeyValuePair<string, object>("BytesVal", bytesVal_));
-		fields.Add(new KeyValuePair<string, object>("TimestampVal", timestampVal_));
-		fields.Add(new KeyValuePair<string, object>("DurationVal", durationVal_));
-		fields.Add(new KeyValuePair<string, object>("EmptyVal", emptyVal_));
-		fields.Add(new KeyValuePair<string, object>("EnumVal", enumVal_));
-		fields.Add(new KeyValuePair<string, object>("ItemData", itemData_));
+		var fields = new List<KeyValuePair<string, object>>()
+		{
+			new KeyValuePair<string, object>("Int32Val", int32Val_),
+			new KeyValuePair<string, object>("Int64Val", int64Val_),
+			new KeyValuePair<string, object>("Uint32Val", uint32Val_),
+			new KeyValuePair<string, object>("Uint64Val", uint64Val_),
+			new KeyValuePair<string, object>("Sint32Val", sint32Val_),
+			new KeyValuePair<string, object>("Sint64Val", sint64Val_),
+			new KeyValuePair<string, object>("Fixed32Val", fixed32Val_),
+			new KeyValuePair<string, object>("Fixed64Val", fixed64Val_),
+			new KeyValuePair<string, object>("Sfixed32Val", sfixed32Val_),
+			new KeyValuePair<string, object>("Sfixed64Val", sfixed64Val_),
+			new KeyValuePair<string, object>("FloatVal", floatVal_),
+			new KeyValuePair<string, object>("DoubleVal", doubleVal_),
+			new KeyValuePair<string, object>("BoolVal", boolVal_),
+			new KeyValuePair<string, object>("StringVal", stringVal_),
+			new KeyValuePair<string, object>("BytesVal", bytesVal_),
+			new KeyValuePair<string, object>("TimestampVal", timestampVal_),
+			new KeyValuePair<string, object>("DurationVal", durationVal_),
+			new KeyValuePair<string, object>("EmptyVal", emptyVal_),
+			new KeyValuePair<string, object>("EnumVal", enumVal_),
+			new KeyValuePair<string, object>("ItemData", itemData_)
+		};
 		return fields;
 	}
 
@@ -382,47 +386,47 @@ public class AllList : Kdsync.IMessage
 		itemList_ = new Kdsync.Repeated<ItemData>();
 	}
 
-	private static readonly Kdsync.FieldCodec<int> _list_int32List__codec = Kdsync.FieldCodec.ForInt32(1);
+	private static readonly Kdsync.FieldCodec<int> _list_int32List__codec = Kdsync.FieldCodec.ForInt32();
 	private Kdsync.Repeated<int> int32List_;
 	public Kdsync.Repeated<int> Int32List => int32List_;
 
-	private static readonly Kdsync.FieldCodec<long> _list_int64List__codec = Kdsync.FieldCodec.ForInt64(2);
+	private static readonly Kdsync.FieldCodec<long> _list_int64List__codec = Kdsync.FieldCodec.ForInt64();
 	private Kdsync.Repeated<long> int64List_;
 	public Kdsync.Repeated<long> Int64List => int64List_;
 
-	private static readonly Kdsync.FieldCodec<float> _list_floatList__codec = Kdsync.FieldCodec.ForFloat(3);
+	private static readonly Kdsync.FieldCodec<float> _list_floatList__codec = Kdsync.FieldCodec.ForFloat();
 	private Kdsync.Repeated<float> floatList_;
 	public Kdsync.Repeated<float> FloatList => floatList_;
 
-	private static readonly Kdsync.FieldCodec<double> _list_doubleList__codec = Kdsync.FieldCodec.ForDouble(4);
+	private static readonly Kdsync.FieldCodec<double> _list_doubleList__codec = Kdsync.FieldCodec.ForDouble();
 	private Kdsync.Repeated<double> doubleList_;
 	public Kdsync.Repeated<double> DoubleList => doubleList_;
 
-	private static readonly Kdsync.FieldCodec<bool> _list_boolList__codec = Kdsync.FieldCodec.ForBool(5);
+	private static readonly Kdsync.FieldCodec<bool> _list_boolList__codec = Kdsync.FieldCodec.ForBool();
 	private Kdsync.Repeated<bool> boolList_;
 	public Kdsync.Repeated<bool> BoolList => boolList_;
 
-	private static readonly Kdsync.FieldCodec<string> _list_stringList__codec = Kdsync.FieldCodec.ForString(6);
+	private static readonly Kdsync.FieldCodec<string> _list_stringList__codec = Kdsync.FieldCodec.ForString();
 	private Kdsync.Repeated<string> stringList_;
 	public Kdsync.Repeated<string> StringList => stringList_;
 
-	private static readonly Kdsync.FieldCodec<Kdsync.Timestamp> _list_timestampList__codec = Kdsync.FieldCodec.ForTimestamp(7);
+	private static readonly Kdsync.FieldCodec<Kdsync.Timestamp> _list_timestampList__codec = Kdsync.FieldCodec.ForTimestamp();
 	private Kdsync.Repeated<Kdsync.Timestamp> timestampList_;
 	public Kdsync.Repeated<Kdsync.Timestamp> TimestampList => timestampList_;
 
-	private static readonly Kdsync.FieldCodec<Kdsync.Duration> _list_durationList__codec = Kdsync.FieldCodec.ForDuration(8);
+	private static readonly Kdsync.FieldCodec<Kdsync.Duration> _list_durationList__codec = Kdsync.FieldCodec.ForDuration();
 	private Kdsync.Repeated<Kdsync.Duration> durationList_;
 	public Kdsync.Repeated<Kdsync.Duration> DurationList => durationList_;
 
-	private static readonly Kdsync.FieldCodec<Kdsync.Empty> _list_emptyList__codec = Kdsync.FieldCodec.ForEmpty(9);
+	private static readonly Kdsync.FieldCodec<Kdsync.Empty> _list_emptyList__codec = Kdsync.FieldCodec.ForEmpty();
 	private Kdsync.Repeated<Kdsync.Empty> emptyList_;
 	public Kdsync.Repeated<Kdsync.Empty> EmptyList => emptyList_;
 
-	private static readonly Kdsync.FieldCodec<ItemType> _list_enumList__codec = Kdsync.FieldCodec.ForEnum(10, x => (int)x, x => (ItemType)x);
+	private static readonly Kdsync.FieldCodec<ItemType> _list_enumList__codec = Kdsync.FieldCodec.ForEnum(x => (int)x, x => (ItemType)x);
 	private Kdsync.Repeated<ItemType> enumList_;
 	public Kdsync.Repeated<ItemType> EnumList => enumList_;
 
-	private static readonly Kdsync.FieldCodec<ItemData> _list_itemList__codec = Kdsync.FieldCodec.ForMessage<ItemData>(11);
+	private static readonly Kdsync.FieldCodec<ItemData> _list_itemList__codec = Kdsync.FieldCodec.ForMessage<ItemData>();
 	private Kdsync.Repeated<ItemData> itemList_;
 	public Kdsync.Repeated<ItemData> ItemList => itemList_;
 
@@ -460,47 +464,47 @@ public class AllList : Kdsync.IMessage
 			switch (num)
 			{
 				case 1:
-					int32List_.AddEntriesFrom(ref ctx, _list_int32List__codec);
+					int32List_.MergeFrom(ref ctx, _list_int32List__codec);
 					_changed |= 0x01 << 1;
 					break;
 				case 2:
-					int64List_.AddEntriesFrom(ref ctx, _list_int64List__codec);
+					int64List_.MergeFrom(ref ctx, _list_int64List__codec);
 					_changed |= 0x01 << 2;
 					break;
 				case 3:
-					floatList_.AddEntriesFrom(ref ctx, _list_floatList__codec);
+					floatList_.MergeFrom(ref ctx, _list_floatList__codec);
 					_changed |= 0x01 << 3;
 					break;
 				case 4:
-					doubleList_.AddEntriesFrom(ref ctx, _list_doubleList__codec);
+					doubleList_.MergeFrom(ref ctx, _list_doubleList__codec);
 					_changed |= 0x01 << 4;
 					break;
 				case 5:
-					boolList_.AddEntriesFrom(ref ctx, _list_boolList__codec);
+					boolList_.MergeFrom(ref ctx, _list_boolList__codec);
 					_changed |= 0x01 << 5;
 					break;
 				case 6:
-					stringList_.AddEntriesFrom(ref ctx, _list_stringList__codec);
+					stringList_.MergeFrom(ref ctx, _list_stringList__codec);
 					_changed |= 0x01 << 6;
 					break;
 				case 7:
-					timestampList_.AddEntriesFrom(ref ctx, _list_timestampList__codec);
+					timestampList_.MergeFrom(ref ctx, _list_timestampList__codec);
 					_changed |= 0x01 << 7;
 					break;
 				case 8:
-					durationList_.AddEntriesFrom(ref ctx, _list_durationList__codec);
+					durationList_.MergeFrom(ref ctx, _list_durationList__codec);
 					_changed |= 0x01 << 8;
 					break;
 				case 9:
-					emptyList_.AddEntriesFrom(ref ctx, _list_emptyList__codec);
+					emptyList_.MergeFrom(ref ctx, _list_emptyList__codec);
 					_changed |= 0x01 << 9;
 					break;
 				case 10:
-					enumList_.AddEntriesFrom(ref ctx, _list_enumList__codec);
+					enumList_.MergeFrom(ref ctx, _list_enumList__codec);
 					_changed |= 0x01 << 10;
 					break;
 				case 11:
-					itemList_.AddEntriesFrom(ref ctx, _list_itemList__codec);
+					itemList_.MergeFrom(ref ctx, _list_itemList__codec);
 					_changed |= 0x01 << 11;
 					break;
 				default:
@@ -570,18 +574,20 @@ public class AllList : Kdsync.IMessage
 
 	public IEnumerable<KeyValuePair<string, object>> GetFields()
 	{
-		var fields = new List<KeyValuePair<string, object>>();
-		fields.Add(new KeyValuePair<string, object>("Int32List", int32List_));
-		fields.Add(new KeyValuePair<string, object>("Int64List", int64List_));
-		fields.Add(new KeyValuePair<string, object>("FloatList", floatList_));
-		fields.Add(new KeyValuePair<string, object>("DoubleList", doubleList_));
-		fields.Add(new KeyValuePair<string, object>("BoolList", boolList_));
-		fields.Add(new KeyValuePair<string, object>("StringList", stringList_));
-		fields.Add(new KeyValuePair<string, object>("TimestampList", timestampList_));
-		fields.Add(new KeyValuePair<string, object>("DurationList", durationList_));
-		fields.Add(new KeyValuePair<string, object>("EmptyList", emptyList_));
-		fields.Add(new KeyValuePair<string, object>("EnumList", enumList_));
-		fields.Add(new KeyValuePair<string, object>("ItemList", itemList_));
+		var fields = new List<KeyValuePair<string, object>>()
+		{
+			new KeyValuePair<string, object>("Int32List", int32List_),
+			new KeyValuePair<string, object>("Int64List", int64List_),
+			new KeyValuePair<string, object>("FloatList", floatList_),
+			new KeyValuePair<string, object>("DoubleList", doubleList_),
+			new KeyValuePair<string, object>("BoolList", boolList_),
+			new KeyValuePair<string, object>("StringList", stringList_),
+			new KeyValuePair<string, object>("TimestampList", timestampList_),
+			new KeyValuePair<string, object>("DurationList", durationList_),
+			new KeyValuePair<string, object>("EmptyList", emptyList_),
+			new KeyValuePair<string, object>("EnumList", enumList_),
+			new KeyValuePair<string, object>("ItemList", itemList_)
+		};
 		return fields;
 	}
 
@@ -625,115 +631,115 @@ public class AllMap : Kdsync.IMessage
 		boolItemData_ = new Kdsync.Map<bool, ItemData>();
 	}
 
-	private static readonly Kdsync.Map<int, int>.Codec _map_int32Int32__codec = new Kdsync.Map<int, int>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForInt32(2), 1);
+	private static readonly Kdsync.Map<int, int>.Codec _map_int32Int32__codec = new Kdsync.Map<int, int>.Codec(Kdsync.FieldCodec.ForInt32(), Kdsync.FieldCodec.ForInt32(), 1);
 	private Kdsync.Map<int, int> int32Int32_;
 	public Kdsync.Map<int, int> Int32Int32 => int32Int32_;
 
-	private static readonly Kdsync.Map<int, string>.Codec _map_int32String__codec = new Kdsync.Map<int, string>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForString(2), 2);
+	private static readonly Kdsync.Map<int, string>.Codec _map_int32String__codec = new Kdsync.Map<int, string>.Codec(Kdsync.FieldCodec.ForInt32(), Kdsync.FieldCodec.ForString(), 2);
 	private Kdsync.Map<int, string> int32String_;
 	public Kdsync.Map<int, string> Int32String => int32String_;
 
-	private static readonly Kdsync.Map<int, Kdsync.Timestamp>.Codec _map_int32Timestamp__codec = new Kdsync.Map<int, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForTimestamp(2), 3);
+	private static readonly Kdsync.Map<int, Kdsync.Timestamp>.Codec _map_int32Timestamp__codec = new Kdsync.Map<int, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForInt32(), Kdsync.FieldCodec.ForTimestamp(), 3);
 	private Kdsync.Map<int, Kdsync.Timestamp> int32Timestamp_;
 	public Kdsync.Map<int, Kdsync.Timestamp> Int32Timestamp => int32Timestamp_;
 
-	private static readonly Kdsync.Map<int, Kdsync.Duration>.Codec _map_int32Duration__codec = new Kdsync.Map<int, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForDuration(2), 4);
+	private static readonly Kdsync.Map<int, Kdsync.Duration>.Codec _map_int32Duration__codec = new Kdsync.Map<int, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForInt32(), Kdsync.FieldCodec.ForDuration(), 4);
 	private Kdsync.Map<int, Kdsync.Duration> int32Duration_;
 	public Kdsync.Map<int, Kdsync.Duration> Int32Duration => int32Duration_;
 
-	private static readonly Kdsync.Map<int, Kdsync.Empty>.Codec _map_int32Empty__codec = new Kdsync.Map<int, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForEmpty(2), 5);
+	private static readonly Kdsync.Map<int, Kdsync.Empty>.Codec _map_int32Empty__codec = new Kdsync.Map<int, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForInt32(), Kdsync.FieldCodec.ForEmpty(), 5);
 	private Kdsync.Map<int, Kdsync.Empty> int32Empty_;
 	public Kdsync.Map<int, Kdsync.Empty> Int32Empty => int32Empty_;
 
-	private static readonly Kdsync.Map<int, ItemType>.Codec _map_int32Enum__codec = new Kdsync.Map<int, ItemType>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForEnum(2, x => (int)x, x => (ItemType)x), 6);
+	private static readonly Kdsync.Map<int, ItemType>.Codec _map_int32Enum__codec = new Kdsync.Map<int, ItemType>.Codec(Kdsync.FieldCodec.ForInt32(), Kdsync.FieldCodec.ForEnum(x => (int)x, x => (ItemType)x), 6);
 	private Kdsync.Map<int, ItemType> int32Enum_;
 	public Kdsync.Map<int, ItemType> Int32Enum => int32Enum_;
 
-	private static readonly Kdsync.Map<int, ItemData>.Codec _map_int32ItemData__codec = new Kdsync.Map<int, ItemData>.Codec(Kdsync.FieldCodec.ForInt32(1), Kdsync.FieldCodec.ForMessage<ItemData>(2), 7);
+	private static readonly Kdsync.Map<int, ItemData>.Codec _map_int32ItemData__codec = new Kdsync.Map<int, ItemData>.Codec(Kdsync.FieldCodec.ForInt32(), Kdsync.FieldCodec.ForMessage<ItemData>(), 7);
 	private Kdsync.Map<int, ItemData> int32ItemData_;
 	public Kdsync.Map<int, ItemData> Int32ItemData => int32ItemData_;
 
-	private static readonly Kdsync.Map<long, long>.Codec _map_int64Int64__codec = new Kdsync.Map<long, long>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForInt64(2), 8);
+	private static readonly Kdsync.Map<long, long>.Codec _map_int64Int64__codec = new Kdsync.Map<long, long>.Codec(Kdsync.FieldCodec.ForInt64(), Kdsync.FieldCodec.ForInt64(), 8);
 	private Kdsync.Map<long, long> int64Int64_;
 	public Kdsync.Map<long, long> Int64Int64 => int64Int64_;
 
-	private static readonly Kdsync.Map<long, string>.Codec _map_int64String__codec = new Kdsync.Map<long, string>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForString(2), 9);
+	private static readonly Kdsync.Map<long, string>.Codec _map_int64String__codec = new Kdsync.Map<long, string>.Codec(Kdsync.FieldCodec.ForInt64(), Kdsync.FieldCodec.ForString(), 9);
 	private Kdsync.Map<long, string> int64String_;
 	public Kdsync.Map<long, string> Int64String => int64String_;
 
-	private static readonly Kdsync.Map<long, Kdsync.Timestamp>.Codec _map_int64Timestamp__codec = new Kdsync.Map<long, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForTimestamp(2), 10);
+	private static readonly Kdsync.Map<long, Kdsync.Timestamp>.Codec _map_int64Timestamp__codec = new Kdsync.Map<long, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForInt64(), Kdsync.FieldCodec.ForTimestamp(), 10);
 	private Kdsync.Map<long, Kdsync.Timestamp> int64Timestamp_;
 	public Kdsync.Map<long, Kdsync.Timestamp> Int64Timestamp => int64Timestamp_;
 
-	private static readonly Kdsync.Map<long, Kdsync.Duration>.Codec _map_int64Duration__codec = new Kdsync.Map<long, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForDuration(2), 11);
+	private static readonly Kdsync.Map<long, Kdsync.Duration>.Codec _map_int64Duration__codec = new Kdsync.Map<long, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForInt64(), Kdsync.FieldCodec.ForDuration(), 11);
 	private Kdsync.Map<long, Kdsync.Duration> int64Duration_;
 	public Kdsync.Map<long, Kdsync.Duration> Int64Duration => int64Duration_;
 
-	private static readonly Kdsync.Map<long, Kdsync.Empty>.Codec _map_int64Empty__codec = new Kdsync.Map<long, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForEmpty(2), 12);
+	private static readonly Kdsync.Map<long, Kdsync.Empty>.Codec _map_int64Empty__codec = new Kdsync.Map<long, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForInt64(), Kdsync.FieldCodec.ForEmpty(), 12);
 	private Kdsync.Map<long, Kdsync.Empty> int64Empty_;
 	public Kdsync.Map<long, Kdsync.Empty> Int64Empty => int64Empty_;
 
-	private static readonly Kdsync.Map<long, ItemType>.Codec _map_int64Enum__codec = new Kdsync.Map<long, ItemType>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForEnum(2, x => (int)x, x => (ItemType)x), 13);
+	private static readonly Kdsync.Map<long, ItemType>.Codec _map_int64Enum__codec = new Kdsync.Map<long, ItemType>.Codec(Kdsync.FieldCodec.ForInt64(), Kdsync.FieldCodec.ForEnum(x => (int)x, x => (ItemType)x), 13);
 	private Kdsync.Map<long, ItemType> int64Enum_;
 	public Kdsync.Map<long, ItemType> Int64Enum => int64Enum_;
 
-	private static readonly Kdsync.Map<long, ItemData>.Codec _map_int64ItemData__codec = new Kdsync.Map<long, ItemData>.Codec(Kdsync.FieldCodec.ForInt64(1), Kdsync.FieldCodec.ForMessage<ItemData>(2), 14);
+	private static readonly Kdsync.Map<long, ItemData>.Codec _map_int64ItemData__codec = new Kdsync.Map<long, ItemData>.Codec(Kdsync.FieldCodec.ForInt64(), Kdsync.FieldCodec.ForMessage<ItemData>(), 14);
 	private Kdsync.Map<long, ItemData> int64ItemData_;
 	public Kdsync.Map<long, ItemData> Int64ItemData => int64ItemData_;
 
-	private static readonly Kdsync.Map<string, int>.Codec _map_stringInt32__codec = new Kdsync.Map<string, int>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForInt32(2), 15);
+	private static readonly Kdsync.Map<string, int>.Codec _map_stringInt32__codec = new Kdsync.Map<string, int>.Codec(Kdsync.FieldCodec.ForString(), Kdsync.FieldCodec.ForInt32(), 15);
 	private Kdsync.Map<string, int> stringInt32_;
 	public Kdsync.Map<string, int> StringInt32 => stringInt32_;
 
-	private static readonly Kdsync.Map<string, string>.Codec _map_stringString__codec = new Kdsync.Map<string, string>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForString(2), 16);
+	private static readonly Kdsync.Map<string, string>.Codec _map_stringString__codec = new Kdsync.Map<string, string>.Codec(Kdsync.FieldCodec.ForString(), Kdsync.FieldCodec.ForString(), 16);
 	private Kdsync.Map<string, string> stringString_;
 	public Kdsync.Map<string, string> StringString => stringString_;
 
-	private static readonly Kdsync.Map<string, Kdsync.Timestamp>.Codec _map_stringTimestamp__codec = new Kdsync.Map<string, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForTimestamp(2), 17);
+	private static readonly Kdsync.Map<string, Kdsync.Timestamp>.Codec _map_stringTimestamp__codec = new Kdsync.Map<string, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForString(), Kdsync.FieldCodec.ForTimestamp(), 17);
 	private Kdsync.Map<string, Kdsync.Timestamp> stringTimestamp_;
 	public Kdsync.Map<string, Kdsync.Timestamp> StringTimestamp => stringTimestamp_;
 
-	private static readonly Kdsync.Map<string, Kdsync.Duration>.Codec _map_stringDuration__codec = new Kdsync.Map<string, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForDuration(2), 18);
+	private static readonly Kdsync.Map<string, Kdsync.Duration>.Codec _map_stringDuration__codec = new Kdsync.Map<string, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForString(), Kdsync.FieldCodec.ForDuration(), 18);
 	private Kdsync.Map<string, Kdsync.Duration> stringDuration_;
 	public Kdsync.Map<string, Kdsync.Duration> StringDuration => stringDuration_;
 
-	private static readonly Kdsync.Map<string, Kdsync.Empty>.Codec _map_stringEmpty__codec = new Kdsync.Map<string, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForEmpty(2), 19);
+	private static readonly Kdsync.Map<string, Kdsync.Empty>.Codec _map_stringEmpty__codec = new Kdsync.Map<string, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForString(), Kdsync.FieldCodec.ForEmpty(), 19);
 	private Kdsync.Map<string, Kdsync.Empty> stringEmpty_;
 	public Kdsync.Map<string, Kdsync.Empty> StringEmpty => stringEmpty_;
 
-	private static readonly Kdsync.Map<string, ItemType>.Codec _map_stringEnum__codec = new Kdsync.Map<string, ItemType>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForEnum(2, x => (int)x, x => (ItemType)x), 20);
+	private static readonly Kdsync.Map<string, ItemType>.Codec _map_stringEnum__codec = new Kdsync.Map<string, ItemType>.Codec(Kdsync.FieldCodec.ForString(), Kdsync.FieldCodec.ForEnum(x => (int)x, x => (ItemType)x), 20);
 	private Kdsync.Map<string, ItemType> stringEnum_;
 	public Kdsync.Map<string, ItemType> StringEnum => stringEnum_;
 
-	private static readonly Kdsync.Map<string, ItemData>.Codec _map_stringItemData__codec = new Kdsync.Map<string, ItemData>.Codec(Kdsync.FieldCodec.ForString(1), Kdsync.FieldCodec.ForMessage<ItemData>(2), 21);
+	private static readonly Kdsync.Map<string, ItemData>.Codec _map_stringItemData__codec = new Kdsync.Map<string, ItemData>.Codec(Kdsync.FieldCodec.ForString(), Kdsync.FieldCodec.ForMessage<ItemData>(), 21);
 	private Kdsync.Map<string, ItemData> stringItemData_;
 	public Kdsync.Map<string, ItemData> StringItemData => stringItemData_;
 
-	private static readonly Kdsync.Map<bool, int>.Codec _map_boolInt32__codec = new Kdsync.Map<bool, int>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForInt32(2), 22);
+	private static readonly Kdsync.Map<bool, int>.Codec _map_boolInt32__codec = new Kdsync.Map<bool, int>.Codec(Kdsync.FieldCodec.ForBool(), Kdsync.FieldCodec.ForInt32(), 22);
 	private Kdsync.Map<bool, int> boolInt32_;
 	public Kdsync.Map<bool, int> BoolInt32 => boolInt32_;
 
-	private static readonly Kdsync.Map<bool, string>.Codec _map_boolString__codec = new Kdsync.Map<bool, string>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForString(2), 23);
+	private static readonly Kdsync.Map<bool, string>.Codec _map_boolString__codec = new Kdsync.Map<bool, string>.Codec(Kdsync.FieldCodec.ForBool(), Kdsync.FieldCodec.ForString(), 23);
 	private Kdsync.Map<bool, string> boolString_;
 	public Kdsync.Map<bool, string> BoolString => boolString_;
 
-	private static readonly Kdsync.Map<bool, Kdsync.Timestamp>.Codec _map_boolTimestamp__codec = new Kdsync.Map<bool, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForTimestamp(2), 24);
+	private static readonly Kdsync.Map<bool, Kdsync.Timestamp>.Codec _map_boolTimestamp__codec = new Kdsync.Map<bool, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForBool(), Kdsync.FieldCodec.ForTimestamp(), 24);
 	private Kdsync.Map<bool, Kdsync.Timestamp> boolTimestamp_;
 	public Kdsync.Map<bool, Kdsync.Timestamp> BoolTimestamp => boolTimestamp_;
 
-	private static readonly Kdsync.Map<bool, Kdsync.Duration>.Codec _map_boolDuration__codec = new Kdsync.Map<bool, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForDuration(2), 25);
+	private static readonly Kdsync.Map<bool, Kdsync.Duration>.Codec _map_boolDuration__codec = new Kdsync.Map<bool, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForBool(), Kdsync.FieldCodec.ForDuration(), 25);
 	private Kdsync.Map<bool, Kdsync.Duration> boolDuration_;
 	public Kdsync.Map<bool, Kdsync.Duration> BoolDuration => boolDuration_;
 
-	private static readonly Kdsync.Map<bool, Kdsync.Empty>.Codec _map_boolEmpty__codec = new Kdsync.Map<bool, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForEmpty(2), 26);
+	private static readonly Kdsync.Map<bool, Kdsync.Empty>.Codec _map_boolEmpty__codec = new Kdsync.Map<bool, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForBool(), Kdsync.FieldCodec.ForEmpty(), 26);
 	private Kdsync.Map<bool, Kdsync.Empty> boolEmpty_;
 	public Kdsync.Map<bool, Kdsync.Empty> BoolEmpty => boolEmpty_;
 
-	private static readonly Kdsync.Map<bool, ItemType>.Codec _map_boolEnum__codec = new Kdsync.Map<bool, ItemType>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForEnum(2, x => (int)x, x => (ItemType)x), 27);
+	private static readonly Kdsync.Map<bool, ItemType>.Codec _map_boolEnum__codec = new Kdsync.Map<bool, ItemType>.Codec(Kdsync.FieldCodec.ForBool(), Kdsync.FieldCodec.ForEnum(x => (int)x, x => (ItemType)x), 27);
 	private Kdsync.Map<bool, ItemType> boolEnum_;
 	public Kdsync.Map<bool, ItemType> BoolEnum => boolEnum_;
 
-	private static readonly Kdsync.Map<bool, ItemData>.Codec _map_boolItemData__codec = new Kdsync.Map<bool, ItemData>.Codec(Kdsync.FieldCodec.ForBool(1), Kdsync.FieldCodec.ForMessage<ItemData>(2), 28);
+	private static readonly Kdsync.Map<bool, ItemData>.Codec _map_boolItemData__codec = new Kdsync.Map<bool, ItemData>.Codec(Kdsync.FieldCodec.ForBool(), Kdsync.FieldCodec.ForMessage<ItemData>(), 28);
 	private Kdsync.Map<bool, ItemData> boolItemData_;
 	public Kdsync.Map<bool, ItemData> BoolItemData => boolItemData_;
 
@@ -788,115 +794,115 @@ public class AllMap : Kdsync.IMessage
 			switch (num)
 			{
 				case 1:
-					int32Int32_.AddEntriesFrom(ref ctx, _map_int32Int32__codec);
+					int32Int32_.MergeFrom(ref ctx, _map_int32Int32__codec);
 					_changed |= 0x01 << 1;
 					break;
 				case 2:
-					int32String_.AddEntriesFrom(ref ctx, _map_int32String__codec);
+					int32String_.MergeFrom(ref ctx, _map_int32String__codec);
 					_changed |= 0x01 << 2;
 					break;
 				case 3:
-					int32Timestamp_.AddEntriesFrom(ref ctx, _map_int32Timestamp__codec);
+					int32Timestamp_.MergeFrom(ref ctx, _map_int32Timestamp__codec);
 					_changed |= 0x01 << 3;
 					break;
 				case 4:
-					int32Duration_.AddEntriesFrom(ref ctx, _map_int32Duration__codec);
+					int32Duration_.MergeFrom(ref ctx, _map_int32Duration__codec);
 					_changed |= 0x01 << 4;
 					break;
 				case 5:
-					int32Empty_.AddEntriesFrom(ref ctx, _map_int32Empty__codec);
+					int32Empty_.MergeFrom(ref ctx, _map_int32Empty__codec);
 					_changed |= 0x01 << 5;
 					break;
 				case 6:
-					int32Enum_.AddEntriesFrom(ref ctx, _map_int32Enum__codec);
+					int32Enum_.MergeFrom(ref ctx, _map_int32Enum__codec);
 					_changed |= 0x01 << 6;
 					break;
 				case 7:
-					int32ItemData_.AddEntriesFrom(ref ctx, _map_int32ItemData__codec);
+					int32ItemData_.MergeFrom(ref ctx, _map_int32ItemData__codec);
 					_changed |= 0x01 << 7;
 					break;
 				case 8:
-					int64Int64_.AddEntriesFrom(ref ctx, _map_int64Int64__codec);
+					int64Int64_.MergeFrom(ref ctx, _map_int64Int64__codec);
 					_changed |= 0x01 << 8;
 					break;
 				case 9:
-					int64String_.AddEntriesFrom(ref ctx, _map_int64String__codec);
+					int64String_.MergeFrom(ref ctx, _map_int64String__codec);
 					_changed |= 0x01 << 9;
 					break;
 				case 10:
-					int64Timestamp_.AddEntriesFrom(ref ctx, _map_int64Timestamp__codec);
+					int64Timestamp_.MergeFrom(ref ctx, _map_int64Timestamp__codec);
 					_changed |= 0x01 << 10;
 					break;
 				case 11:
-					int64Duration_.AddEntriesFrom(ref ctx, _map_int64Duration__codec);
+					int64Duration_.MergeFrom(ref ctx, _map_int64Duration__codec);
 					_changed |= 0x01 << 11;
 					break;
 				case 12:
-					int64Empty_.AddEntriesFrom(ref ctx, _map_int64Empty__codec);
+					int64Empty_.MergeFrom(ref ctx, _map_int64Empty__codec);
 					_changed |= 0x01 << 12;
 					break;
 				case 13:
-					int64Enum_.AddEntriesFrom(ref ctx, _map_int64Enum__codec);
+					int64Enum_.MergeFrom(ref ctx, _map_int64Enum__codec);
 					_changed |= 0x01 << 13;
 					break;
 				case 14:
-					int64ItemData_.AddEntriesFrom(ref ctx, _map_int64ItemData__codec);
+					int64ItemData_.MergeFrom(ref ctx, _map_int64ItemData__codec);
 					_changed |= 0x01 << 14;
 					break;
 				case 15:
-					stringInt32_.AddEntriesFrom(ref ctx, _map_stringInt32__codec);
+					stringInt32_.MergeFrom(ref ctx, _map_stringInt32__codec);
 					_changed |= 0x01 << 15;
 					break;
 				case 16:
-					stringString_.AddEntriesFrom(ref ctx, _map_stringString__codec);
+					stringString_.MergeFrom(ref ctx, _map_stringString__codec);
 					_changed |= 0x01 << 16;
 					break;
 				case 17:
-					stringTimestamp_.AddEntriesFrom(ref ctx, _map_stringTimestamp__codec);
+					stringTimestamp_.MergeFrom(ref ctx, _map_stringTimestamp__codec);
 					_changed |= 0x01 << 17;
 					break;
 				case 18:
-					stringDuration_.AddEntriesFrom(ref ctx, _map_stringDuration__codec);
+					stringDuration_.MergeFrom(ref ctx, _map_stringDuration__codec);
 					_changed |= 0x01 << 18;
 					break;
 				case 19:
-					stringEmpty_.AddEntriesFrom(ref ctx, _map_stringEmpty__codec);
+					stringEmpty_.MergeFrom(ref ctx, _map_stringEmpty__codec);
 					_changed |= 0x01 << 19;
 					break;
 				case 20:
-					stringEnum_.AddEntriesFrom(ref ctx, _map_stringEnum__codec);
+					stringEnum_.MergeFrom(ref ctx, _map_stringEnum__codec);
 					_changed |= 0x01 << 20;
 					break;
 				case 21:
-					stringItemData_.AddEntriesFrom(ref ctx, _map_stringItemData__codec);
+					stringItemData_.MergeFrom(ref ctx, _map_stringItemData__codec);
 					_changed |= 0x01 << 21;
 					break;
 				case 22:
-					boolInt32_.AddEntriesFrom(ref ctx, _map_boolInt32__codec);
+					boolInt32_.MergeFrom(ref ctx, _map_boolInt32__codec);
 					_changed |= 0x01 << 22;
 					break;
 				case 23:
-					boolString_.AddEntriesFrom(ref ctx, _map_boolString__codec);
+					boolString_.MergeFrom(ref ctx, _map_boolString__codec);
 					_changed |= 0x01 << 23;
 					break;
 				case 24:
-					boolTimestamp_.AddEntriesFrom(ref ctx, _map_boolTimestamp__codec);
+					boolTimestamp_.MergeFrom(ref ctx, _map_boolTimestamp__codec);
 					_changed |= 0x01 << 24;
 					break;
 				case 25:
-					boolDuration_.AddEntriesFrom(ref ctx, _map_boolDuration__codec);
+					boolDuration_.MergeFrom(ref ctx, _map_boolDuration__codec);
 					_changed |= 0x01 << 25;
 					break;
 				case 26:
-					boolEmpty_.AddEntriesFrom(ref ctx, _map_boolEmpty__codec);
+					boolEmpty_.MergeFrom(ref ctx, _map_boolEmpty__codec);
 					_changed |= 0x01 << 26;
 					break;
 				case 27:
-					boolEnum_.AddEntriesFrom(ref ctx, _map_boolEnum__codec);
+					boolEnum_.MergeFrom(ref ctx, _map_boolEnum__codec);
 					_changed |= 0x01 << 27;
 					break;
 				case 28:
-					boolItemData_.AddEntriesFrom(ref ctx, _map_boolItemData__codec);
+					boolItemData_.MergeFrom(ref ctx, _map_boolItemData__codec);
 					_changed |= 0x01 << 28;
 					break;
 				default:
@@ -1034,35 +1040,37 @@ public class AllMap : Kdsync.IMessage
 
 	public IEnumerable<KeyValuePair<string, object>> GetFields()
 	{
-		var fields = new List<KeyValuePair<string, object>>();
-		fields.Add(new KeyValuePair<string, object>("Int32Int32", int32Int32_));
-		fields.Add(new KeyValuePair<string, object>("Int32String", int32String_));
-		fields.Add(new KeyValuePair<string, object>("Int32Timestamp", int32Timestamp_));
-		fields.Add(new KeyValuePair<string, object>("Int32Duration", int32Duration_));
-		fields.Add(new KeyValuePair<string, object>("Int32Empty", int32Empty_));
-		fields.Add(new KeyValuePair<string, object>("Int32Enum", int32Enum_));
-		fields.Add(new KeyValuePair<string, object>("Int32ItemData", int32ItemData_));
-		fields.Add(new KeyValuePair<string, object>("Int64Int64", int64Int64_));
-		fields.Add(new KeyValuePair<string, object>("Int64String", int64String_));
-		fields.Add(new KeyValuePair<string, object>("Int64Timestamp", int64Timestamp_));
-		fields.Add(new KeyValuePair<string, object>("Int64Duration", int64Duration_));
-		fields.Add(new KeyValuePair<string, object>("Int64Empty", int64Empty_));
-		fields.Add(new KeyValuePair<string, object>("Int64Enum", int64Enum_));
-		fields.Add(new KeyValuePair<string, object>("Int64ItemData", int64ItemData_));
-		fields.Add(new KeyValuePair<string, object>("StringInt32", stringInt32_));
-		fields.Add(new KeyValuePair<string, object>("StringString", stringString_));
-		fields.Add(new KeyValuePair<string, object>("StringTimestamp", stringTimestamp_));
-		fields.Add(new KeyValuePair<string, object>("StringDuration", stringDuration_));
-		fields.Add(new KeyValuePair<string, object>("StringEmpty", stringEmpty_));
-		fields.Add(new KeyValuePair<string, object>("StringEnum", stringEnum_));
-		fields.Add(new KeyValuePair<string, object>("StringItemData", stringItemData_));
-		fields.Add(new KeyValuePair<string, object>("BoolInt32", boolInt32_));
-		fields.Add(new KeyValuePair<string, object>("BoolString", boolString_));
-		fields.Add(new KeyValuePair<string, object>("BoolTimestamp", boolTimestamp_));
-		fields.Add(new KeyValuePair<string, object>("BoolDuration", boolDuration_));
-		fields.Add(new KeyValuePair<string, object>("BoolEmpty", boolEmpty_));
-		fields.Add(new KeyValuePair<string, object>("BoolEnum", boolEnum_));
-		fields.Add(new KeyValuePair<string, object>("BoolItemData", boolItemData_));
+		var fields = new List<KeyValuePair<string, object>>()
+		{
+			new KeyValuePair<string, object>("Int32Int32", int32Int32_),
+			new KeyValuePair<string, object>("Int32String", int32String_),
+			new KeyValuePair<string, object>("Int32Timestamp", int32Timestamp_),
+			new KeyValuePair<string, object>("Int32Duration", int32Duration_),
+			new KeyValuePair<string, object>("Int32Empty", int32Empty_),
+			new KeyValuePair<string, object>("Int32Enum", int32Enum_),
+			new KeyValuePair<string, object>("Int32ItemData", int32ItemData_),
+			new KeyValuePair<string, object>("Int64Int64", int64Int64_),
+			new KeyValuePair<string, object>("Int64String", int64String_),
+			new KeyValuePair<string, object>("Int64Timestamp", int64Timestamp_),
+			new KeyValuePair<string, object>("Int64Duration", int64Duration_),
+			new KeyValuePair<string, object>("Int64Empty", int64Empty_),
+			new KeyValuePair<string, object>("Int64Enum", int64Enum_),
+			new KeyValuePair<string, object>("Int64ItemData", int64ItemData_),
+			new KeyValuePair<string, object>("StringInt32", stringInt32_),
+			new KeyValuePair<string, object>("StringString", stringString_),
+			new KeyValuePair<string, object>("StringTimestamp", stringTimestamp_),
+			new KeyValuePair<string, object>("StringDuration", stringDuration_),
+			new KeyValuePair<string, object>("StringEmpty", stringEmpty_),
+			new KeyValuePair<string, object>("StringEnum", stringEnum_),
+			new KeyValuePair<string, object>("StringItemData", stringItemData_),
+			new KeyValuePair<string, object>("BoolInt32", boolInt32_),
+			new KeyValuePair<string, object>("BoolString", boolString_),
+			new KeyValuePair<string, object>("BoolTimestamp", boolTimestamp_),
+			new KeyValuePair<string, object>("BoolDuration", boolDuration_),
+			new KeyValuePair<string, object>("BoolEmpty", boolEmpty_),
+			new KeyValuePair<string, object>("BoolEnum", boolEnum_),
+			new KeyValuePair<string, object>("BoolItemData", boolItemData_)
+		};
 		return fields;
 	}
 
