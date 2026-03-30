@@ -33,6 +33,6 @@ source ../../var.sh
 rm -rf kds/*.kds.cs kds/*.kds.go
 
 go run ../kdsgen --out=kds --kind=go kds/*.kds
-go run ../kdsgen --out=kds --kind=cs kds/*.kds
+# go run ../kdsgen --out=kds --kind=cs kds/*.kds
 
-dotnet publish -c Release -o bin --use-current-runtime .
+# dotnet publish -c Release -o bin --use-current-runtime .

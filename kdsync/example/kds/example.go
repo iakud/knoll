@@ -6,6 +6,7 @@ package kds
 import (
 	"time"
 
+	"github.com/iakud/knoll/kdsync"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
@@ -179,6 +180,17 @@ func (x *All) String(indent string) string {
 	return string(b)
 }
 
+func (x *All) MarshalJSON() ([]byte, error) {
+	var b []byte
+	var indent = ""
+	b = append(b, "{\n"...)
+	b = append(b, (indent + "  \"Types\": " + x.xxx_hidden_Types.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Lists\": " + x.xxx_hidden_Lists.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Maps\": " + x.xxx_hidden_Maps.String(indent+"  ") + "\n")...)
+	b = append(b, indent+"}"...)
+	return b, nil
+}
+
 func (x *All) markAll() {
 	x.dirty = uint64(0x01)
 }
@@ -203,13 +215,13 @@ func (x *All) ClearDirty() {
 		return
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<1) != 0 {
-		x.xxx_hidden_Types.clearDirty()
+		x.xxx_hidden_Types.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<2) != 0 {
-		x.xxx_hidden_Lists.clearDirty()
+		x.xxx_hidden_Lists.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<3) != 0 {
-		x.xxx_hidden_Maps.clearDirty()
+		x.xxx_hidden_Maps.ClearDirty()
 	}
 	x.dirty = 0
 }
@@ -246,7 +258,7 @@ type AllType struct {
 	xxx_hidden_ItemData *ItemData
 
 	dirty       uint64
-	dirtyParent dirtyParentFunc_AllType
+	dirtyParent kdsync.DirtyFunc
 }
 
 func NewAllType() *AllType {
@@ -774,7 +786,40 @@ func (x *AllType) String(indent string) string {
 	return string(b)
 }
 
+func (x *AllType) MarshalJSON() ([]byte, error) {
+	var b []byte
+	var indent = ""
+	b = append(b, "{\n"...)
+	b = append(b, (indent + "  \"Int32Val\": " + wire.FormatInt32(x.xxx_hidden_Int32Val) + ",\n")...)
+	b = append(b, (indent + "  \"Int64Val\": \"" + wire.FormatInt64(x.xxx_hidden_Int64Val) + "\",\n")...)
+	b = append(b, (indent + "  \"Uint32Val\": " + wire.FormatUint32(x.xxx_hidden_Uint32Val) + ",\n")...)
+	b = append(b, (indent + "  \"Uint64Val\": \"" + wire.FormatUint64(x.xxx_hidden_Uint64Val) + "\",\n")...)
+	b = append(b, (indent + "  \"Sint32Val\": " + wire.FormatSint32(x.xxx_hidden_Sint32Val) + ",\n")...)
+	b = append(b, (indent + "  \"Sint64Val\": \"" + wire.FormatSint64(x.xxx_hidden_Sint64Val) + "\",\n")...)
+	b = append(b, (indent + "  \"Fixed32Val\": " + wire.FormatFixed32(x.xxx_hidden_Fixed32Val) + ",\n")...)
+	b = append(b, (indent + "  \"Fixed64Val\": \"" + wire.FormatFixed64(x.xxx_hidden_Fixed64Val) + "\",\n")...)
+	b = append(b, (indent + "  \"Sfixed32Val\": " + wire.FormatSfixed32(x.xxx_hidden_Sfixed32Val) + ",\n")...)
+	b = append(b, (indent + "  \"Sfixed64Val\": \"" + wire.FormatSfixed64(x.xxx_hidden_Sfixed64Val) + "\",\n")...)
+	b = append(b, (indent + "  \"FloatVal\": " + wire.FormatFloat(x.xxx_hidden_FloatVal) + ",\n")...)
+	b = append(b, (indent + "  \"DoubleVal\": " + wire.FormatDouble(x.xxx_hidden_DoubleVal) + ",\n")...)
+	b = append(b, (indent + "  \"BoolVal\": " + wire.FormatBool(x.xxx_hidden_BoolVal) + ",\n")...)
+	b = append(b, (indent + "  \"StringVal\": \"" + wire.FormatString(x.xxx_hidden_StringVal) + "\",\n")...)
+	b = append(b, (indent + "  \"BytesVal\": \"" + wire.FormatBytes(x.xxx_hidden_BytesVal) + "\",\n")...)
+	b = append(b, (indent + "  \"TimestampVal\": " + wire.FormatTimestamp(x.xxx_hidden_TimestampVal) + ",\n")...)
+	b = append(b, (indent + "  \"DurationVal\": " + wire.FormatDuration(x.xxx_hidden_DurationVal) + ",\n")...)
+	b = append(b, (indent + "  \"EmptyVal\": " + wire.FormatEmpty(x.xxx_hidden_EmptyVal) + ",\n")...)
+	// FIXME: enum value string
+	b = append(b, (indent + "  \"EnumVal\": " + wire.FormatInt32(int32(x.xxx_hidden_EnumVal)) + ",\n")...)
+	b = append(b, (indent + "  \"ItemData\": " + x.xxx_hidden_ItemData.String(indent+"  ") + "\n")...)
+	b = append(b, indent+"}"...)
+	return b, nil
+}
+
 func (x *AllType) markAll() {
+	x.dirty = uint64(0x01)
+}
+
+func (x *AllType) MarkDirtyAll() {
 	x.dirty = uint64(0x01)
 }
 
@@ -783,21 +828,29 @@ func (x *AllType) markDirty(n uint64) {
 		return
 	}
 	x.dirty |= n
-	x.dirtyParent.invoke()
+	x.dirtyParent.Invoke()
 }
 
 func (x *AllType) checkDirty(n uint64) bool {
 	return x.dirty&n != 0
 }
 
-func (x *AllType) clearDirty() {
+func (x *AllType) ClearDirty() {
 	if x.dirty == 0 {
 		return
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<20) != 0 {
-		x.xxx_hidden_ItemData.clearDirty()
+		x.xxx_hidden_ItemData.ClearDirty()
 	}
 	x.dirty = 0
+}
+
+func (x *AllType) SetDirtyParent(f kdsync.DirtyFunc) {
+	x.dirtyParent = f
+}
+
+func (x *AllType) GetDirtyParent() kdsync.DirtyFunc {
+	return x.dirtyParent
 }
 
 type dirtyParentFunc_AllList func()
@@ -810,20 +863,20 @@ func (f dirtyParentFunc_AllList) invoke() {
 }
 
 type AllList struct {
-	xxx_hidden_Int32List Int32_list
-	xxx_hidden_Int64List Int64_list
-	xxx_hidden_FloatList Float_list
-	xxx_hidden_DoubleList Double_list
-	xxx_hidden_BoolList Bool_list
-	xxx_hidden_StringList String_list
-	xxx_hidden_TimestampList Timestamp_list
-	xxx_hidden_DurationList Duration_list
-	xxx_hidden_EmptyList Empty_list
-	xxx_hidden_EnumList ItemType_list
-	xxx_hidden_ItemList ItemData_list
+	xxx_hidden_Int32List kdsync.FieldRepeated[int32]
+	xxx_hidden_Int64List kdsync.FieldRepeated[int64]
+	xxx_hidden_FloatList kdsync.FieldRepeated[float32]
+	xxx_hidden_DoubleList kdsync.FieldRepeated[float64]
+	xxx_hidden_BoolList kdsync.FieldRepeated[bool]
+	xxx_hidden_StringList kdsync.FieldRepeated[string]
+	xxx_hidden_TimestampList kdsync.TimestampRepeated
+	xxx_hidden_DurationList kdsync.FieldRepeated[time.Duration]
+	xxx_hidden_EmptyList kdsync.FieldRepeated[struct{}]
+	xxx_hidden_EnumList kdsync.FieldRepeated[ItemType]
+	xxx_hidden_ItemList kdsync.MessageRepeated[ItemData, *ItemData]
 
 	dirty       uint64
-	dirtyParent dirtyParentFunc_AllList
+	dirtyParent kdsync.DirtyFunc
 }
 
 func NewAllList() *AllList {
@@ -843,114 +896,125 @@ func NewAllList() *AllList {
 	return x
 }
 
-func (x *AllList) GetInt32List() *Int32_list {
+func (x *AllList) GetInt32List() kdsync.Repeated[int32] {
 	return &x.xxx_hidden_Int32List
 }
 
 func (x *AllList) initInt32List() {
-	x.xxx_hidden_Int32List.dirtyParent = func() {
+	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
+	x.xxx_hidden_Int32List = kdsync.NewFieldRepeated[int32](dirtyFunc, kdsync.Int32Codec)
 }
 
-func (x *AllList) GetInt64List() *Int64_list {
+func (x *AllList) GetInt64List() kdsync.Repeated[int64] {
 	return &x.xxx_hidden_Int64List
 }
 
 func (x *AllList) initInt64List() {
-	x.xxx_hidden_Int64List.dirtyParent = func() {
+	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 2)
 	}
+	x.xxx_hidden_Int64List = kdsync.NewFieldRepeated[int64](dirtyFunc, kdsync.Int64Codec)
 }
 
-func (x *AllList) GetFloatList() *Float_list {
+func (x *AllList) GetFloatList() kdsync.Repeated[float32] {
 	return &x.xxx_hidden_FloatList
 }
 
 func (x *AllList) initFloatList() {
-	x.xxx_hidden_FloatList.dirtyParent = func() {
+	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 3)
 	}
+	x.xxx_hidden_FloatList = kdsync.NewFieldRepeated[float32](dirtyFunc, kdsync.Float32Codec)
 }
 
-func (x *AllList) GetDoubleList() *Double_list {
+func (x *AllList) GetDoubleList() kdsync.Repeated[float64] {
 	return &x.xxx_hidden_DoubleList
 }
 
 func (x *AllList) initDoubleList() {
-	x.xxx_hidden_DoubleList.dirtyParent = func() {
+	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 4)
 	}
+	x.xxx_hidden_DoubleList = kdsync.NewFieldRepeated[float64](dirtyFunc, kdsync.Float64Codec)
 }
 
-func (x *AllList) GetBoolList() *Bool_list {
+func (x *AllList) GetBoolList() kdsync.Repeated[bool] {
 	return &x.xxx_hidden_BoolList
 }
 
 func (x *AllList) initBoolList() {
-	x.xxx_hidden_BoolList.dirtyParent = func() {
+	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 5)
 	}
+	x.xxx_hidden_BoolList = kdsync.NewFieldRepeated[bool](dirtyFunc, kdsync.BoolCodec)
 }
 
-func (x *AllList) GetStringList() *String_list {
+func (x *AllList) GetStringList() kdsync.Repeated[string] {
 	return &x.xxx_hidden_StringList
 }
 
 func (x *AllList) initStringList() {
-	x.xxx_hidden_StringList.dirtyParent = func() {
+	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 6)
 	}
+	x.xxx_hidden_StringList = kdsync.NewFieldRepeated[string](dirtyFunc, kdsync.StringCodec)
 }
 
-func (x *AllList) GetTimestampList() *Timestamp_list {
+func (x *AllList) GetTimestampList() kdsync.Repeated[time.Time] {
 	return &x.xxx_hidden_TimestampList
 }
 
 func (x *AllList) initTimestampList() {
-	x.xxx_hidden_TimestampList.dirtyParent = func() {
+	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 7)
 	}
+	x.xxx_hidden_TimestampList = kdsync.NewTimestampRepeated(dirtyFunc)
 }
 
-func (x *AllList) GetDurationList() *Duration_list {
+func (x *AllList) GetDurationList() kdsync.Repeated[time.Duration] {
 	return &x.xxx_hidden_DurationList
 }
 
 func (x *AllList) initDurationList() {
-	x.xxx_hidden_DurationList.dirtyParent = func() {
+	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 8)
 	}
+	x.xxx_hidden_DurationList = kdsync.NewFieldRepeated[time.Duration](dirtyFunc, kdsync.DurationCodec)
 }
 
-func (x *AllList) GetEmptyList() *Empty_list {
+func (x *AllList) GetEmptyList() kdsync.Repeated[struct{}] {
 	return &x.xxx_hidden_EmptyList
 }
 
 func (x *AllList) initEmptyList() {
-	x.xxx_hidden_EmptyList.dirtyParent = func() {
+	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 9)
 	}
+	x.xxx_hidden_EmptyList = kdsync.NewFieldRepeated[struct{}](dirtyFunc, kdsync.EmptyCodec)
 }
 
-func (x *AllList) GetEnumList() *ItemType_list {
+func (x *AllList) GetEnumList() kdsync.Repeated[ItemType] {
 	return &x.xxx_hidden_EnumList
 }
 
 func (x *AllList) initEnumList() {
-	x.xxx_hidden_EnumList.dirtyParent = func() {
+	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 10)
 	}
+	x.xxx_hidden_EnumList = kdsync.NewFieldRepeated[ItemType](dirtyFunc, kdsync.NewEnumCodec[ItemType]())
 }
 
-func (x *AllList) GetItemList() *ItemData_list {
+func (x *AllList) GetItemList() kdsync.Repeated[*ItemData] {
 	return &x.xxx_hidden_ItemList
 }
 
 func (x *AllList) initItemList() {
-	x.xxx_hidden_ItemList.dirtyParent = func() {
+	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 11)
 	}
+	x.xxx_hidden_ItemList = kdsync.NewMessageRepeated[ItemData, *ItemData](dirtyFunc)
 }
 
 func (x *AllList) Marshal(b []byte) ([]byte, error) {
@@ -1116,7 +1180,30 @@ func (x *AllList) String(indent string) string {
 	return string(b)
 }
 
+func (x *AllList) MarshalJSON() ([]byte, error) {
+	var b []byte
+	var indent = ""
+	b = append(b, "{\n"...)
+	b = append(b, (indent + "  \"Int32List\": " + x.xxx_hidden_Int32List.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int64List\": " + x.xxx_hidden_Int64List.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"FloatList\": " + x.xxx_hidden_FloatList.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"DoubleList\": " + x.xxx_hidden_DoubleList.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"BoolList\": " + x.xxx_hidden_BoolList.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"StringList\": " + x.xxx_hidden_StringList.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"TimestampList\": " + x.xxx_hidden_TimestampList.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"DurationList\": " + x.xxx_hidden_DurationList.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"EmptyList\": " + x.xxx_hidden_EmptyList.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"EnumList\": " + x.xxx_hidden_EnumList.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"ItemList\": " + x.xxx_hidden_ItemList.String(indent+"  ") + "\n")...)
+	b = append(b, indent+"}"...)
+	return b, nil
+}
+
 func (x *AllList) markAll() {
+	x.dirty = uint64(0x01)
+}
+
+func (x *AllList) MarkDirtyAll() {
 	x.dirty = uint64(0x01)
 }
 
@@ -1125,51 +1212,59 @@ func (x *AllList) markDirty(n uint64) {
 		return
 	}
 	x.dirty |= n
-	x.dirtyParent.invoke()
+	x.dirtyParent.Invoke()
 }
 
 func (x *AllList) checkDirty(n uint64) bool {
 	return x.dirty&n != 0
 }
 
-func (x *AllList) clearDirty() {
+func (x *AllList) ClearDirty() {
 	if x.dirty == 0 {
 		return
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<1) != 0 {
-		x.xxx_hidden_Int32List.clearDirty()
+		x.xxx_hidden_Int32List.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<2) != 0 {
-		x.xxx_hidden_Int64List.clearDirty()
+		x.xxx_hidden_Int64List.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<3) != 0 {
-		x.xxx_hidden_FloatList.clearDirty()
+		x.xxx_hidden_FloatList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<4) != 0 {
-		x.xxx_hidden_DoubleList.clearDirty()
+		x.xxx_hidden_DoubleList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<5) != 0 {
-		x.xxx_hidden_BoolList.clearDirty()
+		x.xxx_hidden_BoolList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<6) != 0 {
-		x.xxx_hidden_StringList.clearDirty()
+		x.xxx_hidden_StringList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<7) != 0 {
-		x.xxx_hidden_TimestampList.clearDirty()
+		x.xxx_hidden_TimestampList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<8) != 0 {
-		x.xxx_hidden_DurationList.clearDirty()
+		x.xxx_hidden_DurationList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<9) != 0 {
-		x.xxx_hidden_EmptyList.clearDirty()
+		x.xxx_hidden_EmptyList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<10) != 0 {
-		x.xxx_hidden_EnumList.clearDirty()
+		x.xxx_hidden_EnumList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<11) != 0 {
-		x.xxx_hidden_ItemList.clearDirty()
+		x.xxx_hidden_ItemList.ClearDirty()
 	}
 	x.dirty = 0
+}
+
+func (x *AllList) SetDirtyParent(f kdsync.DirtyFunc) {
+	x.dirtyParent = f
+}
+
+func (x *AllList) GetDirtyParent() kdsync.DirtyFunc {
+	return x.dirtyParent
 }
 
 type dirtyParentFunc_AllMap func()
@@ -1212,7 +1307,7 @@ type AllMap struct {
 	xxx_hidden_BoolItemData BoolItemData_map
 
 	dirty       uint64
-	dirtyParent dirtyParentFunc_AllMap
+	dirtyParent kdsync.DirtyFunc
 }
 
 func NewAllMap() *AllMap {
@@ -1963,7 +2058,47 @@ func (x *AllMap) String(indent string) string {
 	return string(b)
 }
 
+func (x *AllMap) MarshalJSON() ([]byte, error) {
+	var b []byte
+	var indent = ""
+	b = append(b, "{\n"...)
+	b = append(b, (indent + "  \"Int32Int32\": " + x.xxx_hidden_Int32Int32.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int32String\": " + x.xxx_hidden_Int32String.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int32Timestamp\": " + x.xxx_hidden_Int32Timestamp.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int32Duration\": " + x.xxx_hidden_Int32Duration.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int32Empty\": " + x.xxx_hidden_Int32Empty.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int32Enum\": " + x.xxx_hidden_Int32Enum.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int32ItemData\": " + x.xxx_hidden_Int32ItemData.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int64Int64\": " + x.xxx_hidden_Int64Int64.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int64String\": " + x.xxx_hidden_Int64String.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int64Timestamp\": " + x.xxx_hidden_Int64Timestamp.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int64Duration\": " + x.xxx_hidden_Int64Duration.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int64Empty\": " + x.xxx_hidden_Int64Empty.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int64Enum\": " + x.xxx_hidden_Int64Enum.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"Int64ItemData\": " + x.xxx_hidden_Int64ItemData.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"StringInt32\": " + x.xxx_hidden_StringInt32.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"StringString\": " + x.xxx_hidden_StringString.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"StringTimestamp\": " + x.xxx_hidden_StringTimestamp.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"StringDuration\": " + x.xxx_hidden_StringDuration.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"StringEmpty\": " + x.xxx_hidden_StringEmpty.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"StringEnum\": " + x.xxx_hidden_StringEnum.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"StringItemData\": " + x.xxx_hidden_StringItemData.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"BoolInt32\": " + x.xxx_hidden_BoolInt32.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"BoolString\": " + x.xxx_hidden_BoolString.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"BoolTimestamp\": " + x.xxx_hidden_BoolTimestamp.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"BoolDuration\": " + x.xxx_hidden_BoolDuration.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"BoolEmpty\": " + x.xxx_hidden_BoolEmpty.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"BoolEnum\": " + x.xxx_hidden_BoolEnum.String(indent+"  ") + ",\n")...)
+	b = append(b, (indent + "  \"BoolItemData\": " + x.xxx_hidden_BoolItemData.String(indent+"  ") + "\n")...)
+	b = append(b, indent+"}"...)
+	return b, nil
+}
+
 func (x *AllMap) markAll() {
+	x.dirty = uint64(0x01)
+}
+
+func (x *AllMap) MarkDirtyAll() {
 	x.dirty = uint64(0x01)
 }
 
@@ -1972,14 +2107,14 @@ func (x *AllMap) markDirty(n uint64) {
 		return
 	}
 	x.dirty |= n
-	x.dirtyParent.invoke()
+	x.dirtyParent.Invoke()
 }
 
 func (x *AllMap) checkDirty(n uint64) bool {
 	return x.dirty&n != 0
 }
 
-func (x *AllMap) clearDirty() {
+func (x *AllMap) ClearDirty() {
 	if x.dirty == 0 {
 		return
 	}
@@ -2068,4 +2203,12 @@ func (x *AllMap) clearDirty() {
 		x.xxx_hidden_BoolItemData.clearDirty()
 	}
 	x.dirty = 0
+}
+
+func (x *AllMap) SetDirtyParent(f kdsync.DirtyFunc) {
+	x.dirtyParent = f
+}
+
+func (x *AllMap) GetDirtyParent() kdsync.DirtyFunc {
+	return x.dirtyParent
 }

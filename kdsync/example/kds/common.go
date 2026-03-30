@@ -9,6 +9,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/iakud/knoll/kdsync"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
@@ -7639,7 +7640,7 @@ type ItemData struct {
 	xxx_hidden_Count int32
 
 	dirty       uint64
-	dirtyParent dirtyParentFunc_ItemData
+	dirtyParent kdsync.DirtyFunc
 }
 
 func NewItemData() *ItemData {
@@ -7759,7 +7760,22 @@ func (x *ItemData) String(indent string) string {
 	return string(b)
 }
 
+func (x *ItemData) MarshalJSON() ([]byte, error) {
+	var b []byte
+	var indent = ""
+	b = append(b, "{\n"...)
+	b = append(b, (indent + "  \"Id\": " + wire.FormatInt32(x.xxx_hidden_Id) + ",\n")...)
+	b = append(b, (indent + "  \"Name\": \"" + wire.FormatString(x.xxx_hidden_Name) + "\",\n")...)
+	b = append(b, (indent + "  \"Count\": " + wire.FormatInt32(x.xxx_hidden_Count) + "\n")...)
+	b = append(b, indent+"}"...)
+	return b, nil
+}
+
 func (x *ItemData) markAll() {
+	x.dirty = uint64(0x01)
+}
+
+func (x *ItemData) MarkDirtyAll() {
 	x.dirty = uint64(0x01)
 }
 
@@ -7768,18 +7784,26 @@ func (x *ItemData) markDirty(n uint64) {
 		return
 	}
 	x.dirty |= n
-	x.dirtyParent.invoke()
+	x.dirtyParent.Invoke()
 }
 
 func (x *ItemData) checkDirty(n uint64) bool {
 	return x.dirty&n != 0
 }
 
-func (x *ItemData) clearDirty() {
+func (x *ItemData) ClearDirty() {
 	if x.dirty == 0 {
 		return
 	}
 	x.dirty = 0
+}
+
+func (x *ItemData) SetDirtyParent(f kdsync.DirtyFunc) {
+	x.dirtyParent = f
+}
+
+func (x *ItemData) GetDirtyParent() kdsync.DirtyFunc {
+	return x.dirtyParent
 }
 
 type dirtyParentFunc_ItemData_list func()
@@ -8000,7 +8024,7 @@ func (x *ItemData_list) markDirty() {
 func (x *ItemData_list) clearDirty() {
 	for k := range x.data {
 		if x.data[k] != nil {
-			x.data[k].clearDirty()
+			x.data[k].ClearDirty()
 		}
 	}
 	x.dirty = false
@@ -8165,7 +8189,7 @@ func (x *BoolItemData_map) clearDirty() {
 	}
 	for _, v := range x.updates {
 		if v != nil {
-			v.clearDirty()
+			v.ClearDirty()
 		}
 	}
 	x.clear = false
@@ -8442,7 +8466,7 @@ func (x *Int32ItemData_map) clearDirty() {
 	}
 	for _, v := range x.updates {
 		if v != nil {
-			v.clearDirty()
+			v.ClearDirty()
 		}
 	}
 	x.clear = false
@@ -8712,7 +8736,7 @@ func (x *Int64ItemData_map) clearDirty() {
 	}
 	for _, v := range x.updates {
 		if v != nil {
-			v.clearDirty()
+			v.ClearDirty()
 		}
 	}
 	x.clear = false
@@ -8982,7 +9006,7 @@ func (x *StringItemData_map) clearDirty() {
 	}
 	for _, v := range x.updates {
 		if v != nil {
-			v.clearDirty()
+			v.ClearDirty()
 		}
 	}
 	x.clear = false

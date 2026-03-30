@@ -28,6 +28,36 @@
 {{- else}}{{template "Type" .Type}}
 {{- end}}
 {{- end}}
+{{- /* FIELD CODEC */ -}}
+{{- define "FieldCodec"}}
+{{- if eq . "bool"}}kdsync.BoolCodec
+{{- else if eq . "int32"}}kdsync.Int32Codec
+{{- else if eq . "sint32"}}kdsync.Int32Codec
+{{- else if eq . "uint32"}}kdsync.Uint32Codec
+{{- else if eq . "int64"}}kdsync.Int64Codec
+{{- else if eq . "sint64"}}kdsync.Int64Codec
+{{- else if eq . "uint64"}}kdsync.Uint64Codec
+{{- else if eq . "sfixed32"}}kdsync.Int32Codec
+{{- else if eq . "fixed32"}}kdsync.Uint32Codec
+{{- else if eq . "float"}}kdsync.Float32Codec
+{{- else if eq . "sfixed64"}}kdsync.Int64Codec
+{{- else if eq . "fixed64"}}kdsync.Uint64Codec
+{{- else if eq . "double"}}kdsync.Float64Codec
+{{- else if eq . "string"}}kdsync.StringCodec
+{{- else if eq . "duration"}}kdsync.DurationCodec
+{{- else if eq . "empty"}}kdsync.EmptyCodec
+{{- else}}{{.}}
+{{- end}}
+{{- end}}
+{{- /* REPEATED TYPE */ -}}
+{{- define "RepeatedType"}}
+{{- if eq .TypeKind "enum"}}kdsync.FieldRepeated[{{.Type}}]
+{{- else if eq .TypeKind "component"}}kdsync.MessageRepeated[{{.Type}}, *{{.Type}}]
+{{- else if eq .Type "bytes"}}kdsync.BytesRepeated
+{{- else if eq .Type "timestamp"}}kdsync.TimestampRepeated
+{{- else}}kdsync.FieldRepeated[{{template "Type" .Type}}]
+{{- end}}
+{{- end}}
 {{- /* LIST TYPE */ -}}
 {{- define "ListValueType"}}
 {{- if eq .TypeKind "enum"}}{{.Type}}
@@ -290,7 +320,7 @@ func (x *{{.Name}}) clearDirty() {
 {{- if eq .TypeKind "component"}}
 	for k := range x.data {
 		if x.data[k] != nil {
-			x.data[k].clearDirty()
+			x.data[k].ClearDirty()
 		}
 	}
 {{- end}}
@@ -511,7 +541,7 @@ func (x *{{.Name}}) clearDirty() {
 {{- if eq .TypeKind "component"}}
 	for _, v := range x.updates {
 		if v != nil {
-			v.clearDirty()
+			v.ClearDirty()
 		}
 	}
 {{- end}}
@@ -748,14 +778,25 @@ const (
 {{- range .Fields}}
 {{/* EMPTY LINE */}}
 {{- if .Repeated}}
-func (x *{{$MessageName}}) Get{{.Name}}() *{{.ListType}} {
+func (x *{{$MessageName}}) Get{{.Name}}() kdsync.Repeated[{{template "FieldType" .}}] {
 	return &x.xxx_hidden_{{.Name}}
 }
 
 func (x *{{$MessageName}}) init{{.Name}}() {
-	x.xxx_hidden_{{.Name}}.dirtyParent = func() {
+	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
+{{- if eq .TypeKind "enum"}}
+	x.xxx_hidden_{{.Name}} = kdsync.NewFieldRepeated[{{.Type}}](dirtyFunc, kdsync.NewEnumCodec[{{.Type}}]())
+{{- else if eq .TypeKind "component"}}
+	x.xxx_hidden_{{.Name}} = kdsync.NewMessageRepeated[{{.Type}}, *{{.Type}}](dirtyFunc)
+{{- else if eq .Type "bytes"}}
+	x.xxx_hidden_{{.Name}} = kdsync.NewBytesRepeated(dirtyFunc)
+{{- else if eq .Type "timestamp"}}
+	x.xxx_hidden_{{.Name}} = kdsync.NewTimestampRepeated(dirtyFunc)
+{{- else}}
+	x.xxx_hidden_{{.Name}} = kdsync.NewFieldRepeated[{{template "FieldType" .}}](dirtyFunc, {{template "FieldCodec" .Type}})
+{{- end}}
 }
 {{- else if .Map}}
 func (x *{{$MessageName}}) Get{{.Name}}() *{{.MapType}} {
@@ -946,6 +987,35 @@ func (x *{{$MessageName}}) String(indent string) string {
 	b = append(b, indent+"}"...)
 	return string(b)
 }
+
+func (x *{{$MessageName}}) MarshalJSON() ([]byte, error) {
+	var b []byte
+	var indent = ""
+	b = append(b, "{\n"...)
+{{- if len .Fields}}
+{{- $Count := len .Fields}}
+{{- $Num := ""}}
+{{- range .Fields}}
+{{- $Num = print $Num " "}}
+{{- if .Repeated}}
+	b = append(b, (indent + "  \"{{.Name}}\": " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
+{{- else if .Map}}
+	b = append(b, (indent + "  \"{{.Name}}\": " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
+{{- else if eq .TypeKind "component"}}
+	b = append(b, (indent + "  \"{{.Name}}\": " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
+{{- else if eq .TypeKind "enum"}}
+	// FIXME: enum value string
+	b = append(b, (indent + "  \"{{.Name}}\": " + wire.FormatInt32(int32(x.xxx_hidden_{{.Name}})) + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
+{{- else if eq .Type "int64" "sint64" "uint64" "sfixed64" "fixed64" "string" "bytes"}}
+	b = append(b, (indent + "  \"{{.Name}}\": \"" + wire.Format{{ucFirst .Type}}(x.xxx_hidden_{{.Name}}) + "\"{{- if lt (len $Num) $Count}},{{- end}}\n")...)
+{{- else}}
+	b = append(b, (indent + "  \"{{.Name}}\": " + wire.Format{{ucFirst .Type}}(x.xxx_hidden_{{.Name}}) + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
+{{- end}}
+{{- end}}
+{{- end}}
+	b = append(b, indent+"}"...)
+	return b, nil
+}
 {{- end}}
 
 {{- /* ENTITY */ -}}
@@ -954,7 +1024,7 @@ type {{.Name}} struct {
 	id int64
 {{- range .Fields}}
 {{- if .Repeated}}
-	xxx_hidden_{{.Name}} {{.ListType}}
+	xxx_hidden_{{.Name}} {{template "RepeatedType" .}}
 {{- else if .Map}}
 	xxx_hidden_{{.Name}} {{.MapType}}
 {{- else if eq .TypeKind "component"}}
@@ -1014,7 +1084,7 @@ func (x *{{.Name}}) ClearDirty() {
 {{- range .Fields}}
 {{- if .Repeated}}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
-		x.xxx_hidden_{{.Name}}.clearDirty()
+		x.xxx_hidden_{{.Name}}.ClearDirty()
 	}
 {{- else if .Map}}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
@@ -1022,7 +1092,7 @@ func (x *{{.Name}}) ClearDirty() {
 	}
 {{- else if eq .TypeKind "component"}}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
-		x.xxx_hidden_{{.Name}}.clearDirty()
+		x.xxx_hidden_{{.Name}}.ClearDirty()
 	}
 {{- end}}
 {{- end}}
@@ -1044,7 +1114,7 @@ func (f dirtyParentFunc_{{.Name}}) invoke() {
 type {{.Name}} struct {
 {{- range .Fields}}
 {{- if .Repeated}}
-	xxx_hidden_{{.Name}} {{.ListType}}
+	xxx_hidden_{{.Name}} {{template "RepeatedType" .}}
 {{- else if .Map}}
 	xxx_hidden_{{.Name}} {{.MapType}}
 {{- else if eq .TypeKind "component"}}
@@ -1055,7 +1125,7 @@ type {{.Name}} struct {
 {{- end}}
 
 	dirty       uint64
-	dirtyParent dirtyParentFunc_{{.Name}}
+	dirtyParent kdsync.DirtyFunc
 }
 
 func New{{.Name}}() *{{.Name}} {
@@ -1078,26 +1148,30 @@ func (x *{{.Name}}) markAll() {
 	x.dirty = uint64(0x01)
 }
 
+func (x *{{.Name}}) MarkDirtyAll() {
+	x.dirty = uint64(0x01)
+}
+
 func (x *{{.Name}}) markDirty(n uint64) {
 	if x.dirty&n == n {
 		return
 	}
 	x.dirty |= n
-	x.dirtyParent.invoke()
+	x.dirtyParent.Invoke()
 }
 
 func (x *{{.Name}}) checkDirty(n uint64) bool {
 	return x.dirty&n != 0
 }
 
-func (x *{{.Name}}) clearDirty() {
+func (x *{{.Name}}) ClearDirty() {
 	if x.dirty == 0 {
 		return
 	}
 {{- range .Fields}}
 {{- if .Repeated}}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
-		x.xxx_hidden_{{.Name}}.clearDirty()
+		x.xxx_hidden_{{.Name}}.ClearDirty()
 	}
 {{- else if .Map}}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
@@ -1105,11 +1179,19 @@ func (x *{{.Name}}) clearDirty() {
 	}
 {{- else if eq .TypeKind "component"}}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
-		x.xxx_hidden_{{.Name}}.clearDirty()
+		x.xxx_hidden_{{.Name}}.ClearDirty()
 	}
 {{- end}}
 {{- end}}
 	x.dirty = 0
+}
+
+func (x *{{.Name}}) SetDirtyParent(f kdsync.DirtyFunc) {
+	x.dirtyParent = f
+}
+
+func (x *{{.Name}}) GetDirtyParent() kdsync.DirtyFunc {
+	return x.dirtyParent
 }
 {{- end}}
 {{- /* END DEFINE */ -}}
@@ -1156,6 +1238,7 @@ import (
 {{- if $SpacesBefore}}
 {{/* EMPTY LINE */}}
 {{- end}}
+	"github.com/iakud/knoll/kdsync"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 {{- end}}

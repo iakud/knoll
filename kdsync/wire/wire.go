@@ -162,6 +162,10 @@ func AppendEmpty(b []byte, _ struct{}) []byte {
 	return protowire.AppendBytes(b, nil)
 }
 
+func AppendEnum[T ~int32](b []byte, v T) []byte {
+	return protowire.AppendVarint(b, uint64(v))
+}
+
 // When encoding length-prefixed fields, we speculatively set aside some number of bytes
 // for the length, encode the data, and then encode the length (shifting the data if necessary
 // to make room).
@@ -427,6 +431,14 @@ func ConsumeMessage(b []byte, m Unmarshaler) (int, error) {
 		return 0, err
 	}
 	return n, nil
+}
+
+func ConsumeEnum[T ~int32](b []byte) (T, int, error) {
+	v, n := protowire.ConsumeVarint(b)
+	if n < 0 {
+		return 0, 0, ErrDecode
+	}
+	return T(v), n, nil
 }
 
 // errUnknown is used internally to indicate fields which should be added

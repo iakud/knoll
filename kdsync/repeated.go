@@ -33,6 +33,14 @@ type Repeated[T any] interface {
 	MarshalDirty(b []byte) ([]byte, error)
 	Unmarshal(b []byte) error
 	MarshalJSON() ([]byte, error)
+	String(indent string) string
+}
+
+type repeated[E any] struct {
+	data []E
+
+	dirty       bool
+	dirtyParent DirtyFunc
 }
 
 // Field repeated check
@@ -50,16 +58,19 @@ var _ Repeated[struct{}] = (*FieldRepeated[struct{}])(nil)
 // Bytes repeated check
 var _ Repeated[[]byte] = (*BytesRepeated)(nil)
 
-// Time repeated check
-var _ Repeated[time.Time] = (*TimeRepeated)(nil)
+// Timestamp repeated check
+var _ Repeated[time.Time] = (*TimestampRepeated)(nil)
+
+type Int32Repeated FieldRepeated[int32]
 
 // Field repeated
 type FieldRepeated[T Field] struct {
-	data []T
+	repeated[T]
+	fieldCodec FieldCodec[T]
+}
 
-	fieldCodec  FieldCodec[T]
-	dirty       bool
-	dirtyParent DirtyFunc
+func NewFieldRepeated[T Field](dirtyParent DirtyFunc, fieldCodec FieldCodec[T]) FieldRepeated[T] {
+	return FieldRepeated[T]{repeated: repeated[T]{dirtyParent: dirtyParent}, fieldCodec: fieldCodec}
 }
 
 func (x *FieldRepeated[T]) Len() int {
@@ -224,12 +235,31 @@ func (x *FieldRepeated[T]) MarshalJSON() ([]byte, error) {
 	return json.Marshal(x.data)
 }
 
+func (x *FieldRepeated[E]) String(indent string) string {
+	if len(x.data) == 0 {
+		return "[]"
+	}
+	var b []byte
+	b = append(b, "[\n"...)
+	for i, v := range x.data {
+		b = append(b, (indent + "  ")...)
+		b = append(b, wire.Format(v)...)
+		if i+1 < len(x.data) {
+			b = append(b, ',')
+		}
+		b = append(b, '\n')
+	}
+	b = append(b, (indent + "]")...)
+	return string(b)
+}
+
 // Bytes repeated
 type BytesRepeated struct {
-	data [][]byte
+	repeated[[]byte]
+}
 
-	dirty       bool
-	dirtyParent DirtyFunc
+func NewBytesRepeated(dirtyParent DirtyFunc) BytesRepeated {
+	return BytesRepeated{repeated: repeated[[]byte]{dirtyParent: dirtyParent}}
 }
 
 func (x *BytesRepeated) Len() int {
@@ -408,21 +438,38 @@ func (x *BytesRepeated) MarshalJSON() ([]byte, error) {
 	return json.Marshal(x.data)
 }
 
-// Timestamp repeated
-
-// Field repeated
-type TimeRepeated struct {
-	data []time.Time
-
-	dirty       bool
-	dirtyParent DirtyFunc
+func (x *BytesRepeated) String(indent string) string {
+	if len(x.data) == 0 {
+		return "[]"
+	}
+	var b []byte
+	b = append(b, "[\n"...)
+	for i, v := range x.data {
+		b = append(b, (indent + "  ")...)
+		b = append(b, wire.Format(v)...)
+		if i+1 < len(x.data) {
+			b = append(b, ',')
+		}
+		b = append(b, '\n')
+	}
+	b = append(b, (indent + "]")...)
+	return string(b)
 }
 
-func (x *TimeRepeated) Len() int {
+// Timestamp repeated
+type TimestampRepeated struct {
+	repeated[time.Time]
+}
+
+func NewTimestampRepeated(dirtyParent DirtyFunc) TimestampRepeated {
+	return TimestampRepeated{repeated: repeated[time.Time]{dirtyParent: dirtyParent}}
+}
+
+func (x *TimestampRepeated) Len() int {
 	return len(x.data)
 }
 
-func (x *TimeRepeated) Clear() {
+func (x *TimestampRepeated) Clear() {
 	if len(x.data) == 0 {
 		return
 	}
@@ -431,11 +478,11 @@ func (x *TimeRepeated) Clear() {
 	x.markDirty()
 }
 
-func (x *TimeRepeated) Get(i int) time.Time {
+func (x *TimestampRepeated) Get(i int) time.Time {
 	return x.data[i]
 }
 
-func (x *TimeRepeated) Set(i int, v time.Time) {
+func (x *TimestampRepeated) Set(i int, v time.Time) {
 	if v.Equal(x.data[i]) {
 		return
 	}
@@ -443,7 +490,7 @@ func (x *TimeRepeated) Set(i int, v time.Time) {
 	x.markDirty()
 }
 
-func (x *TimeRepeated) Append(v ...time.Time) {
+func (x *TimestampRepeated) Append(v ...time.Time) {
 	if len(v) == 0 {
 		return
 	}
@@ -451,7 +498,7 @@ func (x *TimeRepeated) Append(v ...time.Time) {
 	x.markDirty()
 }
 
-func (x *TimeRepeated) Index(v time.Time) int {
+func (x *TimestampRepeated) Index(v time.Time) int {
 	for i := range x.data {
 		if v.Equal(x.data[i]) {
 			return i
@@ -460,7 +507,7 @@ func (x *TimeRepeated) Index(v time.Time) int {
 	return -1
 }
 
-func (x *TimeRepeated) IndexFunc(f func(time.Time) bool) int {
+func (x *TimestampRepeated) IndexFunc(f func(time.Time) bool) int {
 	for i := range x.data {
 		if f(x.data[i]) {
 			return i
@@ -469,15 +516,15 @@ func (x *TimeRepeated) IndexFunc(f func(time.Time) bool) int {
 	return -1
 }
 
-func (x *TimeRepeated) Contains(v time.Time) bool {
+func (x *TimestampRepeated) Contains(v time.Time) bool {
 	return x.Index(v) >= 0
 }
 
-func (x *TimeRepeated) ContainsFunc(f func(time.Time) bool) bool {
+func (x *TimestampRepeated) ContainsFunc(f func(time.Time) bool) bool {
 	return x.IndexFunc(f) >= 0
 }
 
-func (x *TimeRepeated) Insert(i int, v ...time.Time) {
+func (x *TimestampRepeated) Insert(i int, v ...time.Time) {
 	_ = x.data[i:] // bounds check
 	if len(v) == 0 {
 		return
@@ -486,7 +533,7 @@ func (x *TimeRepeated) Insert(i int, v ...time.Time) {
 	x.markDirty()
 }
 
-func (x *TimeRepeated) Delete(i, j int) {
+func (x *TimestampRepeated) Delete(i, j int) {
 	_ = x.data[i:j:len(x.data)] // bounds check
 	if i == j {
 		return
@@ -495,7 +542,7 @@ func (x *TimeRepeated) Delete(i, j int) {
 	x.markDirty()
 }
 
-func (x *TimeRepeated) DeleteFunc(del func(time.Time) bool) {
+func (x *TimestampRepeated) DeleteFunc(del func(time.Time) bool) {
 	i := x.IndexFunc(del)
 	if i == -1 {
 		return
@@ -513,7 +560,7 @@ func (x *TimeRepeated) DeleteFunc(del func(time.Time) bool) {
 	x.markDirty()
 }
 
-func (x *TimeRepeated) Replace(i, j int, v ...time.Time) {
+func (x *TimestampRepeated) Replace(i, j int, v ...time.Time) {
 	_ = x.data[i:j] // bounds check
 	if i == j && len(v) == 0 {
 		return
@@ -522,7 +569,7 @@ func (x *TimeRepeated) Replace(i, j int, v ...time.Time) {
 	x.markDirty()
 }
 
-func (x *TimeRepeated) Reverse() {
+func (x *TimestampRepeated) Reverse() {
 	if len(x.data) < 2 {
 		return
 	}
@@ -530,19 +577,19 @@ func (x *TimeRepeated) Reverse() {
 	x.markDirty()
 }
 
-func (x *TimeRepeated) All() iter.Seq2[int, time.Time] {
+func (x *TimestampRepeated) All() iter.Seq2[int, time.Time] {
 	return slices.All(x.data)
 }
 
-func (x *TimeRepeated) Backward() iter.Seq2[int, time.Time] {
+func (x *TimestampRepeated) Backward() iter.Seq2[int, time.Time] {
 	return slices.Backward(x.data)
 }
 
-func (x *TimeRepeated) Values() iter.Seq[time.Time] {
+func (x *TimestampRepeated) Values() iter.Seq[time.Time] {
 	return slices.Values(x.data)
 }
 
-func (x *TimeRepeated) markDirty() {
+func (x *TimestampRepeated) markDirty() {
 	if x.dirty {
 		return
 	}
@@ -550,11 +597,11 @@ func (x *TimeRepeated) markDirty() {
 	x.dirtyParent.Invoke()
 }
 
-func (x *TimeRepeated) ClearDirty() {
+func (x *TimestampRepeated) ClearDirty() {
 	x.dirty = false
 }
 
-func (x *TimeRepeated) Marshal(b []byte) ([]byte, error) {
+func (x *TimestampRepeated) Marshal(b []byte) ([]byte, error) {
 	if len(x.data) == 0 {
 		return b, nil
 	}
@@ -564,11 +611,11 @@ func (x *TimeRepeated) Marshal(b []byte) ([]byte, error) {
 	return b, nil
 }
 
-func (x *TimeRepeated) MarshalDirty(b []byte) ([]byte, error) {
+func (x *TimestampRepeated) MarshalDirty(b []byte) ([]byte, error) {
 	return x.Marshal(b)
 }
 
-func (x *TimeRepeated) Unmarshal(b []byte) error {
+func (x *TimestampRepeated) Unmarshal(b []byte) error {
 	x.Clear()
 	for len(b) > 0 {
 		v, n, err := wire.ConsumeTimestamp(b)
@@ -581,16 +628,35 @@ func (x *TimeRepeated) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *TimeRepeated) MarshalJSON() ([]byte, error) {
+func (x *TimestampRepeated) MarshalJSON() ([]byte, error) {
 	return json.Marshal(x.data)
+}
+
+func (x *TimestampRepeated) String(indent string) string {
+	if len(x.data) == 0 {
+		return "[]"
+	}
+	var b []byte
+	b = append(b, "[\n"...)
+	for i, v := range x.data {
+		b = append(b, (indent + "  ")...)
+		b = append(b, wire.Format(v)...)
+		if i+1 < len(x.data) {
+			b = append(b, ',')
+		}
+		b = append(b, '\n')
+	}
+	b = append(b, (indent + "]")...)
+	return string(b)
 }
 
 // Message repeated
 type MessageRepeated[T any, E Message[T]] struct {
-	data []E
+	repeated[E]
+}
 
-	dirty       bool
-	dirtyParent DirtyFunc
+func NewMessageRepeated[T any, E Message[T]](dirtyParent DirtyFunc) MessageRepeated[T, E] {
+	return MessageRepeated[T, E]{repeated: repeated[E]{dirtyParent: dirtyParent}}
 }
 
 func (x *MessageRepeated[T, E]) Len() int {
@@ -792,7 +858,7 @@ func (x *MessageRepeated[T, E]) markDirty() {
 func (x *MessageRepeated[T, E]) ClearDirty() {
 	for _, v := range x.data {
 		if v != nil {
-			v.ClearDirth()
+			v.ClearDirty()
 		}
 	}
 	x.dirty = false
@@ -833,4 +899,21 @@ func (x *MessageRepeated[T, E]) Unmarshal(b []byte) error {
 
 func (x *MessageRepeated[T, E]) MarshalJSON() ([]byte, error) {
 	return json.Marshal(x.data)
+}
+
+func (x *MessageRepeated[T, E]) String(indent string) string {
+	if len(x.data) == 0 {
+		return "[]"
+	}
+	var b []byte
+	b = append(b, "[\n"...)
+	for i, v := range x.data {
+		b = append(b, (indent + "  " + v.String(indent+"  "))...)
+		if i+1 < len(x.data) {
+			b = append(b, ',')
+		}
+		b = append(b, '\n')
+	}
+	b = append(b, (indent + "]")...)
+	return string(b)
 }

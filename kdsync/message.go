@@ -7,7 +7,7 @@ import (
 )
 
 type Field interface {
-	bool | int32 | uint32 | int64 | uint64 | float32 | float64 | string | time.Duration | struct{}
+	bool | ~int32 | uint32 | int64 | uint64 | float32 | float64 | string | time.Duration | struct{}
 }
 
 type MessageState struct {
@@ -19,12 +19,12 @@ type Message[T any] interface {
 	*T
 	wire.Marshaler
 	wire.Unmarshaler
-	MessageState() *MessageState
+	// MessageState() *MessageState
 	MarshalDirty(b []byte) ([]byte, error)
 	SetDirtyParent(f DirtyFunc)
 	GetDirtyParent() DirtyFunc
 	MarkDirtyAll()
-	ClearDirth()
+	ClearDirty()
 
 	String(indent string) string
 }

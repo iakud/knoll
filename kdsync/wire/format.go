@@ -2,9 +2,44 @@ package wire
 
 import (
 	"encoding/base64"
+	"fmt"
 	"strconv"
 	"time"
 )
+
+func Format(v any) string {
+	switch t := v.(type) {
+	case bool:
+		return strconv.FormatBool(t)
+	case int32:
+		return strconv.FormatInt(int64(t), 10)
+	case uint32:
+		return strconv.FormatUint(uint64(t), 10)
+	case int64:
+		return string(strconv.AppendQuote(nil, strconv.FormatInt(t, 10)))
+	case uint64:
+		return string(strconv.AppendQuote(nil, strconv.FormatUint(t, 10)))
+	case float32:
+		return strconv.FormatFloat(float64(t), 'f', -1, 32)
+	case float64:
+		return strconv.FormatFloat(t, 'f', -1, 64)
+	case string:
+		return string(strconv.AppendQuote(nil, t))
+	case []byte:
+		return base64.StdEncoding.EncodeToString(t)
+	case time.Time:
+		return "{Seconds: " + strconv.FormatInt(t.Unix(), 10) + ", Nanos: " + strconv.Itoa(t.Nanosecond()) + "}"
+	case time.Duration:
+		nanos := t.Nanoseconds()
+		secs := nanos / 1e9
+		nanos -= secs * 1e9
+		return "{Seconds: " + strconv.FormatInt(secs, 10) + ", Nanos: " + strconv.FormatInt(nanos, 10) + "}"
+	case struct{}:
+		return "{}"
+	default:
+		return fmt.Sprint(v)
+	}
+}
 
 func FormatBool(v bool) string {
 	return strconv.FormatBool(v)
