@@ -189,24 +189,6 @@ func (x *Bool_list) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *Bool_list) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		sep := ""
-		if i + 1 < len(x.data) {
-			sep = ","
-		}
-		b = append(b, (indent + "  " + wire.FormatBool(v) + sep + "\n")...)
-	}
-	b = append(b, indent+"]"...)
-	return string(b)
-}
-
 type dirtyParentFunc_Double_list func()
 
 func (f dirtyParentFunc_Double_list) invoke() {
@@ -383,24 +365,6 @@ func (x *Double_list) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *Double_list) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		sep := ""
-		if i + 1 < len(x.data) {
-			sep = ","
-		}
-		b = append(b, (indent + "  " + wire.FormatDouble(v) + sep + "\n")...)
-	}
-	b = append(b, indent+"]"...)
-	return string(b)
-}
-
 type dirtyParentFunc_Duration_list func()
 
 func (f dirtyParentFunc_Duration_list) invoke() {
@@ -575,24 +539,6 @@ func (x *Duration_list) Unmarshal(b []byte) error {
 		x.Append(v)
 	}
 	return nil
-}
-
-func (x *Duration_list) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		sep := ""
-		if i + 1 < len(x.data) {
-			sep = ","
-		}
-		b = append(b, (indent + "  " + wire.FormatDuration(v) + sep + "\n")...)
-	}
-	b = append(b, indent+"]"...)
-	return string(b)
 }
 
 type dirtyParentFunc_BoolDuration_map func()
@@ -830,7 +776,11 @@ func (x *BoolDuration_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatBool(k) + "\": " + wire.FormatDuration(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatBool(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -1064,7 +1014,11 @@ func (x *Int32Duration_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatInt32(k) + "\": " + wire.FormatDuration(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt32(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -1298,7 +1252,11 @@ func (x *Int64Duration_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatInt64(k) + "\": " + wire.FormatDuration(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt64(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -1532,7 +1490,11 @@ func (x *StringDuration_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatString(k) + "\": " + wire.FormatDuration(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatString(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -1712,24 +1674,6 @@ func (x *Empty_list) Unmarshal(b []byte) error {
 		x.Append(v)
 	}
 	return nil
-}
-
-func (x *Empty_list) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		sep := ""
-		if i + 1 < len(x.data) {
-			sep = ","
-		}
-		b = append(b, (indent + "  " + wire.FormatEmpty(v) + sep + "\n")...)
-	}
-	b = append(b, indent+"]"...)
-	return string(b)
 }
 
 type dirtyParentFunc_BoolEmpty_map func()
@@ -1967,7 +1911,11 @@ func (x *BoolEmpty_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatBool(k) + "\": " + wire.FormatEmpty(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatBool(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -2201,7 +2149,11 @@ func (x *Int32Empty_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatInt32(k) + "\": " + wire.FormatEmpty(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt32(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -2435,7 +2387,11 @@ func (x *Int64Empty_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatInt64(k) + "\": " + wire.FormatEmpty(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt64(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -2669,7 +2625,11 @@ func (x *StringEmpty_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatString(k) + "\": " + wire.FormatEmpty(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatString(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -2851,24 +2811,6 @@ func (x *Float_list) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *Float_list) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		sep := ""
-		if i + 1 < len(x.data) {
-			sep = ","
-		}
-		b = append(b, (indent + "  " + wire.FormatFloat(v) + sep + "\n")...)
-	}
-	b = append(b, indent+"]"...)
-	return string(b)
-}
-
 type dirtyParentFunc_Int32_list func()
 
 func (f dirtyParentFunc_Int32_list) invoke() {
@@ -3043,24 +2985,6 @@ func (x *Int32_list) Unmarshal(b []byte) error {
 		x.Append(v)
 	}
 	return nil
-}
-
-func (x *Int32_list) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		sep := ""
-		if i + 1 < len(x.data) {
-			sep = ","
-		}
-		b = append(b, (indent + "  " + wire.FormatInt32(v) + sep + "\n")...)
-	}
-	b = append(b, indent+"]"...)
-	return string(b)
 }
 
 type dirtyParentFunc_BoolInt32_map func()
@@ -3298,7 +3222,11 @@ func (x *BoolInt32_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatBool(k) + "\": " + wire.FormatInt32(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatBool(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -3532,7 +3460,11 @@ func (x *Int32Int32_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatInt32(k) + "\": " + wire.FormatInt32(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt32(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -3766,7 +3698,11 @@ func (x *StringInt32_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatString(k) + "\": " + wire.FormatInt32(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatString(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -3946,24 +3882,6 @@ func (x *Int64_list) Unmarshal(b []byte) error {
 		x.Append(v)
 	}
 	return nil
-}
-
-func (x *Int64_list) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		sep := ""
-		if i + 1 < len(x.data) {
-			sep = ","
-		}
-		b = append(b, (indent + "  \"" + wire.FormatInt64(v) + "\"" + sep + "\n")...)
-	}
-	b = append(b, indent+"]"...)
-	return string(b)
 }
 
 type dirtyParentFunc_Int64Int64_map func()
@@ -4194,7 +4112,11 @@ func (x *Int64Int64_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatInt64(k) + "\": \"" + wire.FormatInt64(x.data[k]) + "\"" + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt64(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -4374,24 +4296,6 @@ func (x *String_list) Unmarshal(b []byte) error {
 		x.Append(v)
 	}
 	return nil
-}
-
-func (x *String_list) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		sep := ""
-		if i + 1 < len(x.data) {
-			sep = ","
-		}
-		b = append(b, (indent + "  \"" + wire.FormatString(v) + "\"" + sep + "\n")...)
-	}
-	b = append(b, indent+"]"...)
-	return string(b)
 }
 
 type dirtyParentFunc_BoolString_map func()
@@ -4629,7 +4533,11 @@ func (x *BoolString_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatBool(k) + "\": \"" + wire.FormatString(x.data[k]) + "\"" + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatBool(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -4863,7 +4771,11 @@ func (x *Int32String_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatInt32(k) + "\": \"" + wire.FormatString(x.data[k]) + "\"" + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt32(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -5097,7 +5009,11 @@ func (x *Int64String_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatInt64(k) + "\": \"" + wire.FormatString(x.data[k]) + "\"" + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt64(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -5331,7 +5247,11 @@ func (x *StringString_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatString(k) + "\": \"" + wire.FormatString(x.data[k]) + "\"" + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatString(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -5511,24 +5431,6 @@ func (x *Timestamp_list) Unmarshal(b []byte) error {
 		x.Append(v)
 	}
 	return nil
-}
-
-func (x *Timestamp_list) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		sep := ""
-		if i + 1 < len(x.data) {
-			sep = ","
-		}
-		b = append(b, (indent + "  " + wire.FormatTimestamp(v) + sep + "\n")...)
-	}
-	b = append(b, indent+"]"...)
-	return string(b)
 }
 
 type dirtyParentFunc_BoolTimestamp_map func()
@@ -5766,7 +5668,11 @@ func (x *BoolTimestamp_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatBool(k) + "\": " + wire.FormatTimestamp(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatBool(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -6000,7 +5906,11 @@ func (x *Int32Timestamp_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatInt32(k) + "\": " + wire.FormatTimestamp(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt32(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -6234,7 +6144,11 @@ func (x *Int64Timestamp_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatInt64(k) + "\": " + wire.FormatTimestamp(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt64(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -6468,7 +6382,11 @@ func (x *StringTimestamp_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatString(k) + "\": " + wire.FormatTimestamp(x.data[k]) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatString(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -6657,25 +6575,6 @@ func (x *ItemType_list) Unmarshal(b []byte) error {
 		x.Append(ItemType(v))
 	}
 	return nil
-}
-
-func (x *ItemType_list) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		sep := ""
-		if i + 1 < len(x.data) {
-			sep = ","
-		}
-		// FIXME: enum value string
-		b = append(b, (indent + "  " + wire.FormatInt32(int32(v)) + sep + "\n")...)
-	}
-	b = append(b, indent+"]"...)
-	return string(b)
 }
 
 type dirtyParentFunc_BoolItemType_map func()
@@ -6913,8 +6812,11 @@ func (x *BoolItemType_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		// FIXME: enum value string
-		b = append(b, (indent + "  \"" + wire.FormatBool(k) + "\": " + wire.FormatInt32(int32(x.data[k])) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatBool(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -7148,8 +7050,11 @@ func (x *Int32ItemType_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		// FIXME: enum value string
-		b = append(b, (indent + "  \"" + wire.FormatInt32(k) + "\": " + wire.FormatInt32(int32(x.data[k])) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt32(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -7383,8 +7288,11 @@ func (x *Int64ItemType_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		// FIXME: enum value string
-		b = append(b, (indent + "  \"" + wire.FormatInt64(k) + "\": " + wire.FormatInt32(int32(x.data[k])) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt64(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -7618,8 +7526,11 @@ func (x *StringItemType_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		// FIXME: enum value string
-		b = append(b, (indent + "  \"" + wire.FormatString(k) + "\": " + wire.FormatInt32(int32(x.data[k])) + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatString(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -7750,24 +7661,36 @@ func (x *ItemData) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *ItemData) String(indent string) string {
-	var b []byte
-	b = append(b, "{\n"...)
-	b = append(b, (indent + "  \"Id\": " + wire.FormatInt32(x.xxx_hidden_Id) + ",\n")...)
-	b = append(b, (indent + "  \"Name\": \"" + wire.FormatString(x.xxx_hidden_Name) + "\",\n")...)
-	b = append(b, (indent + "  \"Count\": " + wire.FormatInt32(x.xxx_hidden_Count) + "\n")...)
-	b = append(b, indent+"}"...)
-	return string(b)
-}
+func (x *ItemData) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
 
-func (x *ItemData) MarshalJSON() ([]byte, error) {
-	var b []byte
-	var indent = ""
-	b = append(b, "{\n"...)
-	b = append(b, (indent + "  \"Id\": " + wire.FormatInt32(x.xxx_hidden_Id) + ",\n")...)
-	b = append(b, (indent + "  \"Name\": \"" + wire.FormatString(x.xxx_hidden_Name) + "\",\n")...)
-	b = append(b, (indent + "  \"Count\": " + wire.FormatInt32(x.xxx_hidden_Count) + "\n")...)
-	b = append(b, indent+"}"...)
+	var err error
+	_ = err
+	b = append(b, '{', '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Id\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Id, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Name\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Name, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Count\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Count, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, '}')
 	return b, nil
 }
 
@@ -8061,24 +7984,6 @@ func (x *ItemData_list) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *ItemData_list) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		sep := ""
-		if i + 1 < len(x.data) {
-			sep = ","
-		}
-		b = append(b, (indent + "  " + v.String(indent+"  ") + sep + "\n")...)
-	}
-	b = append(b, indent+"]"...)
-	return string(b)
-}
-
 type dirtyParentFunc_BoolItemData_map func()
 
 func (f dirtyParentFunc_BoolItemData_map) invoke() {
@@ -8350,7 +8255,11 @@ func (x *BoolItemData_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatBool(k) + "\": " + x.data[k].String(indent+"  ") + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatBool(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -8620,7 +8529,11 @@ func (x *Int32ItemData_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatInt32(k) + "\": " + x.data[k].String(indent+"  ") + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt32(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -8890,7 +8803,11 @@ func (x *Int64ItemData_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatInt64(k) + "\": " + x.data[k].String(indent+"  ") + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatInt64(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -9160,7 +9077,11 @@ func (x *StringItemData_map) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-		b = append(b, (indent + "  \"" + wire.FormatString(k) + "\": " + x.data[k].String(indent+"  ") + sep + "\n")...)
+		b = append(b, indent + "  \"" + wire.FormatString(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)

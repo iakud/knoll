@@ -44,7 +44,7 @@ func syncUpdate(t *testing.T) {
 }
 
 func checkKds(t *testing.T) {
-	goKds := all.String("")
+	goKds := all.String()
 	csKds := getString()
 
 	goLines := strings.Split(goKds, "\n")

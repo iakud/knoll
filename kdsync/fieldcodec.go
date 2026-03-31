@@ -1,27 +1,39 @@
 package kdsync
 
 import (
+	"bytes"
 	"cmp"
+	"strings"
 	"time"
 
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
-type FieldCodec[T Field] struct {
+type FieldCodec[T any] struct {
 	CompareFunc   func(a, b T) int
 	MarshalFunc   func(b []byte, v T) []byte
 	UnmarshalFunc func(b []byte) (T, int, error)
 }
 
+func boolCompare(a, b bool) int {
+	if a {
+		return 1
+	} else if b {
+		return -1
+	}
+	return 0
+}
+
+func timestampCompare(a, b time.Time) int {
+	return a.Compare(b)
+}
+
+func emptyCompare(a, b struct{}) int {
+	return 0
+}
+
 var BoolCodec = FieldCodec[bool]{
-	CompareFunc: func(a, b bool) int {
-		if a {
-			return 1
-		} else if b {
-			return -1
-		}
-		return 0
-	},
+	CompareFunc:   boolCompare,
 	MarshalFunc:   wire.AppendBool,
 	UnmarshalFunc: wire.ConsumeBool,
 }
@@ -63,9 +75,21 @@ var Float64Codec = FieldCodec[float64]{
 }
 
 var StringCodec = FieldCodec[string]{
-	CompareFunc:   cmp.Compare[string],
+	CompareFunc:   strings.Compare,
 	MarshalFunc:   wire.AppendString,
 	UnmarshalFunc: wire.ConsumeString,
+}
+
+var BytesCodec = FieldCodec[[]byte]{
+	CompareFunc:   bytes.Compare,
+	MarshalFunc:   wire.AppendBytes,
+	UnmarshalFunc: wire.ConsumeBytes,
+}
+
+var TimestampCodec = FieldCodec[time.Time]{
+	CompareFunc:   timestampCompare,
+	MarshalFunc:   wire.AppendTimestamp,
+	UnmarshalFunc: wire.ConsumeTimestamp,
 }
 
 var DurationCodec = FieldCodec[time.Duration]{
@@ -75,7 +99,7 @@ var DurationCodec = FieldCodec[time.Duration]{
 }
 
 var EmptyCodec = FieldCodec[struct{}]{
-	CompareFunc:   func(a, b struct{}) int { return 0 },
+	CompareFunc:   emptyCompare,
 	MarshalFunc:   wire.AppendEmpty,
 	UnmarshalFunc: wire.ConsumeEmpty,
 }

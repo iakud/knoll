@@ -7,7 +7,13 @@ import (
 	"time"
 )
 
-func AppendJson(b []byte, v any) ([]byte, error) {
+const indent = "  "
+
+type JSONMarshaler interface {
+	MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error)
+}
+
+func MarshalJSONIndent(b []byte, v any, prefix, indent string) ([]byte, error) {
 	switch t := v.(type) {
 	case bool:
 		return strconv.AppendBool(b, t), nil
@@ -24,9 +30,9 @@ func AppendJson(b []byte, v any) ([]byte, error) {
 	case float64:
 		return strconv.AppendFloat(b, t, 'f', -1, 64), nil
 	case string:
-		return strconv.AppendQuote(nil, t), nil
+		return strconv.AppendQuote(b, t), nil
 	case []byte:
-		return base64.StdEncoding.AppendEncode(b, t), nil
+		return strconv.AppendQuote(b, base64.StdEncoding.EncodeToString(t)), nil
 	case time.Time:
 		return append(b, "{Seconds: "+strconv.FormatInt(t.Unix(), 10)+", Nanos: "+strconv.Itoa(t.Nanosecond())+"}"...), nil
 	case time.Duration:
@@ -36,6 +42,8 @@ func AppendJson(b []byte, v any) ([]byte, error) {
 		return append(b, "{Seconds: "+strconv.FormatInt(secs, 10)+", Nanos: "+strconv.FormatInt(nanos, 10)+"}"...), nil
 	case struct{}:
 		return append(b, "{}"...), nil
+	case JSONMarshaler:
+		return t.MarshalJSONIndent(b, prefix, indent)
 	default:
 		return fmt.Append(b, v), nil
 	}

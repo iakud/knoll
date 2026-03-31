@@ -1,8 +1,6 @@
 package kdsync
 
 import (
-	"bytes"
-	"encoding/json"
 	"iter"
 	"slices"
 	"time"
@@ -28,56 +26,46 @@ type Repeated[T any] interface {
 	All() iter.Seq2[int, T]
 	Backward() iter.Seq2[int, T]
 	Values() iter.Seq[T]
+
 	ClearDirty()
 	Marshal(b []byte) ([]byte, error)
 	MarshalDirty(b []byte) ([]byte, error)
 	Unmarshal(b []byte) error
-	MarshalJSON() ([]byte, error)
-	String(indent string) string
+	MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error)
 }
 
-type repeated[E any] struct {
+// Field repeated check
+var _ Repeated[bool] = (*RepeatedField[bool])(nil)
+var _ Repeated[int32] = (*RepeatedField[int32])(nil)
+var _ Repeated[uint32] = (*RepeatedField[uint32])(nil)
+var _ Repeated[int64] = (*RepeatedField[int64])(nil)
+var _ Repeated[uint64] = (*RepeatedField[uint64])(nil)
+var _ Repeated[float32] = (*RepeatedField[float32])(nil)
+var _ Repeated[float64] = (*RepeatedField[float64])(nil)
+var _ Repeated[string] = (*RepeatedField[string])(nil)
+var _ Repeated[[]byte] = (*RepeatedField[[]byte])(nil)
+var _ Repeated[time.Time] = (*RepeatedField[time.Time])(nil)
+var _ Repeated[time.Duration] = (*RepeatedField[time.Duration])(nil)
+var _ Repeated[struct{}] = (*RepeatedField[struct{}])(nil)
+
+// Field repeated
+type RepeatedField[E any] struct {
 	data []E
 
 	dirty       bool
 	dirtyParent DirtyFunc
+	fieldCodec  FieldCodec[E]
 }
 
-// Field repeated check
-var _ Repeated[bool] = (*FieldRepeated[bool])(nil)
-var _ Repeated[int32] = (*FieldRepeated[int32])(nil)
-var _ Repeated[uint32] = (*FieldRepeated[uint32])(nil)
-var _ Repeated[int64] = (*FieldRepeated[int64])(nil)
-var _ Repeated[uint64] = (*FieldRepeated[uint64])(nil)
-var _ Repeated[float32] = (*FieldRepeated[float32])(nil)
-var _ Repeated[float64] = (*FieldRepeated[float64])(nil)
-var _ Repeated[string] = (*FieldRepeated[string])(nil)
-var _ Repeated[time.Duration] = (*FieldRepeated[time.Duration])(nil)
-var _ Repeated[struct{}] = (*FieldRepeated[struct{}])(nil)
-
-// Bytes repeated check
-var _ Repeated[[]byte] = (*BytesRepeated)(nil)
-
-// Timestamp repeated check
-var _ Repeated[time.Time] = (*TimestampRepeated)(nil)
-
-type Int32Repeated FieldRepeated[int32]
-
-// Field repeated
-type FieldRepeated[T Field] struct {
-	repeated[T]
-	fieldCodec FieldCodec[T]
+func NewRepeatedField[E any](dirtyParent DirtyFunc, fieldCodec FieldCodec[E]) RepeatedField[E] {
+	return RepeatedField[E]{dirtyParent: dirtyParent, fieldCodec: fieldCodec}
 }
 
-func NewFieldRepeated[T Field](dirtyParent DirtyFunc, fieldCodec FieldCodec[T]) FieldRepeated[T] {
-	return FieldRepeated[T]{repeated: repeated[T]{dirtyParent: dirtyParent}, fieldCodec: fieldCodec}
-}
-
-func (x *FieldRepeated[T]) Len() int {
+func (x *RepeatedField[E]) Len() int {
 	return len(x.data)
 }
 
-func (x *FieldRepeated[T]) Clear() {
+func (x *RepeatedField[E]) Clear() {
 	if len(x.data) == 0 {
 		return
 	}
@@ -86,19 +74,19 @@ func (x *FieldRepeated[T]) Clear() {
 	x.markDirty()
 }
 
-func (x *FieldRepeated[T]) Get(i int) T {
+func (x *RepeatedField[E]) Get(i int) E {
 	return x.data[i]
 }
 
-func (x *FieldRepeated[T]) Set(i int, v T) {
-	if v == x.data[i] {
+func (x *RepeatedField[E]) Set(i int, v E) {
+	if x.fieldCodec.CompareFunc(v, x.data[i]) == 0 {
 		return
 	}
 	x.data[i] = v
 	x.markDirty()
 }
 
-func (x *FieldRepeated[T]) Append(v ...T) {
+func (x *RepeatedField[E]) Append(v ...E) {
 	if len(v) == 0 {
 		return
 	}
@@ -106,11 +94,16 @@ func (x *FieldRepeated[T]) Append(v ...T) {
 	x.markDirty()
 }
 
-func (x *FieldRepeated[T]) Index(v T) int {
-	return slices.Index(x.data, v)
+func (x *RepeatedField[E]) Index(v E) int {
+	for i := range x.data {
+		if x.fieldCodec.CompareFunc(v, x.data[i]) == 0 {
+			return i
+		}
+	}
+	return -1
 }
 
-func (x *FieldRepeated[T]) IndexFunc(f func(T) bool) int {
+func (x *RepeatedField[E]) IndexFunc(f func(E) bool) int {
 	for i := range x.data {
 		if f(x.data[i]) {
 			return i
@@ -119,15 +112,15 @@ func (x *FieldRepeated[T]) IndexFunc(f func(T) bool) int {
 	return -1
 }
 
-func (x *FieldRepeated[T]) Contains(v T) bool {
+func (x *RepeatedField[E]) Contains(v E) bool {
 	return x.Index(v) >= 0
 }
 
-func (x *FieldRepeated[T]) ContainsFunc(f func(T) bool) bool {
+func (x *RepeatedField[E]) ContainsFunc(f func(E) bool) bool {
 	return x.IndexFunc(f) >= 0
 }
 
-func (x *FieldRepeated[T]) Insert(i int, v ...T) {
+func (x *RepeatedField[E]) Insert(i int, v ...E) {
 	_ = x.data[i:] // bounds check
 	if len(v) == 0 {
 		return
@@ -136,7 +129,7 @@ func (x *FieldRepeated[T]) Insert(i int, v ...T) {
 	x.markDirty()
 }
 
-func (x *FieldRepeated[T]) Delete(i, j int) {
+func (x *RepeatedField[E]) Delete(i, j int) {
 	_ = x.data[i:j:len(x.data)] // bounds check
 	if i == j {
 		return
@@ -145,7 +138,7 @@ func (x *FieldRepeated[T]) Delete(i, j int) {
 	x.markDirty()
 }
 
-func (x *FieldRepeated[T]) DeleteFunc(del func(T) bool) {
+func (x *RepeatedField[E]) DeleteFunc(del func(E) bool) {
 	i := x.IndexFunc(del)
 	if i == -1 {
 		return
@@ -163,7 +156,7 @@ func (x *FieldRepeated[T]) DeleteFunc(del func(T) bool) {
 	x.markDirty()
 }
 
-func (x *FieldRepeated[T]) Replace(i, j int, v ...T) {
+func (x *RepeatedField[E]) Replace(i, j int, v ...E) {
 	_ = x.data[i:j] // bounds check
 	if i == j && len(v) == 0 {
 		return
@@ -172,7 +165,7 @@ func (x *FieldRepeated[T]) Replace(i, j int, v ...T) {
 	x.markDirty()
 }
 
-func (x *FieldRepeated[T]) Reverse() {
+func (x *RepeatedField[E]) Reverse() {
 	if len(x.data) < 2 {
 		return
 	}
@@ -180,19 +173,19 @@ func (x *FieldRepeated[T]) Reverse() {
 	x.markDirty()
 }
 
-func (x *FieldRepeated[T]) All() iter.Seq2[int, T] {
+func (x *RepeatedField[E]) All() iter.Seq2[int, E] {
 	return slices.All(x.data)
 }
 
-func (x *FieldRepeated[T]) Backward() iter.Seq2[int, T] {
+func (x *RepeatedField[E]) Backward() iter.Seq2[int, E] {
 	return slices.Backward(x.data)
 }
 
-func (x *FieldRepeated[T]) Values() iter.Seq[T] {
+func (x *RepeatedField[E]) Values() iter.Seq[E] {
 	return slices.Values(x.data)
 }
 
-func (x *FieldRepeated[T]) markDirty() {
+func (x *RepeatedField[E]) markDirty() {
 	if x.dirty {
 		return
 	}
@@ -200,11 +193,11 @@ func (x *FieldRepeated[T]) markDirty() {
 	x.dirtyParent.Invoke()
 }
 
-func (x *FieldRepeated[T]) ClearDirty() {
+func (x *RepeatedField[E]) ClearDirty() {
 	x.dirty = false
 }
 
-func (x *FieldRepeated[T]) Marshal(b []byte) ([]byte, error) {
+func (x *RepeatedField[E]) Marshal(b []byte) ([]byte, error) {
 	if len(x.data) == 0 {
 		return b, nil
 	}
@@ -214,11 +207,11 @@ func (x *FieldRepeated[T]) Marshal(b []byte) ([]byte, error) {
 	return b, nil
 }
 
-func (x *FieldRepeated[T]) MarshalDirty(b []byte) ([]byte, error) {
+func (x *RepeatedField[E]) MarshalDirty(b []byte) ([]byte, error) {
 	return x.Marshal(b)
 }
 
-func (x *FieldRepeated[T]) Unmarshal(b []byte) error {
+func (x *RepeatedField[E]) Unmarshal(b []byte) error {
 	x.Clear()
 	for len(b) > 0 {
 		v, n, err := x.fieldCodec.UnmarshalFunc(b)
@@ -231,439 +224,45 @@ func (x *FieldRepeated[T]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *FieldRepeated[T]) MarshalJSON() ([]byte, error) {
-	return json.Marshal(x.data)
-}
-
-func (x *FieldRepeated[E]) String(indent string) string {
+func (x *RepeatedField[E]) MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error) {
 	if len(x.data) == 0 {
-		return "[]"
+		return append(b, "[]"...), nil
 	}
-	var b []byte
+	var err error
 	b = append(b, "[\n"...)
 	for i, v := range x.data {
-		b = append(b, (indent + "  ")...)
-		b = append(b, wire.Format(v)...)
-		if i+1 < len(x.data) {
-			b = append(b, ',')
-		}
-		b = append(b, '\n')
-	}
-	b = append(b, (indent + "]")...)
-	return string(b)
-}
-
-// Bytes repeated
-type BytesRepeated struct {
-	repeated[[]byte]
-}
-
-func NewBytesRepeated(dirtyParent DirtyFunc) BytesRepeated {
-	return BytesRepeated{repeated: repeated[[]byte]{dirtyParent: dirtyParent}}
-}
-
-func (x *BytesRepeated) Len() int {
-	return len(x.data)
-}
-
-func (x *BytesRepeated) Clear() {
-	if len(x.data) == 0 {
-		return
-	}
-	clear(x.data)
-	x.data = x.data[:0]
-	x.markDirty()
-}
-
-func (x *BytesRepeated) Get(i int) []byte {
-	return x.data[i]
-}
-
-func (x *BytesRepeated) Set(i int, v []byte) {
-	if bytes.Equal(v, x.data[i]) {
-		return
-	}
-	x.data[i] = bytes.Clone(v)
-	x.markDirty()
-}
-
-func (x *BytesRepeated) Append(v ...[]byte) {
-	if len(v) == 0 {
-		return
-	}
-	for i := range v {
-		v[i] = bytes.Clone(v[i])
-	}
-	x.data = append(x.data, v...)
-	x.markDirty()
-}
-
-func (x *BytesRepeated) Index(v []byte) int {
-	for i := range x.data {
-		if bytes.Equal(v, x.data[i]) {
-			return i
-		}
-	}
-	return -1
-}
-
-func (x *BytesRepeated) IndexFunc(f func([]byte) bool) int {
-	for i := range x.data {
-		if f(x.data[i]) {
-			return i
-		}
-	}
-	return -1
-}
-
-func (x *BytesRepeated) Contains(v []byte) bool {
-	return x.Index(v) >= 0
-}
-
-func (x *BytesRepeated) ContainsFunc(f func([]byte) bool) bool {
-	return x.IndexFunc(f) >= 0
-}
-
-func (x *BytesRepeated) Insert(i int, v ...[]byte) {
-	_ = x.data[i:] // bounds check
-	if len(v) == 0 {
-		return
-	}
-	for i := range v {
-		v[i] = bytes.Clone(x.data[i])
-	}
-	x.data = slices.Insert(x.data, i, v...)
-	x.markDirty()
-}
-
-func (x *BytesRepeated) Delete(i, j int) {
-	_ = x.data[i:j:len(x.data)] // bounds check
-	if i == j {
-		return
-	}
-	x.data = slices.Delete(x.data, i, j)
-	x.markDirty()
-}
-
-func (x *BytesRepeated) DeleteFunc(del func([]byte) bool) {
-	i := x.IndexFunc(del)
-	if i == -1 {
-		return
-	}
-	for j := i + 1; j < len(x.data); j++ {
-		v := x.data[j]
-		if del(v) {
-			continue
-		}
-		x.data[i] = v
-		i++
-	}
-	clear(x.data[i:])
-	x.data = x.data[:i]
-	x.markDirty()
-}
-
-func (x *BytesRepeated) Replace(i, j int, v ...[]byte) {
-	_ = x.data[i:j] // bounds check
-	if i == j && len(v) == 0 {
-		return
-	}
-	for i := range v {
-		v[i] = bytes.Clone(x.data[i])
-	}
-	x.data = slices.Replace(x.data, i, j, v...)
-	x.markDirty()
-}
-
-func (x *BytesRepeated) Reverse() {
-	if len(x.data) < 2 {
-		return
-	}
-	slices.Reverse(x.data)
-	x.markDirty()
-}
-
-func (x *BytesRepeated) All() iter.Seq2[int, []byte] {
-	return slices.All(x.data)
-}
-
-func (x *BytesRepeated) Backward() iter.Seq2[int, []byte] {
-	return slices.Backward(x.data)
-}
-
-func (x *BytesRepeated) Values() iter.Seq[[]byte] {
-	return slices.Values(x.data)
-}
-
-func (x *BytesRepeated) markDirty() {
-	if x.dirty {
-		return
-	}
-	x.dirty = true
-	x.dirtyParent.Invoke()
-}
-
-func (x *BytesRepeated) ClearDirty() {
-	x.dirty = false
-}
-
-func (x *BytesRepeated) Marshal(b []byte) ([]byte, error) {
-	if len(x.data) == 0 {
-		return b, nil
-	}
-	for _, v := range x.data {
-		b = wire.AppendBytes(b, v)
-	}
-	return b, nil
-}
-
-func (x *BytesRepeated) MarshalDirty(b []byte) ([]byte, error) {
-	return x.Marshal(b)
-}
-
-func (x *BytesRepeated) Unmarshal(b []byte) error {
-	x.Clear()
-	for len(b) > 0 {
-		v, n, err := wire.ConsumeBytes(b)
+		b = append(b, prefix+indent...)
+		b, err = MarshalJSONIndent(b, v, prefix+indent, indent)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		b = b[n:]
-		x.data = append(x.data, bytes.Clone(v))
-	}
-	return nil
-}
-
-func (x *BytesRepeated) MarshalJSON() ([]byte, error) {
-	return json.Marshal(x.data)
-}
-
-func (x *BytesRepeated) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		b = append(b, (indent + "  ")...)
-		b = append(b, wire.Format(v)...)
 		if i+1 < len(x.data) {
 			b = append(b, ',')
 		}
 		b = append(b, '\n')
 	}
-	b = append(b, (indent + "]")...)
-	return string(b)
-}
-
-// Timestamp repeated
-type TimestampRepeated struct {
-	repeated[time.Time]
-}
-
-func NewTimestampRepeated(dirtyParent DirtyFunc) TimestampRepeated {
-	return TimestampRepeated{repeated: repeated[time.Time]{dirtyParent: dirtyParent}}
-}
-
-func (x *TimestampRepeated) Len() int {
-	return len(x.data)
-}
-
-func (x *TimestampRepeated) Clear() {
-	if len(x.data) == 0 {
-		return
-	}
-	clear(x.data)
-	x.data = x.data[:0]
-	x.markDirty()
-}
-
-func (x *TimestampRepeated) Get(i int) time.Time {
-	return x.data[i]
-}
-
-func (x *TimestampRepeated) Set(i int, v time.Time) {
-	if v.Equal(x.data[i]) {
-		return
-	}
-	x.data[i] = v
-	x.markDirty()
-}
-
-func (x *TimestampRepeated) Append(v ...time.Time) {
-	if len(v) == 0 {
-		return
-	}
-	x.data = append(x.data, v...)
-	x.markDirty()
-}
-
-func (x *TimestampRepeated) Index(v time.Time) int {
-	for i := range x.data {
-		if v.Equal(x.data[i]) {
-			return i
-		}
-	}
-	return -1
-}
-
-func (x *TimestampRepeated) IndexFunc(f func(time.Time) bool) int {
-	for i := range x.data {
-		if f(x.data[i]) {
-			return i
-		}
-	}
-	return -1
-}
-
-func (x *TimestampRepeated) Contains(v time.Time) bool {
-	return x.Index(v) >= 0
-}
-
-func (x *TimestampRepeated) ContainsFunc(f func(time.Time) bool) bool {
-	return x.IndexFunc(f) >= 0
-}
-
-func (x *TimestampRepeated) Insert(i int, v ...time.Time) {
-	_ = x.data[i:] // bounds check
-	if len(v) == 0 {
-		return
-	}
-	x.data = slices.Insert(x.data, i, v...)
-	x.markDirty()
-}
-
-func (x *TimestampRepeated) Delete(i, j int) {
-	_ = x.data[i:j:len(x.data)] // bounds check
-	if i == j {
-		return
-	}
-	x.data = slices.Delete(x.data, i, j)
-	x.markDirty()
-}
-
-func (x *TimestampRepeated) DeleteFunc(del func(time.Time) bool) {
-	i := x.IndexFunc(del)
-	if i == -1 {
-		return
-	}
-	for j := i + 1; j < len(x.data); j++ {
-		v := x.data[j]
-		if del(v) {
-			continue
-		}
-		x.data[i] = v
-		i++
-	}
-	clear(x.data[i:])
-	x.data = x.data[:i]
-	x.markDirty()
-}
-
-func (x *TimestampRepeated) Replace(i, j int, v ...time.Time) {
-	_ = x.data[i:j] // bounds check
-	if i == j && len(v) == 0 {
-		return
-	}
-	x.data = slices.Replace(x.data, i, j, v...)
-	x.markDirty()
-}
-
-func (x *TimestampRepeated) Reverse() {
-	if len(x.data) < 2 {
-		return
-	}
-	slices.Reverse(x.data)
-	x.markDirty()
-}
-
-func (x *TimestampRepeated) All() iter.Seq2[int, time.Time] {
-	return slices.All(x.data)
-}
-
-func (x *TimestampRepeated) Backward() iter.Seq2[int, time.Time] {
-	return slices.Backward(x.data)
-}
-
-func (x *TimestampRepeated) Values() iter.Seq[time.Time] {
-	return slices.Values(x.data)
-}
-
-func (x *TimestampRepeated) markDirty() {
-	if x.dirty {
-		return
-	}
-	x.dirty = true
-	x.dirtyParent.Invoke()
-}
-
-func (x *TimestampRepeated) ClearDirty() {
-	x.dirty = false
-}
-
-func (x *TimestampRepeated) Marshal(b []byte) ([]byte, error) {
-	if len(x.data) == 0 {
-		return b, nil
-	}
-	for _, v := range x.data {
-		b = wire.AppendTimestamp(b, v)
-	}
+	b = append(b, prefix...)
+	b = append(b, ']')
 	return b, nil
-}
-
-func (x *TimestampRepeated) MarshalDirty(b []byte) ([]byte, error) {
-	return x.Marshal(b)
-}
-
-func (x *TimestampRepeated) Unmarshal(b []byte) error {
-	x.Clear()
-	for len(b) > 0 {
-		v, n, err := wire.ConsumeTimestamp(b)
-		if err != nil {
-			return err
-		}
-		b = b[n:]
-		x.data = append(x.data, v)
-	}
-	return nil
-}
-
-func (x *TimestampRepeated) MarshalJSON() ([]byte, error) {
-	return json.Marshal(x.data)
-}
-
-func (x *TimestampRepeated) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		b = append(b, (indent + "  ")...)
-		b = append(b, wire.Format(v)...)
-		if i+1 < len(x.data) {
-			b = append(b, ',')
-		}
-		b = append(b, '\n')
-	}
-	b = append(b, (indent + "]")...)
-	return string(b)
 }
 
 // Message repeated
-type MessageRepeated[T any, E Message[T]] struct {
-	repeated[E]
+type RepeatedMessage[T any, E Message[T]] struct {
+	data []E
+
+	dirty       bool
+	dirtyParent DirtyFunc
 }
 
-func NewMessageRepeated[T any, E Message[T]](dirtyParent DirtyFunc) MessageRepeated[T, E] {
-	return MessageRepeated[T, E]{repeated: repeated[E]{dirtyParent: dirtyParent}}
+func NewRepeatedMessage[T any, E Message[T]](dirtyParent DirtyFunc) RepeatedMessage[T, E] {
+	return RepeatedMessage[T, E]{dirtyParent: dirtyParent}
 }
 
-func (x *MessageRepeated[T, E]) Len() int {
+func (x *RepeatedMessage[T, E]) Len() int {
 	return len(x.data)
 }
 
-func (x *MessageRepeated[T, E]) Clear() {
+func (x *RepeatedMessage[T, E]) Clear() {
 	if len(x.data) == 0 {
 		return
 	}
@@ -677,11 +276,11 @@ func (x *MessageRepeated[T, E]) Clear() {
 	x.markDirty()
 }
 
-func (x *MessageRepeated[T, E]) Get(i int) E {
+func (x *RepeatedMessage[T, E]) Get(i int) E {
 	return x.data[i]
 }
 
-func (x *MessageRepeated[T, E]) Set(i int, v E) {
+func (x *RepeatedMessage[T, E]) Set(i int, v E) {
 	if v != nil && v.GetDirtyParent() != nil {
 		panic("the component should be removed from its original place first")
 	}
@@ -699,7 +298,7 @@ func (x *MessageRepeated[T, E]) Set(i int, v E) {
 	x.markDirty()
 }
 
-func (x *MessageRepeated[T, E]) Append(v ...E) {
+func (x *RepeatedMessage[T, E]) Append(v ...E) {
 	for i := range v {
 		if v[i] != nil && v[i].GetDirtyParent() != nil {
 			panic("the component should be removed from its original place first")
@@ -718,7 +317,7 @@ func (x *MessageRepeated[T, E]) Append(v ...E) {
 	x.markDirty()
 }
 
-func (x *MessageRepeated[T, E]) Index(v E) int {
+func (x *RepeatedMessage[T, E]) Index(v E) int {
 	for i := range x.data {
 		if x.data[i] == v {
 			return i
@@ -727,7 +326,7 @@ func (x *MessageRepeated[T, E]) Index(v E) int {
 	return -1
 }
 
-func (x *MessageRepeated[T, E]) IndexFunc(f func(E) bool) int {
+func (x *RepeatedMessage[T, E]) IndexFunc(f func(E) bool) int {
 	for i := range x.data {
 		if f(x.data[i]) {
 			return i
@@ -736,15 +335,15 @@ func (x *MessageRepeated[T, E]) IndexFunc(f func(E) bool) int {
 	return -1
 }
 
-func (x *MessageRepeated[T, E]) Contains(v E) bool {
+func (x *RepeatedMessage[T, E]) Contains(v E) bool {
 	return x.Index(v) >= 0
 }
 
-func (x *MessageRepeated[T, E]) ContainsFunc(f func(E) bool) bool {
+func (x *RepeatedMessage[T, E]) ContainsFunc(f func(E) bool) bool {
 	return x.IndexFunc(f) >= 0
 }
 
-func (x *MessageRepeated[T, E]) Insert(i int, v ...E) {
+func (x *RepeatedMessage[T, E]) Insert(i int, v ...E) {
 	_ = x.data[i:] // bounds check
 	if len(v) == 0 {
 		return
@@ -764,7 +363,7 @@ func (x *MessageRepeated[T, E]) Insert(i int, v ...E) {
 	x.markDirty()
 }
 
-func (x *MessageRepeated[T, E]) Delete(i, j int) {
+func (x *RepeatedMessage[T, E]) Delete(i, j int) {
 	if i == j {
 		return
 	}
@@ -778,7 +377,7 @@ func (x *MessageRepeated[T, E]) Delete(i, j int) {
 	x.markDirty()
 }
 
-func (x *MessageRepeated[T, E]) DeleteFunc(del func(E) bool) {
+func (x *RepeatedMessage[T, E]) DeleteFunc(del func(E) bool) {
 	i := x.IndexFunc(del)
 	if i == -1 {
 		return
@@ -802,7 +401,7 @@ func (x *MessageRepeated[T, E]) DeleteFunc(del func(E) bool) {
 	x.markDirty()
 }
 
-func (x *MessageRepeated[T, E]) Replace(i, j int, v ...E) {
+func (x *RepeatedMessage[T, E]) Replace(i, j int, v ...E) {
 	if i == j && len(v) == 0 {
 		return
 	}
@@ -827,7 +426,7 @@ func (x *MessageRepeated[T, E]) Replace(i, j int, v ...E) {
 	x.markDirty()
 }
 
-func (x *MessageRepeated[T, E]) Reverse() {
+func (x *RepeatedMessage[T, E]) Reverse() {
 	if len(x.data) < 2 {
 		return
 	}
@@ -835,19 +434,19 @@ func (x *MessageRepeated[T, E]) Reverse() {
 	x.markDirty()
 }
 
-func (x *MessageRepeated[T, E]) All() iter.Seq2[int, E] {
+func (x *RepeatedMessage[T, E]) All() iter.Seq2[int, E] {
 	return slices.All(x.data)
 }
 
-func (x *MessageRepeated[T, E]) Backward() iter.Seq2[int, E] {
+func (x *RepeatedMessage[T, E]) Backward() iter.Seq2[int, E] {
 	return slices.Backward(x.data)
 }
 
-func (x *MessageRepeated[T, E]) Values() iter.Seq[E] {
+func (x *RepeatedMessage[T, E]) Values() iter.Seq[E] {
 	return slices.Values(x.data)
 }
 
-func (x *MessageRepeated[T, E]) markDirty() {
+func (x *RepeatedMessage[T, E]) markDirty() {
 	if x.dirty {
 		return
 	}
@@ -855,7 +454,7 @@ func (x *MessageRepeated[T, E]) markDirty() {
 	x.dirtyParent.Invoke()
 }
 
-func (x *MessageRepeated[T, E]) ClearDirty() {
+func (x *RepeatedMessage[T, E]) ClearDirty() {
 	for _, v := range x.data {
 		if v != nil {
 			v.ClearDirty()
@@ -864,7 +463,7 @@ func (x *MessageRepeated[T, E]) ClearDirty() {
 	x.dirty = false
 }
 
-func (x *MessageRepeated[T, E]) Marshal(b []byte) ([]byte, error) {
+func (x *RepeatedMessage[T, E]) Marshal(b []byte) ([]byte, error) {
 	if len(x.data) == 0 {
 		return b, nil
 	}
@@ -877,11 +476,11 @@ func (x *MessageRepeated[T, E]) Marshal(b []byte) ([]byte, error) {
 	return b, nil
 }
 
-func (x *MessageRepeated[T, E]) MarshalDirty(b []byte) ([]byte, error) {
+func (x *RepeatedMessage[T, E]) MarshalDirty(b []byte) ([]byte, error) {
 	return x.Marshal(b)
 }
 
-func (x *MessageRepeated[T, E]) Unmarshal(b []byte) error {
+func (x *RepeatedMessage[T, E]) Unmarshal(b []byte) error {
 	x.Clear()
 	for len(b) > 0 {
 		var v E = new(T)
@@ -897,23 +496,24 @@ func (x *MessageRepeated[T, E]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *MessageRepeated[T, E]) MarshalJSON() ([]byte, error) {
-	return json.Marshal(x.data)
-}
-
-func (x *MessageRepeated[T, E]) String(indent string) string {
+func (x *RepeatedMessage[T, E]) MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error) {
 	if len(x.data) == 0 {
-		return "[]"
+		return append(b, "[]"...), nil
 	}
-	var b []byte
+	var err error
 	b = append(b, "[\n"...)
 	for i, v := range x.data {
-		b = append(b, (indent + "  " + v.String(indent+"  "))...)
+		b = append(b, prefix+indent...)
+		b, err = MarshalJSONIndent(b, v, prefix+indent, indent)
+		if err != nil {
+			return nil, err
+		}
 		if i+1 < len(x.data) {
 			b = append(b, ',')
 		}
 		b = append(b, '\n')
 	}
-	b = append(b, (indent + "]")...)
-	return string(b)
+	b = append(b, prefix...)
+	b = append(b, ']')
+	return b, nil
 }

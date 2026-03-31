@@ -170,24 +170,36 @@ func (x *All) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *All) String(indent string) string {
-	var b []byte
-	b = append(b, "{\n"...)
-	b = append(b, (indent + "  \"Types\": " + x.xxx_hidden_Types.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Lists\": " + x.xxx_hidden_Lists.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Maps\": " + x.xxx_hidden_Maps.String(indent+"  ") + "\n")...)
-	b = append(b, indent+"}"...)
-	return string(b)
-}
+func (x *All) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
 
-func (x *All) MarshalJSON() ([]byte, error) {
-	var b []byte
-	var indent = ""
-	b = append(b, "{\n"...)
-	b = append(b, (indent + "  \"Types\": " + x.xxx_hidden_Types.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Lists\": " + x.xxx_hidden_Lists.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Maps\": " + x.xxx_hidden_Maps.String(indent+"  ") + "\n")...)
-	b = append(b, indent+"}"...)
+	var err error
+	_ = err
+	b = append(b, '{', '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Types\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Types, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Lists\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Lists, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Maps\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Maps, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, '}')
 	return b, nil
 }
 
@@ -224,6 +236,11 @@ func (x *All) ClearDirty() {
 		x.xxx_hidden_Maps.ClearDirty()
 	}
 	x.dirty = 0
+}
+
+func (x *All) String() string {
+	b, _ := x.MarshalJSONIndent(nil, "", "  ")
+	return string(b)
 }
 
 type dirtyParentFunc_AllType func()
@@ -758,60 +775,172 @@ func (x *AllType) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *AllType) String(indent string) string {
-	var b []byte
-	b = append(b, "{\n"...)
-	b = append(b, (indent + "  \"Int32Val\": " + wire.FormatInt32(x.xxx_hidden_Int32Val) + ",\n")...)
-	b = append(b, (indent + "  \"Int64Val\": \"" + wire.FormatInt64(x.xxx_hidden_Int64Val) + "\",\n")...)
-	b = append(b, (indent + "  \"Uint32Val\": " + wire.FormatUint32(x.xxx_hidden_Uint32Val) + ",\n")...)
-	b = append(b, (indent + "  \"Uint64Val\": \"" + wire.FormatUint64(x.xxx_hidden_Uint64Val) + "\",\n")...)
-	b = append(b, (indent + "  \"Sint32Val\": " + wire.FormatSint32(x.xxx_hidden_Sint32Val) + ",\n")...)
-	b = append(b, (indent + "  \"Sint64Val\": \"" + wire.FormatSint64(x.xxx_hidden_Sint64Val) + "\",\n")...)
-	b = append(b, (indent + "  \"Fixed32Val\": " + wire.FormatFixed32(x.xxx_hidden_Fixed32Val) + ",\n")...)
-	b = append(b, (indent + "  \"Fixed64Val\": \"" + wire.FormatFixed64(x.xxx_hidden_Fixed64Val) + "\",\n")...)
-	b = append(b, (indent + "  \"Sfixed32Val\": " + wire.FormatSfixed32(x.xxx_hidden_Sfixed32Val) + ",\n")...)
-	b = append(b, (indent + "  \"Sfixed64Val\": \"" + wire.FormatSfixed64(x.xxx_hidden_Sfixed64Val) + "\",\n")...)
-	b = append(b, (indent + "  \"FloatVal\": " + wire.FormatFloat(x.xxx_hidden_FloatVal) + ",\n")...)
-	b = append(b, (indent + "  \"DoubleVal\": " + wire.FormatDouble(x.xxx_hidden_DoubleVal) + ",\n")...)
-	b = append(b, (indent + "  \"BoolVal\": " + wire.FormatBool(x.xxx_hidden_BoolVal) + ",\n")...)
-	b = append(b, (indent + "  \"StringVal\": \"" + wire.FormatString(x.xxx_hidden_StringVal) + "\",\n")...)
-	b = append(b, (indent + "  \"BytesVal\": \"" + wire.FormatBytes(x.xxx_hidden_BytesVal) + "\",\n")...)
-	b = append(b, (indent + "  \"TimestampVal\": " + wire.FormatTimestamp(x.xxx_hidden_TimestampVal) + ",\n")...)
-	b = append(b, (indent + "  \"DurationVal\": " + wire.FormatDuration(x.xxx_hidden_DurationVal) + ",\n")...)
-	b = append(b, (indent + "  \"EmptyVal\": " + wire.FormatEmpty(x.xxx_hidden_EmptyVal) + ",\n")...)
-	// FIXME: enum value string
-	b = append(b, (indent + "  \"EnumVal\": " + wire.FormatInt32(int32(x.xxx_hidden_EnumVal)) + ",\n")...)
-	b = append(b, (indent + "  \"ItemData\": " + x.xxx_hidden_ItemData.String(indent+"  ") + "\n")...)
-	b = append(b, indent+"}"...)
-	return string(b)
-}
+func (x *AllType) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
 
-func (x *AllType) MarshalJSON() ([]byte, error) {
-	var b []byte
-	var indent = ""
-	b = append(b, "{\n"...)
-	b = append(b, (indent + "  \"Int32Val\": " + wire.FormatInt32(x.xxx_hidden_Int32Val) + ",\n")...)
-	b = append(b, (indent + "  \"Int64Val\": \"" + wire.FormatInt64(x.xxx_hidden_Int64Val) + "\",\n")...)
-	b = append(b, (indent + "  \"Uint32Val\": " + wire.FormatUint32(x.xxx_hidden_Uint32Val) + ",\n")...)
-	b = append(b, (indent + "  \"Uint64Val\": \"" + wire.FormatUint64(x.xxx_hidden_Uint64Val) + "\",\n")...)
-	b = append(b, (indent + "  \"Sint32Val\": " + wire.FormatSint32(x.xxx_hidden_Sint32Val) + ",\n")...)
-	b = append(b, (indent + "  \"Sint64Val\": \"" + wire.FormatSint64(x.xxx_hidden_Sint64Val) + "\",\n")...)
-	b = append(b, (indent + "  \"Fixed32Val\": " + wire.FormatFixed32(x.xxx_hidden_Fixed32Val) + ",\n")...)
-	b = append(b, (indent + "  \"Fixed64Val\": \"" + wire.FormatFixed64(x.xxx_hidden_Fixed64Val) + "\",\n")...)
-	b = append(b, (indent + "  \"Sfixed32Val\": " + wire.FormatSfixed32(x.xxx_hidden_Sfixed32Val) + ",\n")...)
-	b = append(b, (indent + "  \"Sfixed64Val\": \"" + wire.FormatSfixed64(x.xxx_hidden_Sfixed64Val) + "\",\n")...)
-	b = append(b, (indent + "  \"FloatVal\": " + wire.FormatFloat(x.xxx_hidden_FloatVal) + ",\n")...)
-	b = append(b, (indent + "  \"DoubleVal\": " + wire.FormatDouble(x.xxx_hidden_DoubleVal) + ",\n")...)
-	b = append(b, (indent + "  \"BoolVal\": " + wire.FormatBool(x.xxx_hidden_BoolVal) + ",\n")...)
-	b = append(b, (indent + "  \"StringVal\": \"" + wire.FormatString(x.xxx_hidden_StringVal) + "\",\n")...)
-	b = append(b, (indent + "  \"BytesVal\": \"" + wire.FormatBytes(x.xxx_hidden_BytesVal) + "\",\n")...)
-	b = append(b, (indent + "  \"TimestampVal\": " + wire.FormatTimestamp(x.xxx_hidden_TimestampVal) + ",\n")...)
-	b = append(b, (indent + "  \"DurationVal\": " + wire.FormatDuration(x.xxx_hidden_DurationVal) + ",\n")...)
-	b = append(b, (indent + "  \"EmptyVal\": " + wire.FormatEmpty(x.xxx_hidden_EmptyVal) + ",\n")...)
-	// FIXME: enum value string
-	b = append(b, (indent + "  \"EnumVal\": " + wire.FormatInt32(int32(x.xxx_hidden_EnumVal)) + ",\n")...)
-	b = append(b, (indent + "  \"ItemData\": " + x.xxx_hidden_ItemData.String(indent+"  ") + "\n")...)
-	b = append(b, indent+"}"...)
+	var err error
+	_ = err
+	b = append(b, '{', '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int32Val\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Int32Val, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int64Val\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Int64Val, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Uint32Val\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Uint32Val, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Uint64Val\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Uint64Val, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Sint32Val\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Sint32Val, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Sint64Val\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Sint64Val, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Fixed32Val\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Fixed32Val, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Fixed64Val\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Fixed64Val, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Sfixed32Val\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Sfixed32Val, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Sfixed64Val\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Sfixed64Val, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"FloatVal\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_FloatVal, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"DoubleVal\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_DoubleVal, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"BoolVal\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_BoolVal, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"StringVal\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_StringVal, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"BytesVal\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_BytesVal, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"TimestampVal\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_TimestampVal, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"DurationVal\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_DurationVal, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"EmptyVal\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_EmptyVal, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"EnumVal\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_EnumVal, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"ItemData\": "...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_ItemData, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, '}')
 	return b, nil
 }
 
@@ -863,17 +992,17 @@ func (f dirtyParentFunc_AllList) invoke() {
 }
 
 type AllList struct {
-	xxx_hidden_Int32List kdsync.FieldRepeated[int32]
-	xxx_hidden_Int64List kdsync.FieldRepeated[int64]
-	xxx_hidden_FloatList kdsync.FieldRepeated[float32]
-	xxx_hidden_DoubleList kdsync.FieldRepeated[float64]
-	xxx_hidden_BoolList kdsync.FieldRepeated[bool]
-	xxx_hidden_StringList kdsync.FieldRepeated[string]
-	xxx_hidden_TimestampList kdsync.TimestampRepeated
-	xxx_hidden_DurationList kdsync.FieldRepeated[time.Duration]
-	xxx_hidden_EmptyList kdsync.FieldRepeated[struct{}]
-	xxx_hidden_EnumList kdsync.FieldRepeated[ItemType]
-	xxx_hidden_ItemList kdsync.MessageRepeated[ItemData, *ItemData]
+	xxx_hidden_Int32List kdsync.RepeatedField[int32]
+	xxx_hidden_Int64List kdsync.RepeatedField[int64]
+	xxx_hidden_FloatList kdsync.RepeatedField[float32]
+	xxx_hidden_DoubleList kdsync.RepeatedField[float64]
+	xxx_hidden_BoolList kdsync.RepeatedField[bool]
+	xxx_hidden_StringList kdsync.RepeatedField[string]
+	xxx_hidden_TimestampList kdsync.RepeatedField[time.Time]
+	xxx_hidden_DurationList kdsync.RepeatedField[time.Duration]
+	xxx_hidden_EmptyList kdsync.RepeatedField[struct{}]
+	xxx_hidden_EnumList kdsync.RepeatedField[ItemType]
+	xxx_hidden_ItemList kdsync.RepeatedMessage[ItemData, *ItemData]
 
 	dirty       uint64
 	dirtyParent kdsync.DirtyFunc
@@ -904,7 +1033,7 @@ func (x *AllList) initInt32List() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 1)
 	}
-	x.xxx_hidden_Int32List = kdsync.NewFieldRepeated[int32](dirtyFunc, kdsync.Int32Codec)
+	x.xxx_hidden_Int32List = kdsync.NewRepeatedField(dirtyFunc, kdsync.Int32Codec)
 }
 
 func (x *AllList) GetInt64List() kdsync.Repeated[int64] {
@@ -915,7 +1044,7 @@ func (x *AllList) initInt64List() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 2)
 	}
-	x.xxx_hidden_Int64List = kdsync.NewFieldRepeated[int64](dirtyFunc, kdsync.Int64Codec)
+	x.xxx_hidden_Int64List = kdsync.NewRepeatedField(dirtyFunc, kdsync.Int64Codec)
 }
 
 func (x *AllList) GetFloatList() kdsync.Repeated[float32] {
@@ -926,7 +1055,7 @@ func (x *AllList) initFloatList() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 3)
 	}
-	x.xxx_hidden_FloatList = kdsync.NewFieldRepeated[float32](dirtyFunc, kdsync.Float32Codec)
+	x.xxx_hidden_FloatList = kdsync.NewRepeatedField(dirtyFunc, kdsync.Float32Codec)
 }
 
 func (x *AllList) GetDoubleList() kdsync.Repeated[float64] {
@@ -937,7 +1066,7 @@ func (x *AllList) initDoubleList() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 4)
 	}
-	x.xxx_hidden_DoubleList = kdsync.NewFieldRepeated[float64](dirtyFunc, kdsync.Float64Codec)
+	x.xxx_hidden_DoubleList = kdsync.NewRepeatedField(dirtyFunc, kdsync.Float64Codec)
 }
 
 func (x *AllList) GetBoolList() kdsync.Repeated[bool] {
@@ -948,7 +1077,7 @@ func (x *AllList) initBoolList() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 5)
 	}
-	x.xxx_hidden_BoolList = kdsync.NewFieldRepeated[bool](dirtyFunc, kdsync.BoolCodec)
+	x.xxx_hidden_BoolList = kdsync.NewRepeatedField(dirtyFunc, kdsync.BoolCodec)
 }
 
 func (x *AllList) GetStringList() kdsync.Repeated[string] {
@@ -959,7 +1088,7 @@ func (x *AllList) initStringList() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 6)
 	}
-	x.xxx_hidden_StringList = kdsync.NewFieldRepeated[string](dirtyFunc, kdsync.StringCodec)
+	x.xxx_hidden_StringList = kdsync.NewRepeatedField(dirtyFunc, kdsync.StringCodec)
 }
 
 func (x *AllList) GetTimestampList() kdsync.Repeated[time.Time] {
@@ -970,7 +1099,7 @@ func (x *AllList) initTimestampList() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 7)
 	}
-	x.xxx_hidden_TimestampList = kdsync.NewTimestampRepeated(dirtyFunc)
+	x.xxx_hidden_TimestampList = kdsync.NewRepeatedField(dirtyFunc, kdsync.TimestampCodec)
 }
 
 func (x *AllList) GetDurationList() kdsync.Repeated[time.Duration] {
@@ -981,7 +1110,7 @@ func (x *AllList) initDurationList() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 8)
 	}
-	x.xxx_hidden_DurationList = kdsync.NewFieldRepeated[time.Duration](dirtyFunc, kdsync.DurationCodec)
+	x.xxx_hidden_DurationList = kdsync.NewRepeatedField(dirtyFunc, kdsync.DurationCodec)
 }
 
 func (x *AllList) GetEmptyList() kdsync.Repeated[struct{}] {
@@ -992,7 +1121,7 @@ func (x *AllList) initEmptyList() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 9)
 	}
-	x.xxx_hidden_EmptyList = kdsync.NewFieldRepeated[struct{}](dirtyFunc, kdsync.EmptyCodec)
+	x.xxx_hidden_EmptyList = kdsync.NewRepeatedField(dirtyFunc, kdsync.EmptyCodec)
 }
 
 func (x *AllList) GetEnumList() kdsync.Repeated[ItemType] {
@@ -1003,7 +1132,7 @@ func (x *AllList) initEnumList() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 10)
 	}
-	x.xxx_hidden_EnumList = kdsync.NewFieldRepeated[ItemType](dirtyFunc, kdsync.NewEnumCodec[ItemType]())
+	x.xxx_hidden_EnumList = kdsync.NewRepeatedField(dirtyFunc, kdsync.NewEnumCodec[ItemType]())
 }
 
 func (x *AllList) GetItemList() kdsync.Repeated[*ItemData] {
@@ -1014,7 +1143,7 @@ func (x *AllList) initItemList() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 11)
 	}
-	x.xxx_hidden_ItemList = kdsync.NewMessageRepeated[ItemData, *ItemData](dirtyFunc)
+	x.xxx_hidden_ItemList = kdsync.NewRepeatedMessage[ItemData, *ItemData](dirtyFunc)
 }
 
 func (x *AllList) Marshal(b []byte) ([]byte, error) {
@@ -1162,40 +1291,100 @@ func (x *AllList) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *AllList) String(indent string) string {
-	var b []byte
-	b = append(b, "{\n"...)
-	b = append(b, (indent + "  \"Int32List\": " + x.xxx_hidden_Int32List.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64List\": " + x.xxx_hidden_Int64List.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"FloatList\": " + x.xxx_hidden_FloatList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"DoubleList\": " + x.xxx_hidden_DoubleList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolList\": " + x.xxx_hidden_BoolList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringList\": " + x.xxx_hidden_StringList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"TimestampList\": " + x.xxx_hidden_TimestampList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"DurationList\": " + x.xxx_hidden_DurationList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"EmptyList\": " + x.xxx_hidden_EmptyList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"EnumList\": " + x.xxx_hidden_EnumList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"ItemList\": " + x.xxx_hidden_ItemList.String(indent+"  ") + "\n")...)
-	b = append(b, indent+"}"...)
-	return string(b)
-}
+func (x *AllList) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
 
-func (x *AllList) MarshalJSON() ([]byte, error) {
-	var b []byte
-	var indent = ""
-	b = append(b, "{\n"...)
-	b = append(b, (indent + "  \"Int32List\": " + x.xxx_hidden_Int32List.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64List\": " + x.xxx_hidden_Int64List.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"FloatList\": " + x.xxx_hidden_FloatList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"DoubleList\": " + x.xxx_hidden_DoubleList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolList\": " + x.xxx_hidden_BoolList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringList\": " + x.xxx_hidden_StringList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"TimestampList\": " + x.xxx_hidden_TimestampList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"DurationList\": " + x.xxx_hidden_DurationList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"EmptyList\": " + x.xxx_hidden_EmptyList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"EnumList\": " + x.xxx_hidden_EnumList.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"ItemList\": " + x.xxx_hidden_ItemList.String(indent+"  ") + "\n")...)
-	b = append(b, indent+"}"...)
+	var err error
+	_ = err
+	b = append(b, '{', '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int32List\": "...)
+	b, err = x.xxx_hidden_Int32List.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int64List\": "...)
+	b, err = x.xxx_hidden_Int64List.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"FloatList\": "...)
+	b, err = x.xxx_hidden_FloatList.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"DoubleList\": "...)
+	b, err = x.xxx_hidden_DoubleList.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"BoolList\": "...)
+	b, err = x.xxx_hidden_BoolList.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"StringList\": "...)
+	b, err = x.xxx_hidden_StringList.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"TimestampList\": "...)
+	b, err = x.xxx_hidden_TimestampList.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"DurationList\": "...)
+	b, err = x.xxx_hidden_DurationList.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"EmptyList\": "...)
+	b, err = x.xxx_hidden_EmptyList.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"EnumList\": "...)
+	b, err = x.xxx_hidden_EnumList.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"ItemList\": "...)
+	b, err = x.xxx_hidden_ItemList.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, '}')
 	return b, nil
 }
 
@@ -2023,74 +2212,152 @@ func (x *AllMap) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *AllMap) String(indent string) string {
-	var b []byte
-	b = append(b, "{\n"...)
-	b = append(b, (indent + "  \"Int32Int32\": " + x.xxx_hidden_Int32Int32.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int32String\": " + x.xxx_hidden_Int32String.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int32Timestamp\": " + x.xxx_hidden_Int32Timestamp.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int32Duration\": " + x.xxx_hidden_Int32Duration.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int32Empty\": " + x.xxx_hidden_Int32Empty.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int32Enum\": " + x.xxx_hidden_Int32Enum.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int32ItemData\": " + x.xxx_hidden_Int32ItemData.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64Int64\": " + x.xxx_hidden_Int64Int64.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64String\": " + x.xxx_hidden_Int64String.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64Timestamp\": " + x.xxx_hidden_Int64Timestamp.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64Duration\": " + x.xxx_hidden_Int64Duration.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64Empty\": " + x.xxx_hidden_Int64Empty.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64Enum\": " + x.xxx_hidden_Int64Enum.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64ItemData\": " + x.xxx_hidden_Int64ItemData.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringInt32\": " + x.xxx_hidden_StringInt32.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringString\": " + x.xxx_hidden_StringString.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringTimestamp\": " + x.xxx_hidden_StringTimestamp.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringDuration\": " + x.xxx_hidden_StringDuration.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringEmpty\": " + x.xxx_hidden_StringEmpty.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringEnum\": " + x.xxx_hidden_StringEnum.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringItemData\": " + x.xxx_hidden_StringItemData.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolInt32\": " + x.xxx_hidden_BoolInt32.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolString\": " + x.xxx_hidden_BoolString.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolTimestamp\": " + x.xxx_hidden_BoolTimestamp.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolDuration\": " + x.xxx_hidden_BoolDuration.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolEmpty\": " + x.xxx_hidden_BoolEmpty.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolEnum\": " + x.xxx_hidden_BoolEnum.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolItemData\": " + x.xxx_hidden_BoolItemData.String(indent+"  ") + "\n")...)
-	b = append(b, indent+"}"...)
-	return string(b)
-}
+func (x *AllMap) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
 
-func (x *AllMap) MarshalJSON() ([]byte, error) {
-	var b []byte
-	var indent = ""
-	b = append(b, "{\n"...)
-	b = append(b, (indent + "  \"Int32Int32\": " + x.xxx_hidden_Int32Int32.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int32String\": " + x.xxx_hidden_Int32String.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int32Timestamp\": " + x.xxx_hidden_Int32Timestamp.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int32Duration\": " + x.xxx_hidden_Int32Duration.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int32Empty\": " + x.xxx_hidden_Int32Empty.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int32Enum\": " + x.xxx_hidden_Int32Enum.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int32ItemData\": " + x.xxx_hidden_Int32ItemData.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64Int64\": " + x.xxx_hidden_Int64Int64.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64String\": " + x.xxx_hidden_Int64String.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64Timestamp\": " + x.xxx_hidden_Int64Timestamp.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64Duration\": " + x.xxx_hidden_Int64Duration.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64Empty\": " + x.xxx_hidden_Int64Empty.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64Enum\": " + x.xxx_hidden_Int64Enum.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"Int64ItemData\": " + x.xxx_hidden_Int64ItemData.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringInt32\": " + x.xxx_hidden_StringInt32.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringString\": " + x.xxx_hidden_StringString.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringTimestamp\": " + x.xxx_hidden_StringTimestamp.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringDuration\": " + x.xxx_hidden_StringDuration.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringEmpty\": " + x.xxx_hidden_StringEmpty.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringEnum\": " + x.xxx_hidden_StringEnum.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"StringItemData\": " + x.xxx_hidden_StringItemData.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolInt32\": " + x.xxx_hidden_BoolInt32.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolString\": " + x.xxx_hidden_BoolString.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolTimestamp\": " + x.xxx_hidden_BoolTimestamp.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolDuration\": " + x.xxx_hidden_BoolDuration.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolEmpty\": " + x.xxx_hidden_BoolEmpty.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolEnum\": " + x.xxx_hidden_BoolEnum.String(indent+"  ") + ",\n")...)
-	b = append(b, (indent + "  \"BoolItemData\": " + x.xxx_hidden_BoolItemData.String(indent+"  ") + "\n")...)
-	b = append(b, indent+"}"...)
+	var err error
+	_ = err
+	b = append(b, '{', '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int32Int32\": "...)
+	b = append(b, x.xxx_hidden_Int32Int32.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int32String\": "...)
+	b = append(b, x.xxx_hidden_Int32String.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int32Timestamp\": "...)
+	b = append(b, x.xxx_hidden_Int32Timestamp.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int32Duration\": "...)
+	b = append(b, x.xxx_hidden_Int32Duration.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int32Empty\": "...)
+	b = append(b, x.xxx_hidden_Int32Empty.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int32Enum\": "...)
+	b = append(b, x.xxx_hidden_Int32Enum.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int32ItemData\": "...)
+	b = append(b, x.xxx_hidden_Int32ItemData.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int64Int64\": "...)
+	b = append(b, x.xxx_hidden_Int64Int64.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int64String\": "...)
+	b = append(b, x.xxx_hidden_Int64String.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int64Timestamp\": "...)
+	b = append(b, x.xxx_hidden_Int64Timestamp.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int64Duration\": "...)
+	b = append(b, x.xxx_hidden_Int64Duration.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int64Empty\": "...)
+	b = append(b, x.xxx_hidden_Int64Empty.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int64Enum\": "...)
+	b = append(b, x.xxx_hidden_Int64Enum.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Int64ItemData\": "...)
+	b = append(b, x.xxx_hidden_Int64ItemData.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"StringInt32\": "...)
+	b = append(b, x.xxx_hidden_StringInt32.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"StringString\": "...)
+	b = append(b, x.xxx_hidden_StringString.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"StringTimestamp\": "...)
+	b = append(b, x.xxx_hidden_StringTimestamp.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"StringDuration\": "...)
+	b = append(b, x.xxx_hidden_StringDuration.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"StringEmpty\": "...)
+	b = append(b, x.xxx_hidden_StringEmpty.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"StringEnum\": "...)
+	b = append(b, x.xxx_hidden_StringEnum.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"StringItemData\": "...)
+	b = append(b, x.xxx_hidden_StringItemData.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"BoolInt32\": "...)
+	b = append(b, x.xxx_hidden_BoolInt32.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"BoolString\": "...)
+	b = append(b, x.xxx_hidden_BoolString.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"BoolTimestamp\": "...)
+	b = append(b, x.xxx_hidden_BoolTimestamp.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"BoolDuration\": "...)
+	b = append(b, x.xxx_hidden_BoolDuration.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"BoolEmpty\": "...)
+	b = append(b, x.xxx_hidden_BoolEmpty.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"BoolEnum\": "...)
+	b = append(b, x.xxx_hidden_BoolEnum.String(prefix+indent)...)
+	b = append(b, ',')
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"BoolItemData\": "...)
+	b = append(b, x.xxx_hidden_BoolItemData.String(prefix+indent)...)
+	b = append(b, '\n')
+	b = append(b, prefix...)
+	b = append(b, '}')
 	return b, nil
 }
 

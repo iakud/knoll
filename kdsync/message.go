@@ -25,8 +25,6 @@ type Message[T any] interface {
 	GetDirtyParent() DirtyFunc
 	MarkDirtyAll()
 	ClearDirty()
-
-	String(indent string) string
 }
 
 type DirtyFunc func()

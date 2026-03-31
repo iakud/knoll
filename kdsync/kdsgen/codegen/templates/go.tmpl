@@ -44,6 +44,8 @@
 {{- else if eq . "fixed64"}}kdsync.Uint64Codec
 {{- else if eq . "double"}}kdsync.Float64Codec
 {{- else if eq . "string"}}kdsync.StringCodec
+{{- else if eq . "bytes"}}kdsync.BytesCodec
+{{- else if eq . "timestamp"}}kdsync.TimestampCodec
 {{- else if eq . "duration"}}kdsync.DurationCodec
 {{- else if eq . "empty"}}kdsync.EmptyCodec
 {{- else}}{{.}}
@@ -51,11 +53,9 @@
 {{- end}}
 {{- /* REPEATED TYPE */ -}}
 {{- define "RepeatedType"}}
-{{- if eq .TypeKind "enum"}}kdsync.FieldRepeated[{{.Type}}]
-{{- else if eq .TypeKind "component"}}kdsync.MessageRepeated[{{.Type}}, *{{.Type}}]
-{{- else if eq .Type "bytes"}}kdsync.BytesRepeated
-{{- else if eq .Type "timestamp"}}kdsync.TimestampRepeated
-{{- else}}kdsync.FieldRepeated[{{template "Type" .Type}}]
+{{- if eq .TypeKind "enum"}}kdsync.RepeatedField[{{.Type}}]
+{{- else if eq .TypeKind "component"}}kdsync.RepeatedMessage[{{.Type}}, *{{.Type}}]
+{{- else}}kdsync.RepeatedField[{{template "Type" .Type}}]
 {{- end}}
 {{- end}}
 {{- /* LIST TYPE */ -}}
@@ -378,33 +378,6 @@ func (x *{{.Name}}) Unmarshal(b []byte) error {
 {{- end}}
 	}
 	return nil
-}
-
-func (x *{{.Name}}) String(indent string) string {
-	if len(x.data) == 0 {
-		return "[]"
-	}
-
-	var b []byte
-	b = append(b, "[\n"...)
-	for i, v := range x.data {
-		sep := ""
-		if i + 1 < len(x.data) {
-			sep = ","
-		}
-{{- if eq .TypeKind "component"}}
-		b = append(b, (indent + "  " + v.String(indent+"  ") + sep + "\n")...)
-{{- else if eq .TypeKind "enum"}}
-		// FIXME: enum value string
-		b = append(b, (indent + "  " + wire.FormatInt32(int32(v)) + sep + "\n")...)
-{{- else if eq .Type "int64" "sint64" "uint64" "sfixed64" "fixed64" "string" "bytes"}}
-		b = append(b, (indent + "  \"" + wire.Format{{ucFirst .Type}}(v) + "\"" + sep + "\n")...)
-{{- else}}
-		b = append(b, (indent + "  " + wire.Format{{ucFirst .Type}}(v) + sep + "\n")...)
-{{- end}}
-	}
-	b = append(b, indent+"]"...)
-	return string(b)
 }
 {{- end}}
 
@@ -743,16 +716,11 @@ func (x *{{.Name}}) String(indent string) string {
 		if i < len(keys) {
 			sep = ","
 		}
-{{- if eq .TypeKind "component"}}
-		b = append(b, (indent + "  \"" + wire.Format{{ucFirst .KeyType}}(k) + "\": " + x.data[k].String(indent+"  ") + sep + "\n")...)
-{{- else if eq .TypeKind "enum"}}
-		// FIXME: enum value string
-		b = append(b, (indent + "  \"" + wire.Format{{ucFirst .KeyType}}(k) + "\": " + wire.FormatInt32(int32(x.data[k])) + sep + "\n")...)
-{{- else if eq .Type "int64" "sint64" "uint64" "sfixed64" "fixed64" "string" "bytes"}}
-		b = append(b, (indent + "  \"" + wire.Format{{ucFirst .KeyType}}(k) + "\": \"" + wire.Format{{ucFirst .Type}}(x.data[k]) + "\"" + sep + "\n")...)
-{{- else}}
-		b = append(b, (indent + "  \"" + wire.Format{{ucFirst .KeyType}}(k) + "\": " + wire.Format{{ucFirst .Type}}(x.data[k]) + sep + "\n")...)
-{{- end}}
+		b = append(b, indent + "  \"" + wire.Format{{ucFirst .KeyType}}(k) + "\": "...)
+		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
+		
+		b = append(b, sep...)
+		b = append(b, '\n')
 	}
 	b = append(b, indent+"}"...)
 	return string(b)
@@ -787,15 +755,11 @@ func (x *{{$MessageName}}) init{{.Name}}() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
 {{- if eq .TypeKind "enum"}}
-	x.xxx_hidden_{{.Name}} = kdsync.NewFieldRepeated[{{.Type}}](dirtyFunc, kdsync.NewEnumCodec[{{.Type}}]())
+	x.xxx_hidden_{{.Name}} = kdsync.NewRepeatedField(dirtyFunc, kdsync.NewEnumCodec[{{.Type}}]())
 {{- else if eq .TypeKind "component"}}
-	x.xxx_hidden_{{.Name}} = kdsync.NewMessageRepeated[{{.Type}}, *{{.Type}}](dirtyFunc)
-{{- else if eq .Type "bytes"}}
-	x.xxx_hidden_{{.Name}} = kdsync.NewBytesRepeated(dirtyFunc)
-{{- else if eq .Type "timestamp"}}
-	x.xxx_hidden_{{.Name}} = kdsync.NewTimestampRepeated(dirtyFunc)
+	x.xxx_hidden_{{.Name}} = kdsync.NewRepeatedMessage[{{.Type}}, *{{.Type}}](dirtyFunc)
 {{- else}}
-	x.xxx_hidden_{{.Name}} = kdsync.NewFieldRepeated[{{template "FieldType" .}}](dirtyFunc, {{template "FieldCodec" .Type}})
+	x.xxx_hidden_{{.Name}} = kdsync.NewRepeatedField(dirtyFunc, {{template "FieldCodec" .Type}})
 {{- end}}
 }
 {{- else if .Map}}
@@ -960,60 +924,38 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *{{$MessageName}}) String(indent string) string {
-	var b []byte
-	b = append(b, "{\n"...)
-{{- if len .Fields}}
-{{- $Count := len .Fields}}
-{{- $Num := ""}}
-{{- range .Fields}}
-{{- $Num = print $Num " "}}
-{{- if .Repeated}}
-	b = append(b, (indent + "  \"{{.Name}}\": " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
-{{- else if .Map}}
-	b = append(b, (indent + "  \"{{.Name}}\": " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
-{{- else if eq .TypeKind "component"}}
-	b = append(b, (indent + "  \"{{.Name}}\": " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
-{{- else if eq .TypeKind "enum"}}
-	// FIXME: enum value string
-	b = append(b, (indent + "  \"{{.Name}}\": " + wire.FormatInt32(int32(x.xxx_hidden_{{.Name}})) + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
-{{- else if eq .Type "int64" "sint64" "uint64" "sfixed64" "fixed64" "string" "bytes"}}
-	b = append(b, (indent + "  \"{{.Name}}\": \"" + wire.Format{{ucFirst .Type}}(x.xxx_hidden_{{.Name}}) + "\"{{- if lt (len $Num) $Count}},{{- end}}\n")...)
-{{- else}}
-	b = append(b, (indent + "  \"{{.Name}}\": " + wire.Format{{ucFirst .Type}}(x.xxx_hidden_{{.Name}}) + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
+func (x *{{$MessageName}}) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
+{{- if not (len .Fields)}}
+	return append(b, "{}"...)
 {{- end}}
-{{- end}}
-{{- end}}
-	b = append(b, indent+"}"...)
-	return string(b)
-}
 
-func (x *{{$MessageName}}) MarshalJSON() ([]byte, error) {
-	var b []byte
-	var indent = ""
-	b = append(b, "{\n"...)
-{{- if len .Fields}}
-{{- $Count := len .Fields}}
-{{- $Num := ""}}
-{{- range .Fields}}
-{{- $Num = print $Num " "}}
+	var err error
+	_ = err
+	b = append(b, '{', '\n')
+{{- $LastIndex := len (slice .Fields 1)}}
+{{- range $Index, $Value := .Fields}}
+	b = append(b, prefix...)
+	b = append(b, indent + "\"{{$Value.Name}}\": "...)
 {{- if .Repeated}}
-	b = append(b, (indent + "  \"{{.Name}}\": " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
+	b, err = x.xxx_hidden_{{$Value.Name}}.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
 {{- else if .Map}}
-	b = append(b, (indent + "  \"{{.Name}}\": " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
-{{- else if eq .TypeKind "component"}}
-	b = append(b, (indent + "  \"{{.Name}}\": " + x.xxx_hidden_{{.Name}}.String(indent+"  ") + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
-{{- else if eq .TypeKind "enum"}}
-	// FIXME: enum value string
-	b = append(b, (indent + "  \"{{.Name}}\": " + wire.FormatInt32(int32(x.xxx_hidden_{{.Name}})) + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
-{{- else if eq .Type "int64" "sint64" "uint64" "sfixed64" "fixed64" "string" "bytes"}}
-	b = append(b, (indent + "  \"{{.Name}}\": \"" + wire.Format{{ucFirst .Type}}(x.xxx_hidden_{{.Name}}) + "\"{{- if lt (len $Num) $Count}},{{- end}}\n")...)
+	b = append(b, x.xxx_hidden_{{.Name}}.String(prefix+indent)...)
 {{- else}}
-	b = append(b, (indent + "  \"{{.Name}}\": " + wire.Format{{ucFirst .Type}}(x.xxx_hidden_{{.Name}}) + "{{- if lt (len $Num) $Count}},{{- end}}\n")...)
+	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_{{.Name}}, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
 {{- end}}
+{{- if ne $Index $LastIndex}}
+	b = append(b, ',')
 {{- end}}
+	b = append(b, '\n')
 {{- end}}
-	b = append(b, indent+"}"...)
+	b = append(b, prefix...)
+	b = append(b, '}')
 	return b, nil
 }
 {{- end}}
@@ -1097,6 +1039,11 @@ func (x *{{.Name}}) ClearDirty() {
 {{- end}}
 {{- end}}
 	x.dirty = 0
+}
+
+func (x *{{.Name}}) String() string {
+	b, _ := x.MarshalJSONIndent(nil, "", "  ")
+	return string(b)
 }
 {{- end}}
 
