@@ -57,8 +57,9 @@ type RepeatedField[E any] struct {
 	fieldCodec  FieldCodec[E]
 }
 
-func NewRepeatedField[E any](dirtyParent DirtyFunc, fieldCodec FieldCodec[E]) RepeatedField[E] {
-	return RepeatedField[E]{dirtyParent: dirtyParent, fieldCodec: fieldCodec}
+func (x *RepeatedField[E]) Init(dirtyParent DirtyFunc, fieldCodec FieldCodec[E]) {
+	x.dirtyParent = dirtyParent
+	x.fieldCodec = fieldCodec
 }
 
 func (x *RepeatedField[E]) Len() int {
@@ -254,8 +255,8 @@ type RepeatedMessage[T any, E Message[T]] struct {
 	dirtyParent DirtyFunc
 }
 
-func NewRepeatedMessage[T any, E Message[T]](dirtyParent DirtyFunc) RepeatedMessage[T, E] {
-	return RepeatedMessage[T, E]{dirtyParent: dirtyParent}
+func (x *RepeatedMessage[T, E]) Init(dirtyParent DirtyFunc) {
+	x.dirtyParent = dirtyParent
 }
 
 func (x *RepeatedMessage[T, E]) Len() int {
