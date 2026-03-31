@@ -30,27 +30,29 @@
 {{- end}}
 {{- /* FIELD CODEC */ -}}
 {{- define "FieldCodec"}}
-{{- if eq . "bool"}}kdsync.BoolCodec
-{{- else if eq . "int32"}}kdsync.Int32Codec
-{{- else if eq . "sint32"}}kdsync.Int32Codec
-{{- else if eq . "uint32"}}kdsync.Uint32Codec
-{{- else if eq . "int64"}}kdsync.Int64Codec
-{{- else if eq . "sint64"}}kdsync.Int64Codec
-{{- else if eq . "uint64"}}kdsync.Uint64Codec
-{{- else if eq . "sfixed32"}}kdsync.Int32Codec
-{{- else if eq . "fixed32"}}kdsync.Uint32Codec
-{{- else if eq . "float"}}kdsync.Float32Codec
-{{- else if eq . "sfixed64"}}kdsync.Int64Codec
-{{- else if eq . "fixed64"}}kdsync.Uint64Codec
-{{- else if eq . "double"}}kdsync.Float64Codec
-{{- else if eq . "string"}}kdsync.StringCodec
-{{- else if eq . "bytes"}}kdsync.BytesCodec
-{{- else if eq . "timestamp"}}kdsync.TimestampCodec
-{{- else if eq . "duration"}}kdsync.DurationCodec
-{{- else if eq . "empty"}}kdsync.EmptyCodec
+{{- if eq . "bool"}}kdsync.BoolCodec()
+{{- else if eq . "int32"}}kdsync.Int32Codec()
+{{- else if eq . "sint32"}}kdsync.Int32Codec()
+{{- else if eq . "uint32"}}kdsync.Uint32Codec()
+{{- else if eq . "int64"}}kdsync.Int64Codec()
+{{- else if eq . "sint64"}}kdsync.Int64Codec()
+{{- else if eq . "uint64"}}kdsync.Uint64Codec()
+{{- else if eq . "sfixed32"}}kdsync.Int32Codec()
+{{- else if eq . "fixed32"}}kdsync.Uint32Codec()
+{{- else if eq . "float"}}kdsync.Float32Codec()
+{{- else if eq . "sfixed64"}}kdsync.Int64Codec()
+{{- else if eq . "fixed64"}}kdsync.Uint64Codec()
+{{- else if eq . "double"}}kdsync.Float64Codec()
+{{- else if eq . "string"}}kdsync.StringCodec()
+{{- else if eq . "bytes"}}kdsync.BytesCodec()
+{{- else if eq . "timestamp"}}kdsync.TimestampCodec()
+{{- else if eq . "duration"}}kdsync.DurationCodec()
+{{- else if eq . "empty"}}kdsync.EmptyCodec()
 {{- else}}{{.}}
 {{- end}}
 {{- end}}
+{{- /* ENUM FIELD CODEC */ -}}
+{{- define "EnumCodec"}}kdsync.EnumCodec[{{.}}](){{- end}}
 {{- /* REPEATED TYPE */ -}}
 {{- define "RepeatedType"}}
 {{- if eq .TypeKind "enum"}}kdsync.RepeatedField[{{.Type}}]
@@ -760,10 +762,10 @@ func (x *{{$MessageName}}) init{{.Name}}() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
-{{- if eq .TypeKind "enum"}}
-	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, kdsync.NewEnumCodec[{{.Type}}]())
-{{- else if eq .TypeKind "component"}}
+{{- if eq .TypeKind "component"}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc)
+{{- else if eq .TypeKind "enum"}}
+	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, {{template "EnumCodec" .Type}})
 {{- else}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, {{template "FieldCodec" .Type}})
 {{- end}}
@@ -777,10 +779,10 @@ func (x *{{$MessageName}}) init{{.Name}}() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
-{{- if eq .TypeKind "enum"}}
-	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, {{template "FieldCodec" .KeyType}},  kdsync.NewEnumCodec[{{.Type}}]())
-{{- else if eq .TypeKind "component"}}
+{{- if eq .TypeKind "component"}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, {{template "FieldCodec" .KeyType}})
+{{- else if eq .TypeKind "enum"}}
+	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, {{template "FieldCodec" .KeyType}}, {{template "EnumCodec" .Type}})
 {{- else}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, {{template "FieldCodec" .KeyType}}, {{template "FieldCodec" .Type}})
 {{- end}}

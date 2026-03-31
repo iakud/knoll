@@ -80,7 +80,7 @@ func (x *RepeatedField[E]) Get(i int) E {
 }
 
 func (x *RepeatedField[E]) Set(i int, v E) {
-	if x.fieldCodec.CompareFunc(v, x.data[i]) == 0 {
+	if x.fieldCodec.compareFunc(v, x.data[i]) == 0 {
 		return
 	}
 	x.data[i] = v
@@ -97,7 +97,7 @@ func (x *RepeatedField[E]) Append(v ...E) {
 
 func (x *RepeatedField[E]) Index(v E) int {
 	for i := range x.data {
-		if x.fieldCodec.CompareFunc(v, x.data[i]) == 0 {
+		if x.fieldCodec.compareFunc(v, x.data[i]) == 0 {
 			return i
 		}
 	}
@@ -203,7 +203,7 @@ func (x *RepeatedField[E]) Marshal(b []byte) ([]byte, error) {
 		return b, nil
 	}
 	for _, v := range x.data {
-		b = x.fieldCodec.MarshalFunc(b, v)
+		b = x.fieldCodec.marshalFunc(b, v)
 	}
 	return b, nil
 }
@@ -215,7 +215,7 @@ func (x *RepeatedField[E]) MarshalDirty(b []byte) ([]byte, error) {
 func (x *RepeatedField[E]) Unmarshal(b []byte) error {
 	x.Clear()
 	for len(b) > 0 {
-		v, n, err := x.fieldCodec.UnmarshalFunc(b)
+		v, n, err := x.fieldCodec.unmarshalFunc(b)
 		if err != nil {
 			return err
 		}

@@ -10,10 +10,10 @@ import (
 )
 
 type FieldCodec[T any] struct {
-	WireType      wire.Type
-	CompareFunc   func(a, b T) int
-	MarshalFunc   func(b []byte, v T) []byte
-	UnmarshalFunc func(b []byte) (T, int, error)
+	wireType      wire.Type
+	compareFunc   func(a, b T) int
+	marshalFunc   func(b []byte, v T) []byte
+	unmarshalFunc func(b []byte) (T, int, error)
 }
 
 func boolCompare(a, b bool) int {
@@ -33,95 +33,119 @@ func emptyCompare(a, b struct{}) int {
 	return 0
 }
 
-var BoolCodec = FieldCodec[bool]{
-	WireType:      wire.VarintType,
-	CompareFunc:   boolCompare,
-	MarshalFunc:   wire.AppendBool,
-	UnmarshalFunc: wire.ConsumeBool,
+func BoolCodec() FieldCodec[bool] {
+	return FieldCodec[bool]{
+		wireType:      wire.VarintType,
+		compareFunc:   boolCompare,
+		marshalFunc:   wire.AppendBool,
+		unmarshalFunc: wire.ConsumeBool,
+	}
 }
 
-var Int32Codec = FieldCodec[int32]{
-	WireType:      wire.VarintType,
-	CompareFunc:   cmp.Compare[int32],
-	MarshalFunc:   wire.AppendInt32,
-	UnmarshalFunc: wire.ConsumeInt32,
+func Int32Codec() FieldCodec[int32] {
+	return FieldCodec[int32]{
+		wireType:      wire.VarintType,
+		compareFunc:   cmp.Compare[int32],
+		marshalFunc:   wire.AppendInt32,
+		unmarshalFunc: wire.ConsumeInt32,
+	}
 }
 
-var Uint32Codec = FieldCodec[uint32]{
-	WireType:      wire.VarintType,
-	CompareFunc:   cmp.Compare[uint32],
-	MarshalFunc:   wire.AppendUint32,
-	UnmarshalFunc: wire.ConsumeUint32,
+func Uint32Codec() FieldCodec[uint32] {
+	return FieldCodec[uint32]{
+		wireType:      wire.VarintType,
+		compareFunc:   cmp.Compare[uint32],
+		marshalFunc:   wire.AppendUint32,
+		unmarshalFunc: wire.ConsumeUint32,
+	}
 }
 
-var Int64Codec = FieldCodec[int64]{
-	WireType:      wire.VarintType,
-	CompareFunc:   cmp.Compare[int64],
-	MarshalFunc:   wire.AppendInt64,
-	UnmarshalFunc: wire.ConsumeInt64,
+func Int64Codec() FieldCodec[int64] {
+	return FieldCodec[int64]{
+		wireType:      wire.VarintType,
+		compareFunc:   cmp.Compare[int64],
+		marshalFunc:   wire.AppendInt64,
+		unmarshalFunc: wire.ConsumeInt64,
+	}
 }
 
-var Uint64Codec = FieldCodec[uint64]{
-	WireType:      wire.VarintType,
-	CompareFunc:   cmp.Compare[uint64],
-	MarshalFunc:   wire.AppendUint64,
-	UnmarshalFunc: wire.ConsumeUint64,
+func Uint64Codec() FieldCodec[uint64] {
+	return FieldCodec[uint64]{
+		wireType:      wire.VarintType,
+		compareFunc:   cmp.Compare[uint64],
+		marshalFunc:   wire.AppendUint64,
+		unmarshalFunc: wire.ConsumeUint64,
+	}
 }
 
-var Float32Codec = FieldCodec[float32]{
-	WireType:      wire.Fixed32Type,
-	CompareFunc:   cmp.Compare[float32],
-	MarshalFunc:   wire.AppendFloat,
-	UnmarshalFunc: wire.ConsumeFloat,
+func Float32Codec() FieldCodec[float32] {
+	return FieldCodec[float32]{
+		wireType:      wire.Fixed32Type,
+		compareFunc:   cmp.Compare[float32],
+		marshalFunc:   wire.AppendFloat,
+		unmarshalFunc: wire.ConsumeFloat,
+	}
 }
 
-var Float64Codec = FieldCodec[float64]{
-	WireType:      wire.Fixed64Type,
-	CompareFunc:   cmp.Compare[float64],
-	MarshalFunc:   wire.AppendDouble,
-	UnmarshalFunc: wire.ConsumeDouble,
+func Float64Codec() FieldCodec[float64] {
+	return FieldCodec[float64]{
+		wireType:      wire.Fixed64Type,
+		compareFunc:   cmp.Compare[float64],
+		marshalFunc:   wire.AppendDouble,
+		unmarshalFunc: wire.ConsumeDouble,
+	}
 }
 
-var StringCodec = FieldCodec[string]{
-	WireType:      wire.BytesType,
-	CompareFunc:   strings.Compare,
-	MarshalFunc:   wire.AppendString,
-	UnmarshalFunc: wire.ConsumeString,
+func StringCodec() FieldCodec[string] {
+	return FieldCodec[string]{
+		wireType:      wire.BytesType,
+		compareFunc:   strings.Compare,
+		marshalFunc:   wire.AppendString,
+		unmarshalFunc: wire.ConsumeString,
+	}
 }
 
-var BytesCodec = FieldCodec[[]byte]{
-	WireType:      wire.BytesType,
-	CompareFunc:   bytes.Compare,
-	MarshalFunc:   wire.AppendBytes,
-	UnmarshalFunc: wire.ConsumeBytes,
+func BytesCodec() FieldCodec[[]byte] {
+	return FieldCodec[[]byte]{
+		wireType:      wire.BytesType,
+		compareFunc:   bytes.Compare,
+		marshalFunc:   wire.AppendBytes,
+		unmarshalFunc: wire.ConsumeBytes,
+	}
 }
 
-var TimestampCodec = FieldCodec[time.Time]{
-	WireType:      wire.BytesType,
-	CompareFunc:   timestampCompare,
-	MarshalFunc:   wire.AppendTimestamp,
-	UnmarshalFunc: wire.ConsumeTimestamp,
+func TimestampCodec() FieldCodec[time.Time] {
+	return FieldCodec[time.Time]{
+		wireType:      wire.BytesType,
+		compareFunc:   timestampCompare,
+		marshalFunc:   wire.AppendTimestamp,
+		unmarshalFunc: wire.ConsumeTimestamp,
+	}
 }
 
-var DurationCodec = FieldCodec[time.Duration]{
-	WireType:      wire.BytesType,
-	CompareFunc:   cmp.Compare[time.Duration],
-	MarshalFunc:   wire.AppendDuration,
-	UnmarshalFunc: wire.ConsumeDuration,
+func DurationCodec() FieldCodec[time.Duration] {
+	return FieldCodec[time.Duration]{
+		wireType:      wire.BytesType,
+		compareFunc:   cmp.Compare[time.Duration],
+		marshalFunc:   wire.AppendDuration,
+		unmarshalFunc: wire.ConsumeDuration,
+	}
 }
 
-var EmptyCodec = FieldCodec[struct{}]{
-	WireType:      wire.BytesType,
-	CompareFunc:   emptyCompare,
-	MarshalFunc:   wire.AppendEmpty,
-	UnmarshalFunc: wire.ConsumeEmpty,
+func EmptyCodec() FieldCodec[struct{}] {
+	return FieldCodec[struct{}]{
+		wireType:      wire.BytesType,
+		compareFunc:   emptyCompare,
+		marshalFunc:   wire.AppendEmpty,
+		unmarshalFunc: wire.ConsumeEmpty,
+	}
 }
 
-func NewEnumCodec[T ~int32]() FieldCodec[T] {
+func EnumCodec[T ~int32]() FieldCodec[T] {
 	return FieldCodec[T]{
-		WireType:      wire.VarintType,
-		CompareFunc:   cmp.Compare[T],
-		MarshalFunc:   wire.AppendEnum[T],
-		UnmarshalFunc: wire.ConsumeEnum[T],
+		wireType:      wire.VarintType,
+		compareFunc:   cmp.Compare[T],
+		marshalFunc:   wire.AppendEnum[T],
+		unmarshalFunc: wire.ConsumeEnum[T],
 	}
 }

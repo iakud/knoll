@@ -40,7 +40,7 @@ var _ Map[string, []byte] = (*MapField[string, []byte])(nil)
 var _ Map[string, time.Time] = (*MapField[string, time.Time])(nil)
 var _ Map[string, time.Duration] = (*MapField[string, time.Duration])(nil)
 
-// MapField is a generic map implementation for basic types
+// Field map
 type MapField[K comparable, V any] struct {
 	data  map[K]V
 	clear bool
@@ -85,7 +85,7 @@ func (x *MapField[K, V]) Get(k K) (V, bool) {
 
 func (x *MapField[K, V]) Set(k K, v V) {
 	if e, ok := x.data[k]; ok {
-		if x.valueCodec.CompareFunc(v, e) == 0 {
+		if x.valueCodec.compareFunc(v, e) == 0 {
 			return
 		}
 	}
@@ -144,10 +144,10 @@ func (x *MapField[K, V]) Marshal(b []byte) ([]byte, error) {
 	for k, v := range x.data {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType)
-		b = x.keyCodec.MarshalFunc(b, k)
-		b = wire.AppendTag(b, wire.MapEntryValueFieldNumber, x.valueCodec.WireType)
-		b = x.valueCodec.MarshalFunc(b, v)
+		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.wireType)
+		b = x.keyCodec.marshalFunc(b, k)
+		b = wire.AppendTag(b, wire.MapEntryValueFieldNumber, x.valueCodec.wireType)
+		b = x.valueCodec.marshalFunc(b, v)
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	return b, err
@@ -165,17 +165,17 @@ func (x *MapField[K, V]) MarshalDirty(b []byte) ([]byte, error) {
 		b = wire.AppendTag(b, wire.MapDeleteFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
 		for k := range x.deletes {
-			b = x.keyCodec.MarshalFunc(b, k)
+			b = x.keyCodec.marshalFunc(b, k)
 		}
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	for k, v := range x.updates {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType)
-		b = x.keyCodec.MarshalFunc(b, k)
-		b = wire.AppendTag(b, wire.MapEntryValueFieldNumber, x.valueCodec.WireType)
-		b = x.valueCodec.MarshalFunc(b, v)
+		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.wireType)
+		b = x.keyCodec.marshalFunc(b, k)
+		b = wire.AppendTag(b, wire.MapEntryValueFieldNumber, x.valueCodec.wireType)
+		b = x.valueCodec.marshalFunc(b, v)
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	return b, err
@@ -217,7 +217,7 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 		x.Clear()
 	}
 	for b := deletes; len(b) > 0; {
-		k, n, err := x.keyCodec.UnmarshalFunc(b)
+		k, n, err := x.keyCodec.unmarshalFunc(b)
 		if err != nil {
 			return err
 		}
@@ -236,15 +236,15 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 			err = wire.ErrUnknown
 			switch num {
 			case wire.MapEntryKeyFieldNumber:
-				if wtyp != x.keyCodec.WireType {
+				if wtyp != x.keyCodec.wireType {
 					break
 				}
-				k, valLen, err = x.keyCodec.UnmarshalFunc(b[tagLen:])
+				k, valLen, err = x.keyCodec.unmarshalFunc(b[tagLen:])
 			case wire.MapEntryValueFieldNumber:
-				if wtyp != x.valueCodec.WireType {
+				if wtyp != x.valueCodec.wireType {
 					break
 				}
-				v, valLen, err = x.valueCodec.UnmarshalFunc(b[tagLen:])
+				v, valLen, err = x.valueCodec.unmarshalFunc(b[tagLen:])
 			}
 			if err == wire.ErrUnknown {
 				if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -265,7 +265,7 @@ func (x *MapField[K, V]) MarshalJSONIndent(b []byte, prefix string, indent strin
 		return append(b, "{}"...), nil
 	}
 
-	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.CompareFunc)
+	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.compareFunc)
 	var err error
 	b = append(b, "{\n"...)
 	for i, k := range keys {
@@ -418,8 +418,8 @@ func (x *MapMessage[K, T, V]) Marshal(b []byte) ([]byte, error) {
 	for k, v := range x.data {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType)
-		b = x.keyCodec.MarshalFunc(b, k)
+		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.wireType)
+		b = x.keyCodec.marshalFunc(b, k)
 		if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
 			return b, err
 		}
@@ -440,15 +440,15 @@ func (x *MapMessage[K, T, V]) MarshalDirty(b []byte) ([]byte, error) {
 		b = wire.AppendTag(b, wire.MapDeleteFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
 		for k := range x.deletes {
-			b = x.keyCodec.MarshalFunc(b, k)
+			b = x.keyCodec.marshalFunc(b, k)
 		}
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	for k, v := range x.updates {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType)
-		b = x.keyCodec.MarshalFunc(b, k)
+		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.wireType)
+		b = x.keyCodec.marshalFunc(b, k)
 		if b, err = wire.MarshalMessageDirty(b, wire.MapEntryValueFieldNumber, v); err != nil {
 			return b, err
 		}
@@ -493,7 +493,7 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 		x.Clear()
 	}
 	for b := deletes; len(b) > 0; {
-		k, n, err := x.keyCodec.UnmarshalFunc(b)
+		k, n, err := x.keyCodec.unmarshalFunc(b)
 		if err != nil {
 			return err
 		}
@@ -512,10 +512,10 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 			err = wire.ErrUnknown
 			switch num {
 			case wire.MapEntryKeyFieldNumber:
-				if wtyp != x.keyCodec.WireType {
+				if wtyp != x.keyCodec.wireType {
 					break
 				}
-				k, valLen, err = x.keyCodec.UnmarshalFunc(b)
+				k, valLen, err = x.keyCodec.unmarshalFunc(b)
 			case wire.MapEntryValueFieldNumber:
 				v, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
 			}
@@ -547,7 +547,7 @@ func (x *MapMessage[K, T, V]) MarshalJSONIndent(b []byte, prefix string, indent 
 		return append(b, "{}"...), nil
 	}
 
-	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.CompareFunc)
+	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.compareFunc)
 	var err error
 	b = append(b, "{\n"...)
 	for i, k := range keys {

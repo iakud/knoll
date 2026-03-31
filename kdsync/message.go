@@ -1,14 +1,8 @@
 package kdsync
 
 import (
-	"time"
-
 	"github.com/iakud/knoll/kdsync/wire"
 )
-
-type Field interface {
-	bool | ~int32 | uint32 | int64 | uint64 | float32 | float64 | string | time.Duration | struct{}
-}
 
 type MessageState struct {
 	setParent    func(f DirtyFunc)
