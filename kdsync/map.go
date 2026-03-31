@@ -344,7 +344,6 @@ func (x *MapMessage[K, T, V]) Set(k K, v V) {
 		if !v.MessageState().checkDirtyParentFunc() {
 			panic("the component should be removed from its original place first")
 		}
-
 	}
 	if e, ok := x.data[k]; ok {
 		if e == v {
@@ -372,9 +371,11 @@ func (x *MapMessage[K, T, V]) Set(k K, v V) {
 }
 
 func (x *MapMessage[K, T, V]) Delete(k K) {
-	if v, ok := x.data[k]; !ok {
+	v, ok := x.data[k]
+	if !ok {
 		return
-	} else if v != nil {
+	}
+	if v != nil {
 		v.MessageState().setDirtyParentFunc(nil)
 		v.ClearDirty()
 	}
@@ -545,6 +546,15 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 				return err
 			}
 			x.Set(k, c)
+			c.MessageState().setDirtyParentFunc(func() {
+				if _, ok := x.updates[k]; ok {
+					return
+				}
+				x.updates[k] = c
+				x.markDirty()
+			})
+			c.MarkDirty()
+
 		} else if err := c.Unmarshal(v); err != nil {
 			return err
 		}

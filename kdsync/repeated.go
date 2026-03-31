@@ -495,6 +495,7 @@ func (x *RepeatedMessage[T, E]) Unmarshal(b []byte) error {
 		b = b[n:]
 		x.data = append(x.data, v)
 		v.MessageState().setDirtyParentFunc(x.markDirty)
+		v.MarkDirty()
 	}
 	return nil
 }
