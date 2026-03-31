@@ -253,10 +253,13 @@ type RepeatedMessage[T any, E Message[T]] struct {
 
 	dirty       bool
 	dirtyParent DirtyFunc
+
+	newFunc func() E
 }
 
-func (x *RepeatedMessage[T, E]) Init(dirtyParent DirtyFunc) {
+func (x *RepeatedMessage[T, E]) Init(dirtyParent DirtyFunc, newFunc func() E) {
 	x.dirtyParent = dirtyParent
+	x.newFunc = newFunc
 }
 
 func (x *RepeatedMessage[T, E]) Len() int {
@@ -269,7 +272,8 @@ func (x *RepeatedMessage[T, E]) Clear() {
 	}
 	for _, v := range x.data {
 		if v != nil {
-			v.SetDirtyParent(nil)
+			v.MessageState().setDirtyParentFunc(nil)
+			v.ClearDirty()
 		}
 	}
 	clear(x.data)
@@ -282,39 +286,38 @@ func (x *RepeatedMessage[T, E]) Get(i int) E {
 }
 
 func (x *RepeatedMessage[T, E]) Set(i int, v E) {
-	if v != nil && v.GetDirtyParent() != nil {
-		panic("the component should be removed from its original place first")
-	}
 	if v == x.data[i] {
 		return
 	}
 	if v != nil {
-		v.SetDirtyParent(nil)
+		if !v.MessageState().checkDirtyParentFunc() {
+			panic("the component should be removed from its original place first")
+		}
+		v.MessageState().setDirtyParentFunc(x.markDirty)
+		v.MarkDirty()
+	}
+	if x.data[i] != nil {
+		x.data[i].MessageState().setDirtyParentFunc(nil)
+		x.data[i].ClearDirty()
 	}
 	x.data[i] = v
-	if v != nil {
-		v.SetDirtyParent(x.markDirty)
-		v.MarkDirtyAll()
-	}
 	x.markDirty()
 }
 
 func (x *RepeatedMessage[T, E]) Append(v ...E) {
-	for i := range v {
-		if v[i] != nil && v[i].GetDirtyParent() != nil {
-			panic("the component should be removed from its original place first")
-		}
-	}
 	if len(v) == 0 {
 		return
 	}
-	x.data = append(x.data, v...)
 	for i := range v {
 		if v[i] != nil {
-			v[i].SetDirtyParent(x.markDirty)
-			v[i].MarkDirtyAll()
+			if !v[i].MessageState().checkDirtyParentFunc() {
+				panic("the component should be removed from its original place first")
+			}
+			v[i].MessageState().setDirtyParentFunc(x.markDirty)
+			v[i].MarkDirty()
 		}
 	}
+	x.data = append(x.data, v...)
 	x.markDirty()
 }
 
@@ -350,17 +353,15 @@ func (x *RepeatedMessage[T, E]) Insert(i int, v ...E) {
 		return
 	}
 	for j := range v {
-		if v[j] != nil && v[j].GetDirtyParent() != nil {
-			panic("the component should be removed from its original place first")
+		if v[j] != nil {
+			if !v[j].MessageState().checkDirtyParentFunc() {
+				panic("the component should be removed from its original place first")
+			}
+			v[j].MessageState().setDirtyParentFunc(x.markDirty)
+			v[j].MarkDirty()
 		}
 	}
 	x.data = slices.Insert(x.data, i, v...)
-	for j := range v {
-		if v[j] != nil {
-			v[j].SetDirtyParent(x.markDirty)
-			v[j].MarkDirtyAll()
-		}
-	}
 	x.markDirty()
 }
 
@@ -371,7 +372,8 @@ func (x *RepeatedMessage[T, E]) Delete(i, j int) {
 	r := x.data[i:j:len(x.data)]
 	for k := range r {
 		if r[k] != nil {
-			r[k].SetDirtyParent(nil)
+			r[k].MessageState().setDirtyParentFunc(nil)
+			r[k].ClearDirty()
 		}
 	}
 	x.data = slices.Delete(x.data, i, j)
@@ -384,13 +386,15 @@ func (x *RepeatedMessage[T, E]) DeleteFunc(del func(E) bool) {
 		return
 	}
 	if x.data[i] != nil {
-		x.data[i].SetDirtyParent(nil)
+		x.data[i].MessageState().setDirtyParentFunc(nil)
+		x.data[i].ClearDirty()
 	}
 	for j := i + 1; j < len(x.data); j++ {
 		v := x.data[j]
 		if del(v) {
 			if v != nil {
-				v.SetDirtyParent(nil)
+				v.MessageState().setDirtyParentFunc(nil)
+				v.ClearDirty()
 			}
 			continue
 		}
@@ -407,23 +411,22 @@ func (x *RepeatedMessage[T, E]) Replace(i, j int, v ...E) {
 		return
 	}
 	for k := range v {
-		if v[k] != nil && v[k].GetDirtyParent() != nil {
-			panic("the component should be removed from its original place first")
+		if v[k] != nil {
+			if !v[k].MessageState().checkDirtyParentFunc() {
+				panic("the component should be removed from its original place first")
+			}
+			v[k].MessageState().setDirtyParentFunc(x.markDirty)
+			v[k].MarkDirty()
 		}
 	}
 	r := x.data[i:j:len(x.data)]
 	for k := range r {
-		if r[k] != nil && r[k].GetDirtyParent() != nil {
-			r[k].SetDirtyParent(nil)
+		if r[k] != nil {
+			r[k].MessageState().setDirtyParentFunc(nil)
+			r[k].ClearDirty()
 		}
 	}
 	x.data = slices.Replace(x.data, i, j, v...)
-	for k := range v {
-		if v[k] != nil {
-			v[k].SetDirtyParent(x.markDirty)
-			v[k].MarkDirtyAll()
-		}
-	}
 	x.markDirty()
 }
 
@@ -484,15 +487,14 @@ func (x *RepeatedMessage[T, E]) MarshalDirty(b []byte) ([]byte, error) {
 func (x *RepeatedMessage[T, E]) Unmarshal(b []byte) error {
 	x.Clear()
 	for len(b) > 0 {
-		var v E = new(T)
+		var v E = x.newFunc()
 		n, err := wire.ConsumeMessage(b, v)
 		if err != nil {
 			return err
 		}
 		b = b[n:]
 		x.data = append(x.data, v)
-		v.SetDirtyParent(x.markDirty)
-		v.MarkDirtyAll()
+		v.MessageState().setDirtyParentFunc(x.markDirty)
 	}
 	return nil
 }

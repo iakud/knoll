@@ -5,19 +5,27 @@ import (
 )
 
 type MessageState struct {
-	setParent    func(f DirtyFunc)
-	removeParent func()
+	dirtyParentFunc *DirtyFunc
+}
+
+func (ms *MessageState) Init(dirtyParentFunc *DirtyFunc) {
+	ms.dirtyParentFunc = dirtyParentFunc
+}
+
+func (ms *MessageState) checkDirtyParentFunc() bool {
+	return *ms.dirtyParentFunc == nil
+}
+
+func (ms *MessageState) setDirtyParentFunc(f DirtyFunc) {
+	*ms.dirtyParentFunc = f
 }
 
 type Message[T any] interface {
 	*T
 	wire.Marshaler
 	wire.Unmarshaler
-	// MessageState() *MessageState
-	MarshalDirty(b []byte) ([]byte, error)
-	SetDirtyParent(f DirtyFunc)
-	GetDirtyParent() DirtyFunc
-	MarkDirtyAll()
+	MessageState() *MessageState
+	MarkDirty()
 	ClearDirty()
 }
 

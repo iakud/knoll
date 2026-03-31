@@ -298,14 +298,18 @@ type MapMessage[K comparable, T any, V Message[T]] struct {
 
 	dirty       bool
 	dirtyParent DirtyFunc
-	keyCodec    FieldCodec[K]
+
+	newFunc func() V
+
+	keyCodec FieldCodec[K]
 }
 
-func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K]) {
+func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, newFunc func() V, keyCodec FieldCodec[K]) {
 	x.data = make(map[K]V)
 	x.updates = make(map[K]V)
 	x.deletes = make(map[K]struct{})
 	x.dirtyParent = dirtyParent
+	x.newFunc = newFunc
 	x.keyCodec = keyCodec
 }
 
@@ -319,7 +323,8 @@ func (x *MapMessage[K, T, V]) Clear() {
 	}
 	for _, v := range x.data {
 		if v != nil {
-			v.SetDirtyParent(nil)
+			v.MessageState().setDirtyParentFunc(nil)
+			v.ClearDirty()
 		}
 	}
 	clear(x.data)
@@ -335,26 +340,30 @@ func (x *MapMessage[K, T, V]) Get(k K) (V, bool) {
 }
 
 func (x *MapMessage[K, T, V]) Set(k K, v V) {
-	if v != nil && v.GetDirtyParent() != nil {
-		panic("the component should be removed from its original place first")
+	if v != nil {
+		if !v.MessageState().checkDirtyParentFunc() {
+			panic("the component should be removed from its original place first")
+		}
+
 	}
 	if e, ok := x.data[k]; ok {
 		if e == v {
 			return
 		}
 		if e != nil {
-			e.SetDirtyParent(nil)
+			e.MessageState().setDirtyParentFunc(nil)
+			e.ClearDirty()
 		}
 	}
 	if v != nil {
-		v.SetDirtyParent(func() {
+		v.MessageState().setDirtyParentFunc(func() {
 			if _, ok := x.updates[k]; ok {
 				return
 			}
 			x.updates[k] = v
 			x.markDirty()
 		})
-		v.MarkDirtyAll()
+		v.MarkDirty()
 	}
 	x.data[k] = v
 	x.updates[k] = v
@@ -366,7 +375,8 @@ func (x *MapMessage[K, T, V]) Delete(k K) {
 	if v, ok := x.data[k]; !ok {
 		return
 	} else if v != nil {
-		v.SetDirtyParent(nil)
+		v.MessageState().setDirtyParentFunc(nil)
+		v.ClearDirty()
 	}
 	delete(x.data, k)
 	delete(x.updates, k)
@@ -530,7 +540,7 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 		}
 
 		if c, ok := x.data[k]; !ok {
-			c = new(T)
+			c = x.newFunc()
 			if err := c.Unmarshal(v); err != nil {
 				return err
 			}

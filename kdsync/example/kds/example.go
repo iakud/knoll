@@ -203,10 +203,6 @@ func (x *All) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error)
 	return b, nil
 }
 
-func (x *All) markAll() {
-	x.dirty = uint64(0x01)
-}
-
 func (x *All) markDirty(n uint64) {
 	if x.dirty&n == n {
 		return
@@ -243,15 +239,6 @@ func (x *All) String() string {
 	return string(b)
 }
 
-type dirtyParentFunc_AllType func()
-
-func (f dirtyParentFunc_AllType) invoke() {
-	if f == nil {
-		return
-	}
-	f()
-}
-
 type AllType struct {
 	xxx_hidden_Int32Val int32
 	xxx_hidden_Int64Val int64
@@ -276,11 +263,13 @@ type AllType struct {
 
 	dirty       uint64
 	dirtyParent kdsync.DirtyFunc
+	state       kdsync.MessageState
 }
 
 func NewAllType() *AllType {
 	x := new(AllType)
 	x.dirty = 1
+	x.state.Init(&x.dirtyParent)
 	x.setItemData(NewItemData())
 	return x
 }
@@ -944,14 +933,6 @@ func (x *AllType) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, er
 	return b, nil
 }
 
-func (x *AllType) markAll() {
-	x.dirty = uint64(0x01)
-}
-
-func (x *AllType) MarkDirtyAll() {
-	x.dirty = uint64(0x01)
-}
-
 func (x *AllType) markDirty(n uint64) {
 	if x.dirty&n == n {
 		return
@@ -964,6 +945,10 @@ func (x *AllType) checkDirty(n uint64) bool {
 	return x.dirty&n != 0
 }
 
+func (x *AllType) MarkDirty() {
+	x.dirty = uint64(0x01)
+}
+
 func (x *AllType) ClearDirty() {
 	if x.dirty == 0 {
 		return
@@ -974,21 +959,20 @@ func (x *AllType) ClearDirty() {
 	x.dirty = 0
 }
 
-func (x *AllType) SetDirtyParent(f kdsync.DirtyFunc) {
-	x.dirtyParent = f
-}
-
-func (x *AllType) GetDirtyParent() kdsync.DirtyFunc {
-	return x.dirtyParent
-}
-
-type dirtyParentFunc_AllList func()
-
-func (f dirtyParentFunc_AllList) invoke() {
-	if f == nil {
-		return
+func (x *AllType) setDirtyParent(f kdsync.DirtyFunc) {
+	if f != nil && x.dirtyParent != nil {
+		panic("the component should be removed from its original place first")
 	}
-	f()
+	x.dirtyParent = f
+	if f != nil {
+		x.dirty = uint64(0x01)
+	} else {
+		x.dirty = 0
+	}
+}
+
+func (x *AllType) MessageState() *kdsync.MessageState {
+	return &x.state
 }
 
 type AllList struct {
@@ -1006,11 +990,13 @@ type AllList struct {
 
 	dirty       uint64
 	dirtyParent kdsync.DirtyFunc
+	state       kdsync.MessageState
 }
 
 func NewAllList() *AllList {
 	x := new(AllList)
 	x.dirty = 1
+	x.state.Init(&x.dirtyParent)
 	x.initInt32List()
 	x.initInt64List()
 	x.initFloatList()
@@ -1143,7 +1129,7 @@ func (x *AllList) initItemList() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 11)
 	}
-	x.xxx_hidden_ItemList.Init(dirtyFunc)
+	x.xxx_hidden_ItemList.Init(dirtyFunc, NewItemData)
 }
 
 func (x *AllList) Marshal(b []byte) ([]byte, error) {
@@ -1388,14 +1374,6 @@ func (x *AllList) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, er
 	return b, nil
 }
 
-func (x *AllList) markAll() {
-	x.dirty = uint64(0x01)
-}
-
-func (x *AllList) MarkDirtyAll() {
-	x.dirty = uint64(0x01)
-}
-
 func (x *AllList) markDirty(n uint64) {
 	if x.dirty&n == n {
 		return
@@ -1406,6 +1384,10 @@ func (x *AllList) markDirty(n uint64) {
 
 func (x *AllList) checkDirty(n uint64) bool {
 	return x.dirty&n != 0
+}
+
+func (x *AllList) MarkDirty() {
+	x.dirty = uint64(0x01)
 }
 
 func (x *AllList) ClearDirty() {
@@ -1448,21 +1430,20 @@ func (x *AllList) ClearDirty() {
 	x.dirty = 0
 }
 
-func (x *AllList) SetDirtyParent(f kdsync.DirtyFunc) {
-	x.dirtyParent = f
-}
-
-func (x *AllList) GetDirtyParent() kdsync.DirtyFunc {
-	return x.dirtyParent
-}
-
-type dirtyParentFunc_AllMap func()
-
-func (f dirtyParentFunc_AllMap) invoke() {
-	if f == nil {
-		return
+func (x *AllList) setDirtyParent(f kdsync.DirtyFunc) {
+	if f != nil && x.dirtyParent != nil {
+		panic("the component should be removed from its original place first")
 	}
-	f()
+	x.dirtyParent = f
+	if f != nil {
+		x.dirty = uint64(0x01)
+	} else {
+		x.dirty = 0
+	}
+}
+
+func (x *AllList) MessageState() *kdsync.MessageState {
+	return &x.state
 }
 
 type AllMap struct {
@@ -1497,11 +1478,13 @@ type AllMap struct {
 
 	dirty       uint64
 	dirtyParent kdsync.DirtyFunc
+	state       kdsync.MessageState
 }
 
 func NewAllMap() *AllMap {
 	x := new(AllMap)
 	x.dirty = 1
+	x.state.Init(&x.dirtyParent)
 	x.initInt32Int32()
 	x.initInt32String()
 	x.initInt32Timestamp()
@@ -1607,7 +1590,7 @@ func (x *AllMap) initInt32ItemData() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 7)
 	}
-	x.xxx_hidden_Int32ItemData.Init(dirtyFunc, kdsync.Int32Codec())
+	x.xxx_hidden_Int32ItemData.Init(dirtyFunc, NewItemData, kdsync.Int32Codec())
 }
 
 func (x *AllMap) GetInt64Int64() kdsync.Map[int64, int64] {
@@ -1684,7 +1667,7 @@ func (x *AllMap) initInt64ItemData() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 14)
 	}
-	x.xxx_hidden_Int64ItemData.Init(dirtyFunc, kdsync.Int64Codec())
+	x.xxx_hidden_Int64ItemData.Init(dirtyFunc, NewItemData, kdsync.Int64Codec())
 }
 
 func (x *AllMap) GetStringInt32() kdsync.Map[string, int32] {
@@ -1761,7 +1744,7 @@ func (x *AllMap) initStringItemData() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 21)
 	}
-	x.xxx_hidden_StringItemData.Init(dirtyFunc, kdsync.StringCodec())
+	x.xxx_hidden_StringItemData.Init(dirtyFunc, NewItemData, kdsync.StringCodec())
 }
 
 func (x *AllMap) GetBoolInt32() kdsync.Map[bool, int32] {
@@ -1838,7 +1821,7 @@ func (x *AllMap) initBoolItemData() {
 	dirtyFunc := func() {
 		x.markDirty(uint64(0x01) << 28)
 	}
-	x.xxx_hidden_BoolItemData.Init(dirtyFunc, kdsync.BoolCodec())
+	x.xxx_hidden_BoolItemData.Init(dirtyFunc, NewItemData, kdsync.BoolCodec())
 }
 
 func (x *AllMap) Marshal(b []byte) ([]byte, error) {
@@ -2389,14 +2372,6 @@ func (x *AllMap) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, err
 	return b, nil
 }
 
-func (x *AllMap) markAll() {
-	x.dirty = uint64(0x01)
-}
-
-func (x *AllMap) MarkDirtyAll() {
-	x.dirty = uint64(0x01)
-}
-
 func (x *AllMap) markDirty(n uint64) {
 	if x.dirty&n == n {
 		return
@@ -2407,6 +2382,10 @@ func (x *AllMap) markDirty(n uint64) {
 
 func (x *AllMap) checkDirty(n uint64) bool {
 	return x.dirty&n != 0
+}
+
+func (x *AllMap) MarkDirty() {
+	x.dirty = uint64(0x01)
 }
 
 func (x *AllMap) ClearDirty() {
@@ -2500,10 +2479,18 @@ func (x *AllMap) ClearDirty() {
 	x.dirty = 0
 }
 
-func (x *AllMap) SetDirtyParent(f kdsync.DirtyFunc) {
+func (x *AllMap) setDirtyParent(f kdsync.DirtyFunc) {
+	if f != nil && x.dirtyParent != nil {
+		panic("the component should be removed from its original place first")
+	}
 	x.dirtyParent = f
+	if f != nil {
+		x.dirty = uint64(0x01)
+	} else {
+		x.dirty = 0
+	}
 }
 
-func (x *AllMap) GetDirtyParent() kdsync.DirtyFunc {
-	return x.dirtyParent
+func (x *AllMap) MessageState() *kdsync.MessageState {
+	return &x.state
 }

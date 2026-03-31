@@ -63,676 +63,8 @@
 {{- /* MAP FIELD TYPE */ -}}
 {{- define "MapType"}}
 {{- if eq .TypeKind "component"}}kdsync.MapMessage[{{template "Type" .KeyType}}, {{.Type}}, *{{.Type}}]
-{{- else}}kdsync.MapField[{{template "Type" .KeyType}}, {{template "MapValueType" .}}]
+{{- else}}kdsync.MapField[{{template "Type" .KeyType}}, {{template "FieldType" .}}]
 {{- end}}
-{{- end}}
-{{- /* LIST TYPE */ -}}
-{{- define "ListValueType"}}
-{{- if eq .TypeKind "enum"}}{{.Type}}
-{{- else if eq .TypeKind "component"}}*{{.Type}}
-{{- else}}{{template "Type" .Type}}
-{{- end}}
-{{- end}}
-{{- /* MAP TYPE */ -}}
-{{- define "MapValueType"}}
-{{- if eq .TypeKind "enum"}}{{.Type}}
-{{- else if eq .TypeKind "component"}}*{{.Type}}
-{{- else}}{{template "Type" .Type}}
-{{- end}}
-{{- end}}
-
-{{- /* LIST */ -}}
-{{- define "List"}}
-type dirtyParentFunc_{{.Name}} func()
-
-func (f dirtyParentFunc_{{.Name}}) invoke() {
-	if f == nil {
-		return
-	}
-	f()
-}
-
-type {{.Name}} struct {
-	data []{{template "ListValueType" .}}
-
-	dirty       bool
-	dirtyParent dirtyParentFunc_{{.Name}}
-}
-
-func (x *{{.Name}}) Len() int {
-	return len(x.data)
-}
-
-func (x *{{.Name}}) Clear() {
-	if len(x.data) == 0 {
-		return
-	}
-{{- if eq .TypeKind "component"}}
-	for _, v := range x.data {
-		if v != nil {
-			v.dirtyParent = nil
-		}
-	}
-{{- end}}
-	clear(x.data)
-	x.data = x.data[:0]
-	x.markDirty()
-}
-
-func (x *{{.Name}}) Get(i int) {{template "ListValueType" .}} {
-	return x.data[i]
-}
-
-func (x *{{.Name}}) Set(i int, v {{template "ListValueType" .}}) {
-{{- if eq .TypeKind "component"}}
-	if v != nil && v.dirtyParent != nil {
-		panic("the component should be removed from its original place first")
-	}
-{{- end}}
-	if v == x.data[i] {
-		return
-	}
-{{- if eq .TypeKind "component"}}
-	if x.data[i] != nil {
-		x.data[i].dirtyParent = nil
-	}
-{{- end}}
-	x.data[i] = v
-{{- if eq .TypeKind "component"}}
-	if v != nil {
-		v.dirtyParent = func() {
-			x.markDirty()
-		}
-		v.dirty |= uint64(0x01)
-	}
-{{- end}}
-	x.markDirty()
-}
-
-func (x *{{.Name}}) Append(v ...{{template "ListValueType" .}}) {
-{{- if eq .TypeKind "component"}}
-	for i := range v {
-		if v[i] != nil && v[i].dirtyParent != nil {
-			panic("the component should be removed from its original place first")
-		}
-	}
-{{- end}}
-	if len(v) == 0 {
-		return
-	}
-	x.data = append(x.data, v...)
-{{- if eq .TypeKind "component"}}
-	for i := range v {
-		if v[i] != nil {
-			v[i].dirtyParent = func() {
-				x.markDirty()
-			}
-			v[i].dirty |= uint64(0x01)
-		}
-	}
-{{- end}}
-	x.markDirty()
-}
-
-func (x *{{.Name}}) Index(v {{template "ListValueType" .}}) int {
-	for i := range x.data {
-		if v == x.data[i] {
-			return i
-		}
-	}
-	return -1
-}
-
-func (x *{{.Name}}) IndexFunc(f func({{template "ListValueType" .}}) bool) int {
-	for i := range x.data {
-		if f(x.data[i]) {
-			return i
-		}
-	}
-	return -1
-}
-
-func (x *{{.Name}}) Contains(v {{template "ListValueType" .}}) bool {
-	return x.Index(v) >= 0
-}
-
-func (x *{{.Name}}) ContainsFunc(f func({{template "ListValueType" .}}) bool) bool {
-	return x.IndexFunc(f) >= 0
-}
-
-func (x *{{.Name}}) Insert(i int, v ...{{template "ListValueType" .}}) {
-{{- if eq .TypeKind "component"}}
-	for j := range v {
-		if v[j] != nil && v[j].dirtyParent != nil {
-			panic("the component should be removed from its original place first")
-		}
-	}
-{{- end}}
-	if len(v) == 0 {
-		return
-	}
-	x.data = slices.Insert(x.data, i, v...)
-{{- if eq .TypeKind "component"}}
-	for j := range v {
-		if v[j] != nil {
-			v[j].dirtyParent = func() {
-				x.markDirty()
-			}
-			v[j].dirty |= uint64(0x01)
-		}
-	}
-{{- end}}
-	x.markDirty()
-}
-
-func (x *{{.Name}}) Delete(i, j int) {
-{{- if eq .TypeKind "component"}}
-	r := x.data[i:j:len(x.data)]
-	for k := range r {
-		if r[k] != nil {
-			r[k].dirtyParent = nil
-		}
-	}
-{{- end}}
-	if i == j {
-		return
-	}
-	x.data = slices.Delete(x.data, i, j)
-	x.markDirty()
-}
-
-func (x *{{.Name}}) DeleteFunc(del func({{template "ListValueType" .}}) bool) {
-	i := x.IndexFunc(del)
-	if i == -1 {
-		return
-	}
-{{- if eq .TypeKind "component"}}
-	x.data[i].dirtyParent = nil
-{{- end}}
-	for j := i + 1; j < len(x.data); j++ {
-		v := x.data[j]
-		if del(v) {
-{{- if eq .TypeKind "component"}}
-			v.dirtyParent = nil
-{{- end}}
-			continue
-		}
-		x.data[i] = v
-		i++
-	}
-	clear(x.data[i:])
-	x.data = x.data[:i]
-	x.markDirty()
-}
-
-func (x *{{.Name}}) Replace(i, j int, v ...{{template "ListValueType" .}}) {
-{{- if eq .TypeKind "component"}}
-	for k := range v {
-		if v[k] != nil && v[k].dirtyParent != nil {
-			panic("the component should be removed from its original place first")
-		}
-	}
-	r := x.data[i:j:len(x.data)]
-	for k := range r {
-		if r[k] != nil {
-			r[k].dirtyParent = nil
-		}
-	}
-{{- end}}
-	if i == j && len(v) == 0 {
-		return
-	}
-	x.data = slices.Replace(x.data, i, j, v...)
-{{- if eq .TypeKind "component"}}
-	for k := range v {
-		if v[k] != nil {
-			v[k].dirtyParent = func() {
-				x.markDirty()
-			}
-			v[k].dirty |= uint64(0x01)
-		}
-	}
-{{- end}}
-	x.markDirty()
-}
-
-func (x *{{.Name}}) Reverse() {
-	if len(x.data) < 2 {
-		return
-	}
-	slices.Reverse(x.data)
-	x.markDirty()
-}
-
-func (x *{{.Name}}) All() iter.Seq2[int, {{template "ListValueType" .}}] {
-	return slices.All(x.data)
-}
-
-func (x *{{.Name}}) Backward() iter.Seq2[int, {{template "ListValueType" .}}] {
-	return slices.Backward(x.data)
-}
-
-func (x *{{.Name}}) Values() iter.Seq[{{template "ListValueType" .}}] {
-	return slices.Values(x.data)
-}
-
-func (x *{{.Name}}) markDirty() {
-	if x.dirty {
-		return
-	}
-	x.dirty = true
-	x.dirtyParent.invoke()
-}
-
-func (x *{{.Name}}) clearDirty() {
-{{- if eq .TypeKind "component"}}
-	for k := range x.data {
-		if x.data[k] != nil {
-			x.data[k].ClearDirty()
-		}
-	}
-{{- end}}
-	x.dirty = false
-}
-
-func (x *{{.Name}}) Marshal(b []byte) ([]byte, error) {
-	if len(x.data) == 0 {
-		return b, nil
-	}
-	for _, v := range x.data {
-{{- if eq .TypeKind "component"}}
-		var err error
-		if b, err = wire.AppendMessage(b, v); err != nil {
-			return b, err
-		}
-{{- else if eq .TypeKind "enum"}}
-		b = wire.AppendInt32(b, int32(v))
-{{- else}}
-		b = wire.Append{{ucFirst .Type}}(b, v)
-{{- end}}
-	}
-	return b, nil
-}
-
-func (x *{{.Name}}) MarshalDirty(b []byte) ([]byte, error) {
-	return x.Marshal(b)
-}
-
-func (x *{{.Name}}) Unmarshal(b []byte) error {
-	x.Clear()
-	for len(b) > 0 {
-{{- if eq .TypeKind "component"}}
-		v := New{{.Type}}()
-		n, err := wire.ConsumeMessage(b, v)
-		if err != nil {
-			return err
-		}
-		b = b[n:]
-		x.Append(v)
-{{- else if eq .TypeKind "enum"}}
-		v, n, err := wire.ConsumeInt32(b)
-		if err != nil {
-			return err
-		}
-		b = b[n:]
-		x.Append({{.Type}}(v))
-{{- else}}
-		v, n, err := wire.Consume{{ucFirst .Type}}(b)
-		if err != nil {
-			return err
-		}
-		b = b[n:]
-		x.Append(v)
-{{- end}}
-	}
-	return nil
-}
-{{- end}}
-
-{{- /* MAP */ -}}
-{{- define "Map"}}
-type dirtyParentFunc_{{.Name}} func()
-
-func (f dirtyParentFunc_{{.Name}}) invoke() {
-	if f == nil {
-		return
-	}
-	f()
-}
-
-type {{.Name}} struct {
-	data map[{{template "Type" .KeyType}}]{{template "MapValueType" .}}
-
-	clear       bool
-	updates     map[{{template "Type" .KeyType}}]{{template "MapValueType" .}}
-	deletes     map[{{template "Type" .KeyType}}]struct{}
-	dirty       bool
-	dirtyParent dirtyParentFunc_{{.Name}}
-}
-
-func (x *{{.Name}}) Len() int {
-	return len(x.data)
-}
-
-func (x *{{.Name}}) Clear() {
-	if len(x.data) == 0 && len(x.deletes) == 0 {
-		return
-	}
-{{- if eq .TypeKind "component"}}
-	for _, v := range x.data {
-		if v != nil {
-			v.dirtyParent = nil
-		}
-	}
-{{- end}}
-	clear(x.data)
-	x.clear = true
-	clear(x.updates)
-	clear(x.deletes)
-	x.markDirty()
-}
-
-func (x *{{.Name}}) Get(k {{template "Type" .KeyType}}) ({{template "MapValueType" .}}, bool) {
-	v, ok := x.data[k]
-	return v, ok
-}
-
-func (x *{{.Name}}) Set(k {{template "Type" .KeyType}}, v {{template "MapValueType" .}}) {
-{{- if eq .TypeKind "component"}}
-	if v != nil && v.dirtyParent != nil {
-		panic("the component should be removed from its original place first")
-	}
-{{- end}}
-	if e, ok := x.data[k]; ok {
-{{- if eq .Type "timestamp"}}
-		if e.Equal(v) {
-			return
-		}
-{{- else}}
-		if e == v {
-			return
-		}
-{{- end}}
-{{- if eq .TypeKind "component"}}
-		if e != nil {
-			e.dirtyParent = nil
-		}
-{{- end}}
-	}
-{{- if eq .TypeKind "component"}}
-	if v != nil {
-		v.dirtyParent = func() {
-			if _, ok := x.updates[k]; ok {
-				return
-			}
-			x.updates[k] = v
-			x.markDirty()
-		}
-		v.dirty |= uint64(0x01)
-	}
-{{- end}}
-	x.data[k] = v
-	x.updates[k] = v
-	delete(x.deletes, k)
-	x.markDirty()
-}
-
-func (x *{{.Name}}) Delete(k {{template "Type" .KeyType}}) {
-{{- if eq .TypeKind "component"}}
-	if v, ok := x.data[k]; !ok {
-		return
-	} else if v != nil {
-		v.dirtyParent = nil
-	}
-{{- else}}
-	if _, ok := x.data[k]; !ok {
-		return
-	}
-{{- end}}
-	delete(x.data, k)
-	delete(x.updates, k)
-	x.deletes[k] = struct{}{}
-	x.markDirty()
-}
-
-func (x *{{.Name}}) All() iter.Seq2[{{template "Type" .KeyType}}, {{template "MapValueType" .}}] {
-	return maps.All(x.data)
-}
-
-func (x *{{.Name}}) Keys() iter.Seq[{{template "Type" .KeyType}}] {
-	return maps.Keys(x.data)
-}
-
-func (x *{{.Name}}) Values() iter.Seq[{{template "MapValueType" .}}] {
-	return maps.Values(x.data)
-}
-
-func (x *{{.Name}}) markDirty() {
-	if x.dirty {
-		return
-	}
-	x.dirty = true
-	x.dirtyParent.invoke()
-}
-
-func (x *{{.Name}}) clearDirty() {
-	if !x.dirty {
-		return
-	}
-{{- if eq .TypeKind "component"}}
-	for _, v := range x.updates {
-		if v != nil {
-			v.ClearDirty()
-		}
-	}
-{{- end}}
-	x.clear = false
-	clear(x.updates)
-	clear(x.deletes)
-	x.dirty = false
-}
-
-func (x *{{.Name}}) Marshal(b []byte) ([]byte, error) {
-	var pos int
-	var err error
-	if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
-		return b, err
-	}
-	for k, v := range x.data {
-		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
-		b, pos = wire.AppendSpeculativeLength(b)
-		if b, err = wire.Marshal{{ucFirst .KeyType}}(b, wire.MapEntryKeyFieldNumber, k); err != nil {
-			return b, err
-		}
-{{- if eq .TypeKind "component"}}
-		if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
-			return b, err
-		}
-{{- else if eq .TypeKind "enum"}}
-		if b, err = wire.MarshalInt32(b, wire.MapEntryValueFieldNumber, int32(v)); err != nil {
-			return b, err
-		}
-{{- else}}
-		if b, err = wire.Marshal{{ucFirst .Type}}(b, wire.MapEntryValueFieldNumber, v); err != nil {
-			return b, err
-		}
-{{- end}}
-		b = wire.FinishSpeculativeLength(b, pos)
-	}
-	return b, err
-}
-
-func (x *{{.Name}}) MarshalDirty(b []byte) ([]byte, error) {
-	var pos int
-	var err error
-	if x.clear {
-		if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
-			return b, err
-		}
-	}
-	if len(x.deletes) > 0 {
-		b = wire.AppendTag(b, wire.MapDeleteFieldNumber, wire.BytesType)
-		b, pos = wire.AppendSpeculativeLength(b)
-		for k, _ := range x.deletes {
-			b = wire.Append{{ucFirst .KeyType}}(b, k)
-		}
-		b = wire.FinishSpeculativeLength(b, pos)
-	}
-	for k, v := range x.updates {
-		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
-		b, pos = wire.AppendSpeculativeLength(b)
-		if b, err = wire.Marshal{{ucFirst .KeyType}}(b, wire.MapEntryKeyFieldNumber, k); err != nil {
-			return b, err
-		}
-{{- if eq .TypeKind "component"}}
-		if b, err = wire.MarshalMessageDirty(b, wire.MapEntryValueFieldNumber, v); err != nil {
-			return b, err
-		}
-{{- else if eq .TypeKind "enum"}}
-		if b, err = wire.MarshalInt32(b, wire.MapEntryValueFieldNumber, int32(v)); err != nil {
-			return b, err
-		}
-{{- else}}
-		if b, err = wire.Marshal{{ucFirst .Type}}(b, wire.MapEntryValueFieldNumber, v); err != nil {
-			return b, err
-		}
-{{- end}}
-		b = wire.FinishSpeculativeLength(b, pos)
-	}
-	return b, err
-}
-
-func (x *{{.Name}}) Unmarshal(b []byte) error {
-	var clear bool
-	var deletes []byte
-	var entries [][]byte
-	for len(b) > 0 {
-		num, wtyp, tagLen, err := wire.ConsumeTag(b)
-		if err != nil {
-			return err
-		}
-		var valLen int
-		err = wire.ErrUnknown
-		switch num {
-		case wire.MapClearFieldNumber:
-			clear, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
-		case wire.MapDeleteFieldNumber:
-			deletes, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
-		case wire.MapEntryFieldNumber:
-			var entry []byte
-			if entry, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp); err != nil {
-				break
-			}
-			entries = append(entries, entry)
-		}
-		if err == wire.ErrUnknown {
-			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
-				return err
-			}
-		} else if err != nil {
-			return err
-		}
-		b = b[tagLen+valLen:]
-	}
-	if clear {
-		x.Clear()
-	}
-	for b := deletes; len(b) > 0; {
-		k, n, err := wire.Consume{{ucFirst .KeyType}}(b)
-		if err != nil {
-			return err
-		}
-		b = b[n:]
-		x.Delete(k)
-	}
-	for _, b := range entries {
-		var k {{template "Type" .KeyType}}
-{{- if eq .TypeKind "component"}}
-		var v []byte
-{{- else}}
-		var v {{template "MapValueType" .}}
-{{- end}}
-		for len(b) > 0 {
-			num, wtyp, tagLen, err := wire.ConsumeTag(b)
-			if err != nil {
-				return err
-			}
-			var valLen int
-			err = wire.ErrUnknown
-			switch num {
-			case wire.MapEntryKeyFieldNumber:
-				k, valLen, err = wire.Unmarshal{{ucFirst .KeyType}}(b[tagLen:], wtyp)
-			case wire.MapEntryValueFieldNumber:
-{{- if eq .TypeKind "component"}}
-				v, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
-{{- else if eq .TypeKind "enum"}}
-				*(*int32)(&v), valLen, err = wire.UnmarshalInt32(b[tagLen:], wtyp)
-{{- else}}
-				v, valLen, err = wire.Unmarshal{{ucFirst .Type}}(b[tagLen:], wtyp)
-{{- end}}
-			}
-			if err == wire.ErrUnknown {
-				if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
-					return err
-				}
-			} else if err != nil {
-				return err
-			}
-			b = b[tagLen+valLen:]
-		}
-{{- if eq .TypeKind "component"}}
-		if c, ok := x.data[k]; !ok {
-			c = New{{.Type}}()
-			if err := c.Unmarshal(v); err != nil {
-				return err
-			}
-			x.Set(k, c)
-		} else if err := c.Unmarshal(v); err != nil {
-			return err
-		}
-{{- else if eq .TypeKind "enum"}}
-		x.Set(k, v)
-{{- else}}
-		x.Set(k, v)
-{{- end}}
-	}
-	return nil
-}
-
-func (x *{{.Name}}) String(indent string) string {
-	if len(x.data) == 0 {
-		return "{}"
-	}
-	var b []byte
-	b = append(b, "{\n"...)
-{{- if eq .KeyType "bool"}}
-	keys := slices.SortedFunc(maps.Keys(x.data), func(a, b bool) int {
-		if a {
-			return 1
-		} else if b {
-			return -1
-		}
-		return 0
-	})
-{{- else}}
-	keys := slices.Sorted(maps.Keys(x.data))
-{{- end}}
-	i := 0
-	for _, k := range keys {
-		i = i + 1
-		sep := ""
-		if i < len(keys) {
-			sep = ","
-		}
-		b = append(b, indent + "  \"" + wire.Format{{ucFirst .KeyType}}(k) + "\": "...)
-		b, _ = kdsync.MarshalJSONIndent(b, x.data[k], indent+"  ", "  ")
-		
-		b = append(b, sep...)
-		b = append(b, '\n')
-	}
-	b = append(b, indent+"}"...)
-	return string(b)
-}
 {{- end}}
 
 {{- /* ENUM */ -}}
@@ -763,7 +95,7 @@ func (x *{{$MessageName}}) init{{.Name}}() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
 {{- if eq .TypeKind "component"}}
-	x.xxx_hidden_{{.Name}}.Init(dirtyFunc)
+	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, New{{.Type}})
 {{- else if eq .TypeKind "enum"}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, {{template "EnumCodec" .Type}})
 {{- else}}
@@ -771,7 +103,7 @@ func (x *{{$MessageName}}) init{{.Name}}() {
 {{- end}}
 }
 {{- else if .Map}}
-func (x *{{$MessageName}}) Get{{.Name}}() kdsync.Map[{{template "Type" .KeyType}}, {{template "MapValueType" .}}] {
+func (x *{{$MessageName}}) Get{{.Name}}() kdsync.Map[{{template "Type" .KeyType}}, {{template "FieldType" .}}] {
 	return &x.xxx_hidden_{{.Name}}
 }
 
@@ -780,7 +112,7 @@ func (x *{{$MessageName}}) init{{.Name}}() {
 		x.markDirty(uint64(0x01) << {{.Number}})
 	}
 {{- if eq .TypeKind "component"}}
-	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, {{template "FieldCodec" .KeyType}})
+	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, New{{.Type}}, {{template "FieldCodec" .KeyType}})
 {{- else if eq .TypeKind "enum"}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, {{template "FieldCodec" .KeyType}}, {{template "EnumCodec" .Type}})
 {{- else}}
@@ -1015,10 +347,6 @@ func (x *{{.Name}}) Id() int64 {
 }
 {{- template "Message" .}}
 
-func (x *{{.Name}}) markAll() {
-	x.dirty = uint64(0x01)
-}
-
 func (x *{{.Name}}) markDirty(n uint64) {
 	if x.dirty&n == n {
 		return
@@ -1064,15 +392,6 @@ func (x *{{.Name}}) String() string {
 
 {{- /* COMPONENT */ -}}
 {{- define "Component"}}
-type dirtyParentFunc_{{.Name}} func()
-
-func (f dirtyParentFunc_{{.Name}}) invoke() {
-	if f == nil {
-		return
-	}
-	f()
-}
-
 type {{.Name}} struct {
 {{- range .Fields}}
 {{- if .Repeated}}
@@ -1088,11 +407,13 @@ type {{.Name}} struct {
 
 	dirty       uint64
 	dirtyParent kdsync.DirtyFunc
+	state       kdsync.MessageState
 }
 
 func New{{.Name}}() *{{.Name}} {
 	x := new({{.Name}})
 	x.dirty = 1
+	x.state.Init(&x.dirtyParent)
 {{- range .Fields}}
 {{- if .Repeated}}
 	x.init{{.Name}}()
@@ -1106,14 +427,6 @@ func New{{.Name}}() *{{.Name}} {
 }
 {{- template "Message" .}}
 
-func (x *{{.Name}}) markAll() {
-	x.dirty = uint64(0x01)
-}
-
-func (x *{{.Name}}) MarkDirtyAll() {
-	x.dirty = uint64(0x01)
-}
-
 func (x *{{.Name}}) markDirty(n uint64) {
 	if x.dirty&n == n {
 		return
@@ -1124,6 +437,10 @@ func (x *{{.Name}}) markDirty(n uint64) {
 
 func (x *{{.Name}}) checkDirty(n uint64) bool {
 	return x.dirty&n != 0
+}
+
+func (x *{{.Name}}) MarkDirty() {
+	x.dirty = uint64(0x01)
 }
 
 func (x *{{.Name}}) ClearDirty() {
@@ -1148,13 +465,22 @@ func (x *{{.Name}}) ClearDirty() {
 	x.dirty = 0
 }
 
-func (x *{{.Name}}) SetDirtyParent(f kdsync.DirtyFunc) {
+func (x *{{.Name}}) setDirtyParent(f kdsync.DirtyFunc) {
+	if f != nil && x.dirtyParent != nil {
+		panic("the component should be removed from its original place first")
+	}
 	x.dirtyParent = f
+	if f != nil {
+		x.dirty = uint64(0x01)
+	} else {
+		x.dirty = 0
+	}
 }
 
-func (x *{{.Name}}) GetDirtyParent() kdsync.DirtyFunc {
-	return x.dirtyParent
+func (x *{{.Name}}) MessageState() *kdsync.MessageState {
+	return &x.state
 }
+
 {{- end}}
 {{- /* END DEFINE */ -}}
 {{- /* BEGIN GO */ -}}
@@ -1167,27 +493,7 @@ package {{.Package}}
 {{/* EMPTY LINE */}}
 import (
 {{- $SpacesBefore := false}}
-{{- if or (len .MapTypes) (len .ListTypes)}}
-	"iter"
-{{- if len .MapTypes}}
-	"maps"
-{{- end}}
-{{- if or (len .ListTypes) (len .MapTypes)}}
-	"slices"
-{{- end}}
-{{- $SpacesBefore = true}}
-{{- end}}
 {{- $ImportTime := false}}
-{{- range .ListTypes}}
-{{- if and (not $ImportTime) (eq .Type "timestamp" "duration")}}
-{{- $ImportTime = true}}
-{{- end}}
-{{- end}}
-{{- range .MapTypes}}
-{{- if and (not $ImportTime) (eq .Type "timestamp" "duration")}}
-{{- $ImportTime = true}}
-{{- end}}
-{{- end}}
 {{- range .FieldTypes}}
 {{- if and (not $ImportTime) (eq . "timestamp" "duration")}}
 {{- $ImportTime = true}}
@@ -1207,49 +513,18 @@ import (
 {{- /* COMMON TYPES */ -}}
 {{- range .Types}}
 
-{{- with findList .}}
-{{- if .}}
-{{/* EMPTY LINE */}}
-{{- template "List" .}}
-{{- end}}
-{{- end}}
-{{- range findMap .}}
-{{/* EMPTY LINE */}}
-{{- template "Map" .}}
-{{- end}}
-
 {{- end}}
 {{- /* TOPLEVEL DEFINE */ -}}
 {{- range .Defs}}
 {{/* EMPTY LINE */}}
 {{- if eq .Kind "enum"}}
 {{- template "Enum" .}}
-{{- with findList .Name}}
-{{- if .}}
-{{/* EMPTY LINE */}}
-{{- template "List" .}}
-{{- end}}
-{{- end}}
-{{- range findMap .Name}}
-{{/* EMPTY LINE */}}
-{{- template "Map" .}}
-{{- end}}
 
 {{- else if eq .Kind "entity"}}
 {{- template "Entity" .}}
 
 {{- else if eq .Kind "component"}}
 {{- template "Component" .}}
-{{- with findList .Name}}
-{{- if .}}
-{{/* EMPTY LINE */}}
-{{- template "List" .}}
-{{- end}}
-{{- end}}
-{{- range findMap .Name}}
-{{/* EMPTY LINE */}}
-{{- template "Map" .}}
-{{- end}}
 {{- end}}
 
 {{- end}}
