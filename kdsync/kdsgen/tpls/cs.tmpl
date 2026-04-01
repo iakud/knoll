@@ -92,12 +92,12 @@
 
 {{- /* ENUM */ -}}
 {{- define "Enum"}}
-public enum {{.Name}}
-{
+	public enum {{.Name}}
+	{
 {{- range .EnumFields}}
-	{{.Name}} = {{.Value}},
+		{{.Name}} = {{.Value}},
 {{- end}}
-}
+	}
 {{- end}}
 
 {{- /* MESSAGE */ -}}
@@ -107,226 +107,226 @@ public enum {{.Name}}
 {{- range .Fields}}
 {{/* EMPTY LINE */}}
 {{- if .Repeated}}
-	private static readonly Kdsync.FieldCodec<{{template "Type" .Type}}> _list_{{template "FieldName" .}}_codec = {{template "FieldCodec" .}};
-	private Kdsync.Repeated<{{template "Type" .Type}}> {{template "FieldName" .}};
-	public Kdsync.Repeated<{{template "Type" .Type}}> {{template "PropertyName" .}} => {{template "FieldName" .}};
+		private static readonly Kdsync.FieldCodec<{{template "Type" .Type}}> _list_{{template "FieldName" .}}_codec = {{template "FieldCodec" .}};
+		private Kdsync.Repeated<{{template "Type" .Type}}> {{template "FieldName" .}};
+		public Kdsync.Repeated<{{template "Type" .Type}}> {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else if .Map}}
-	private static readonly Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>.Codec _map_{{template "FieldName" .}}_codec = new {{template "MapCodec" .}};
-	private Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}> {{template "FieldName" .}};
-	public Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}> {{template "PropertyName" .}} => {{template "FieldName" .}};
+		private static readonly Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>.Codec _map_{{template "FieldName" .}}_codec = new {{template "MapCodec" .}};
+		private Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}> {{template "FieldName" .}};
+		public Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}> {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else if eq .TypeKind "component"}}
-	private {{.Type}} {{template "FieldName" .}};
-	public {{.Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
+		private {{.Type}} {{template "FieldName" .}};
+		public {{.Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else}}
-	private {{template "Type" .Type}} {{template "FieldName" .}};
-	public {{template "Type" .Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
+		private {{template "Type" .Type}} {{template "FieldName" .}};
+		public {{template "Type" .Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- end}}
 {{- end}}
 
-	private long _changed;
+		private long _changed;
 
-	public event Action<{{$MessageName}}, EventChanged>? OnChanged;
+		public event Action<{{$MessageName}}, EventChanged>? OnChanged;
 
-	public class EventChanged
-	{
-		public long _changed;
+		public class EventChanged
+		{
+			public long _changed;
 {{- range .Fields}}
-		public bool {{.Name}} => (_changed & (0x01 << {{.Number}})) != 0;
+			public bool {{.Name}} => (_changed & (0x01 << {{.Number}})) != 0;
 {{- end}}
 
-		public EventChanged(long changed)
-		{
-			_changed = changed;
-		}
-	}
-
-	public void MergeFrom(ref Kdsync.ParseContext ctx)
-	{
-		uint tag;
-		while ((tag = ctx.ReadTag()) != 0)
-		{
-			var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
-			switch (num)
+			public EventChanged(long changed)
 			{
-{{- range .Fields}}
-				case {{.Number}}:
-{{- if .Repeated}}
-					{{template "FieldName" .}}.MergeFrom(ref ctx, _list_{{template "FieldName" .}}_codec);
-{{- else if .Map}}
-					{{template "FieldName" .}}.MergeFrom(ref ctx, _map_{{template "FieldName" .}}_codec);
-{{- else if eq .TypeKind "component"}}
-					ctx.ReadMessage({{template "FieldName" .}});
-{{- else if eq .TypeKind "enum"}}
-					{{template "FieldName" .}} = ({{.Type}})ctx.ReadEnum();
-{{- else if eq .Type "bool"}}
-					{{template "FieldName" .}} = ctx.ReadBool();
-{{- else if eq .Type "int32"}}
-					{{template "FieldName" .}} = ctx.ReadInt32();
-{{- else if eq .Type "sint32"}}
-					{{template "FieldName" .}} = ctx.ReadSInt32();
-{{- else if eq .Type "uint32"}}
-					{{template "FieldName" .}} = ctx.ReadUInt32();
-{{- else if eq .Type "int64"}}
-					{{template "FieldName" .}} = ctx.ReadInt64();
-{{- else if eq .Type "sint64"}}
-					{{template "FieldName" .}} = ctx.ReadSInt64();
-{{- else if eq .Type "uint64"}}
-					{{template "FieldName" .}} = ctx.ReadUInt64();
-{{- else if eq .Type "fixed32"}}
-					{{template "FieldName" .}} = ctx.ReadFixed32();
-{{- else if eq .Type "sfixed32"}}
-					{{template "FieldName" .}} = ctx.ReadSFixed32();
-{{- else if eq .Type "fixed64"}}
-					{{template "FieldName" .}} = ctx.ReadFixed64();
-{{- else if eq .Type "sfixed64"}}
-					{{template "FieldName" .}} = ctx.ReadSFixed64();
-{{- else if eq .Type "float"}}
-					{{template "FieldName" .}} = ctx.ReadFloat();
-{{- else if eq .Type "double"}}
-					{{template "FieldName" .}} = ctx.ReadDouble();
-{{- else if eq .Type "string"}}
-					{{template "FieldName" .}} = ctx.ReadString();
-{{- else if eq .Type "bytes"}}
-					{{template "FieldName" .}} = ctx.ReadBytes();
-{{- else if eq .Type "timestamp"}}
-					{{template "FieldName" .}} = ctx.ReadTimestamp();
-{{- else if eq .Type "duration"}}
-					{{template "FieldName" .}} = ctx.ReadDuration();
-{{- else if eq .Type "empty"}}
-					{{template "FieldName" .}} = ctx.ReadEmpty();
-{{- else}}
-					ctx.SkipLastField();
-{{- end}}
-					_changed |= 0x01 << {{.Number}};
-					break;
-{{- end}}
-				default:
-					ctx.SkipLastField();
-					break;
+				_changed = changed;
 			}
 		}
-	}
 
-	public void RaiseChanged()
-	{
-		if (_changed == 0)
-			return;
-{{- range .Fields}}
-{{- if .Repeated}}
-		if ((_changed & (0x01 << {{.Number}})) != 0)
-			{{template "FieldName" .}}.RaiseChanged();
-{{- else if .Map}}
-		if ((_changed & (0x01 << {{.Number}})) != 0)
-			{{template "FieldName" .}}.RaiseChanged();
-{{- else if eq .TypeKind "component"}}
-		if ((_changed & (0x01 << {{.Number}})) != 0)
-			{{template "FieldName" .}}.RaiseChanged();
-{{- end}}
-{{- end}}
-		OnChanged?.Invoke(this, new EventChanged(_changed));
-	}
-
-	public void ClearChanged()
-	{
-		if (_changed == 0)
-			return;
-{{- range .Fields}}
-{{- if .Repeated}}
-		if ((_changed & (0x01 << {{.Number}})) != 0)
-			{{template "FieldName" .}}.ClearChanged();
-{{- else if .Map}}
-		if ((_changed & (0x01 << {{.Number}})) != 0)
-			{{template "FieldName" .}}.ClearChanged();
-{{- else if eq .TypeKind "component"}}
-		if ((_changed & (0x01 << {{.Number}})) != 0)
-			{{template "FieldName" .}}.ClearChanged();
-{{- end}}
-{{- end}}
-		_changed = 0;
-	}
-
-	public IEnumerable<KeyValuePair<string, object>> GetFields()
-	{
-{{- if len .Fields}}
-		var fields = new List<KeyValuePair<string, object>>()
+		public void MergeFrom(ref Kdsync.ParseContext ctx)
 		{
+			uint tag;
+			while ((tag = ctx.ReadTag()) != 0)
+			{
+				var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+{{- range .Fields}}
+					case {{.Number}}:
+{{- if .Repeated}}
+						{{template "FieldName" .}}.MergeFrom(ref ctx, _list_{{template "FieldName" .}}_codec);
+{{- else if .Map}}
+						{{template "FieldName" .}}.MergeFrom(ref ctx, _map_{{template "FieldName" .}}_codec);
+{{- else if eq .TypeKind "component"}}
+						ctx.ReadMessage({{template "FieldName" .}});
+{{- else if eq .TypeKind "enum"}}
+						{{template "FieldName" .}} = ({{.Type}})ctx.ReadEnum();
+{{- else if eq .Type "bool"}}
+						{{template "FieldName" .}} = ctx.ReadBool();
+{{- else if eq .Type "int32"}}
+						{{template "FieldName" .}} = ctx.ReadInt32();
+{{- else if eq .Type "sint32"}}
+						{{template "FieldName" .}} = ctx.ReadSInt32();
+{{- else if eq .Type "uint32"}}
+						{{template "FieldName" .}} = ctx.ReadUInt32();
+{{- else if eq .Type "int64"}}
+						{{template "FieldName" .}} = ctx.ReadInt64();
+{{- else if eq .Type "sint64"}}
+						{{template "FieldName" .}} = ctx.ReadSInt64();
+{{- else if eq .Type "uint64"}}
+						{{template "FieldName" .}} = ctx.ReadUInt64();
+{{- else if eq .Type "fixed32"}}
+						{{template "FieldName" .}} = ctx.ReadFixed32();
+{{- else if eq .Type "sfixed32"}}
+						{{template "FieldName" .}} = ctx.ReadSFixed32();
+{{- else if eq .Type "fixed64"}}
+						{{template "FieldName" .}} = ctx.ReadFixed64();
+{{- else if eq .Type "sfixed64"}}
+						{{template "FieldName" .}} = ctx.ReadSFixed64();
+{{- else if eq .Type "float"}}
+						{{template "FieldName" .}} = ctx.ReadFloat();
+{{- else if eq .Type "double"}}
+						{{template "FieldName" .}} = ctx.ReadDouble();
+{{- else if eq .Type "string"}}
+						{{template "FieldName" .}} = ctx.ReadString();
+{{- else if eq .Type "bytes"}}
+						{{template "FieldName" .}} = ctx.ReadBytes();
+{{- else if eq .Type "timestamp"}}
+						{{template "FieldName" .}} = ctx.ReadTimestamp();
+{{- else if eq .Type "duration"}}
+						{{template "FieldName" .}} = ctx.ReadDuration();
+{{- else if eq .Type "empty"}}
+						{{template "FieldName" .}} = ctx.ReadEmpty();
+{{- else}}
+						ctx.SkipLastField();
+{{- end}}
+						_changed |= 0x01 << {{.Number}};
+						break;
+{{- end}}
+					default:
+						ctx.SkipLastField();
+						break;
+				}
+			}
+		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+{{- range .Fields}}
+{{- if .Repeated}}
+			if ((_changed & (0x01 << {{.Number}})) != 0)
+				{{template "FieldName" .}}.RaiseChanged();
+{{- else if .Map}}
+			if ((_changed & (0x01 << {{.Number}})) != 0)
+				{{template "FieldName" .}}.RaiseChanged();
+{{- else if eq .TypeKind "component"}}
+			if ((_changed & (0x01 << {{.Number}})) != 0)
+				{{template "FieldName" .}}.RaiseChanged();
+{{- end}}
+{{- end}}
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+{{- range .Fields}}
+{{- if .Repeated}}
+			if ((_changed & (0x01 << {{.Number}})) != 0)
+				{{template "FieldName" .}}.ClearChanged();
+{{- else if .Map}}
+			if ((_changed & (0x01 << {{.Number}})) != 0)
+				{{template "FieldName" .}}.ClearChanged();
+{{- else if eq .TypeKind "component"}}
+			if ((_changed & (0x01 << {{.Number}})) != 0)
+				{{template "FieldName" .}}.ClearChanged();
+{{- end}}
+{{- end}}
+			_changed = 0;
+		}
+
+		public IEnumerable<KeyValuePair<string, object>> GetFields()
+		{
+{{- if len .Fields}}
+			var fields = new List<KeyValuePair<string, object>>()
+			{
 {{- $lastIndex := len .Fields}}
 {{- range $index, $value := .Fields}}
-			new KeyValuePair<string, object>("{{.Name}}", {{template "FieldName" .}}){{- if ne $index $lastIndex}},{{- end}}
+				new KeyValuePair<string, object>("{{.Name}}", {{template "FieldName" .}}){{- if ne $index $lastIndex}},{{- end}}
 {{- end}}
-		};
-		return fields;
+			};
+			return fields;
 {{- else}}
-		return new List<KeyValuePair<string, object>>();
+			return new List<KeyValuePair<string, object>>();
 {{- end}}
-	}
+		}
 
-	public override string ToString()
-	{
-		return Kdsync.JsonFormatter.Format(this);
-	}
+		public override string ToString()
+		{
+			return Kdsync.JsonFormatter.Format(this);
+		}
 {{- end}}
 
 {{- /* ENTITY */ -}}
 {{- define "Entity"}}
 {{- $EntityName := .Name}}
-public class {{.Name}} : Kdsync.IMessage
-{
-	private readonly long _id;
-	public long Id => _id;
-
-	public {{.Name}}(long id)
+	public class {{.Name}} : Kdsync.IMessage
 	{
-		_id = id;
+		private readonly long _id;
+		public long Id => _id;
+
+		public {{.Name}}(long id)
+		{
+			_id = id;
 {{- range .Fields}}
 {{- if .Repeated}}
-		{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>();
+			{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>();
 {{- else if .Map}}
-		{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>();
+			{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>();
 {{- else if eq .TypeKind "component"}}
-		{{template "FieldName" .}} = new {{.Type}}();
+			{{template "FieldName" .}} = new {{.Type}}();
 {{- else if eq .Type "string"}}
-		{{template "FieldName" .}} = string.Empty;
+			{{template "FieldName" .}} = string.Empty;
 {{- else if eq .Type "bytes"}}
-		{{template "FieldName" .}} = new byte[0];
+			{{template "FieldName" .}} = new byte[0];
 {{- else}}
 {{- end}}
 {{- end}}
-	}
+		}
 {{- template "Message" .}}
 
-	public void MergeFrom(byte[] buffer)
-	{
-		ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(buffer);
-		Kdsync.ParseContext.Initialize(readOnlySpan, out var ctx);
-		MergeFrom(ref ctx);
+		public void MergeFrom(byte[] buffer)
+		{
+			ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(buffer);
+			Kdsync.ParseContext.Initialize(readOnlySpan, out var ctx);
+			MergeFrom(ref ctx);
+		}
 	}
-}
 {{- end}}
 
 {{- /* COMPONENT */ -}}
 {{- define "Component"}}
-public class {{.Name}} : Kdsync.IMessage
-{
-	public {{.Name}}()
+	public class {{.Name}} : Kdsync.IMessage
 	{
+		public {{.Name}}()
+		{
 {{- range .Fields}}
 {{- if .Repeated}}
-		{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>();
+			{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>();
 {{- else if .Map}}
-		{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>();
+			{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>();
 {{- else if eq .TypeKind "component"}}
-		{{template "FieldName" .}} = new {{.Type}}();
+			{{template "FieldName" .}} = new {{.Type}}();
 {{- else if eq .Type "string"}}
-		{{template "FieldName" .}} = string.Empty;
+			{{template "FieldName" .}} = string.Empty;
 {{- else if eq .Type "bytes"}}
-		{{template "FieldName" .}} = new byte[0];
+			{{template "FieldName" .}} = new byte[0];
 {{- else}}
 {{- end}}
 {{- end}}
-	}
+		}
 {{- template "Message" .}}
-}
+	}
 {{- end}}
 {{- /* END DEFINE */ -}}
 {{- /* BEGIN CS */ -}}
@@ -334,10 +334,13 @@ public class {{.Name}} : Kdsync.IMessage
 // source: {{.SourceFile}}
 
 {{- if or (len .Entities) (len .Components) (len .Types)}}
+{{/* EMPTY LINE */}}
+using System;
+using System.Collections.Generic;
 {{- end}}
 
-namespace {{ucFirst .Package}};
-
+namespace {{ucFirst .Package}}
+{
 {{- $SpacesBefore := false}}
 {{- /* COMMON TYPES */ -}}
 {{- range .Types}}
@@ -345,7 +348,12 @@ namespace {{ucFirst .Package}};
 {{- end}}
 {{- /* TOPLEVEL DEFINE */ -}}
 {{- range .Defs}}
+
+{{- if $SpacesBefore}}
 {{/* EMPTY LINE */}}
+{{- end}}
+{{- $SpacesBefore = true}}
+
 {{- if eq .Kind "enum"}}
 {{- template "Enum" .}}
 {{- else if eq .Kind "entity"}}
@@ -355,5 +363,6 @@ namespace {{ucFirst .Package}};
 {{- end}}
 
 {{- end}}
+}
 {{/* EMPTY LINE */}}
 {{- /* END CS */ -}}

@@ -113,7 +113,7 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.Flags().StringArrayVarP(&kdsCommand.kdsPaths, "kds_path", "I", []string{""}, "Specify the directory in which to search for imports. May be specified multiple times; directories will be searched in order. If not given, the current working directory is used.")
-	rootCmd.Flags().StringVar(&kdsCommand.kind, "kind", "", "Generate kind.")
+	rootCmd.Flags().StringVar(&kdsCommand.kind, "kind", "", "Generate kind [go | cs].")
 	rootCmd.Flags().StringVar(&kdsCommand.tmpl, "tmpl", "", "Template file.")
 	rootCmd.Flags().StringVar(&kdsCommand.out, "out", "", "Generate file.")
 }

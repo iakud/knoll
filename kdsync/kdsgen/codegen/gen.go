@@ -2,7 +2,6 @@ package codegen
 
 import (
 	"bytes"
-	"embed"
 	"fmt"
 	"log/slog"
 	"os"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/iakud/knoll/kdsync/kdsgen/parser"
+	"github.com/iakud/knoll/kdsync/kdsgen/tpls"
 )
 
 func Parse(kdsFiles []string) *Context {
@@ -52,13 +52,10 @@ func WriteTemplate(ctx *Context, filename string, out string) {
 	}
 }
 
-//go:embed templates/*.tmpl
-var templateFS embed.FS
-
 func WriteTemplateFS(ctx *Context, kind string, out string) {
 	ext := kind
-	filename := fmt.Sprintf("templates/%s.tmpl", kind)
-	text, err := templateFS.ReadFile(filename)
+	filename := fmt.Sprintf("%s.tmpl", kind)
+	text, err := tpls.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}
