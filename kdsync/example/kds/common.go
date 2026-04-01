@@ -24,13 +24,11 @@ type ItemData struct {
 
 	dirty       uint64
 	dirtyParent kdsync.DirtyFunc
-	state       kdsync.MessageState
 }
 
 func NewItemData() *ItemData {
 	x := new(ItemData)
 	x.dirty = 1
-	x.state.Init(&x.dirtyParent)
 	return x
 }
 
@@ -191,18 +189,26 @@ func (x *ItemData) ClearDirty() {
 	x.dirty = 0
 }
 
-func (x *ItemData) setDirtyParent(f kdsync.DirtyFunc) {
-	if f != nil && x.dirtyParent != nil {
-		panic("the component should be removed from its original place first")
-	}
-	x.dirtyParent = f
-	if f != nil {
-		x.dirty = uint64(0x01)
-	} else {
-		x.dirty = 0
-	}
+func (x *ItemData) checkDirtyParent() bool {
+	return x.dirtyParent != nil
 }
 
-func (x *ItemData) MessageState() *kdsync.MessageState {
-	return &x.state
+func (x *ItemData) setDirtyParent(f kdsync.DirtyFunc) {
+	if f == nil {
+		return
+	}
+	x.dirtyParent = f
+	x.MarkDirty()
+}
+
+func (x *ItemData) clearDirtyParent() {
+	x.dirtyParent = nil
+	x.ClearDirty()
+}
+
+var message_ItemData_type = kdsync.MessageType[ItemData, *ItemData]{
+	New:              NewItemData,
+	CheckDirtyParent: (*ItemData).checkDirtyParent,
+	SetDirtyParent:   (*ItemData).setDirtyParent,
+	ClearDirtyParent: (*ItemData).clearDirtyParent,
 }

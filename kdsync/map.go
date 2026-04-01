@@ -299,18 +299,17 @@ type MapMessage[K comparable, T any, V Message[T]] struct {
 	dirty       bool
 	dirtyParent DirtyFunc
 
-	newFunc func() V
-
-	keyCodec FieldCodec[K]
+	keyCodec  FieldCodec[K]
+	valueType *MessageType[T, V]
 }
 
-func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, newFunc func() V, keyCodec FieldCodec[K]) {
+func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueType *MessageType[T, V]) {
 	x.data = make(map[K]V)
 	x.updates = make(map[K]V)
 	x.deletes = make(map[K]struct{})
 	x.dirtyParent = dirtyParent
-	x.newFunc = newFunc
 	x.keyCodec = keyCodec
+	x.valueType = valueType
 }
 
 func (x *MapMessage[K, T, V]) Len() int {
@@ -323,8 +322,7 @@ func (x *MapMessage[K, T, V]) Clear() {
 	}
 	for _, v := range x.data {
 		if v != nil {
-			v.MessageState().setDirtyParentFunc(nil)
-			v.ClearDirty()
+			x.valueType.ClearDirtyParent(v)
 		}
 	}
 	clear(x.data)
@@ -341,7 +339,7 @@ func (x *MapMessage[K, T, V]) Get(k K) (V, bool) {
 
 func (x *MapMessage[K, T, V]) Set(k K, v V) {
 	if v != nil {
-		if !v.MessageState().checkDirtyParentFunc() {
+		if x.valueType.CheckDirtyParent(v) {
 			panic("the component should be removed from its original place first")
 		}
 	}
@@ -350,19 +348,17 @@ func (x *MapMessage[K, T, V]) Set(k K, v V) {
 			return
 		}
 		if e != nil {
-			e.MessageState().setDirtyParentFunc(nil)
-			e.ClearDirty()
+			x.valueType.ClearDirtyParent(e)
 		}
 	}
 	if v != nil {
-		v.MessageState().setDirtyParentFunc(func() {
+		x.valueType.SetDirtyParent(v, func() {
 			if _, ok := x.updates[k]; ok {
 				return
 			}
 			x.updates[k] = v
 			x.markDirty()
 		})
-		v.MarkDirty()
 	}
 	x.data[k] = v
 	x.updates[k] = v
@@ -376,8 +372,7 @@ func (x *MapMessage[K, T, V]) Delete(k K) {
 		return
 	}
 	if v != nil {
-		v.MessageState().setDirtyParentFunc(nil)
-		v.ClearDirty()
+		x.valueType.ClearDirtyParent(v)
 	}
 	delete(x.data, k)
 	delete(x.updates, k)
@@ -541,19 +536,18 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 		}
 
 		if c, ok := x.data[k]; !ok {
-			c = x.newFunc()
+			c = x.valueType.New()
 			if err := c.Unmarshal(v); err != nil {
 				return err
 			}
 			x.Set(k, c)
-			c.MessageState().setDirtyParentFunc(func() {
+			x.valueType.SetDirtyParent(c, func() {
 				if _, ok := x.updates[k]; ok {
 					return
 				}
 				x.updates[k] = c
 				x.markDirty()
 			})
-			c.MarkDirty()
 
 		} else if err := c.Unmarshal(v); err != nil {
 			return err

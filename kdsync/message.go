@@ -4,27 +4,10 @@ import (
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
-type MessageState struct {
-	dirtyParentFunc *DirtyFunc
-}
-
-func (ms *MessageState) Init(dirtyParentFunc *DirtyFunc) {
-	ms.dirtyParentFunc = dirtyParentFunc
-}
-
-func (ms *MessageState) checkDirtyParentFunc() bool {
-	return *ms.dirtyParentFunc == nil
-}
-
-func (ms *MessageState) setDirtyParentFunc(f DirtyFunc) {
-	*ms.dirtyParentFunc = f
-}
-
 type Message[T any] interface {
 	*T
 	wire.Marshaler
 	wire.Unmarshaler
-	MessageState() *MessageState
 	MarkDirty()
 	ClearDirty()
 }
@@ -36,4 +19,11 @@ func (f DirtyFunc) Invoke() {
 		return
 	}
 	f()
+}
+
+type MessageType[T any, M Message[T]] struct {
+	New              func() M
+	CheckDirtyParent func(M) bool
+	SetDirtyParent   func(M, DirtyFunc)
+	ClearDirtyParent func(M)
 }

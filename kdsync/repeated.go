@@ -254,12 +254,12 @@ type RepeatedMessage[T any, E Message[T]] struct {
 	dirty       bool
 	dirtyParent DirtyFunc
 
-	newFunc func() E
+	fieldType *MessageType[T, E]
 }
 
-func (x *RepeatedMessage[T, E]) Init(dirtyParent DirtyFunc, newFunc func() E) {
+func (x *RepeatedMessage[T, E]) Init(dirtyParent DirtyFunc, fieldType *MessageType[T, E]) {
 	x.dirtyParent = dirtyParent
-	x.newFunc = newFunc
+	x.fieldType = fieldType
 }
 
 func (x *RepeatedMessage[T, E]) Len() int {
@@ -272,8 +272,7 @@ func (x *RepeatedMessage[T, E]) Clear() {
 	}
 	for _, v := range x.data {
 		if v != nil {
-			v.MessageState().setDirtyParentFunc(nil)
-			v.ClearDirty()
+			x.fieldType.ClearDirtyParent(v)
 		}
 	}
 	clear(x.data)
@@ -290,15 +289,13 @@ func (x *RepeatedMessage[T, E]) Set(i int, v E) {
 		return
 	}
 	if v != nil {
-		if !v.MessageState().checkDirtyParentFunc() {
+		if x.fieldType.CheckDirtyParent(v) {
 			panic("the component should be removed from its original place first")
 		}
-		v.MessageState().setDirtyParentFunc(x.markDirty)
-		v.MarkDirty()
+		x.fieldType.SetDirtyParent(v, x.markDirty)
 	}
 	if x.data[i] != nil {
-		x.data[i].MessageState().setDirtyParentFunc(nil)
-		x.data[i].ClearDirty()
+		x.fieldType.ClearDirtyParent(x.data[i])
 	}
 	x.data[i] = v
 	x.markDirty()
@@ -310,11 +307,10 @@ func (x *RepeatedMessage[T, E]) Append(v ...E) {
 	}
 	for i := range v {
 		if v[i] != nil {
-			if !v[i].MessageState().checkDirtyParentFunc() {
+			if x.fieldType.CheckDirtyParent(v[i]) {
 				panic("the component should be removed from its original place first")
 			}
-			v[i].MessageState().setDirtyParentFunc(x.markDirty)
-			v[i].MarkDirty()
+			x.fieldType.SetDirtyParent(v[i], x.markDirty)
 		}
 	}
 	x.data = append(x.data, v...)
@@ -354,11 +350,10 @@ func (x *RepeatedMessage[T, E]) Insert(i int, v ...E) {
 	}
 	for j := range v {
 		if v[j] != nil {
-			if !v[j].MessageState().checkDirtyParentFunc() {
+			if x.fieldType.CheckDirtyParent(v[j]) {
 				panic("the component should be removed from its original place first")
 			}
-			v[j].MessageState().setDirtyParentFunc(x.markDirty)
-			v[j].MarkDirty()
+			x.fieldType.SetDirtyParent(v[j], x.markDirty)
 		}
 	}
 	x.data = slices.Insert(x.data, i, v...)
@@ -372,8 +367,7 @@ func (x *RepeatedMessage[T, E]) Delete(i, j int) {
 	r := x.data[i:j:len(x.data)]
 	for k := range r {
 		if r[k] != nil {
-			r[k].MessageState().setDirtyParentFunc(nil)
-			r[k].ClearDirty()
+			x.fieldType.ClearDirtyParent(r[k])
 		}
 	}
 	x.data = slices.Delete(x.data, i, j)
@@ -386,15 +380,13 @@ func (x *RepeatedMessage[T, E]) DeleteFunc(del func(E) bool) {
 		return
 	}
 	if x.data[i] != nil {
-		x.data[i].MessageState().setDirtyParentFunc(nil)
-		x.data[i].ClearDirty()
+		x.fieldType.ClearDirtyParent(x.data[i])
 	}
 	for j := i + 1; j < len(x.data); j++ {
 		v := x.data[j]
 		if del(v) {
 			if v != nil {
-				v.MessageState().setDirtyParentFunc(nil)
-				v.ClearDirty()
+				x.fieldType.ClearDirtyParent(v)
 			}
 			continue
 		}
@@ -412,18 +404,16 @@ func (x *RepeatedMessage[T, E]) Replace(i, j int, v ...E) {
 	}
 	for k := range v {
 		if v[k] != nil {
-			if !v[k].MessageState().checkDirtyParentFunc() {
+			if x.fieldType.CheckDirtyParent(v[k]) {
 				panic("the component should be removed from its original place first")
 			}
-			v[k].MessageState().setDirtyParentFunc(x.markDirty)
-			v[k].MarkDirty()
+			x.fieldType.SetDirtyParent(v[k], x.markDirty)
 		}
 	}
 	r := x.data[i:j:len(x.data)]
 	for k := range r {
 		if r[k] != nil {
-			r[k].MessageState().setDirtyParentFunc(nil)
-			r[k].ClearDirty()
+			x.fieldType.ClearDirtyParent(r[k])
 		}
 	}
 	x.data = slices.Replace(x.data, i, j, v...)
@@ -487,15 +477,14 @@ func (x *RepeatedMessage[T, E]) MarshalDirty(b []byte) ([]byte, error) {
 func (x *RepeatedMessage[T, E]) Unmarshal(b []byte) error {
 	x.Clear()
 	for len(b) > 0 {
-		var v E = x.newFunc()
+		var v E = x.fieldType.New()
 		n, err := wire.ConsumeMessage(b, v)
 		if err != nil {
 			return err
 		}
 		b = b[n:]
 		x.data = append(x.data, v)
-		v.MessageState().setDirtyParentFunc(x.markDirty)
-		v.MarkDirty()
+		x.fieldType.SetDirtyParent(v, x.markDirty)
 	}
 	return nil
 }
