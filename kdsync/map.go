@@ -21,6 +21,7 @@ type Map[K comparable, V any] interface {
 	Values() iter.Seq[V]
 
 	ClearDirty()
+	ClearPersistDirty()
 	Marshal(b []byte) ([]byte, error)
 	MarshalDirty(b []byte) ([]byte, error)
 	Unmarshal(b []byte) error
@@ -48,17 +49,21 @@ type MapField[K comparable, V any] struct {
 	updates map[K]V
 	deletes map[K]struct{}
 
-	dirty       bool
-	dirtyParent DirtyFunc
-	keyCodec    FieldCodec[K]
-	valueCodec  FieldCodec[V]
+	dirty              bool
+	dirtyParent        DirtyFunc
+	persistDirty       bool
+	persistDirtyParent DirtyFunc
+
+	keyCodec   FieldCodec[K]
+	valueCodec FieldCodec[V]
 }
 
-func (x *MapField[K, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueCodec FieldCodec[V]) {
+func (x *MapField[K, V]) Init(dirtyParent, persistDirtyParent DirtyFunc, keyCodec FieldCodec[K], valueCodec FieldCodec[V]) {
 	x.data = make(map[K]V)
 	x.updates = make(map[K]V)
 	x.deletes = make(map[K]struct{})
 	x.dirtyParent = dirtyParent
+	x.persistDirtyParent = persistDirtyParent
 	x.keyCodec = keyCodec
 	x.valueCodec = valueCodec
 }
@@ -76,6 +81,7 @@ func (x *MapField[K, V]) Clear() {
 	clear(x.updates)
 	clear(x.deletes)
 	x.markDirty()
+	x.markPersistDirty()
 }
 
 func (x *MapField[K, V]) Get(k K) (V, bool) {
@@ -93,6 +99,7 @@ func (x *MapField[K, V]) Set(k K, v V) {
 	x.updates[k] = v
 	delete(x.deletes, k)
 	x.markDirty()
+	x.markPersistDirty()
 }
 
 func (x *MapField[K, V]) Delete(k K) {
@@ -103,6 +110,7 @@ func (x *MapField[K, V]) Delete(k K) {
 	delete(x.updates, k)
 	x.deletes[k] = struct{}{}
 	x.markDirty()
+	x.markPersistDirty()
 }
 
 func (x *MapField[K, V]) All() iter.Seq2[K, V] {
@@ -133,6 +141,21 @@ func (x *MapField[K, V]) ClearDirty() {
 	clear(x.updates)
 	clear(x.deletes)
 	x.dirty = false
+}
+
+func (x *MapField[K, V]) markPersistDirty() {
+	if x.persistDirty {
+		return
+	}
+	x.persistDirty = true
+	x.persistDirtyParent.Invoke()
+}
+
+func (x *MapField[K, V]) ClearPersistDirty() {
+	if !x.persistDirty {
+		return
+	}
+	x.persistDirty = false
 }
 
 func (x *MapField[K, V]) Marshal(b []byte) ([]byte, error) {
@@ -296,18 +319,21 @@ type MapMessage[K comparable, T any, V Message[T]] struct {
 	updates map[K]V
 	deletes map[K]struct{}
 
-	dirty       bool
-	dirtyParent DirtyFunc
+	dirty              bool
+	dirtyParent        DirtyFunc
+	persistDirty       bool
+	persistDirtyParent DirtyFunc
 
 	keyCodec  FieldCodec[K]
 	valueType *MessageType[T, V]
 }
 
-func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueType *MessageType[T, V]) {
+func (x *MapMessage[K, T, V]) Init(dirtyParent, persistDirtyParent DirtyFunc, keyCodec FieldCodec[K], valueType *MessageType[T, V]) {
 	x.data = make(map[K]V)
 	x.updates = make(map[K]V)
 	x.deletes = make(map[K]struct{})
 	x.dirtyParent = dirtyParent
+	x.persistDirtyParent = persistDirtyParent
 	x.keyCodec = keyCodec
 	x.valueType = valueType
 }
@@ -330,6 +356,7 @@ func (x *MapMessage[K, T, V]) Clear() {
 	clear(x.updates)
 	clear(x.deletes)
 	x.markDirty()
+	x.markPersistDirty()
 }
 
 func (x *MapMessage[K, T, V]) Get(k K) (V, bool) {
@@ -358,12 +385,13 @@ func (x *MapMessage[K, T, V]) Set(k K, v V) {
 			}
 			x.updates[k] = v
 			x.markDirty()
-		})
+		}, x.markPersistDirty)
 	}
 	x.data[k] = v
 	x.updates[k] = v
 	delete(x.deletes, k)
 	x.markDirty()
+	x.markPersistDirty()
 }
 
 func (x *MapMessage[K, T, V]) Delete(k K) {
@@ -378,6 +406,7 @@ func (x *MapMessage[K, T, V]) Delete(k K) {
 	delete(x.updates, k)
 	x.deletes[k] = struct{}{}
 	x.markDirty()
+	x.markPersistDirty()
 }
 
 func (x *MapMessage[K, T, V]) All() iter.Seq2[K, V] {
@@ -413,6 +442,21 @@ func (x *MapMessage[K, T, V]) ClearDirty() {
 	clear(x.updates)
 	clear(x.deletes)
 	x.dirty = false
+}
+
+func (x *MapMessage[K, T, V]) markPersistDirty() {
+	if x.persistDirty {
+		return
+	}
+	x.persistDirty = true
+	x.persistDirtyParent.Invoke()
+}
+
+func (x *MapMessage[K, T, V]) ClearPersistDirty() {
+	if !x.persistDirty {
+		return
+	}
+	x.persistDirty = false
 }
 
 func (x *MapMessage[K, T, V]) Marshal(b []byte) ([]byte, error) {
@@ -547,8 +591,7 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 				}
 				x.updates[k] = c
 				x.markDirty()
-			})
-
+			}, x.markPersistDirty)
 		} else if err := c.Unmarshal(v); err != nil {
 			return err
 		}

@@ -51,8 +51,11 @@ func execute(cmd *cobra.Command, args []string) {
 	if err != nil {
 		panic(err)
 	}
+
+	ignoreFieldNoSync := kdsCommand.kind == "cs"
+
 	// 生成kds
-	ctx := codegen.Parse(kdsFiles)
+	ctx := codegen.Parse(kdsFiles, ignoreFieldNoSync)
 
 	if len(kdsCommand.tmpl) > 0 && len(kdsCommand.out) > 0 {
 		codegen.WriteTemplate(ctx, kdsCommand.tmpl, kdsCommand.out)

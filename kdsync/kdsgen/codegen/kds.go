@@ -108,6 +108,9 @@ type Field struct {
 
 	ListType string
 	MapType  string
+
+	NoSync    bool
+	NoPersist bool
 }
 
 func (f *Field) TypeKind() string {

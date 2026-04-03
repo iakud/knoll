@@ -608,7 +608,6 @@ namespace Kds
 			int32String_ = new Kdsync.Map<int, string>();
 			int32Timestamp_ = new Kdsync.Map<int, Kdsync.Timestamp>();
 			int32Duration_ = new Kdsync.Map<int, Kdsync.Duration>();
-			int32Empty_ = new Kdsync.Map<int, Kdsync.Empty>();
 			int32Enum_ = new Kdsync.Map<int, ItemType>();
 			int32ItemData_ = new Kdsync.Map<int, ItemData>();
 			int64Int64_ = new Kdsync.Map<long, long>();
@@ -630,7 +629,6 @@ namespace Kds
 			boolTimestamp_ = new Kdsync.Map<bool, Kdsync.Timestamp>();
 			boolDuration_ = new Kdsync.Map<bool, Kdsync.Duration>();
 			boolEmpty_ = new Kdsync.Map<bool, Kdsync.Empty>();
-			boolEnum_ = new Kdsync.Map<bool, ItemType>();
 			boolItemData_ = new Kdsync.Map<bool, ItemData>();
 		}
 
@@ -649,10 +647,6 @@ namespace Kds
 		private static readonly Kdsync.Map<int, Kdsync.Duration>.Codec _map_int32Duration__codec = new Kdsync.Map<int, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForInt32(), Kdsync.FieldCodec.ForDuration(), 4);
 		private Kdsync.Map<int, Kdsync.Duration> int32Duration_;
 		public Kdsync.Map<int, Kdsync.Duration> Int32Duration => int32Duration_;
-
-		private static readonly Kdsync.Map<int, Kdsync.Empty>.Codec _map_int32Empty__codec = new Kdsync.Map<int, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForInt32(), Kdsync.FieldCodec.ForEmpty(), 5);
-		private Kdsync.Map<int, Kdsync.Empty> int32Empty_;
-		public Kdsync.Map<int, Kdsync.Empty> Int32Empty => int32Empty_;
 
 		private static readonly Kdsync.Map<int, ItemType>.Codec _map_int32Enum__codec = new Kdsync.Map<int, ItemType>.Codec(Kdsync.FieldCodec.ForInt32(), Kdsync.FieldCodec.ForEnum(x => (int)x, x => (ItemType)x), 6);
 		private Kdsync.Map<int, ItemType> int32Enum_;
@@ -738,10 +732,6 @@ namespace Kds
 		private Kdsync.Map<bool, Kdsync.Empty> boolEmpty_;
 		public Kdsync.Map<bool, Kdsync.Empty> BoolEmpty => boolEmpty_;
 
-		private static readonly Kdsync.Map<bool, ItemType>.Codec _map_boolEnum__codec = new Kdsync.Map<bool, ItemType>.Codec(Kdsync.FieldCodec.ForBool(), Kdsync.FieldCodec.ForEnum(x => (int)x, x => (ItemType)x), 27);
-		private Kdsync.Map<bool, ItemType> boolEnum_;
-		public Kdsync.Map<bool, ItemType> BoolEnum => boolEnum_;
-
 		private static readonly Kdsync.Map<bool, ItemData>.Codec _map_boolItemData__codec = new Kdsync.Map<bool, ItemData>.Codec(Kdsync.FieldCodec.ForBool(), Kdsync.FieldCodec.ForMessage<ItemData>(), 28);
 		private Kdsync.Map<bool, ItemData> boolItemData_;
 		public Kdsync.Map<bool, ItemData> BoolItemData => boolItemData_;
@@ -757,7 +747,6 @@ namespace Kds
 			public bool Int32String => (_changed & (0x01 << 2)) != 0;
 			public bool Int32Timestamp => (_changed & (0x01 << 3)) != 0;
 			public bool Int32Duration => (_changed & (0x01 << 4)) != 0;
-			public bool Int32Empty => (_changed & (0x01 << 5)) != 0;
 			public bool Int32Enum => (_changed & (0x01 << 6)) != 0;
 			public bool Int32ItemData => (_changed & (0x01 << 7)) != 0;
 			public bool Int64Int64 => (_changed & (0x01 << 8)) != 0;
@@ -779,7 +768,6 @@ namespace Kds
 			public bool BoolTimestamp => (_changed & (0x01 << 24)) != 0;
 			public bool BoolDuration => (_changed & (0x01 << 25)) != 0;
 			public bool BoolEmpty => (_changed & (0x01 << 26)) != 0;
-			public bool BoolEnum => (_changed & (0x01 << 27)) != 0;
 			public bool BoolItemData => (_changed & (0x01 << 28)) != 0;
 
 			public EventChanged(long changed)
@@ -811,10 +799,6 @@ namespace Kds
 					case 4:
 						int32Duration_.MergeFrom(ref ctx, _map_int32Duration__codec);
 						_changed |= 0x01 << 4;
-						break;
-					case 5:
-						int32Empty_.MergeFrom(ref ctx, _map_int32Empty__codec);
-						_changed |= 0x01 << 5;
 						break;
 					case 6:
 						int32Enum_.MergeFrom(ref ctx, _map_int32Enum__codec);
@@ -900,10 +884,6 @@ namespace Kds
 						boolEmpty_.MergeFrom(ref ctx, _map_boolEmpty__codec);
 						_changed |= 0x01 << 26;
 						break;
-					case 27:
-						boolEnum_.MergeFrom(ref ctx, _map_boolEnum__codec);
-						_changed |= 0x01 << 27;
-						break;
 					case 28:
 						boolItemData_.MergeFrom(ref ctx, _map_boolItemData__codec);
 						_changed |= 0x01 << 28;
@@ -927,8 +907,6 @@ namespace Kds
 				int32Timestamp_.RaiseChanged();
 			if ((_changed & (0x01 << 4)) != 0)
 				int32Duration_.RaiseChanged();
-			if ((_changed & (0x01 << 5)) != 0)
-				int32Empty_.RaiseChanged();
 			if ((_changed & (0x01 << 6)) != 0)
 				int32Enum_.RaiseChanged();
 			if ((_changed & (0x01 << 7)) != 0)
@@ -971,8 +949,6 @@ namespace Kds
 				boolDuration_.RaiseChanged();
 			if ((_changed & (0x01 << 26)) != 0)
 				boolEmpty_.RaiseChanged();
-			if ((_changed & (0x01 << 27)) != 0)
-				boolEnum_.RaiseChanged();
 			if ((_changed & (0x01 << 28)) != 0)
 				boolItemData_.RaiseChanged();
 			OnChanged?.Invoke(this, new EventChanged(_changed));
@@ -990,8 +966,6 @@ namespace Kds
 				int32Timestamp_.ClearChanged();
 			if ((_changed & (0x01 << 4)) != 0)
 				int32Duration_.ClearChanged();
-			if ((_changed & (0x01 << 5)) != 0)
-				int32Empty_.ClearChanged();
 			if ((_changed & (0x01 << 6)) != 0)
 				int32Enum_.ClearChanged();
 			if ((_changed & (0x01 << 7)) != 0)
@@ -1034,8 +1008,6 @@ namespace Kds
 				boolDuration_.ClearChanged();
 			if ((_changed & (0x01 << 26)) != 0)
 				boolEmpty_.ClearChanged();
-			if ((_changed & (0x01 << 27)) != 0)
-				boolEnum_.ClearChanged();
 			if ((_changed & (0x01 << 28)) != 0)
 				boolItemData_.ClearChanged();
 			_changed = 0;
@@ -1049,7 +1021,6 @@ namespace Kds
 				new KeyValuePair<string, object>("Int32String", int32String_),
 				new KeyValuePair<string, object>("Int32Timestamp", int32Timestamp_),
 				new KeyValuePair<string, object>("Int32Duration", int32Duration_),
-				new KeyValuePair<string, object>("Int32Empty", int32Empty_),
 				new KeyValuePair<string, object>("Int32Enum", int32Enum_),
 				new KeyValuePair<string, object>("Int32ItemData", int32ItemData_),
 				new KeyValuePair<string, object>("Int64Int64", int64Int64_),
@@ -1071,7 +1042,6 @@ namespace Kds
 				new KeyValuePair<string, object>("BoolTimestamp", boolTimestamp_),
 				new KeyValuePair<string, object>("BoolDuration", boolDuration_),
 				new KeyValuePair<string, object>("BoolEmpty", boolEmpty_),
-				new KeyValuePair<string, object>("BoolEnum", boolEnum_),
 				new KeyValuePair<string, object>("BoolItemData", boolItemData_),
 			};
 			return fields;

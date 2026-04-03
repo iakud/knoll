@@ -8,8 +8,8 @@ type Message[T any] interface {
 	*T
 	wire.Marshaler
 	wire.Unmarshaler
-	MarkDirty()
 	ClearDirty()
+	ClearPersistDirty()
 }
 
 type DirtyFunc func()
@@ -21,9 +21,12 @@ func (f DirtyFunc) Invoke() {
 	f()
 }
 
+func NoSync()    {}
+func NoPersist() {}
+
 type MessageType[T any, M Message[T]] struct {
 	New              func() M
 	CheckDirtyParent func(M) bool
-	SetDirtyParent   func(M, DirtyFunc)
+	SetDirtyParent   func(M, DirtyFunc, DirtyFunc)
 	ClearDirtyParent func(M)
 }

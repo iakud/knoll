@@ -24,11 +24,15 @@ type ItemData struct {
 
 	dirty       uint64
 	dirtyParent kdsync.DirtyFunc
+
+	persistDirty       uint64
+	persistDirtyParent kdsync.DirtyFunc
 }
 
 func NewItemData() *ItemData {
 	x := new(ItemData)
 	x.dirty = 1
+	x.persistDirty = 1
 	return x
 }
 
@@ -42,6 +46,7 @@ func (x *ItemData) SetId(v int32) {
 	}
 	x.xxx_hidden_Id = v
 	x.markDirty(uint64(0x01) << 1)
+	x.markPersistDirty(uint64(0x01) << 1)
 }
 
 func (x *ItemData) GetName() string {
@@ -54,6 +59,7 @@ func (x *ItemData) SetName(v string) {
 	}
 	x.xxx_hidden_Name = v
 	x.markDirty(uint64(0x01) << 2)
+	x.markPersistDirty(uint64(0x01) << 2)
 }
 
 func (x *ItemData) GetCount() int32 {
@@ -66,6 +72,7 @@ func (x *ItemData) SetCount(v int32) {
 	}
 	x.xxx_hidden_Count = v
 	x.markDirty(uint64(0x01) << 3)
+	x.markPersistDirty(uint64(0x01) << 3)
 }
 
 func (x *ItemData) Marshal(b []byte) ([]byte, error) {
@@ -178,7 +185,7 @@ func (x *ItemData) checkDirty(n uint64) bool {
 	return x.dirty&n != 0
 }
 
-func (x *ItemData) MarkDirty() {
+func (x *ItemData) markDirtyAll() {
 	x.dirty = uint64(0x01)
 }
 
@@ -190,20 +197,43 @@ func (x *ItemData) ClearDirty() {
 }
 
 func (x *ItemData) checkDirtyParent() bool {
-	return x.dirtyParent != nil
+	return x.dirtyParent != nil && x.persistDirtyParent != nil
 }
 
-func (x *ItemData) setDirtyParent(f kdsync.DirtyFunc) {
-	if f == nil {
+func (x *ItemData) setDirtyParent(dirtyParent, persistDirtyParent kdsync.DirtyFunc) {
+	if dirtyParent == nil ||  persistDirtyParent == nil {
 		return
 	}
-	x.dirtyParent = f
-	x.MarkDirty()
+	x.dirtyParent = dirtyParent
+	x.persistDirtyParent = persistDirtyParent
+	x.markDirtyAll()
+	x.markPersistDirtyAll()
 }
 
 func (x *ItemData) clearDirtyParent() {
 	x.dirtyParent = nil
+	x.persistDirtyParent = nil
 	x.ClearDirty()
+	x.ClearPersistDirty()
+}
+
+func (x *ItemData) markPersistDirty(n uint64) {
+	if x.persistDirty&n == n {
+		return
+	}
+	x.persistDirty |= n
+	x.persistDirtyParent.Invoke()
+}
+
+func (x *ItemData) ClearPersistDirty() {
+	if x.persistDirty == 0 {
+		return
+	}
+	x.persistDirty = 0
+}
+
+func (x *ItemData) markPersistDirtyAll() {
+	x.persistDirty = uint64(0x01)
 }
 
 var message_ItemData_type = kdsync.MessageType[ItemData, *ItemData]{

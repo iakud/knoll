@@ -39,7 +39,7 @@ namespace Kds
             _all.Maps.Int32String.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Int32String.Changed");
             _all.Maps.Int32Timestamp.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Int32Timestamp.Changed");
             _all.Maps.Int32Duration.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Int32Duration.Changed");
-            _all.Maps.Int32Empty.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Int32Empty.Changed");
+            // _all.Maps.Int32Empty.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Int32Empty.Changed");
             _all.Maps.Int32Enum.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Int32Enum.Changed");
             _all.Maps.Int32ItemData.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Int32ItemData.Changed");
             _all.Maps.Int64Int64.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Int64Int64.Changed");
@@ -61,7 +61,7 @@ namespace Kds
             _all.Maps.BoolTimestamp.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.BoolTimestamp.Changed");
             _all.Maps.BoolDuration.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.BoolDuration.Changed");
             _all.Maps.BoolEmpty.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.BoolEmpty.Changed");
-            _all.Maps.BoolEnum.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.BoolEnum.Changed");
+            // _all.Maps.BoolEnum.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.BoolEnum.Changed");
             _all.Maps.BoolItemData.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.BoolItemData.Changed");
         }
 

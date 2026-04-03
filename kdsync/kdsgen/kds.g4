@@ -32,7 +32,8 @@ fieldOptions
 	;
 
 fieldOption
-	: fullIdent
+	: NOSYNC
+	| NOPERSIST
 	;
 
 fieldNumber
@@ -318,6 +319,14 @@ EMPTY
 	: 'empty'
 	;
 
+NOSYNC
+	: 'nosync'
+	;
+
+NOPERSIST
+	: 'nopersist'
+	;
+
 RESERVED
 	: 'reserved'
 	;
@@ -543,6 +552,8 @@ keywords
 	| ENUM
 	| ENTITY
 	| COMPONENT
+	| NOSYNC
+	| NOPERSIST
 	| MESSAGE
 	| SERVICE
 	| EXTEND

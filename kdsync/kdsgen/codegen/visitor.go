@@ -84,10 +84,20 @@ func visitEntity(ctx *Context, kds *Kds, entityCtx parser.IEntityDefContext) *En
 		switch {
 		case element.Field() != nil:
 			field := visitField(ctx, kds, entity, element.Field())
+			if ctx.ignoreFieldNoSync && field.NoSync {
+				continue
+			}
 			entity.Fields = append(entity.Fields, field)
+			if field.Repeated {
+				field.ListType = ctx.addListType(field.Type)
+			}
 		case element.MapField() != nil:
 			field := visitMapField(ctx, kds, entity, element.MapField())
+			if ctx.ignoreFieldNoSync && field.NoSync {
+				continue
+			}
 			entity.Fields = append(entity.Fields, field)
+			field.MapType = ctx.addMapType(field.Type, field.KeyType)
 		}
 	}
 	return entity
@@ -102,10 +112,21 @@ func visitComponent(ctx *Context, kds *Kds, componentCtx parser.IComponentDefCon
 		switch {
 		case element.Field() != nil:
 			field := visitField(ctx, kds, component, element.Field())
+			if ctx.ignoreFieldNoSync && field.NoSync {
+				continue
+			}
 			component.Fields = append(component.Fields, field)
+			if field.Repeated {
+				field.ListType = ctx.addListType(field.Type)
+			}
 		case element.MapField() != nil:
 			field := visitMapField(ctx, kds, component, element.MapField())
+			if ctx.ignoreFieldNoSync && field.NoSync {
+				continue
+			}
 			component.Fields = append(component.Fields, field)
+			field.MapType = ctx.addMapType(field.Type, field.KeyType)
+
 		}
 	}
 	return component
@@ -114,17 +135,15 @@ func visitComponent(ctx *Context, kds *Kds, componentCtx parser.IComponentDefCon
 func visitField(ctx *Context, kds *Kds, def TopLevelDef, fieldCtx parser.IFieldContext) *Field {
 	field := new(Field)
 	field.ctx = ctx
+	field.Def = def
 	field.kds = kds
 	field.Repeated = fieldCtx.FieldLabel() != nil && fieldCtx.FieldLabel().REPEATED() != nil
-	field.Type = visitType(kds, fieldCtx.Type_())
+	field.Type = visitType(fieldCtx.Type_())
 
 	field.Name = GoCamelCase(fieldCtx.FieldName().GetText())
 	field.Number, _ = strconv.Atoi(fieldCtx.FieldNumber().GetText())
-
-	field.Def = def
-
-	if field.Repeated {
-		field.ListType = ctx.addListType(field.Type)
+	if fieldCtx.FieldOptions() != nil {
+		field.NoSync, field.NoPersist = visitFieldOption(fieldCtx.FieldOptions())
 	}
 	return field
 }
@@ -132,23 +151,32 @@ func visitField(ctx *Context, kds *Kds, def TopLevelDef, fieldCtx parser.IFieldC
 func visitMapField(ctx *Context, kds *Kds, def TopLevelDef, mapFieldCtx parser.IMapFieldContext) *Field {
 	field := new(Field)
 	field.ctx = ctx
+	field.Def = def
 	field.kds = kds
 	field.Map = true
-	field.Type = visitType(kds, mapFieldCtx.Type_())
+	field.Type = visitType(mapFieldCtx.Type_())
 
 	field.KeyType = mapFieldCtx.KeyType().GetText()
 	field.Name = GoCamelCase(mapFieldCtx.MapName().GetText())
 	field.Number, _ = strconv.Atoi(mapFieldCtx.FieldNumber().GetText())
-
-	field.Def = def
-
-	field.MapType = ctx.addMapType(field.Type, field.KeyType)
+	if mapFieldCtx.FieldOptions() != nil {
+		field.NoSync, field.NoPersist = visitFieldOption(mapFieldCtx.FieldOptions())
+	}
 	return field
 }
 
-func visitType(kds *Kds, typeCtx parser.IType_Context) string {
+func visitType(typeCtx parser.IType_Context) string {
 	if typeCtx.MessageType() != nil || typeCtx.EnumType() != nil {
 		return GoCamelCase(typeCtx.GetText())
 	}
 	return typeCtx.GetText()
+}
+
+func visitFieldOption(fieldOptionsCtx parser.IFieldOptionsContext) (bool, bool) {
+	var nosync, nopersist bool
+	for _, fieldOptionCtx := range fieldOptionsCtx.AllFieldOption() {
+		nosync = nosync || fieldOptionCtx.NOSYNC() != nil
+		nopersist = nopersist || fieldOptionCtx.NOPERSIST() != nil
+	}
+	return nosync, nopersist
 }

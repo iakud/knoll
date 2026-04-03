@@ -16,8 +16,10 @@ import (
 	"github.com/iakud/knoll/kdsync/kdsgen/tpls"
 )
 
-func Parse(kdsFiles []string) *Context {
+func Parse(kdsFiles []string, ignoreFieldNoSync bool) *Context {
 	ctx := newContext()
+	ctx.ignoreFieldNoSync = ignoreFieldNoSync
+
 	for _, filePath := range kdsFiles {
 		kds := parseKds(ctx, filePath)
 

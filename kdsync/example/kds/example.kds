@@ -60,7 +60,7 @@ component AllMap {
 	map<int32, string> int32_string = 2;
 	map<int32, timestamp> int32_timestamp = 3;
 	map<int32, duration> int32_duration = 4;
-	map<int32, empty> int32_empty = 5;
+	map<int32, empty> int32_empty = 5 [nosync];
 	map<int32, ItemType> int32_enum = 6;
 	map<int32, ItemData> int32_itemData = 7;
 
@@ -77,7 +77,7 @@ component AllMap {
 	map<string, int32> string_int32 = 15;
 	map<string, string> string_string = 16;
 	map<string, timestamp> string_timestamp = 17;
-	map<string, duration> string_duration = 18;
+	map<string, duration> string_duration = 18 [nopersist];
 	map<string, empty> string_empty = 19;
 	map<string, ItemType> string_enum = 20;
 	map<string, ItemData> string_itemData = 21;
@@ -88,6 +88,6 @@ component AllMap {
 	map<bool, timestamp> bool_timestamp = 24;
 	map<bool, duration> bool_duration = 25;
 	map<bool, empty> bool_empty = 26;
-	map<bool, ItemType> bool_enum = 27;
+	map<bool, ItemType> bool_enum = 27 [nosync, nopersist];
 	map<bool, ItemData> bool_itemData = 28;
 }

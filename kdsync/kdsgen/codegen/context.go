@@ -6,6 +6,8 @@ import (
 )
 
 type Context struct {
+	ignoreFieldNoSync bool
+
 	AllKds []*Kds
 
 	// type
