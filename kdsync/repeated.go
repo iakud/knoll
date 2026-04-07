@@ -53,17 +53,15 @@ var _ Repeated[struct{}] = (*RepeatedField[struct{}])(nil)
 type RepeatedField[E any] struct {
 	data []E
 
-	dirty              bool
-	dirtyParent        DirtyFunc
-	persistDirty       bool
-	persistDirtyParent DirtyFunc
+	syncDirty    bool
+	persistDirty bool
+	dirtyParent  DirtyFunc
 
 	fieldCodec FieldCodec[E]
 }
 
-func (x *RepeatedField[E]) Init(dirtyParent, persistDirtyParent DirtyFunc, fieldCodec FieldCodec[E]) {
+func (x *RepeatedField[E]) Init(dirtyParent DirtyFunc, fieldCodec FieldCodec[E]) {
 	x.dirtyParent = dirtyParent
-	x.persistDirtyParent = persistDirtyParent
 	x.fieldCodec = fieldCodec
 }
 
@@ -78,7 +76,6 @@ func (x *RepeatedField[E]) Clear() {
 	clear(x.data)
 	x.data = x.data[:0]
 	x.markDirty()
-	x.markPersistDirty()
 }
 
 func (x *RepeatedField[E]) Get(i int) E {
@@ -91,7 +88,6 @@ func (x *RepeatedField[E]) Set(i int, v E) {
 	}
 	x.data[i] = v
 	x.markDirty()
-	x.markPersistDirty()
 }
 
 func (x *RepeatedField[E]) Append(v ...E) {
@@ -100,7 +96,6 @@ func (x *RepeatedField[E]) Append(v ...E) {
 	}
 	x.data = append(x.data, v...)
 	x.markDirty()
-	x.markPersistDirty()
 }
 
 func (x *RepeatedField[E]) Index(v E) int {
@@ -136,7 +131,6 @@ func (x *RepeatedField[E]) Insert(i int, v ...E) {
 	}
 	x.data = slices.Insert(x.data, i, v...)
 	x.markDirty()
-	x.markPersistDirty()
 }
 
 func (x *RepeatedField[E]) Delete(i, j int) {
@@ -146,7 +140,6 @@ func (x *RepeatedField[E]) Delete(i, j int) {
 	}
 	x.data = slices.Delete(x.data, i, j)
 	x.markDirty()
-	x.markPersistDirty()
 }
 
 func (x *RepeatedField[E]) DeleteFunc(del func(E) bool) {
@@ -165,7 +158,6 @@ func (x *RepeatedField[E]) DeleteFunc(del func(E) bool) {
 	clear(x.data[i:])
 	x.data = x.data[:i]
 	x.markDirty()
-	x.markPersistDirty()
 }
 
 func (x *RepeatedField[E]) Replace(i, j int, v ...E) {
@@ -175,7 +167,6 @@ func (x *RepeatedField[E]) Replace(i, j int, v ...E) {
 	}
 	x.data = slices.Replace(x.data, i, j, v...)
 	x.markDirty()
-	x.markPersistDirty()
 }
 
 func (x *RepeatedField[E]) Reverse() {
@@ -184,7 +175,6 @@ func (x *RepeatedField[E]) Reverse() {
 	}
 	slices.Reverse(x.data)
 	x.markDirty()
-	x.markPersistDirty()
 }
 
 func (x *RepeatedField[E]) All() iter.Seq2[int, E] {
@@ -200,23 +190,15 @@ func (x *RepeatedField[E]) Values() iter.Seq[E] {
 }
 
 func (x *RepeatedField[E]) markDirty() {
-	if x.dirty {
+	if x.syncDirty {
 		return
 	}
-	x.dirty = true
-	x.dirtyParent.Invoke()
+	x.syncDirty = true
+	x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
 }
 
 func (x *RepeatedField[E]) ClearDirty() {
-	x.dirty = false
-}
-
-func (x *RepeatedField[E]) markPersistDirty() {
-	if x.persistDirty {
-		return
-	}
-	x.persistDirty = true
-	x.persistDirtyParent.Invoke()
+	x.syncDirty = false
 }
 
 func (x *RepeatedField[E]) ClearPersistDirty() {
@@ -276,17 +258,15 @@ func (x *RepeatedField[E]) MarshalJSONIndent(b []byte, prefix string, indent str
 type RepeatedMessage[T any, E Message[T]] struct {
 	data []E
 
-	dirty              bool
-	dirtyParent        DirtyFunc
-	persistDirty       bool
-	persistDirtyParent DirtyFunc
+	syncDirty    bool
+	persistDirty bool
+	dirtyParent  DirtyFunc
 
 	fieldType *MessageType[T, E]
 }
 
-func (x *RepeatedMessage[T, E]) Init(dirtyParent, persistDirtyParent DirtyFunc, fieldType *MessageType[T, E]) {
+func (x *RepeatedMessage[T, E]) Init(dirtyParent DirtyFunc, fieldType *MessageType[T, E]) {
 	x.dirtyParent = dirtyParent
-	x.persistDirtyParent = persistDirtyParent
 	x.fieldType = fieldType
 }
 
@@ -305,8 +285,7 @@ func (x *RepeatedMessage[T, E]) Clear() {
 	}
 	clear(x.data)
 	x.data = x.data[:0]
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty(DirtyType_SyncAndPersist)
 }
 
 func (x *RepeatedMessage[T, E]) Get(i int) E {
@@ -321,14 +300,13 @@ func (x *RepeatedMessage[T, E]) Set(i int, v E) {
 		if x.fieldType.CheckDirtyParent(v) {
 			panic("the component should be removed from its original place first")
 		}
-		x.fieldType.SetDirtyParent(v, x.markDirty, x.markPersistDirty)
+		x.fieldType.SetDirtyParent(v, x.updateDirty)
 	}
 	if x.data[i] != nil {
 		x.fieldType.ClearDirtyParent(x.data[i])
 	}
 	x.data[i] = v
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty(DirtyType_SyncAndPersist)
 }
 
 func (x *RepeatedMessage[T, E]) Append(v ...E) {
@@ -340,12 +318,11 @@ func (x *RepeatedMessage[T, E]) Append(v ...E) {
 			if x.fieldType.CheckDirtyParent(v[i]) {
 				panic("the component should be removed from its original place first")
 			}
-			x.fieldType.SetDirtyParent(v[i], x.markDirty, x.markPersistDirty)
+			x.fieldType.SetDirtyParent(v[i], x.updateDirty)
 		}
 	}
 	x.data = append(x.data, v...)
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty(DirtyType_SyncAndPersist)
 }
 
 func (x *RepeatedMessage[T, E]) Index(v E) int {
@@ -384,12 +361,11 @@ func (x *RepeatedMessage[T, E]) Insert(i int, v ...E) {
 			if x.fieldType.CheckDirtyParent(v[j]) {
 				panic("the component should be removed from its original place first")
 			}
-			x.fieldType.SetDirtyParent(v[j], x.markDirty, x.markPersistDirty)
+			x.fieldType.SetDirtyParent(v[j], x.updateDirty)
 		}
 	}
 	x.data = slices.Insert(x.data, i, v...)
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty(DirtyType_SyncAndPersist)
 }
 
 func (x *RepeatedMessage[T, E]) Delete(i, j int) {
@@ -403,8 +379,7 @@ func (x *RepeatedMessage[T, E]) Delete(i, j int) {
 		}
 	}
 	x.data = slices.Delete(x.data, i, j)
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty(DirtyType_SyncAndPersist)
 }
 
 func (x *RepeatedMessage[T, E]) DeleteFunc(del func(E) bool) {
@@ -428,8 +403,7 @@ func (x *RepeatedMessage[T, E]) DeleteFunc(del func(E) bool) {
 	}
 	clear(x.data[i:])
 	x.data = x.data[:i]
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty(DirtyType_SyncAndPersist)
 }
 
 func (x *RepeatedMessage[T, E]) Replace(i, j int, v ...E) {
@@ -441,7 +415,7 @@ func (x *RepeatedMessage[T, E]) Replace(i, j int, v ...E) {
 			if x.fieldType.CheckDirtyParent(v[k]) {
 				panic("the component should be removed from its original place first")
 			}
-			x.fieldType.SetDirtyParent(v[k], x.markDirty, x.markPersistDirty)
+			x.fieldType.SetDirtyParent(v[k], x.updateDirty)
 		}
 	}
 	r := x.data[i:j:len(x.data)]
@@ -451,8 +425,7 @@ func (x *RepeatedMessage[T, E]) Replace(i, j int, v ...E) {
 		}
 	}
 	x.data = slices.Replace(x.data, i, j, v...)
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty(DirtyType_SyncAndPersist)
 }
 
 func (x *RepeatedMessage[T, E]) Reverse() {
@@ -460,8 +433,7 @@ func (x *RepeatedMessage[T, E]) Reverse() {
 		return
 	}
 	slices.Reverse(x.data)
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty(DirtyType_SyncAndPersist)
 }
 
 func (x *RepeatedMessage[T, E]) All() iter.Seq2[int, E] {
@@ -476,12 +448,42 @@ func (x *RepeatedMessage[T, E]) Values() iter.Seq[E] {
 	return slices.Values(x.data)
 }
 
-func (x *RepeatedMessage[T, E]) markDirty() {
-	if x.dirty {
+func (x *RepeatedMessage[T, E]) updateDirty(dirtyType DirtyType) {
+	switch dirtyType {
+	case DirtyType_Sync:
+		x.updateSync()
+	case DirtyType_Persist:
+		x.updatePersist()
+	case DirtyType_SyncAndPersist:
+		x.updateSyncAndPersist()
+	default:
+		// nothing to do
+	}
+}
+
+func (x *RepeatedMessage[T, E]) updateSync() {
+	if x.syncDirty {
 		return
 	}
-	x.dirty = true
-	x.dirtyParent.Invoke()
+	x.syncDirty = true
+	x.dirtyParent.Invoke(DirtyType_Sync)
+}
+
+func (x *RepeatedMessage[T, E]) updatePersist() {
+	if x.persistDirty {
+		return
+	}
+	x.persistDirty = true
+	x.dirtyParent.Invoke(DirtyType_Persist)
+}
+
+func (x *RepeatedMessage[T, E]) updateSyncAndPersist() {
+	if x.syncDirty && x.persistDirty {
+		return
+	}
+	x.syncDirty = true
+	x.persistDirty = true
+	x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
 }
 
 func (x *RepeatedMessage[T, E]) ClearDirty() {
@@ -490,15 +492,7 @@ func (x *RepeatedMessage[T, E]) ClearDirty() {
 			v.ClearDirty()
 		}
 	}
-	x.dirty = false
-}
-
-func (x *RepeatedMessage[T, E]) markPersistDirty() {
-	if x.persistDirty {
-		return
-	}
-	x.persistDirty = true
-	x.persistDirtyParent.Invoke()
+	x.syncDirty = false
 }
 
 func (x *RepeatedMessage[T, E]) ClearPersistDirty() {
@@ -537,7 +531,7 @@ func (x *RepeatedMessage[T, E]) Unmarshal(b []byte) error {
 		}
 		b = b[n:]
 		x.data = append(x.data, v)
-		x.fieldType.SetDirtyParent(v, x.markDirty, x.markPersistDirty)
+		x.fieldType.SetDirtyParent(v, x.updateDirty)
 	}
 	return nil
 }

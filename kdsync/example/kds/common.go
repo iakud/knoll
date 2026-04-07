@@ -22,16 +22,14 @@ type ItemData struct {
 	xxx_hidden_Name string
 	xxx_hidden_Count int32
 
-	dirty       uint64
-	dirtyParent kdsync.DirtyFunc
-
-	persistDirty       uint64
-	persistDirtyParent kdsync.DirtyFunc
+	syncDirty    uint64
+	persistDirty uint64
+	dirtyParent  kdsync.DirtyFunc
 }
 
 func NewItemData() *ItemData {
 	x := new(ItemData)
-	x.dirty = 1
+	x.syncDirty = 1
 	x.persistDirty = 1
 	return x
 }
@@ -45,8 +43,7 @@ func (x *ItemData) SetId(v int32) {
 		return
 	}
 	x.xxx_hidden_Id = v
-	x.markDirty(uint64(0x01) << 1)
-	x.markPersistDirty(uint64(0x01) << 1)
+	x.updateDirty(uint64(0x01) << 1, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *ItemData) GetName() string {
@@ -58,8 +55,7 @@ func (x *ItemData) SetName(v string) {
 		return
 	}
 	x.xxx_hidden_Name = v
-	x.markDirty(uint64(0x01) << 2)
-	x.markPersistDirty(uint64(0x01) << 2)
+	x.updateDirty(uint64(0x01) << 2, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *ItemData) GetCount() int32 {
@@ -71,8 +67,20 @@ func (x *ItemData) SetCount(v int32) {
 		return
 	}
 	x.xxx_hidden_Count = v
-	x.markDirty(uint64(0x01) << 3)
-	x.markPersistDirty(uint64(0x01) << 3)
+	x.updateDirty(uint64(0x01) << 3, kdsync.DirtyType_SyncAndPersist)
+}
+
+func (x *ItemData) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
+	switch dirtyType {
+	case kdsync.DirtyType_SyncAndPersist:
+		x.updateSyncAndPersist(n)
+	case kdsync.DirtyType_Sync:
+		x.updateSync(n)
+	case kdsync.DirtyType_Persist:
+		x.updatePersist(n)
+	default:
+		// nothing to do
+	}
 }
 
 func (x *ItemData) Marshal(b []byte) ([]byte, error) {
@@ -90,21 +98,21 @@ func (x *ItemData) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *ItemData) MarshalDirty(b []byte) ([]byte, error) {
-	if x.dirty&uint64(0x01) != 0 {
+	if x.syncDirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.dirty&(uint64(0x01)<<1) != 0 {
+	if x.syncDirty&(uint64(0x01)<<1) != 0 {
 		if b, err = wire.MarshalInt32(b, 1, x.xxx_hidden_Id); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<2) != 0 {
+	if x.syncDirty&(uint64(0x01)<<2) != 0 {
 		if b, err = wire.MarshalString(b, 2, x.xxx_hidden_Name); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<3) != 0 {
+	if x.syncDirty&(uint64(0x01)<<3) != 0 {
 		if b, err = wire.MarshalInt32(b, 3, x.xxx_hidden_Count); err != nil {
 			return b, err
 		}
@@ -173,56 +181,40 @@ func (x *ItemData) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, e
 	return b, nil
 }
 
-func (x *ItemData) markDirty(n uint64) {
-	if x.dirty&n == n {
+func (x *ItemData) updateSync(n uint64) {
+	if x.syncDirty&n == n {
 		return
 	}
-	x.dirty |= n
-	x.dirtyParent.Invoke()
+	x.syncDirty |= n
+	x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
 }
 
-func (x *ItemData) checkDirty(n uint64) bool {
-	return x.dirty&n != 0
-}
-
-func (x *ItemData) markDirtyAll() {
-	x.dirty = uint64(0x01)
-}
-
-func (x *ItemData) ClearDirty() {
-	if x.dirty == 0 {
-		return
-	}
-	x.dirty = 0
-}
-
-func (x *ItemData) checkDirtyParent() bool {
-	return x.dirtyParent != nil && x.persistDirtyParent != nil
-}
-
-func (x *ItemData) setDirtyParent(dirtyParent, persistDirtyParent kdsync.DirtyFunc) {
-	if dirtyParent == nil ||  persistDirtyParent == nil {
-		return
-	}
-	x.dirtyParent = dirtyParent
-	x.persistDirtyParent = persistDirtyParent
-	x.markDirtyAll()
-	x.markPersistDirtyAll()
-}
-
-func (x *ItemData) clearDirtyParent() {
-	x.dirtyParent = nil
-	x.persistDirtyParent = nil
-	x.ClearDirty()
-	x.ClearPersistDirty()
-}
-
-func (x *ItemData) markPersistDirty(n uint64) {
+func (x *ItemData) updatePersist(n uint64) {
 	if x.persistDirty&n == n {
 		return
 	}
 	x.persistDirty |= n
-	x.persistDirtyParent.Invoke()
+	x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
+}
+
+func (x *ItemData) updateSyncAndPersist(n uint64) {
+	if x.syncDirty&n == n && x.persistDirty&n == n {
+		return
+	}
+	x.syncDirty |= n
+	x.persistDirty |= n
+	x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
+}
+
+func (x *ItemData) checkDirty(n uint64) bool {
+	return x.syncDirty&n != 0
+}
+
+func (x *ItemData) ClearDirty() {
+	if x.syncDirty == 0 {
+		return
+	}
+	x.syncDirty = 0
 }
 
 func (x *ItemData) ClearPersistDirty() {
@@ -232,8 +224,20 @@ func (x *ItemData) ClearPersistDirty() {
 	x.persistDirty = 0
 }
 
-func (x *ItemData) markPersistDirtyAll() {
+func (x *ItemData) checkDirtyParent() bool {
+	return x.dirtyParent != nil
+}
+
+func (x *ItemData) setDirtyParent(dirtyParent kdsync.DirtyFunc) {
+	x.dirtyParent = dirtyParent
+	x.syncDirty = uint64(0x01)
 	x.persistDirty = uint64(0x01)
+}
+
+func (x *ItemData) clearDirtyParent() {
+	x.dirtyParent = nil
+	x.ClearDirty()
+	x.ClearPersistDirty()
 }
 
 var message_ItemData_type = kdsync.MessageType[ItemData, *ItemData]{

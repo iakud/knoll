@@ -16,19 +16,18 @@ type All struct {
 	xxx_hidden_Lists *AllList
 	xxx_hidden_Maps *AllMap
 
-	dirty uint64
-
+	syncDirty    uint64
 	persistDirty uint64
 }
 
 func NewAll(id int64) *All {
 	x := new(All)
 	x.id = id
+	x.syncDirty = 1
+	x.persistDirty = 1
 	x.setTypes(NewAllType())
 	x.setLists(NewAllList())
 	x.setMaps(NewAllMap())
-	x.dirty = 1
-	x.persistDirty = 1
 	return x
 }
 
@@ -41,27 +40,23 @@ func (x *All) GetTypes() *AllType {
 }
 
 func (x *All) setTypes(v *AllType) {
-	if v != nil && v.dirtyParent != nil {
+	if v != nil && v.checkDirtyParent() {
 		panic("the component should be removed from its original place first")
 	}
 	if v == x.xxx_hidden_Types {
 		return
 	}
 	if x.xxx_hidden_Types != nil {
-		x.xxx_hidden_Types.dirtyParent = nil
+		x.xxx_hidden_Types.clearDirtyParent()
 	}
 	x.xxx_hidden_Types = v
 
 	if v != nil {
-		v.dirtyParent = func() {
-			x.markDirty(uint64(0x01) << 1)
-		}
-		v.persistDirtyParent = func() {
-			x.markDirty(uint64(0x01) << 1)
-		}
+		v.setDirtyParent(func(dirtyType kdsync.DirtyType) {
+			x.updateDirty(uint64(0x01)<<1, dirtyType&kdsync.DirtyType_SyncAndPersist)
+		})
 	}
-	x.markDirty(uint64(0x01) << 1)
-	x.markPersistDirty(uint64(0x01) << 1)
+	x.updateDirty(uint64(0x01)<<1, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *All) GetLists() *AllList {
@@ -69,27 +64,23 @@ func (x *All) GetLists() *AllList {
 }
 
 func (x *All) setLists(v *AllList) {
-	if v != nil && v.dirtyParent != nil {
+	if v != nil && v.checkDirtyParent() {
 		panic("the component should be removed from its original place first")
 	}
 	if v == x.xxx_hidden_Lists {
 		return
 	}
 	if x.xxx_hidden_Lists != nil {
-		x.xxx_hidden_Lists.dirtyParent = nil
+		x.xxx_hidden_Lists.clearDirtyParent()
 	}
 	x.xxx_hidden_Lists = v
 
 	if v != nil {
-		v.dirtyParent = func() {
-			x.markDirty(uint64(0x01) << 2)
-		}
-		v.persistDirtyParent = func() {
-			x.markDirty(uint64(0x01) << 2)
-		}
+		v.setDirtyParent(func(dirtyType kdsync.DirtyType) {
+			x.updateDirty(uint64(0x01)<<2, dirtyType&kdsync.DirtyType_SyncAndPersist)
+		})
 	}
-	x.markDirty(uint64(0x01) << 2)
-	x.markPersistDirty(uint64(0x01) << 2)
+	x.updateDirty(uint64(0x01)<<2, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *All) GetMaps() *AllMap {
@@ -97,27 +88,36 @@ func (x *All) GetMaps() *AllMap {
 }
 
 func (x *All) setMaps(v *AllMap) {
-	if v != nil && v.dirtyParent != nil {
+	if v != nil && v.checkDirtyParent() {
 		panic("the component should be removed from its original place first")
 	}
 	if v == x.xxx_hidden_Maps {
 		return
 	}
 	if x.xxx_hidden_Maps != nil {
-		x.xxx_hidden_Maps.dirtyParent = nil
+		x.xxx_hidden_Maps.clearDirtyParent()
 	}
 	x.xxx_hidden_Maps = v
 
 	if v != nil {
-		v.dirtyParent = func() {
-			x.markDirty(uint64(0x01) << 3)
-		}
-		v.persistDirtyParent = func() {
-			x.markDirty(uint64(0x01) << 3)
-		}
+		v.setDirtyParent(func(dirtyType kdsync.DirtyType) {
+			x.updateDirty(uint64(0x01)<<3, dirtyType&kdsync.DirtyType_SyncAndPersist)
+		})
 	}
-	x.markDirty(uint64(0x01) << 3)
-	x.markPersistDirty(uint64(0x01) << 3)
+	x.updateDirty(uint64(0x01)<<3, kdsync.DirtyType_SyncAndPersist)
+}
+
+func (x *All) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
+	switch dirtyType {
+	case kdsync.DirtyType_SyncAndPersist:
+		x.updateSyncAndPersist(n)
+	case kdsync.DirtyType_Sync:
+		x.updateSync(n)
+	case kdsync.DirtyType_Persist:
+		x.updatePersist(n)
+	default:
+		// nothing to do
+	}
 }
 
 func (x *All) Marshal(b []byte) ([]byte, error) {
@@ -135,21 +135,21 @@ func (x *All) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *All) MarshalDirty(b []byte) ([]byte, error) {
-	if x.dirty&uint64(0x01) != 0 {
+	if x.syncDirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.dirty&(uint64(0x01)<<1) != 0 {
+	if x.syncDirty&(uint64(0x01)<<1) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 1, x.xxx_hidden_Types); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<2) != 0 {
+	if x.syncDirty&(uint64(0x01)<<2) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 2, x.xxx_hidden_Lists); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<3) != 0 {
+	if x.syncDirty&(uint64(0x01)<<3) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 3, x.xxx_hidden_Maps); err != nil {
 			return b, err
 		}
@@ -218,42 +218,50 @@ func (x *All) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error)
 	return b, nil
 }
 
-func (x *All) markDirty(n uint64) {
-	if x.dirty&n == n {
+func (x *All) updateSync(n uint64) {
+	if x.syncDirty&n == n {
 		return
 	}
-	x.dirty |= n
+	x.syncDirty |= n
 }
 
-func (x *All) checkDirty(n uint64) bool {
-	return x.dirty&n != 0
-}
-
-func (x *All) CheckDirty() bool {
-	return x.dirty != 0
-}
-
-func (x *All) ClearDirty() {
-	if x.dirty == 0 {
-		return
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<1) != 0 {
-		x.xxx_hidden_Types.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<2) != 0 {
-		x.xxx_hidden_Lists.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<3) != 0 {
-		x.xxx_hidden_Maps.ClearDirty()
-	}
-	x.dirty = 0
-}
-
-func (x *All) markPersistDirty(n uint64) {
+func (x *All) updatePersist(n uint64) {
 	if x.persistDirty&n == n {
 		return
 	}
 	x.persistDirty |= n
+}
+
+func (x *All) updateSyncAndPersist(n uint64) {
+	if x.syncDirty&n == n && x.persistDirty&n == n {
+		return
+	}
+	x.syncDirty |= n
+	x.persistDirty |= n
+}
+
+func (x *All) checkDirty(n uint64) bool {
+	return x.syncDirty&n != 0
+}
+
+func (x *All) CheckDirty() bool {
+	return x.syncDirty != 0
+}
+
+func (x *All) ClearDirty() {
+	if x.syncDirty == 0 {
+		return
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<1) != 0 {
+		x.xxx_hidden_Types.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<2) != 0 {
+		x.xxx_hidden_Lists.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<3) != 0 {
+		x.xxx_hidden_Maps.ClearDirty()
+	}
+	x.syncDirty = 0
 }
 
 func (x *All) ClearPersistDirty() {
@@ -303,16 +311,14 @@ type AllType struct {
 	xxx_hidden_EnumVal ItemType
 	xxx_hidden_ItemData *ItemData
 
-	dirty       uint64
-	dirtyParent kdsync.DirtyFunc
-
-	persistDirty       uint64
-	persistDirtyParent kdsync.DirtyFunc
+	syncDirty    uint64
+	persistDirty uint64
+	dirtyParent  kdsync.DirtyFunc
 }
 
 func NewAllType() *AllType {
 	x := new(AllType)
-	x.dirty = 1
+	x.syncDirty = 1
 	x.persistDirty = 1
 	x.setItemData(NewItemData())
 	return x
@@ -327,8 +333,7 @@ func (x *AllType) SetInt32Val(v int32) {
 		return
 	}
 	x.xxx_hidden_Int32Val = v
-	x.markDirty(uint64(0x01) << 1)
-	x.markPersistDirty(uint64(0x01) << 1)
+	x.updateDirty(uint64(0x01) << 1, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetInt64Val() int64 {
@@ -340,8 +345,7 @@ func (x *AllType) SetInt64Val(v int64) {
 		return
 	}
 	x.xxx_hidden_Int64Val = v
-	x.markDirty(uint64(0x01) << 2)
-	x.markPersistDirty(uint64(0x01) << 2)
+	x.updateDirty(uint64(0x01) << 2, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetUint32Val() uint32 {
@@ -353,8 +357,7 @@ func (x *AllType) SetUint32Val(v uint32) {
 		return
 	}
 	x.xxx_hidden_Uint32Val = v
-	x.markDirty(uint64(0x01) << 3)
-	x.markPersistDirty(uint64(0x01) << 3)
+	x.updateDirty(uint64(0x01) << 3, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetUint64Val() uint64 {
@@ -366,8 +369,7 @@ func (x *AllType) SetUint64Val(v uint64) {
 		return
 	}
 	x.xxx_hidden_Uint64Val = v
-	x.markDirty(uint64(0x01) << 4)
-	x.markPersistDirty(uint64(0x01) << 4)
+	x.updateDirty(uint64(0x01) << 4, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetSint32Val() int32 {
@@ -379,8 +381,7 @@ func (x *AllType) SetSint32Val(v int32) {
 		return
 	}
 	x.xxx_hidden_Sint32Val = v
-	x.markDirty(uint64(0x01) << 5)
-	x.markPersistDirty(uint64(0x01) << 5)
+	x.updateDirty(uint64(0x01) << 5, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetSint64Val() int64 {
@@ -392,8 +393,7 @@ func (x *AllType) SetSint64Val(v int64) {
 		return
 	}
 	x.xxx_hidden_Sint64Val = v
-	x.markDirty(uint64(0x01) << 6)
-	x.markPersistDirty(uint64(0x01) << 6)
+	x.updateDirty(uint64(0x01) << 6, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetFixed32Val() uint32 {
@@ -405,8 +405,7 @@ func (x *AllType) SetFixed32Val(v uint32) {
 		return
 	}
 	x.xxx_hidden_Fixed32Val = v
-	x.markDirty(uint64(0x01) << 7)
-	x.markPersistDirty(uint64(0x01) << 7)
+	x.updateDirty(uint64(0x01) << 7, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetFixed64Val() uint64 {
@@ -418,8 +417,7 @@ func (x *AllType) SetFixed64Val(v uint64) {
 		return
 	}
 	x.xxx_hidden_Fixed64Val = v
-	x.markDirty(uint64(0x01) << 8)
-	x.markPersistDirty(uint64(0x01) << 8)
+	x.updateDirty(uint64(0x01) << 8, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetSfixed32Val() int32 {
@@ -431,8 +429,7 @@ func (x *AllType) SetSfixed32Val(v int32) {
 		return
 	}
 	x.xxx_hidden_Sfixed32Val = v
-	x.markDirty(uint64(0x01) << 9)
-	x.markPersistDirty(uint64(0x01) << 9)
+	x.updateDirty(uint64(0x01) << 9, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetSfixed64Val() int64 {
@@ -444,8 +441,7 @@ func (x *AllType) SetSfixed64Val(v int64) {
 		return
 	}
 	x.xxx_hidden_Sfixed64Val = v
-	x.markDirty(uint64(0x01) << 10)
-	x.markPersistDirty(uint64(0x01) << 10)
+	x.updateDirty(uint64(0x01) << 10, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetFloatVal() float32 {
@@ -457,8 +453,7 @@ func (x *AllType) SetFloatVal(v float32) {
 		return
 	}
 	x.xxx_hidden_FloatVal = v
-	x.markDirty(uint64(0x01) << 11)
-	x.markPersistDirty(uint64(0x01) << 11)
+	x.updateDirty(uint64(0x01) << 11, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetDoubleVal() float64 {
@@ -470,8 +465,7 @@ func (x *AllType) SetDoubleVal(v float64) {
 		return
 	}
 	x.xxx_hidden_DoubleVal = v
-	x.markDirty(uint64(0x01) << 12)
-	x.markPersistDirty(uint64(0x01) << 12)
+	x.updateDirty(uint64(0x01) << 12, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetBoolVal() bool {
@@ -483,8 +477,7 @@ func (x *AllType) SetBoolVal(v bool) {
 		return
 	}
 	x.xxx_hidden_BoolVal = v
-	x.markDirty(uint64(0x01) << 13)
-	x.markPersistDirty(uint64(0x01) << 13)
+	x.updateDirty(uint64(0x01) << 13, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetStringVal() string {
@@ -496,8 +489,7 @@ func (x *AllType) SetStringVal(v string) {
 		return
 	}
 	x.xxx_hidden_StringVal = v
-	x.markDirty(uint64(0x01) << 14)
-	x.markPersistDirty(uint64(0x01) << 14)
+	x.updateDirty(uint64(0x01) << 14, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetBytesVal() []byte {
@@ -509,8 +501,7 @@ func (x *AllType) SetBytesVal(v []byte) {
 		return
 	}
 	x.xxx_hidden_BytesVal = v
-	x.markDirty(uint64(0x01) << 15)
-	x.markPersistDirty(uint64(0x01) << 15)
+	x.updateDirty(uint64(0x01) << 15, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetTimestampVal() time.Time {
@@ -522,8 +513,7 @@ func (x *AllType) SetTimestampVal(v time.Time) {
 		return
 	}
 	x.xxx_hidden_TimestampVal = v
-	x.markDirty(uint64(0x01) << 16)
-	x.markPersistDirty(uint64(0x01) << 16)
+	x.updateDirty(uint64(0x01) << 16, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetDurationVal() time.Duration {
@@ -535,8 +525,7 @@ func (x *AllType) SetDurationVal(v time.Duration) {
 		return
 	}
 	x.xxx_hidden_DurationVal = v
-	x.markDirty(uint64(0x01) << 17)
-	x.markPersistDirty(uint64(0x01) << 17)
+	x.updateDirty(uint64(0x01) << 17, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetEmptyVal() struct{} {
@@ -548,8 +537,7 @@ func (x *AllType) SetEmptyVal(v struct{}) {
 		return
 	}
 	x.xxx_hidden_EmptyVal = v
-	x.markDirty(uint64(0x01) << 18)
-	x.markPersistDirty(uint64(0x01) << 18)
+	x.updateDirty(uint64(0x01) << 18, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetEnumVal() ItemType {
@@ -561,8 +549,7 @@ func (x *AllType) SetEnumVal(v ItemType) {
 		return
 	}
 	x.xxx_hidden_EnumVal = v
-	x.markDirty(uint64(0x01) << 19)
-	x.markPersistDirty(uint64(0x01) << 19)
+	x.updateDirty(uint64(0x01) << 19, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) GetItemData() *ItemData {
@@ -570,27 +557,36 @@ func (x *AllType) GetItemData() *ItemData {
 }
 
 func (x *AllType) setItemData(v *ItemData) {
-	if v != nil && v.dirtyParent != nil {
+	if v != nil && v.checkDirtyParent() {
 		panic("the component should be removed from its original place first")
 	}
 	if v == x.xxx_hidden_ItemData {
 		return
 	}
 	if x.xxx_hidden_ItemData != nil {
-		x.xxx_hidden_ItemData.dirtyParent = nil
+		x.xxx_hidden_ItemData.clearDirtyParent()
 	}
 	x.xxx_hidden_ItemData = v
 
 	if v != nil {
-		v.dirtyParent = func() {
-			x.markDirty(uint64(0x01) << 20)
-		}
-		v.persistDirtyParent = func() {
-			x.markDirty(uint64(0x01) << 20)
-		}
+		v.setDirtyParent(func(dirtyType kdsync.DirtyType) {
+			x.updateDirty(uint64(0x01)<<20, dirtyType&kdsync.DirtyType_SyncAndPersist)
+		})
 	}
-	x.markDirty(uint64(0x01) << 20)
-	x.markPersistDirty(uint64(0x01) << 20)
+	x.updateDirty(uint64(0x01)<<20, kdsync.DirtyType_SyncAndPersist)
+}
+
+func (x *AllType) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
+	switch dirtyType {
+	case kdsync.DirtyType_SyncAndPersist:
+		x.updateSyncAndPersist(n)
+	case kdsync.DirtyType_Sync:
+		x.updateSync(n)
+	case kdsync.DirtyType_Persist:
+		x.updatePersist(n)
+	default:
+		// nothing to do
+	}
 }
 
 func (x *AllType) Marshal(b []byte) ([]byte, error) {
@@ -660,107 +656,107 @@ func (x *AllType) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *AllType) MarshalDirty(b []byte) ([]byte, error) {
-	if x.dirty&uint64(0x01) != 0 {
+	if x.syncDirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.dirty&(uint64(0x01)<<1) != 0 {
+	if x.syncDirty&(uint64(0x01)<<1) != 0 {
 		if b, err = wire.MarshalInt32(b, 1, x.xxx_hidden_Int32Val); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<2) != 0 {
+	if x.syncDirty&(uint64(0x01)<<2) != 0 {
 		if b, err = wire.MarshalInt64(b, 2, x.xxx_hidden_Int64Val); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<3) != 0 {
+	if x.syncDirty&(uint64(0x01)<<3) != 0 {
 		if b, err = wire.MarshalUint32(b, 3, x.xxx_hidden_Uint32Val); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<4) != 0 {
+	if x.syncDirty&(uint64(0x01)<<4) != 0 {
 		if b, err = wire.MarshalUint64(b, 4, x.xxx_hidden_Uint64Val); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<5) != 0 {
+	if x.syncDirty&(uint64(0x01)<<5) != 0 {
 		if b, err = wire.MarshalSint32(b, 5, x.xxx_hidden_Sint32Val); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<6) != 0 {
+	if x.syncDirty&(uint64(0x01)<<6) != 0 {
 		if b, err = wire.MarshalSint64(b, 6, x.xxx_hidden_Sint64Val); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<7) != 0 {
+	if x.syncDirty&(uint64(0x01)<<7) != 0 {
 		if b, err = wire.MarshalFixed32(b, 7, x.xxx_hidden_Fixed32Val); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<8) != 0 {
+	if x.syncDirty&(uint64(0x01)<<8) != 0 {
 		if b, err = wire.MarshalFixed64(b, 8, x.xxx_hidden_Fixed64Val); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<9) != 0 {
+	if x.syncDirty&(uint64(0x01)<<9) != 0 {
 		if b, err = wire.MarshalSfixed32(b, 9, x.xxx_hidden_Sfixed32Val); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<10) != 0 {
+	if x.syncDirty&(uint64(0x01)<<10) != 0 {
 		if b, err = wire.MarshalSfixed64(b, 10, x.xxx_hidden_Sfixed64Val); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<11) != 0 {
+	if x.syncDirty&(uint64(0x01)<<11) != 0 {
 		if b, err = wire.MarshalFloat(b, 11, x.xxx_hidden_FloatVal); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<12) != 0 {
+	if x.syncDirty&(uint64(0x01)<<12) != 0 {
 		if b, err = wire.MarshalDouble(b, 12, x.xxx_hidden_DoubleVal); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<13) != 0 {
+	if x.syncDirty&(uint64(0x01)<<13) != 0 {
 		if b, err = wire.MarshalBool(b, 13, x.xxx_hidden_BoolVal); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<14) != 0 {
+	if x.syncDirty&(uint64(0x01)<<14) != 0 {
 		if b, err = wire.MarshalString(b, 14, x.xxx_hidden_StringVal); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<15) != 0 {
+	if x.syncDirty&(uint64(0x01)<<15) != 0 {
 		if b, err = wire.MarshalBytes(b, 15, x.xxx_hidden_BytesVal); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<16) != 0 {
+	if x.syncDirty&(uint64(0x01)<<16) != 0 {
 		if b, err = wire.MarshalTimestamp(b, 16, x.xxx_hidden_TimestampVal); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<17) != 0 {
+	if x.syncDirty&(uint64(0x01)<<17) != 0 {
 		if b, err = wire.MarshalDuration(b, 17, x.xxx_hidden_DurationVal); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<18) != 0 {
+	if x.syncDirty&(uint64(0x01)<<18) != 0 {
 		if b, err = wire.MarshalEmpty(b, 18, x.xxx_hidden_EmptyVal); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<19) != 0 {
+	if x.syncDirty&(uint64(0x01)<<19) != 0 {
 		// FIXME: enum value
 		if b, err = wire.MarshalInt32(b, 19, int32(x.xxx_hidden_EnumVal)); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<20) != 0 {
+	if x.syncDirty&(uint64(0x01)<<20) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 20, x.xxx_hidden_ItemData); err != nil {
 			return b, err
 		}
@@ -1000,59 +996,43 @@ func (x *AllType) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, er
 	return b, nil
 }
 
-func (x *AllType) markDirty(n uint64) {
-	if x.dirty&n == n {
+func (x *AllType) updateSync(n uint64) {
+	if x.syncDirty&n == n {
 		return
 	}
-	x.dirty |= n
-	x.dirtyParent.Invoke()
+	x.syncDirty |= n
+	x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
 }
 
-func (x *AllType) checkDirty(n uint64) bool {
-	return x.dirty&n != 0
-}
-
-func (x *AllType) markDirtyAll() {
-	x.dirty = uint64(0x01)
-}
-
-func (x *AllType) ClearDirty() {
-	if x.dirty == 0 {
-		return
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<20) != 0 {
-		x.xxx_hidden_ItemData.ClearDirty()
-	}
-	x.dirty = 0
-}
-
-func (x *AllType) checkDirtyParent() bool {
-	return x.dirtyParent != nil && x.persistDirtyParent != nil
-}
-
-func (x *AllType) setDirtyParent(dirtyParent, persistDirtyParent kdsync.DirtyFunc) {
-	if dirtyParent == nil ||  persistDirtyParent == nil {
-		return
-	}
-	x.dirtyParent = dirtyParent
-	x.persistDirtyParent = persistDirtyParent
-	x.markDirtyAll()
-	x.markPersistDirtyAll()
-}
-
-func (x *AllType) clearDirtyParent() {
-	x.dirtyParent = nil
-	x.persistDirtyParent = nil
-	x.ClearDirty()
-	x.ClearPersistDirty()
-}
-
-func (x *AllType) markPersistDirty(n uint64) {
+func (x *AllType) updatePersist(n uint64) {
 	if x.persistDirty&n == n {
 		return
 	}
 	x.persistDirty |= n
-	x.persistDirtyParent.Invoke()
+	x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
+}
+
+func (x *AllType) updateSyncAndPersist(n uint64) {
+	if x.syncDirty&n == n && x.persistDirty&n == n {
+		return
+	}
+	x.syncDirty |= n
+	x.persistDirty |= n
+	x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
+}
+
+func (x *AllType) checkDirty(n uint64) bool {
+	return x.syncDirty&n != 0
+}
+
+func (x *AllType) ClearDirty() {
+	if x.syncDirty == 0 {
+		return
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<20) != 0 {
+		x.xxx_hidden_ItemData.ClearDirty()
+	}
+	x.syncDirty = 0
 }
 
 func (x *AllType) ClearPersistDirty() {
@@ -1065,8 +1045,20 @@ func (x *AllType) ClearPersistDirty() {
 	x.persistDirty = 0
 }
 
-func (x *AllType) markPersistDirtyAll() {
+func (x *AllType) checkDirtyParent() bool {
+	return x.dirtyParent != nil
+}
+
+func (x *AllType) setDirtyParent(dirtyParent kdsync.DirtyFunc) {
+	x.dirtyParent = dirtyParent
+	x.syncDirty = uint64(0x01)
 	x.persistDirty = uint64(0x01)
+}
+
+func (x *AllType) clearDirtyParent() {
+	x.dirtyParent = nil
+	x.ClearDirty()
+	x.ClearPersistDirty()
 }
 
 var message_AllType_type = kdsync.MessageType[AllType, *AllType]{
@@ -1089,16 +1081,14 @@ type AllList struct {
 	xxx_hidden_EnumList kdsync.RepeatedField[ItemType]
 	xxx_hidden_ItemList kdsync.RepeatedMessage[ItemData, *ItemData]
 
-	dirty       uint64
-	dirtyParent kdsync.DirtyFunc
-
-	persistDirty       uint64
-	persistDirtyParent kdsync.DirtyFunc
+	syncDirty    uint64
+	persistDirty uint64
+	dirtyParent  kdsync.DirtyFunc
 }
 
 func NewAllList() *AllList {
 	x := new(AllList)
-	x.dirty = 1
+	x.syncDirty = 1
 	x.persistDirty = 1
 	x.initInt32List()
 	x.initInt64List()
@@ -1119,13 +1109,10 @@ func (x *AllList) GetInt32List() kdsync.Repeated[int32] {
 }
 
 func (x *AllList) initInt32List() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 1)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 1, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 1)
-	}
-	x.xxx_hidden_Int32List.Init(dirtyFunc, persistDirtyFunc, kdsync.Int32Codec())
+	x.xxx_hidden_Int32List.Init(dirtyFunc, kdsync.Int32Codec())
 }
 
 func (x *AllList) GetInt64List() kdsync.Repeated[int64] {
@@ -1133,13 +1120,10 @@ func (x *AllList) GetInt64List() kdsync.Repeated[int64] {
 }
 
 func (x *AllList) initInt64List() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 2)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 2, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 2)
-	}
-	x.xxx_hidden_Int64List.Init(dirtyFunc, persistDirtyFunc, kdsync.Int64Codec())
+	x.xxx_hidden_Int64List.Init(dirtyFunc, kdsync.Int64Codec())
 }
 
 func (x *AllList) GetFloatList() kdsync.Repeated[float32] {
@@ -1147,13 +1131,10 @@ func (x *AllList) GetFloatList() kdsync.Repeated[float32] {
 }
 
 func (x *AllList) initFloatList() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 3)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 3, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 3)
-	}
-	x.xxx_hidden_FloatList.Init(dirtyFunc, persistDirtyFunc, kdsync.Float32Codec())
+	x.xxx_hidden_FloatList.Init(dirtyFunc, kdsync.Float32Codec())
 }
 
 func (x *AllList) GetDoubleList() kdsync.Repeated[float64] {
@@ -1161,13 +1142,10 @@ func (x *AllList) GetDoubleList() kdsync.Repeated[float64] {
 }
 
 func (x *AllList) initDoubleList() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 4)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 4, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 4)
-	}
-	x.xxx_hidden_DoubleList.Init(dirtyFunc, persistDirtyFunc, kdsync.Float64Codec())
+	x.xxx_hidden_DoubleList.Init(dirtyFunc, kdsync.Float64Codec())
 }
 
 func (x *AllList) GetBoolList() kdsync.Repeated[bool] {
@@ -1175,13 +1153,10 @@ func (x *AllList) GetBoolList() kdsync.Repeated[bool] {
 }
 
 func (x *AllList) initBoolList() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 5)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 5, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 5)
-	}
-	x.xxx_hidden_BoolList.Init(dirtyFunc, persistDirtyFunc, kdsync.BoolCodec())
+	x.xxx_hidden_BoolList.Init(dirtyFunc, kdsync.BoolCodec())
 }
 
 func (x *AllList) GetStringList() kdsync.Repeated[string] {
@@ -1189,13 +1164,10 @@ func (x *AllList) GetStringList() kdsync.Repeated[string] {
 }
 
 func (x *AllList) initStringList() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 6)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 6, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 6)
-	}
-	x.xxx_hidden_StringList.Init(dirtyFunc, persistDirtyFunc, kdsync.StringCodec())
+	x.xxx_hidden_StringList.Init(dirtyFunc, kdsync.StringCodec())
 }
 
 func (x *AllList) GetTimestampList() kdsync.Repeated[time.Time] {
@@ -1203,13 +1175,10 @@ func (x *AllList) GetTimestampList() kdsync.Repeated[time.Time] {
 }
 
 func (x *AllList) initTimestampList() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 7)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 7, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 7)
-	}
-	x.xxx_hidden_TimestampList.Init(dirtyFunc, persistDirtyFunc, kdsync.TimestampCodec())
+	x.xxx_hidden_TimestampList.Init(dirtyFunc, kdsync.TimestampCodec())
 }
 
 func (x *AllList) GetDurationList() kdsync.Repeated[time.Duration] {
@@ -1217,13 +1186,10 @@ func (x *AllList) GetDurationList() kdsync.Repeated[time.Duration] {
 }
 
 func (x *AllList) initDurationList() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 8)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 8, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 8)
-	}
-	x.xxx_hidden_DurationList.Init(dirtyFunc, persistDirtyFunc, kdsync.DurationCodec())
+	x.xxx_hidden_DurationList.Init(dirtyFunc, kdsync.DurationCodec())
 }
 
 func (x *AllList) GetEmptyList() kdsync.Repeated[struct{}] {
@@ -1231,13 +1197,10 @@ func (x *AllList) GetEmptyList() kdsync.Repeated[struct{}] {
 }
 
 func (x *AllList) initEmptyList() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 9)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 9, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 9)
-	}
-	x.xxx_hidden_EmptyList.Init(dirtyFunc, persistDirtyFunc, kdsync.EmptyCodec())
+	x.xxx_hidden_EmptyList.Init(dirtyFunc, kdsync.EmptyCodec())
 }
 
 func (x *AllList) GetEnumList() kdsync.Repeated[ItemType] {
@@ -1245,13 +1208,10 @@ func (x *AllList) GetEnumList() kdsync.Repeated[ItemType] {
 }
 
 func (x *AllList) initEnumList() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 10)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 10, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 10)
-	}
-	x.xxx_hidden_EnumList.Init(dirtyFunc, persistDirtyFunc, kdsync.EnumCodec[ItemType]())
+	x.xxx_hidden_EnumList.Init(dirtyFunc, kdsync.EnumCodec[ItemType]())
 }
 
 func (x *AllList) GetItemList() kdsync.Repeated[*ItemData] {
@@ -1259,13 +1219,23 @@ func (x *AllList) GetItemList() kdsync.Repeated[*ItemData] {
 }
 
 func (x *AllList) initItemList() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 11)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 11, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 11)
+	x.xxx_hidden_ItemList.Init(dirtyFunc, &message_ItemData_type)
+}
+
+func (x *AllList) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
+	switch dirtyType {
+	case kdsync.DirtyType_SyncAndPersist:
+		x.updateSyncAndPersist(n)
+	case kdsync.DirtyType_Sync:
+		x.updateSync(n)
+	case kdsync.DirtyType_Persist:
+		x.updatePersist(n)
+	default:
+		// nothing to do
 	}
-	x.xxx_hidden_ItemList.Init(dirtyFunc, persistDirtyFunc, &message_ItemData_type)
 }
 
 func (x *AllList) Marshal(b []byte) ([]byte, error) {
@@ -1307,61 +1277,61 @@ func (x *AllList) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *AllList) MarshalDirty(b []byte) ([]byte, error) {
-	if x.dirty&uint64(0x01) != 0 {
+	if x.syncDirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.dirty&(uint64(0x01)<<1) != 0 {
+	if x.syncDirty&(uint64(0x01)<<1) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 1, &x.xxx_hidden_Int32List); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<2) != 0 {
+	if x.syncDirty&(uint64(0x01)<<2) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 2, &x.xxx_hidden_Int64List); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<3) != 0 {
+	if x.syncDirty&(uint64(0x01)<<3) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 3, &x.xxx_hidden_FloatList); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<4) != 0 {
+	if x.syncDirty&(uint64(0x01)<<4) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 4, &x.xxx_hidden_DoubleList); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<5) != 0 {
+	if x.syncDirty&(uint64(0x01)<<5) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 5, &x.xxx_hidden_BoolList); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<6) != 0 {
+	if x.syncDirty&(uint64(0x01)<<6) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 6, &x.xxx_hidden_StringList); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<7) != 0 {
+	if x.syncDirty&(uint64(0x01)<<7) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 7, &x.xxx_hidden_TimestampList); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<8) != 0 {
+	if x.syncDirty&(uint64(0x01)<<8) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 8, &x.xxx_hidden_DurationList); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<9) != 0 {
+	if x.syncDirty&(uint64(0x01)<<9) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 9, &x.xxx_hidden_EmptyList); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<10) != 0 {
+	if x.syncDirty&(uint64(0x01)<<10) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 10, &x.xxx_hidden_EnumList); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<11) != 0 {
+	if x.syncDirty&(uint64(0x01)<<11) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 11, &x.xxx_hidden_ItemList); err != nil {
 			return b, err
 		}
@@ -1510,89 +1480,73 @@ func (x *AllList) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, er
 	return b, nil
 }
 
-func (x *AllList) markDirty(n uint64) {
-	if x.dirty&n == n {
+func (x *AllList) updateSync(n uint64) {
+	if x.syncDirty&n == n {
 		return
 	}
-	x.dirty |= n
-	x.dirtyParent.Invoke()
+	x.syncDirty |= n
+	x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
 }
 
-func (x *AllList) checkDirty(n uint64) bool {
-	return x.dirty&n != 0
-}
-
-func (x *AllList) markDirtyAll() {
-	x.dirty = uint64(0x01)
-}
-
-func (x *AllList) ClearDirty() {
-	if x.dirty == 0 {
-		return
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<1) != 0 {
-		x.xxx_hidden_Int32List.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<2) != 0 {
-		x.xxx_hidden_Int64List.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<3) != 0 {
-		x.xxx_hidden_FloatList.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<4) != 0 {
-		x.xxx_hidden_DoubleList.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<5) != 0 {
-		x.xxx_hidden_BoolList.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<6) != 0 {
-		x.xxx_hidden_StringList.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<7) != 0 {
-		x.xxx_hidden_TimestampList.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<8) != 0 {
-		x.xxx_hidden_DurationList.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<9) != 0 {
-		x.xxx_hidden_EmptyList.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<10) != 0 {
-		x.xxx_hidden_EnumList.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<11) != 0 {
-		x.xxx_hidden_ItemList.ClearDirty()
-	}
-	x.dirty = 0
-}
-
-func (x *AllList) checkDirtyParent() bool {
-	return x.dirtyParent != nil && x.persistDirtyParent != nil
-}
-
-func (x *AllList) setDirtyParent(dirtyParent, persistDirtyParent kdsync.DirtyFunc) {
-	if dirtyParent == nil ||  persistDirtyParent == nil {
-		return
-	}
-	x.dirtyParent = dirtyParent
-	x.persistDirtyParent = persistDirtyParent
-	x.markDirtyAll()
-	x.markPersistDirtyAll()
-}
-
-func (x *AllList) clearDirtyParent() {
-	x.dirtyParent = nil
-	x.persistDirtyParent = nil
-	x.ClearDirty()
-	x.ClearPersistDirty()
-}
-
-func (x *AllList) markPersistDirty(n uint64) {
+func (x *AllList) updatePersist(n uint64) {
 	if x.persistDirty&n == n {
 		return
 	}
 	x.persistDirty |= n
-	x.persistDirtyParent.Invoke()
+	x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
+}
+
+func (x *AllList) updateSyncAndPersist(n uint64) {
+	if x.syncDirty&n == n && x.persistDirty&n == n {
+		return
+	}
+	x.syncDirty |= n
+	x.persistDirty |= n
+	x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
+}
+
+func (x *AllList) checkDirty(n uint64) bool {
+	return x.syncDirty&n != 0
+}
+
+func (x *AllList) ClearDirty() {
+	if x.syncDirty == 0 {
+		return
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<1) != 0 {
+		x.xxx_hidden_Int32List.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<2) != 0 {
+		x.xxx_hidden_Int64List.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<3) != 0 {
+		x.xxx_hidden_FloatList.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<4) != 0 {
+		x.xxx_hidden_DoubleList.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<5) != 0 {
+		x.xxx_hidden_BoolList.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<6) != 0 {
+		x.xxx_hidden_StringList.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<7) != 0 {
+		x.xxx_hidden_TimestampList.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<8) != 0 {
+		x.xxx_hidden_DurationList.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<9) != 0 {
+		x.xxx_hidden_EmptyList.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<10) != 0 {
+		x.xxx_hidden_EnumList.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<11) != 0 {
+		x.xxx_hidden_ItemList.ClearDirty()
+	}
+	x.syncDirty = 0
 }
 
 func (x *AllList) ClearPersistDirty() {
@@ -1635,8 +1589,20 @@ func (x *AllList) ClearPersistDirty() {
 	x.persistDirty = 0
 }
 
-func (x *AllList) markPersistDirtyAll() {
+func (x *AllList) checkDirtyParent() bool {
+	return x.dirtyParent != nil
+}
+
+func (x *AllList) setDirtyParent(dirtyParent kdsync.DirtyFunc) {
+	x.dirtyParent = dirtyParent
+	x.syncDirty = uint64(0x01)
 	x.persistDirty = uint64(0x01)
+}
+
+func (x *AllList) clearDirtyParent() {
+	x.dirtyParent = nil
+	x.ClearDirty()
+	x.ClearPersistDirty()
 }
 
 var message_AllList_type = kdsync.MessageType[AllList, *AllList]{
@@ -1676,16 +1642,14 @@ type AllMap struct {
 	xxx_hidden_BoolEnum kdsync.MapField[bool, ItemType]
 	xxx_hidden_BoolItemData kdsync.MapMessage[bool, ItemData, *ItemData]
 
-	dirty       uint64
-	dirtyParent kdsync.DirtyFunc
-
-	persistDirty       uint64
-	persistDirtyParent kdsync.DirtyFunc
+	syncDirty    uint64
+	persistDirty uint64
+	dirtyParent  kdsync.DirtyFunc
 }
 
 func NewAllMap() *AllMap {
 	x := new(AllMap)
-	x.dirty = 1
+	x.syncDirty = 1
 	x.persistDirty = 1
 	x.initInt32Int32()
 	x.initInt32String()
@@ -1723,13 +1687,10 @@ func (x *AllMap) GetInt32Int32() kdsync.Map[int32, int32] {
 }
 
 func (x *AllMap) initInt32Int32() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 1)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 1, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 1)
-	}
-	x.xxx_hidden_Int32Int32.Init(dirtyFunc, persistDirtyFunc, kdsync.Int32Codec(), kdsync.Int32Codec())
+	x.xxx_hidden_Int32Int32.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.Int32Codec())
 }
 
 func (x *AllMap) GetInt32String() kdsync.Map[int32, string] {
@@ -1737,13 +1698,10 @@ func (x *AllMap) GetInt32String() kdsync.Map[int32, string] {
 }
 
 func (x *AllMap) initInt32String() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 2)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 2, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 2)
-	}
-	x.xxx_hidden_Int32String.Init(dirtyFunc, persistDirtyFunc, kdsync.Int32Codec(), kdsync.StringCodec())
+	x.xxx_hidden_Int32String.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.StringCodec())
 }
 
 func (x *AllMap) GetInt32Timestamp() kdsync.Map[int32, time.Time] {
@@ -1751,13 +1709,10 @@ func (x *AllMap) GetInt32Timestamp() kdsync.Map[int32, time.Time] {
 }
 
 func (x *AllMap) initInt32Timestamp() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 3)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 3, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 3)
-	}
-	x.xxx_hidden_Int32Timestamp.Init(dirtyFunc, persistDirtyFunc, kdsync.Int32Codec(), kdsync.TimestampCodec())
+	x.xxx_hidden_Int32Timestamp.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.TimestampCodec())
 }
 
 func (x *AllMap) GetInt32Duration() kdsync.Map[int32, time.Duration] {
@@ -1765,13 +1720,10 @@ func (x *AllMap) GetInt32Duration() kdsync.Map[int32, time.Duration] {
 }
 
 func (x *AllMap) initInt32Duration() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 4)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 4, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 4)
-	}
-	x.xxx_hidden_Int32Duration.Init(dirtyFunc, persistDirtyFunc, kdsync.Int32Codec(), kdsync.DurationCodec())
+	x.xxx_hidden_Int32Duration.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.DurationCodec())
 }
 
 func (x *AllMap) GetInt32Empty() kdsync.Map[int32, struct{}] {
@@ -1779,11 +1731,10 @@ func (x *AllMap) GetInt32Empty() kdsync.Map[int32, struct{}] {
 }
 
 func (x *AllMap) initInt32Empty() {
-	dirtyFunc := kdsync.NoSync
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 5)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 5, dirtyType&kdsync.DirtyType_Persist)
 	}
-	x.xxx_hidden_Int32Empty.Init(dirtyFunc, persistDirtyFunc, kdsync.Int32Codec(), kdsync.EmptyCodec())
+	x.xxx_hidden_Int32Empty.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.EmptyCodec())
 }
 
 func (x *AllMap) GetInt32Enum() kdsync.Map[int32, ItemType] {
@@ -1791,13 +1742,10 @@ func (x *AllMap) GetInt32Enum() kdsync.Map[int32, ItemType] {
 }
 
 func (x *AllMap) initInt32Enum() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 6)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 6, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 6)
-	}
-	x.xxx_hidden_Int32Enum.Init(dirtyFunc, persistDirtyFunc, kdsync.Int32Codec(), kdsync.EnumCodec[ItemType]())
+	x.xxx_hidden_Int32Enum.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.EnumCodec[ItemType]())
 }
 
 func (x *AllMap) GetInt32ItemData() kdsync.Map[int32, *ItemData] {
@@ -1805,13 +1753,10 @@ func (x *AllMap) GetInt32ItemData() kdsync.Map[int32, *ItemData] {
 }
 
 func (x *AllMap) initInt32ItemData() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 7)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 7, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 7)
-	}
-	x.xxx_hidden_Int32ItemData.Init(dirtyFunc, persistDirtyFunc, kdsync.Int32Codec(), &message_ItemData_type)
+	x.xxx_hidden_Int32ItemData.Init(dirtyFunc, kdsync.Int32Codec(), &message_ItemData_type)
 }
 
 func (x *AllMap) GetInt64Int64() kdsync.Map[int64, int64] {
@@ -1819,13 +1764,10 @@ func (x *AllMap) GetInt64Int64() kdsync.Map[int64, int64] {
 }
 
 func (x *AllMap) initInt64Int64() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 8)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 8, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 8)
-	}
-	x.xxx_hidden_Int64Int64.Init(dirtyFunc, persistDirtyFunc, kdsync.Int64Codec(), kdsync.Int64Codec())
+	x.xxx_hidden_Int64Int64.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.Int64Codec())
 }
 
 func (x *AllMap) GetInt64String() kdsync.Map[int64, string] {
@@ -1833,13 +1775,10 @@ func (x *AllMap) GetInt64String() kdsync.Map[int64, string] {
 }
 
 func (x *AllMap) initInt64String() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 9)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 9, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 9)
-	}
-	x.xxx_hidden_Int64String.Init(dirtyFunc, persistDirtyFunc, kdsync.Int64Codec(), kdsync.StringCodec())
+	x.xxx_hidden_Int64String.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.StringCodec())
 }
 
 func (x *AllMap) GetInt64Timestamp() kdsync.Map[int64, time.Time] {
@@ -1847,13 +1786,10 @@ func (x *AllMap) GetInt64Timestamp() kdsync.Map[int64, time.Time] {
 }
 
 func (x *AllMap) initInt64Timestamp() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 10)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 10, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 10)
-	}
-	x.xxx_hidden_Int64Timestamp.Init(dirtyFunc, persistDirtyFunc, kdsync.Int64Codec(), kdsync.TimestampCodec())
+	x.xxx_hidden_Int64Timestamp.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.TimestampCodec())
 }
 
 func (x *AllMap) GetInt64Duration() kdsync.Map[int64, time.Duration] {
@@ -1861,13 +1797,10 @@ func (x *AllMap) GetInt64Duration() kdsync.Map[int64, time.Duration] {
 }
 
 func (x *AllMap) initInt64Duration() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 11)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 11, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 11)
-	}
-	x.xxx_hidden_Int64Duration.Init(dirtyFunc, persistDirtyFunc, kdsync.Int64Codec(), kdsync.DurationCodec())
+	x.xxx_hidden_Int64Duration.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.DurationCodec())
 }
 
 func (x *AllMap) GetInt64Empty() kdsync.Map[int64, struct{}] {
@@ -1875,13 +1808,10 @@ func (x *AllMap) GetInt64Empty() kdsync.Map[int64, struct{}] {
 }
 
 func (x *AllMap) initInt64Empty() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 12)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 12, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 12)
-	}
-	x.xxx_hidden_Int64Empty.Init(dirtyFunc, persistDirtyFunc, kdsync.Int64Codec(), kdsync.EmptyCodec())
+	x.xxx_hidden_Int64Empty.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.EmptyCodec())
 }
 
 func (x *AllMap) GetInt64Enum() kdsync.Map[int64, ItemType] {
@@ -1889,13 +1819,10 @@ func (x *AllMap) GetInt64Enum() kdsync.Map[int64, ItemType] {
 }
 
 func (x *AllMap) initInt64Enum() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 13)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 13, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 13)
-	}
-	x.xxx_hidden_Int64Enum.Init(dirtyFunc, persistDirtyFunc, kdsync.Int64Codec(), kdsync.EnumCodec[ItemType]())
+	x.xxx_hidden_Int64Enum.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.EnumCodec[ItemType]())
 }
 
 func (x *AllMap) GetInt64ItemData() kdsync.Map[int64, *ItemData] {
@@ -1903,13 +1830,10 @@ func (x *AllMap) GetInt64ItemData() kdsync.Map[int64, *ItemData] {
 }
 
 func (x *AllMap) initInt64ItemData() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 14)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 14, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 14)
-	}
-	x.xxx_hidden_Int64ItemData.Init(dirtyFunc, persistDirtyFunc, kdsync.Int64Codec(), &message_ItemData_type)
+	x.xxx_hidden_Int64ItemData.Init(dirtyFunc, kdsync.Int64Codec(), &message_ItemData_type)
 }
 
 func (x *AllMap) GetStringInt32() kdsync.Map[string, int32] {
@@ -1917,13 +1841,10 @@ func (x *AllMap) GetStringInt32() kdsync.Map[string, int32] {
 }
 
 func (x *AllMap) initStringInt32() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 15)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 15, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 15)
-	}
-	x.xxx_hidden_StringInt32.Init(dirtyFunc, persistDirtyFunc, kdsync.StringCodec(), kdsync.Int32Codec())
+	x.xxx_hidden_StringInt32.Init(dirtyFunc, kdsync.StringCodec(), kdsync.Int32Codec())
 }
 
 func (x *AllMap) GetStringString() kdsync.Map[string, string] {
@@ -1931,13 +1852,10 @@ func (x *AllMap) GetStringString() kdsync.Map[string, string] {
 }
 
 func (x *AllMap) initStringString() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 16)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 16, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 16)
-	}
-	x.xxx_hidden_StringString.Init(dirtyFunc, persistDirtyFunc, kdsync.StringCodec(), kdsync.StringCodec())
+	x.xxx_hidden_StringString.Init(dirtyFunc, kdsync.StringCodec(), kdsync.StringCodec())
 }
 
 func (x *AllMap) GetStringTimestamp() kdsync.Map[string, time.Time] {
@@ -1945,13 +1863,10 @@ func (x *AllMap) GetStringTimestamp() kdsync.Map[string, time.Time] {
 }
 
 func (x *AllMap) initStringTimestamp() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 17)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 17, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 17)
-	}
-	x.xxx_hidden_StringTimestamp.Init(dirtyFunc, persistDirtyFunc, kdsync.StringCodec(), kdsync.TimestampCodec())
+	x.xxx_hidden_StringTimestamp.Init(dirtyFunc, kdsync.StringCodec(), kdsync.TimestampCodec())
 }
 
 func (x *AllMap) GetStringDuration() kdsync.Map[string, time.Duration] {
@@ -1959,11 +1874,10 @@ func (x *AllMap) GetStringDuration() kdsync.Map[string, time.Duration] {
 }
 
 func (x *AllMap) initStringDuration() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 18)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 18, dirtyType&kdsync.DirtyType_Sync)
 	}
-	persistDirtyFunc := kdsync.NoPersist
-	x.xxx_hidden_StringDuration.Init(dirtyFunc, persistDirtyFunc, kdsync.StringCodec(), kdsync.DurationCodec())
+	x.xxx_hidden_StringDuration.Init(dirtyFunc, kdsync.StringCodec(), kdsync.DurationCodec())
 }
 
 func (x *AllMap) GetStringEmpty() kdsync.Map[string, struct{}] {
@@ -1971,13 +1885,10 @@ func (x *AllMap) GetStringEmpty() kdsync.Map[string, struct{}] {
 }
 
 func (x *AllMap) initStringEmpty() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 19)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 19, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 19)
-	}
-	x.xxx_hidden_StringEmpty.Init(dirtyFunc, persistDirtyFunc, kdsync.StringCodec(), kdsync.EmptyCodec())
+	x.xxx_hidden_StringEmpty.Init(dirtyFunc, kdsync.StringCodec(), kdsync.EmptyCodec())
 }
 
 func (x *AllMap) GetStringEnum() kdsync.Map[string, ItemType] {
@@ -1985,13 +1896,10 @@ func (x *AllMap) GetStringEnum() kdsync.Map[string, ItemType] {
 }
 
 func (x *AllMap) initStringEnum() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 20)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 20, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 20)
-	}
-	x.xxx_hidden_StringEnum.Init(dirtyFunc, persistDirtyFunc, kdsync.StringCodec(), kdsync.EnumCodec[ItemType]())
+	x.xxx_hidden_StringEnum.Init(dirtyFunc, kdsync.StringCodec(), kdsync.EnumCodec[ItemType]())
 }
 
 func (x *AllMap) GetStringItemData() kdsync.Map[string, *ItemData] {
@@ -1999,13 +1907,10 @@ func (x *AllMap) GetStringItemData() kdsync.Map[string, *ItemData] {
 }
 
 func (x *AllMap) initStringItemData() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 21)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 21, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 21)
-	}
-	x.xxx_hidden_StringItemData.Init(dirtyFunc, persistDirtyFunc, kdsync.StringCodec(), &message_ItemData_type)
+	x.xxx_hidden_StringItemData.Init(dirtyFunc, kdsync.StringCodec(), &message_ItemData_type)
 }
 
 func (x *AllMap) GetBoolInt32() kdsync.Map[bool, int32] {
@@ -2013,13 +1918,10 @@ func (x *AllMap) GetBoolInt32() kdsync.Map[bool, int32] {
 }
 
 func (x *AllMap) initBoolInt32() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 22)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 22, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 22)
-	}
-	x.xxx_hidden_BoolInt32.Init(dirtyFunc, persistDirtyFunc, kdsync.BoolCodec(), kdsync.Int32Codec())
+	x.xxx_hidden_BoolInt32.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.Int32Codec())
 }
 
 func (x *AllMap) GetBoolString() kdsync.Map[bool, string] {
@@ -2027,13 +1929,10 @@ func (x *AllMap) GetBoolString() kdsync.Map[bool, string] {
 }
 
 func (x *AllMap) initBoolString() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 23)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 23, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 23)
-	}
-	x.xxx_hidden_BoolString.Init(dirtyFunc, persistDirtyFunc, kdsync.BoolCodec(), kdsync.StringCodec())
+	x.xxx_hidden_BoolString.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.StringCodec())
 }
 
 func (x *AllMap) GetBoolTimestamp() kdsync.Map[bool, time.Time] {
@@ -2041,13 +1940,10 @@ func (x *AllMap) GetBoolTimestamp() kdsync.Map[bool, time.Time] {
 }
 
 func (x *AllMap) initBoolTimestamp() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 24)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 24, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 24)
-	}
-	x.xxx_hidden_BoolTimestamp.Init(dirtyFunc, persistDirtyFunc, kdsync.BoolCodec(), kdsync.TimestampCodec())
+	x.xxx_hidden_BoolTimestamp.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.TimestampCodec())
 }
 
 func (x *AllMap) GetBoolDuration() kdsync.Map[bool, time.Duration] {
@@ -2055,13 +1951,10 @@ func (x *AllMap) GetBoolDuration() kdsync.Map[bool, time.Duration] {
 }
 
 func (x *AllMap) initBoolDuration() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 25)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 25, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 25)
-	}
-	x.xxx_hidden_BoolDuration.Init(dirtyFunc, persistDirtyFunc, kdsync.BoolCodec(), kdsync.DurationCodec())
+	x.xxx_hidden_BoolDuration.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.DurationCodec())
 }
 
 func (x *AllMap) GetBoolEmpty() kdsync.Map[bool, struct{}] {
@@ -2069,13 +1962,10 @@ func (x *AllMap) GetBoolEmpty() kdsync.Map[bool, struct{}] {
 }
 
 func (x *AllMap) initBoolEmpty() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 26)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 26, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 26)
-	}
-	x.xxx_hidden_BoolEmpty.Init(dirtyFunc, persistDirtyFunc, kdsync.BoolCodec(), kdsync.EmptyCodec())
+	x.xxx_hidden_BoolEmpty.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.EmptyCodec())
 }
 
 func (x *AllMap) GetBoolEnum() kdsync.Map[bool, ItemType] {
@@ -2083,9 +1973,10 @@ func (x *AllMap) GetBoolEnum() kdsync.Map[bool, ItemType] {
 }
 
 func (x *AllMap) initBoolEnum() {
-	dirtyFunc := kdsync.NoSync
-	persistDirtyFunc := kdsync.NoPersist
-	x.xxx_hidden_BoolEnum.Init(dirtyFunc, persistDirtyFunc, kdsync.BoolCodec(), kdsync.EnumCodec[ItemType]())
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 27, dirtyType&kdsync.DirtyType_None)
+	}
+	x.xxx_hidden_BoolEnum.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.EnumCodec[ItemType]())
 }
 
 func (x *AllMap) GetBoolItemData() kdsync.Map[bool, *ItemData] {
@@ -2093,13 +1984,23 @@ func (x *AllMap) GetBoolItemData() kdsync.Map[bool, *ItemData] {
 }
 
 func (x *AllMap) initBoolItemData() {
-	dirtyFunc := func() {
-		x.markDirty(uint64(0x01) << 28)
+	dirtyFunc := func(dirtyType kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 28, dirtyType&kdsync.DirtyType_SyncAndPersist)
 	}
-	persistDirtyFunc := func() {
-		x.markPersistDirty(uint64(0x01) << 28)
+	x.xxx_hidden_BoolItemData.Init(dirtyFunc, kdsync.BoolCodec(), &message_ItemData_type)
+}
+
+func (x *AllMap) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
+	switch dirtyType {
+	case kdsync.DirtyType_SyncAndPersist:
+		x.updateSyncAndPersist(n)
+	case kdsync.DirtyType_Sync:
+		x.updateSync(n)
+	case kdsync.DirtyType_Persist:
+		x.updatePersist(n)
+	default:
+		// nothing to do
 	}
-	x.xxx_hidden_BoolItemData.Init(dirtyFunc, persistDirtyFunc, kdsync.BoolCodec(), &message_ItemData_type)
 }
 
 func (x *AllMap) Marshal(b []byte) ([]byte, error) {
@@ -2192,146 +2093,146 @@ func (x *AllMap) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *AllMap) MarshalDirty(b []byte) ([]byte, error) {
-	if x.dirty&uint64(0x01) != 0 {
+	if x.syncDirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
-	if x.dirty&(uint64(0x01)<<1) != 0 {
+	if x.syncDirty&(uint64(0x01)<<1) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 1, &x.xxx_hidden_Int32Int32); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<2) != 0 {
+	if x.syncDirty&(uint64(0x01)<<2) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 2, &x.xxx_hidden_Int32String); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<3) != 0 {
+	if x.syncDirty&(uint64(0x01)<<3) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 3, &x.xxx_hidden_Int32Timestamp); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<4) != 0 {
+	if x.syncDirty&(uint64(0x01)<<4) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 4, &x.xxx_hidden_Int32Duration); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<5) != 0 {
+	if x.syncDirty&(uint64(0x01)<<5) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 5, &x.xxx_hidden_Int32Empty); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<6) != 0 {
+	if x.syncDirty&(uint64(0x01)<<6) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 6, &x.xxx_hidden_Int32Enum); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<7) != 0 {
+	if x.syncDirty&(uint64(0x01)<<7) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 7, &x.xxx_hidden_Int32ItemData); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<8) != 0 {
+	if x.syncDirty&(uint64(0x01)<<8) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 8, &x.xxx_hidden_Int64Int64); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<9) != 0 {
+	if x.syncDirty&(uint64(0x01)<<9) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 9, &x.xxx_hidden_Int64String); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<10) != 0 {
+	if x.syncDirty&(uint64(0x01)<<10) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 10, &x.xxx_hidden_Int64Timestamp); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<11) != 0 {
+	if x.syncDirty&(uint64(0x01)<<11) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 11, &x.xxx_hidden_Int64Duration); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<12) != 0 {
+	if x.syncDirty&(uint64(0x01)<<12) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 12, &x.xxx_hidden_Int64Empty); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<13) != 0 {
+	if x.syncDirty&(uint64(0x01)<<13) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 13, &x.xxx_hidden_Int64Enum); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<14) != 0 {
+	if x.syncDirty&(uint64(0x01)<<14) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 14, &x.xxx_hidden_Int64ItemData); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<15) != 0 {
+	if x.syncDirty&(uint64(0x01)<<15) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 15, &x.xxx_hidden_StringInt32); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<16) != 0 {
+	if x.syncDirty&(uint64(0x01)<<16) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 16, &x.xxx_hidden_StringString); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<17) != 0 {
+	if x.syncDirty&(uint64(0x01)<<17) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 17, &x.xxx_hidden_StringTimestamp); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<18) != 0 {
+	if x.syncDirty&(uint64(0x01)<<18) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 18, &x.xxx_hidden_StringDuration); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<19) != 0 {
+	if x.syncDirty&(uint64(0x01)<<19) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 19, &x.xxx_hidden_StringEmpty); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<20) != 0 {
+	if x.syncDirty&(uint64(0x01)<<20) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 20, &x.xxx_hidden_StringEnum); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<21) != 0 {
+	if x.syncDirty&(uint64(0x01)<<21) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 21, &x.xxx_hidden_StringItemData); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<22) != 0 {
+	if x.syncDirty&(uint64(0x01)<<22) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 22, &x.xxx_hidden_BoolInt32); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<23) != 0 {
+	if x.syncDirty&(uint64(0x01)<<23) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 23, &x.xxx_hidden_BoolString); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<24) != 0 {
+	if x.syncDirty&(uint64(0x01)<<24) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 24, &x.xxx_hidden_BoolTimestamp); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<25) != 0 {
+	if x.syncDirty&(uint64(0x01)<<25) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 25, &x.xxx_hidden_BoolDuration); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<26) != 0 {
+	if x.syncDirty&(uint64(0x01)<<26) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 26, &x.xxx_hidden_BoolEmpty); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<27) != 0 {
+	if x.syncDirty&(uint64(0x01)<<27) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 27, &x.xxx_hidden_BoolEnum); err != nil {
 			return b, err
 		}
 	}
-	if x.dirty&(uint64(0x01)<<28) != 0 {
+	if x.syncDirty&(uint64(0x01)<<28) != 0 {
 		if b, err = wire.MarshalMessageDirty(b, 28, &x.xxx_hidden_BoolItemData); err != nil {
 			return b, err
 		}
@@ -2634,134 +2535,118 @@ func (x *AllMap) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, err
 	return b, nil
 }
 
-func (x *AllMap) markDirty(n uint64) {
-	if x.dirty&n == n {
+func (x *AllMap) updateSync(n uint64) {
+	if x.syncDirty&n == n {
 		return
 	}
-	x.dirty |= n
-	x.dirtyParent.Invoke()
+	x.syncDirty |= n
+	x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
 }
 
-func (x *AllMap) checkDirty(n uint64) bool {
-	return x.dirty&n != 0
-}
-
-func (x *AllMap) markDirtyAll() {
-	x.dirty = uint64(0x01)
-}
-
-func (x *AllMap) ClearDirty() {
-	if x.dirty == 0 {
-		return
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<1) != 0 {
-		x.xxx_hidden_Int32Int32.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<2) != 0 {
-		x.xxx_hidden_Int32String.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<3) != 0 {
-		x.xxx_hidden_Int32Timestamp.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<4) != 0 {
-		x.xxx_hidden_Int32Duration.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<6) != 0 {
-		x.xxx_hidden_Int32Enum.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<7) != 0 {
-		x.xxx_hidden_Int32ItemData.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<8) != 0 {
-		x.xxx_hidden_Int64Int64.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<9) != 0 {
-		x.xxx_hidden_Int64String.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<10) != 0 {
-		x.xxx_hidden_Int64Timestamp.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<11) != 0 {
-		x.xxx_hidden_Int64Duration.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<12) != 0 {
-		x.xxx_hidden_Int64Empty.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<13) != 0 {
-		x.xxx_hidden_Int64Enum.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<14) != 0 {
-		x.xxx_hidden_Int64ItemData.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<15) != 0 {
-		x.xxx_hidden_StringInt32.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<16) != 0 {
-		x.xxx_hidden_StringString.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<17) != 0 {
-		x.xxx_hidden_StringTimestamp.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<18) != 0 {
-		x.xxx_hidden_StringDuration.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<19) != 0 {
-		x.xxx_hidden_StringEmpty.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<20) != 0 {
-		x.xxx_hidden_StringEnum.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<21) != 0 {
-		x.xxx_hidden_StringItemData.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<22) != 0 {
-		x.xxx_hidden_BoolInt32.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<23) != 0 {
-		x.xxx_hidden_BoolString.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<24) != 0 {
-		x.xxx_hidden_BoolTimestamp.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<25) != 0 {
-		x.xxx_hidden_BoolDuration.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<26) != 0 {
-		x.xxx_hidden_BoolEmpty.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<28) != 0 {
-		x.xxx_hidden_BoolItemData.ClearDirty()
-	}
-	x.dirty = 0
-}
-
-func (x *AllMap) checkDirtyParent() bool {
-	return x.dirtyParent != nil && x.persistDirtyParent != nil
-}
-
-func (x *AllMap) setDirtyParent(dirtyParent, persistDirtyParent kdsync.DirtyFunc) {
-	if dirtyParent == nil ||  persistDirtyParent == nil {
-		return
-	}
-	x.dirtyParent = dirtyParent
-	x.persistDirtyParent = persistDirtyParent
-	x.markDirtyAll()
-	x.markPersistDirtyAll()
-}
-
-func (x *AllMap) clearDirtyParent() {
-	x.dirtyParent = nil
-	x.persistDirtyParent = nil
-	x.ClearDirty()
-	x.ClearPersistDirty()
-}
-
-func (x *AllMap) markPersistDirty(n uint64) {
+func (x *AllMap) updatePersist(n uint64) {
 	if x.persistDirty&n == n {
 		return
 	}
 	x.persistDirty |= n
-	x.persistDirtyParent.Invoke()
+	x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
+}
+
+func (x *AllMap) updateSyncAndPersist(n uint64) {
+	if x.syncDirty&n == n && x.persistDirty&n == n {
+		return
+	}
+	x.syncDirty |= n
+	x.persistDirty |= n
+	x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
+}
+
+func (x *AllMap) checkDirty(n uint64) bool {
+	return x.syncDirty&n != 0
+}
+
+func (x *AllMap) ClearDirty() {
+	if x.syncDirty == 0 {
+		return
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<1) != 0 {
+		x.xxx_hidden_Int32Int32.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<2) != 0 {
+		x.xxx_hidden_Int32String.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<3) != 0 {
+		x.xxx_hidden_Int32Timestamp.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<4) != 0 {
+		x.xxx_hidden_Int32Duration.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<6) != 0 {
+		x.xxx_hidden_Int32Enum.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<7) != 0 {
+		x.xxx_hidden_Int32ItemData.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<8) != 0 {
+		x.xxx_hidden_Int64Int64.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<9) != 0 {
+		x.xxx_hidden_Int64String.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<10) != 0 {
+		x.xxx_hidden_Int64Timestamp.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<11) != 0 {
+		x.xxx_hidden_Int64Duration.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<12) != 0 {
+		x.xxx_hidden_Int64Empty.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<13) != 0 {
+		x.xxx_hidden_Int64Enum.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<14) != 0 {
+		x.xxx_hidden_Int64ItemData.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<15) != 0 {
+		x.xxx_hidden_StringInt32.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<16) != 0 {
+		x.xxx_hidden_StringString.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<17) != 0 {
+		x.xxx_hidden_StringTimestamp.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<18) != 0 {
+		x.xxx_hidden_StringDuration.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<19) != 0 {
+		x.xxx_hidden_StringEmpty.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<20) != 0 {
+		x.xxx_hidden_StringEnum.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<21) != 0 {
+		x.xxx_hidden_StringItemData.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<22) != 0 {
+		x.xxx_hidden_BoolInt32.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<23) != 0 {
+		x.xxx_hidden_BoolString.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<24) != 0 {
+		x.xxx_hidden_BoolTimestamp.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<25) != 0 {
+		x.xxx_hidden_BoolDuration.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<26) != 0 {
+		x.xxx_hidden_BoolEmpty.ClearDirty()
+	}
+	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<28) != 0 {
+		x.xxx_hidden_BoolItemData.ClearDirty()
+	}
+	x.syncDirty = 0
 }
 
 func (x *AllMap) ClearPersistDirty() {
@@ -2849,8 +2734,20 @@ func (x *AllMap) ClearPersistDirty() {
 	x.persistDirty = 0
 }
 
-func (x *AllMap) markPersistDirtyAll() {
+func (x *AllMap) checkDirtyParent() bool {
+	return x.dirtyParent != nil
+}
+
+func (x *AllMap) setDirtyParent(dirtyParent kdsync.DirtyFunc) {
+	x.dirtyParent = dirtyParent
+	x.syncDirty = uint64(0x01)
 	x.persistDirty = uint64(0x01)
+}
+
+func (x *AllMap) clearDirtyParent() {
+	x.dirtyParent = nil
+	x.ClearDirty()
+	x.ClearPersistDirty()
 }
 
 var message_AllMap_type = kdsync.MessageType[AllMap, *AllMap]{

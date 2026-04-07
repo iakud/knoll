@@ -12,13 +12,22 @@ type Message[T any] interface {
 	ClearPersistDirty()
 }
 
-type DirtyFunc func()
+type DirtyType byte
 
-func (f DirtyFunc) Invoke() {
+const (
+	DirtyType_None           DirtyType = 0x00
+	DirtyType_Sync           DirtyType = 0x01
+	DirtyType_Persist        DirtyType = 0x02
+	DirtyType_SyncAndPersist DirtyType = DirtyType_Sync | DirtyType_Persist
+)
+
+type DirtyFunc func(DirtyType)
+
+func (f DirtyFunc) Invoke(dirtyType DirtyType) {
 	if f == nil {
 		return
 	}
-	f()
+	f(dirtyType)
 }
 
 func NoSync()    {}
@@ -27,6 +36,6 @@ func NoPersist() {}
 type MessageType[T any, M Message[T]] struct {
 	New              func() M
 	CheckDirtyParent func(M) bool
-	SetDirtyParent   func(M, DirtyFunc, DirtyFunc)
+	SetDirtyParent   func(M, DirtyFunc)
 	ClearDirtyParent func(M)
 }

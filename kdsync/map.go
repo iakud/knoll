@@ -49,21 +49,19 @@ type MapField[K comparable, V any] struct {
 	updates map[K]V
 	deletes map[K]struct{}
 
-	dirty              bool
-	dirtyParent        DirtyFunc
-	persistDirty       bool
-	persistDirtyParent DirtyFunc
+	syncDirty    bool
+	persistDirty bool
+	dirtyParent  DirtyFunc
 
 	keyCodec   FieldCodec[K]
 	valueCodec FieldCodec[V]
 }
 
-func (x *MapField[K, V]) Init(dirtyParent, persistDirtyParent DirtyFunc, keyCodec FieldCodec[K], valueCodec FieldCodec[V]) {
+func (x *MapField[K, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueCodec FieldCodec[V]) {
 	x.data = make(map[K]V)
 	x.updates = make(map[K]V)
 	x.deletes = make(map[K]struct{})
 	x.dirtyParent = dirtyParent
-	x.persistDirtyParent = persistDirtyParent
 	x.keyCodec = keyCodec
 	x.valueCodec = valueCodec
 }
@@ -80,8 +78,7 @@ func (x *MapField[K, V]) Clear() {
 	x.clear = true
 	clear(x.updates)
 	clear(x.deletes)
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty()
 }
 
 func (x *MapField[K, V]) Get(k K) (V, bool) {
@@ -98,8 +95,7 @@ func (x *MapField[K, V]) Set(k K, v V) {
 	x.data[k] = v
 	x.updates[k] = v
 	delete(x.deletes, k)
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty()
 }
 
 func (x *MapField[K, V]) Delete(k K) {
@@ -109,8 +105,7 @@ func (x *MapField[K, V]) Delete(k K) {
 	delete(x.data, k)
 	delete(x.updates, k)
 	x.deletes[k] = struct{}{}
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty()
 }
 
 func (x *MapField[K, V]) All() iter.Seq2[K, V] {
@@ -125,30 +120,22 @@ func (x *MapField[K, V]) Values() iter.Seq[V] {
 	return maps.Values(x.data)
 }
 
-func (x *MapField[K, V]) markDirty() {
-	if x.dirty {
+func (x *MapField[K, V]) updateDirty() {
+	if x.syncDirty {
 		return
 	}
-	x.dirty = true
-	x.dirtyParent.Invoke()
+	x.syncDirty = true
+	x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
 }
 
 func (x *MapField[K, V]) ClearDirty() {
-	if !x.dirty {
+	if !x.syncDirty {
 		return
 	}
 	x.clear = false
 	clear(x.updates)
 	clear(x.deletes)
-	x.dirty = false
-}
-
-func (x *MapField[K, V]) markPersistDirty() {
-	if x.persistDirty {
-		return
-	}
-	x.persistDirty = true
-	x.persistDirtyParent.Invoke()
+	x.syncDirty = false
 }
 
 func (x *MapField[K, V]) ClearPersistDirty() {
@@ -319,21 +306,19 @@ type MapMessage[K comparable, T any, V Message[T]] struct {
 	updates map[K]V
 	deletes map[K]struct{}
 
-	dirty              bool
-	dirtyParent        DirtyFunc
-	persistDirty       bool
-	persistDirtyParent DirtyFunc
+	syncDirty    bool
+	persistDirty bool
+	dirtyParent  DirtyFunc
 
 	keyCodec  FieldCodec[K]
 	valueType *MessageType[T, V]
 }
 
-func (x *MapMessage[K, T, V]) Init(dirtyParent, persistDirtyParent DirtyFunc, keyCodec FieldCodec[K], valueType *MessageType[T, V]) {
+func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueType *MessageType[T, V]) {
 	x.data = make(map[K]V)
 	x.updates = make(map[K]V)
 	x.deletes = make(map[K]struct{})
 	x.dirtyParent = dirtyParent
-	x.persistDirtyParent = persistDirtyParent
 	x.keyCodec = keyCodec
 	x.valueType = valueType
 }
@@ -355,8 +340,7 @@ func (x *MapMessage[K, T, V]) Clear() {
 	x.clear = true
 	clear(x.updates)
 	clear(x.deletes)
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty(DirtyType_SyncAndPersist)
 }
 
 func (x *MapMessage[K, T, V]) Get(k K) (V, bool) {
@@ -379,19 +363,18 @@ func (x *MapMessage[K, T, V]) Set(k K, v V) {
 		}
 	}
 	if v != nil {
-		x.valueType.SetDirtyParent(v, func() {
+		x.valueType.SetDirtyParent(v, func(dirtyType DirtyType) {
 			if _, ok := x.updates[k]; ok {
 				return
 			}
 			x.updates[k] = v
-			x.markDirty()
-		}, x.markPersistDirty)
+			x.updateDirty(dirtyType)
+		})
 	}
 	x.data[k] = v
 	x.updates[k] = v
 	delete(x.deletes, k)
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty(DirtyType_SyncAndPersist)
 }
 
 func (x *MapMessage[K, T, V]) Delete(k K) {
@@ -405,8 +388,7 @@ func (x *MapMessage[K, T, V]) Delete(k K) {
 	delete(x.data, k)
 	delete(x.updates, k)
 	x.deletes[k] = struct{}{}
-	x.markDirty()
-	x.markPersistDirty()
+	x.updateDirty(DirtyType_SyncAndPersist)
 }
 
 func (x *MapMessage[K, T, V]) All() iter.Seq2[K, V] {
@@ -421,16 +403,46 @@ func (x *MapMessage[K, T, V]) Values() iter.Seq[V] {
 	return maps.Values(x.data)
 }
 
-func (x *MapMessage[K, T, V]) markDirty() {
-	if x.dirty {
+func (x *MapMessage[K, T, V]) updateDirty(dirtyType DirtyType) {
+	switch dirtyType {
+	case DirtyType_Sync:
+		x.updateSync()
+	case DirtyType_Persist:
+		x.updatePersist()
+	case DirtyType_SyncAndPersist:
+		x.updateSyncAndPersist()
+	default:
+		// nothing to do
+	}
+}
+
+func (x *MapMessage[K, T, V]) updateSync() {
+	if x.syncDirty {
 		return
 	}
-	x.dirty = true
-	x.dirtyParent.Invoke()
+	x.syncDirty = true
+	x.dirtyParent.Invoke(DirtyType_Sync)
+}
+
+func (x *MapMessage[K, T, V]) updatePersist() {
+	if x.persistDirty {
+		return
+	}
+	x.persistDirty = true
+	x.dirtyParent.Invoke(DirtyType_Persist)
+}
+
+func (x *MapMessage[K, T, V]) updateSyncAndPersist() {
+	if x.syncDirty && x.persistDirty {
+		return
+	}
+	x.syncDirty = true
+	x.persistDirty = true
+	x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
 }
 
 func (x *MapMessage[K, T, V]) ClearDirty() {
-	if !x.dirty {
+	if !x.syncDirty {
 		return
 	}
 	for _, v := range x.updates {
@@ -441,15 +453,7 @@ func (x *MapMessage[K, T, V]) ClearDirty() {
 	x.clear = false
 	clear(x.updates)
 	clear(x.deletes)
-	x.dirty = false
-}
-
-func (x *MapMessage[K, T, V]) markPersistDirty() {
-	if x.persistDirty {
-		return
-	}
-	x.persistDirty = true
-	x.persistDirtyParent.Invoke()
+	x.syncDirty = false
 }
 
 func (x *MapMessage[K, T, V]) ClearPersistDirty() {
@@ -584,14 +588,14 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 			if err := c.Unmarshal(v); err != nil {
 				return err
 			}
-			x.Set(k, c)
-			x.valueType.SetDirtyParent(c, func() {
+			x.data[k] = c
+			x.valueType.SetDirtyParent(c, func(dirtyType DirtyType) {
 				if _, ok := x.updates[k]; ok {
 					return
 				}
 				x.updates[k] = c
-				x.markDirty()
-			}, x.markPersistDirty)
+				x.updateDirty(dirtyType)
+			})
 		} else if err := c.Unmarshal(v); err != nil {
 			return err
 		}
