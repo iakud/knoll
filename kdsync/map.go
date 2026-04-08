@@ -28,7 +28,7 @@ type Map[K comparable, V any] interface {
 	MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error)
 }
 
-// FieldCodec map check
+// Field map check
 var _ Map[bool, bool] = (*MapField[bool, bool])(nil)
 var _ Map[int32, int32] = (*MapField[int32, int32])(nil)
 var _ Map[uint32, uint32] = (*MapField[uint32, uint32])(nil)
@@ -45,9 +45,9 @@ var _ Map[string, time.Duration] = (*MapField[string, time.Duration])(nil)
 type MapField[K comparable, V any] struct {
 	data map[K]V
 
-	syncCleared bool
-	syncUpdated map[K]V
-	syncDeleted map[K]struct{}
+	cleared bool
+	updated map[K]V
+	deleted map[K]struct{}
 
 	persistCleared bool
 	persistUpdated map[K]V
@@ -61,8 +61,8 @@ type MapField[K comparable, V any] struct {
 
 func (x *MapField[K, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueCodec FieldCodec[V]) {
 	x.data = make(map[K]V)
-	x.syncUpdated = make(map[K]V)
-	x.syncDeleted = make(map[K]struct{})
+	x.updated = make(map[K]V)
+	x.deleted = make(map[K]struct{})
 	x.persistUpdated = make(map[K]V)
 	x.persistDeleted = make(map[K]struct{})
 	x.dirtyParent = dirtyParent
@@ -75,7 +75,7 @@ func (x *MapField[K, V]) Len() int {
 }
 
 func (x *MapField[K, V]) Clear() {
-	if len(x.data) == 0 && len(x.syncDeleted) == 0 {
+	if len(x.data) == 0 && len(x.deleted) == 0 {
 		return
 	}
 	clear(x.data)
@@ -117,15 +117,15 @@ func (x *MapField[K, V]) Values() iter.Seq[V] {
 	return maps.Values(x.data)
 }
 
-func (x *MapField[K, V]) updateDirtyCleared(dirtyType DirtyType) {
-	switch dirtyType {
+func (x *MapField[K, V]) updateDirtyCleared(t DirtyType) {
+	switch t {
 	case DirtyType_Sync:
-		if len(x.syncUpdated) == 0 && len(x.syncDeleted) == 0 {
+		if len(x.updated) == 0 && len(x.deleted) == 0 {
 			return
 		}
-		x.syncCleared = true
-		clear(x.syncUpdated)
-		clear(x.syncDeleted)
+		x.cleared = true
+		clear(x.updated)
+		clear(x.deleted)
 		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
 		if len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
@@ -136,12 +136,12 @@ func (x *MapField[K, V]) updateDirtyCleared(dirtyType DirtyType) {
 		clear(x.persistDeleted)
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		if len(x.syncUpdated) == 0 && len(x.syncDeleted) == 0 && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
+		if len(x.updated) == 0 && len(x.deleted) == 0 && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
 			return
 		}
-		x.syncCleared = true
-		clear(x.syncUpdated)
-		clear(x.syncDeleted)
+		x.cleared = true
+		clear(x.updated)
+		clear(x.deleted)
 		x.persistCleared = true
 		clear(x.persistUpdated)
 		clear(x.persistDeleted)
@@ -149,14 +149,14 @@ func (x *MapField[K, V]) updateDirtyCleared(dirtyType DirtyType) {
 	}
 }
 
-func (x *MapField[K, V]) updateDirtyUpdated(k K, v V, dirtyType DirtyType) {
-	switch dirtyType {
+func (x *MapField[K, V]) updateDirtyUpdated(k K, v V, t DirtyType) {
+	switch t {
 	case DirtyType_Sync:
-		if _, syncOk := x.syncUpdated[k]; syncOk {
+		if _, ok := x.updated[k]; ok {
 			return
 		}
-		x.syncUpdated[k] = v
-		delete(x.syncDeleted, k)
+		x.updated[k] = v
+		delete(x.deleted, k)
 		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
 		if _, persistOk := x.persistUpdated[k]; persistOk {
@@ -166,27 +166,27 @@ func (x *MapField[K, V]) updateDirtyUpdated(k K, v V, dirtyType DirtyType) {
 		delete(x.persistDeleted, k)
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		_, syncOk := x.syncUpdated[k]
+		_, ok := x.updated[k]
 		_, persistOk := x.persistUpdated[k]
-		if syncOk && persistOk {
+		if ok && persistOk {
 			return
 		}
-		x.syncUpdated[k] = v
-		delete(x.syncDeleted, k)
+		x.updated[k] = v
+		delete(x.deleted, k)
 		x.persistUpdated[k] = v
 		delete(x.persistDeleted, k)
 		x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
 	}
 }
 
-func (x *MapField[K, V]) updateDirtyDeleted(k K, dirtyType DirtyType) {
-	switch dirtyType {
+func (x *MapField[K, V]) updateDirtyDeleted(k K, t DirtyType) {
+	switch t {
 	case DirtyType_Sync:
-		if _, syncOk := x.syncUpdated[k]; syncOk {
+		if _, ok := x.updated[k]; ok {
 			return
 		}
-		delete(x.syncUpdated, k)
-		x.syncDeleted[k] = struct{}{}
+		delete(x.updated, k)
+		x.deleted[k] = struct{}{}
 		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
 		if _, persistOk := x.persistDeleted[k]; persistOk {
@@ -196,13 +196,13 @@ func (x *MapField[K, V]) updateDirtyDeleted(k K, dirtyType DirtyType) {
 		x.persistDeleted[k] = struct{}{}
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		_, syncOk := x.syncUpdated[k]
+		_, ok := x.updated[k]
 		_, persistOk := x.persistDeleted[k]
-		if syncOk && persistOk {
+		if ok && persistOk {
 			return
 		}
-		delete(x.syncUpdated, k)
-		x.syncDeleted[k] = struct{}{}
+		delete(x.updated, k)
+		x.deleted[k] = struct{}{}
 		delete(x.persistUpdated, k)
 		x.persistDeleted[k] = struct{}{}
 		x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
@@ -210,12 +210,12 @@ func (x *MapField[K, V]) updateDirtyDeleted(k K, dirtyType DirtyType) {
 }
 
 func (x *MapField[K, V]) ClearDirty() {
-	if !x.syncCleared && len(x.syncUpdated) == 0 && len(x.syncDeleted) == 0 {
+	if !x.cleared && len(x.updated) == 0 && len(x.deleted) == 0 {
 		return
 	}
-	x.syncCleared = false
-	clear(x.syncUpdated)
-	clear(x.syncDeleted)
+	x.cleared = false
+	clear(x.updated)
+	clear(x.deleted)
 }
 
 func (x *MapField[K, V]) ClearPersistDirty() {
@@ -248,20 +248,20 @@ func (x *MapField[K, V]) Marshal(b []byte) ([]byte, error) {
 func (x *MapField[K, V]) MarshalChange(b []byte) ([]byte, error) {
 	var pos int
 	var err error
-	if x.syncCleared {
+	if x.cleared {
 		if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
 			return b, err
 		}
 	}
-	if len(x.syncDeleted) > 0 {
+	if len(x.deleted) > 0 {
 		b = wire.AppendTag(b, wire.MapDeleteFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		for k := range x.syncDeleted {
+		for k := range x.deleted {
 			b = x.keyCodec.marshalFunc(b, k)
 		}
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
-	for k, v := range x.syncUpdated {
+	for k, v := range x.updated {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
 		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.wireType)
@@ -274,9 +274,9 @@ func (x *MapField[K, V]) MarshalChange(b []byte) ([]byte, error) {
 }
 
 func (x *MapField[K, V]) Unmarshal(b []byte) error {
-	var clear bool
-	var deletes []byte
-	var entries [][]byte
+	var cleared bool
+	var deleted []byte
+	var updated [][]byte
 	for len(b) > 0 {
 		num, wtyp, tagLen, err := wire.ConsumeTag(b)
 		if err != nil {
@@ -286,15 +286,15 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case wire.MapClearFieldNumber:
-			clear, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
+			cleared, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
 		case wire.MapDeleteFieldNumber:
-			deletes, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
+			deleted, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
 		case wire.MapEntryFieldNumber:
 			var entry []byte
 			if entry, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp); err != nil {
 				break
 			}
-			entries = append(entries, entry)
+			updated = append(updated, entry)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -305,10 +305,10 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 		}
 		b = b[tagLen+valLen:]
 	}
-	if clear {
+	if cleared {
 		x.Clear()
 	}
-	for b := deletes; len(b) > 0; {
+	for b := deleted; len(b) > 0; {
 		k, n, err := x.keyCodec.unmarshalFunc(b)
 		if err != nil {
 			return err
@@ -316,7 +316,7 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 		b = b[n:]
 		x.Delete(k)
 	}
-	for _, b := range entries {
+	for _, b := range updated {
 		var k K
 		var v V
 		for len(b) > 0 {
@@ -384,9 +384,9 @@ func (x *MapField[K, V]) MarshalJSONIndent(b []byte, prefix string, indent strin
 type MapMessage[K comparable, T any, V Message[T]] struct {
 	data map[K]V
 
-	syncCleared bool
-	syncUpdated map[K]V
-	syncDeleted map[K]struct{}
+	cleared bool
+	updated map[K]V
+	deleted map[K]struct{}
 
 	persistCleared bool
 	persistUpdated map[K]V
@@ -400,8 +400,8 @@ type MapMessage[K comparable, T any, V Message[T]] struct {
 
 func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueType *MessageType[T, V]) {
 	x.data = make(map[K]V)
-	x.syncUpdated = make(map[K]V)
-	x.syncDeleted = make(map[K]struct{})
+	x.updated = make(map[K]V)
+	x.deleted = make(map[K]struct{})
 	x.persistUpdated = make(map[K]V)
 	x.persistDeleted = make(map[K]struct{})
 	x.dirtyParent = dirtyParent
@@ -414,7 +414,7 @@ func (x *MapMessage[K, T, V]) Len() int {
 }
 
 func (x *MapMessage[K, T, V]) Clear() {
-	if len(x.data) == 0 && len(x.syncDeleted) == 0 {
+	if len(x.data) == 0 && len(x.deleted) == 0 {
 		return
 	}
 	for _, v := range x.data {
@@ -446,8 +446,8 @@ func (x *MapMessage[K, T, V]) Set(k K, v V) {
 		}
 	}
 	if v != nil {
-		x.valueType.SetDirtyParent(v, func(dirtyType DirtyType) {
-			x.updateDirtyUpdated(k, v, dirtyType)
+		x.valueType.SetDirtyParent(v, func(t DirtyType) {
+			x.updateDirtyUpdated(k, v, t)
 		})
 	}
 	x.data[k] = v
@@ -478,15 +478,15 @@ func (x *MapMessage[K, T, V]) Values() iter.Seq[V] {
 	return maps.Values(x.data)
 }
 
-func (x *MapMessage[K, T, V]) updateDirtyCleared(dirtyType DirtyType) {
-	switch dirtyType {
+func (x *MapMessage[K, T, V]) updateDirtyCleared(t DirtyType) {
+	switch t {
 	case DirtyType_Sync:
-		if len(x.syncUpdated) == 0 && len(x.syncDeleted) == 0 {
+		if len(x.updated) == 0 && len(x.deleted) == 0 {
 			return
 		}
-		x.syncCleared = true
-		clear(x.syncUpdated)
-		clear(x.syncDeleted)
+		x.cleared = true
+		clear(x.updated)
+		clear(x.deleted)
 		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
 		if len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
@@ -497,12 +497,12 @@ func (x *MapMessage[K, T, V]) updateDirtyCleared(dirtyType DirtyType) {
 		clear(x.persistDeleted)
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		if len(x.syncUpdated) == 0 && len(x.syncDeleted) == 0 && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
+		if len(x.updated) == 0 && len(x.deleted) == 0 && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
 			return
 		}
-		x.syncCleared = true
-		clear(x.syncUpdated)
-		clear(x.syncDeleted)
+		x.cleared = true
+		clear(x.updated)
+		clear(x.deleted)
 		x.persistCleared = true
 		clear(x.persistUpdated)
 		clear(x.persistDeleted)
@@ -510,14 +510,14 @@ func (x *MapMessage[K, T, V]) updateDirtyCleared(dirtyType DirtyType) {
 	}
 }
 
-func (x *MapMessage[K, T, V]) updateDirtyUpdated(k K, v V, dirtyType DirtyType) {
-	switch dirtyType {
+func (x *MapMessage[K, T, V]) updateDirtyUpdated(k K, v V, t DirtyType) {
+	switch t {
 	case DirtyType_Sync:
-		if _, syncOk := x.syncUpdated[k]; syncOk {
+		if _, ok := x.updated[k]; ok {
 			return
 		}
-		x.syncUpdated[k] = v
-		delete(x.syncDeleted, k)
+		x.updated[k] = v
+		delete(x.deleted, k)
 		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
 		if _, persistOk := x.persistUpdated[k]; persistOk {
@@ -527,27 +527,27 @@ func (x *MapMessage[K, T, V]) updateDirtyUpdated(k K, v V, dirtyType DirtyType) 
 		delete(x.persistDeleted, k)
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		_, syncOk := x.syncUpdated[k]
+		_, ok := x.updated[k]
 		_, persistOk := x.persistUpdated[k]
-		if syncOk && persistOk {
+		if ok && persistOk {
 			return
 		}
-		x.syncUpdated[k] = v
-		delete(x.syncDeleted, k)
+		x.updated[k] = v
+		delete(x.deleted, k)
 		x.persistUpdated[k] = v
 		delete(x.persistDeleted, k)
 		x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
 	}
 }
 
-func (x *MapMessage[K, T, V]) updateDirtyDeleted(k K, dirtyType DirtyType) {
-	switch dirtyType {
+func (x *MapMessage[K, T, V]) updateDirtyDeleted(k K, t DirtyType) {
+	switch t {
 	case DirtyType_Sync:
-		if _, syncOk := x.syncUpdated[k]; syncOk {
+		if _, ok := x.updated[k]; ok {
 			return
 		}
-		delete(x.syncUpdated, k)
-		x.syncDeleted[k] = struct{}{}
+		delete(x.updated, k)
+		x.deleted[k] = struct{}{}
 		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
 		if _, persistOk := x.persistDeleted[k]; persistOk {
@@ -557,13 +557,13 @@ func (x *MapMessage[K, T, V]) updateDirtyDeleted(k K, dirtyType DirtyType) {
 		x.persistDeleted[k] = struct{}{}
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		_, syncOk := x.syncUpdated[k]
+		_, ok := x.updated[k]
 		_, persistOk := x.persistDeleted[k]
-		if syncOk && persistOk {
+		if ok && persistOk {
 			return
 		}
-		delete(x.syncUpdated, k)
-		x.syncDeleted[k] = struct{}{}
+		delete(x.updated, k)
+		x.deleted[k] = struct{}{}
 		delete(x.persistUpdated, k)
 		x.persistDeleted[k] = struct{}{}
 		x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
@@ -571,17 +571,17 @@ func (x *MapMessage[K, T, V]) updateDirtyDeleted(k K, dirtyType DirtyType) {
 }
 
 func (x *MapMessage[K, T, V]) ClearDirty() {
-	if !x.syncCleared && len(x.syncUpdated) == 0 && len(x.syncDeleted) == 0 {
+	if !x.cleared && len(x.updated) == 0 && len(x.deleted) == 0 {
 		return
 	}
-	for _, v := range x.syncUpdated {
+	for _, v := range x.updated {
 		if v != nil {
 			v.ClearDirty()
 		}
 	}
-	x.syncCleared = false
-	clear(x.syncUpdated)
-	clear(x.syncDeleted)
+	x.cleared = false
+	clear(x.updated)
+	clear(x.deleted)
 }
 
 func (x *MapMessage[K, T, V]) ClearPersistDirty() {
@@ -620,20 +620,20 @@ func (x *MapMessage[K, T, V]) Marshal(b []byte) ([]byte, error) {
 func (x *MapMessage[K, T, V]) MarshalChange(b []byte) ([]byte, error) {
 	var pos int
 	var err error
-	if x.syncCleared {
+	if x.cleared {
 		if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
 			return b, err
 		}
 	}
-	if len(x.syncDeleted) > 0 {
+	if len(x.deleted) > 0 {
 		b = wire.AppendTag(b, wire.MapDeleteFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		for k := range x.syncDeleted {
+		for k := range x.deleted {
 			b = x.keyCodec.marshalFunc(b, k)
 		}
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
-	for k, v := range x.syncUpdated {
+	for k, v := range x.updated {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
 		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.wireType)
@@ -647,9 +647,9 @@ func (x *MapMessage[K, T, V]) MarshalChange(b []byte) ([]byte, error) {
 }
 
 func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
-	var clear bool
-	var deletes []byte
-	var entries [][]byte
+	var cleared bool
+	var deleted []byte
+	var updated [][]byte
 	for len(b) > 0 {
 		num, wtyp, tagLen, err := wire.ConsumeTag(b)
 		if err != nil {
@@ -659,15 +659,15 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case wire.MapClearFieldNumber:
-			clear, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
+			cleared, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
 		case wire.MapDeleteFieldNumber:
-			deletes, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
+			deleted, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
 		case wire.MapEntryFieldNumber:
 			var entry []byte
 			if entry, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp); err != nil {
 				break
 			}
-			entries = append(entries, entry)
+			updated = append(updated, entry)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -678,10 +678,10 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 		}
 		b = b[tagLen+valLen:]
 	}
-	if clear {
+	if cleared {
 		x.Clear()
 	}
-	for b := deletes; len(b) > 0; {
+	for b := deleted; len(b) > 0; {
 		k, n, err := x.keyCodec.unmarshalFunc(b)
 		if err != nil {
 			return err
@@ -689,7 +689,7 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 		b = b[n:]
 		x.Delete(k)
 	}
-	for _, b := range entries {
+	for _, b := range updated {
 		var k K
 		var v []byte
 		for len(b) > 0 {
@@ -723,10 +723,7 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 			if err := c.Unmarshal(v); err != nil {
 				return err
 			}
-			x.data[k] = c
-			x.valueType.SetDirtyParent(c, func(dirtyType DirtyType) {
-				x.updateDirtyUpdated(k, c, dirtyType)
-			})
+			x.Set(k, c)
 		} else if err := c.Unmarshal(v); err != nil {
 			return err
 		}

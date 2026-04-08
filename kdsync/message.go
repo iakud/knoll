@@ -23,15 +23,12 @@ const (
 
 type DirtyFunc func(DirtyType)
 
-func (f DirtyFunc) Invoke(dirtyType DirtyType) {
+func (f DirtyFunc) Invoke(t DirtyType) {
 	if f == nil {
 		return
 	}
-	f(dirtyType)
+	f(t)
 }
-
-func NoSync()    {}
-func NoPersist() {}
 
 type MessageType[T any, M Message[T]] struct {
 	New              func() M

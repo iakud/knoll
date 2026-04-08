@@ -100,8 +100,8 @@ func (x *{{$MessageName}}) Get{{.Name}}() kdsync.Repeated[{{template "FieldType"
 }
 
 func (x *{{$MessageName}}) init{{.Name}}() {
-	dirtyFunc := func(dirtyType kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << {{.Number}}, dirtyType&{{template "DirtyType" .}})
+	dirtyFunc := func(t kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << {{.Number}}, t&{{template "DirtyType" .}})
 	}
 {{- if eq .TypeKind "component"}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "MessageType" .Type}})
@@ -117,8 +117,8 @@ func (x *{{$MessageName}}) Get{{.Name}}() kdsync.Map[{{template "Type" .KeyType}
 }
 
 func (x *{{$MessageName}}) init{{.Name}}() {
-	dirtyFunc := func(dirtyType kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << {{.Number}}, dirtyType&{{template "DirtyType" .}})
+	dirtyFunc := func(t kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << {{.Number}}, t&{{template "DirtyType" .}})
 	}
 {{- if eq .TypeKind "component"}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, {{template "FieldCodec" .KeyType}}, &{{template "MessageType" .Type}})
@@ -146,8 +146,8 @@ func (x *{{$MessageName}}) set{{.Name}}(v *{{.Type}}) {
 	x.xxx_hidden_{{.Name}} = v
 
 	if v != nil {
-		v.setDirtyParent(func(dirtyType kdsync.DirtyType) {
-			x.updateDirty(uint64(0x01)<<{{.Number}}, dirtyType&{{template "DirtyType" .}})
+		v.setDirtyParent(func(t kdsync.DirtyType) {
+			x.updateDirty(uint64(0x01)<<{{.Number}}, t&{{template "DirtyType" .}})
 		})
 	}
 	x.updateDirty(uint64(0x01)<<{{.Number}}, {{template "DirtyType" .}})
@@ -207,12 +207,12 @@ func (x *{{$MessageName}}) Marshal(b []byte) ([]byte, error) {
 }
 
 func (x *{{$MessageName}}) MarshalChange(b []byte) ([]byte, error) {
-	if x.syncDirty&uint64(0x01) != 0 {
+	if x.dirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
 {{- range .Fields}}
-	if x.syncDirty&(uint64(0x01)<<{{.Number}}) != 0 {
+	if x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 {{- if .Repeated}}
 		if b, err = wire.MarshalMessageChange(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
@@ -334,14 +334,14 @@ type {{.Name}} struct {
 {{- end}}
 {{- end}}
 
-	syncDirty    uint64
+	dirty        uint64
 	persistDirty uint64
 }
 
 func New{{.Name}}(id int64) *{{.Name}} {
 	x := new({{.Name}})
 	x.id = id
-	x.syncDirty = 1
+	x.dirty = 1
 	x.persistDirty = 1
 {{- range .Fields}}
 {{- if .Repeated}}
@@ -360,57 +360,57 @@ func (x *{{.Name}}) Id() int64 {
 }
 {{- template "Message" .}}
 
-func (x *{{.Name}}) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
-	switch dirtyType {	
+func (x *{{.Name}}) updateDirty(n uint64, t kdsync.DirtyType) {
+	switch t {	
 	case kdsync.DirtyType_Sync:
-		if x.syncDirty&n == n {
+		if x.dirty&n == n {
 			return
 		}
-		x.syncDirty |= n
+		x.dirty |= n
 	case kdsync.DirtyType_Persist:
 		if x.persistDirty&n == n {
 			return
 		}
 		x.persistDirty |= n
 	case kdsync.DirtyType_SyncAndPersist:
-		if x.syncDirty&n == n && x.persistDirty&n == n {
+		if x.dirty&n == n && x.persistDirty&n == n {
 			return
 		}
-		x.syncDirty |= n
+		x.dirty |= n
 		x.persistDirty |= n
 	}
 }
 
 func (x *{{.Name}}) checkDirty(n uint64) bool {
-	return x.syncDirty&n != 0
+	return x.dirty&n != 0
 }
 
 func (x *{{.Name}}) CheckDirty() bool {
-	return x.syncDirty != 0
+	return x.dirty != 0
 }
 
 func (x *{{.Name}}) ClearDirty() {
-	if x.syncDirty == 0 {
+	if x.dirty == 0 {
 		return
 	}
 {{- range .Fields}}
 {{- if not .NoSync}}
 {{- if .Repeated}}
-	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<{{.Number}}) != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 		x.xxx_hidden_{{.Name}}.ClearDirty()
 	}
 {{- else if .Map}}
-	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<{{.Number}}) != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 		x.xxx_hidden_{{.Name}}.ClearDirty()
 	}
 {{- else if eq .TypeKind "component"}}
-	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<{{.Number}}) != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 		x.xxx_hidden_{{.Name}}.ClearDirty()
 	}
 {{- end}}
 {{- end}}
 {{- end}}
-	x.syncDirty = 0
+	x.dirty = 0
 }
 
 func (x *{{.Name}}) ClearPersistDirty() {
@@ -462,14 +462,14 @@ type {{.Name}} struct {
 {{- end}}
 {{- end}}
 
-	syncDirty    uint64
+	dirty        uint64
 	persistDirty uint64
 	dirtyParent  kdsync.DirtyFunc
 }
 
 func New{{.Name}}() *{{.Name}} {
 	x := new({{.Name}})
-	x.syncDirty = 1
+	x.dirty = 1
 	x.persistDirty = 1
 {{- range .Fields}}
 {{- if .Repeated}}
@@ -484,13 +484,13 @@ func New{{.Name}}() *{{.Name}} {
 }
 {{- template "Message" .}}
 
-func (x *{{.Name}}) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
-	switch dirtyType {	
+func (x *{{.Name}}) updateDirty(n uint64, t kdsync.DirtyType) {
+	switch t {	
 	case kdsync.DirtyType_Sync:
-		if x.syncDirty&n == n {
+		if x.dirty&n == n {
 			return
 		}
-		x.syncDirty |= n
+		x.dirty |= n
 		x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
 	case kdsync.DirtyType_Persist:
 		if x.persistDirty&n == n {
@@ -499,41 +499,41 @@ func (x *{{.Name}}) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
 		x.persistDirty |= n
 		x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
 	case kdsync.DirtyType_SyncAndPersist:
-		if x.syncDirty&n == n && x.persistDirty&n == n {
+		if x.dirty&n == n && x.persistDirty&n == n {
 			return
 		}
-		x.syncDirty |= n
+		x.dirty |= n
 		x.persistDirty |= n
 		x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
 	}
 }
 
 func (x *{{.Name}}) checkDirty(n uint64) bool {
-	return x.syncDirty&n != 0
+	return x.dirty&n != 0
 }
 
 func (x *{{.Name}}) ClearDirty() {
-	if x.syncDirty == 0 {
+	if x.dirty == 0 {
 		return
 	}
 {{- range .Fields}}
 {{- if not .NoSync}}
 {{- if .Repeated}}
-	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<{{.Number}}) != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 		x.xxx_hidden_{{.Name}}.ClearDirty()
 	}
 {{- else if .Map}}
-	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<{{.Number}}) != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 		x.xxx_hidden_{{.Name}}.ClearDirty()
 	}
 {{- else if eq .TypeKind "component"}}
-	if x.syncDirty&uint64(0x01) != 0 || x.syncDirty&(uint64(0x01)<<{{.Number}}) != 0 {
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<{{.Number}}) != 0 {
 		x.xxx_hidden_{{.Name}}.ClearDirty()
 	}
 {{- end}}
 {{- end}}
 {{- end}}
-	x.syncDirty = 0
+	x.dirty = 0
 }
 
 func (x *{{.Name}}) ClearPersistDirty() {
@@ -566,7 +566,7 @@ func (x *{{.Name}}) checkDirtyParent() bool {
 
 func (x *{{.Name}}) setDirtyParent(dirtyParent kdsync.DirtyFunc) {
 	x.dirtyParent = dirtyParent
-	x.syncDirty = uint64(0x01)
+	x.dirty = uint64(0x01)
 	x.persistDirty = uint64(0x01)
 }
 
