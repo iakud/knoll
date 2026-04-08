@@ -223,8 +223,6 @@ func (x *All) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
 		}
 		x.syncDirty |= n
 		x.persistDirty |= n
-	default:
-		// nothing to do
 	}
 }
 
