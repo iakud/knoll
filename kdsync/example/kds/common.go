@@ -70,19 +70,6 @@ func (x *ItemData) SetCount(v int32) {
 	x.updateDirty(uint64(0x01) << 3, kdsync.DirtyType_SyncAndPersist)
 }
 
-func (x *ItemData) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
-	switch dirtyType {
-	case kdsync.DirtyType_SyncAndPersist:
-		x.updateSyncAndPersist(n)
-	case kdsync.DirtyType_Sync:
-		x.updateSync(n)
-	case kdsync.DirtyType_Persist:
-		x.updatePersist(n)
-	default:
-		// nothing to do
-	}
-}
-
 func (x *ItemData) Marshal(b []byte) ([]byte, error) {
 	var err error
 	if b, err = wire.MarshalInt32(b, 1, x.xxx_hidden_Id); err != nil {
@@ -97,7 +84,7 @@ func (x *ItemData) Marshal(b []byte) ([]byte, error) {
 	return b, err
 }
 
-func (x *ItemData) MarshalDirty(b []byte) ([]byte, error) {
+func (x *ItemData) MarshalChange(b []byte) ([]byte, error) {
 	if x.syncDirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
@@ -181,29 +168,28 @@ func (x *ItemData) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, e
 	return b, nil
 }
 
-func (x *ItemData) updateSync(n uint64) {
-	if x.syncDirty&n == n {
-		return
+func (x *ItemData) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
+	switch dirtyType {	
+	case kdsync.DirtyType_Sync:
+		if x.syncDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
+	case kdsync.DirtyType_Persist:
+		if x.persistDirty&n == n {
+			return
+		}
+		x.persistDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
+	case kdsync.DirtyType_SyncAndPersist:
+		if x.syncDirty&n == n && x.persistDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+		x.persistDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
 	}
-	x.syncDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
-}
-
-func (x *ItemData) updatePersist(n uint64) {
-	if x.persistDirty&n == n {
-		return
-	}
-	x.persistDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
-}
-
-func (x *ItemData) updateSyncAndPersist(n uint64) {
-	if x.syncDirty&n == n && x.persistDirty&n == n {
-		return
-	}
-	x.syncDirty |= n
-	x.persistDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *ItemData) checkDirty(n uint64) bool {

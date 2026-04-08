@@ -33,7 +33,7 @@ func sync(t *testing.T) {
 }
 
 func syncUpdate(t *testing.T) {
-	dirtyData, err := all.MarshalDirty(nil)
+	dirtyData, err := all.MarshalChange(nil)
 	if err != nil {
 		panic(err)
 	}

@@ -107,19 +107,6 @@ func (x *All) setMaps(v *AllMap) {
 	x.updateDirty(uint64(0x01)<<3, kdsync.DirtyType_SyncAndPersist)
 }
 
-func (x *All) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
-	switch dirtyType {
-	case kdsync.DirtyType_SyncAndPersist:
-		x.updateSyncAndPersist(n)
-	case kdsync.DirtyType_Sync:
-		x.updateSync(n)
-	case kdsync.DirtyType_Persist:
-		x.updatePersist(n)
-	default:
-		// nothing to do
-	}
-}
-
 func (x *All) Marshal(b []byte) ([]byte, error) {
 	var err error
 	if b, err = wire.MarshalMessage(b, 1, x.xxx_hidden_Types); err != nil {
@@ -134,23 +121,23 @@ func (x *All) Marshal(b []byte) ([]byte, error) {
 	return b, err
 }
 
-func (x *All) MarshalDirty(b []byte) ([]byte, error) {
+func (x *All) MarshalChange(b []byte) ([]byte, error) {
 	if x.syncDirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
 	if x.syncDirty&(uint64(0x01)<<1) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 1, x.xxx_hidden_Types); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 1, x.xxx_hidden_Types); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<2) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 2, x.xxx_hidden_Lists); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 2, x.xxx_hidden_Lists); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<3) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 3, x.xxx_hidden_Maps); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 3, x.xxx_hidden_Maps); err != nil {
 			return b, err
 		}
 	}
@@ -218,26 +205,27 @@ func (x *All) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error)
 	return b, nil
 }
 
-func (x *All) updateSync(n uint64) {
-	if x.syncDirty&n == n {
-		return
+func (x *All) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
+	switch dirtyType {	
+	case kdsync.DirtyType_Sync:
+		if x.syncDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+	case kdsync.DirtyType_Persist:
+		if x.persistDirty&n == n {
+			return
+		}
+		x.persistDirty |= n
+	case kdsync.DirtyType_SyncAndPersist:
+		if x.syncDirty&n == n && x.persistDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+		x.persistDirty |= n
+	default:
+		// nothing to do
 	}
-	x.syncDirty |= n
-}
-
-func (x *All) updatePersist(n uint64) {
-	if x.persistDirty&n == n {
-		return
-	}
-	x.persistDirty |= n
-}
-
-func (x *All) updateSyncAndPersist(n uint64) {
-	if x.syncDirty&n == n && x.persistDirty&n == n {
-		return
-	}
-	x.syncDirty |= n
-	x.persistDirty |= n
 }
 
 func (x *All) checkDirty(n uint64) bool {
@@ -576,19 +564,6 @@ func (x *AllType) setItemData(v *ItemData) {
 	x.updateDirty(uint64(0x01)<<20, kdsync.DirtyType_SyncAndPersist)
 }
 
-func (x *AllType) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
-	switch dirtyType {
-	case kdsync.DirtyType_SyncAndPersist:
-		x.updateSyncAndPersist(n)
-	case kdsync.DirtyType_Sync:
-		x.updateSync(n)
-	case kdsync.DirtyType_Persist:
-		x.updatePersist(n)
-	default:
-		// nothing to do
-	}
-}
-
 func (x *AllType) Marshal(b []byte) ([]byte, error) {
 	var err error
 	if b, err = wire.MarshalInt32(b, 1, x.xxx_hidden_Int32Val); err != nil {
@@ -655,7 +630,7 @@ func (x *AllType) Marshal(b []byte) ([]byte, error) {
 	return b, err
 }
 
-func (x *AllType) MarshalDirty(b []byte) ([]byte, error) {
+func (x *AllType) MarshalChange(b []byte) ([]byte, error) {
 	if x.syncDirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
@@ -757,7 +732,7 @@ func (x *AllType) MarshalDirty(b []byte) ([]byte, error) {
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<20) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 20, x.xxx_hidden_ItemData); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 20, x.xxx_hidden_ItemData); err != nil {
 			return b, err
 		}
 	}
@@ -996,29 +971,28 @@ func (x *AllType) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, er
 	return b, nil
 }
 
-func (x *AllType) updateSync(n uint64) {
-	if x.syncDirty&n == n {
-		return
+func (x *AllType) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
+	switch dirtyType {	
+	case kdsync.DirtyType_Sync:
+		if x.syncDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
+	case kdsync.DirtyType_Persist:
+		if x.persistDirty&n == n {
+			return
+		}
+		x.persistDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
+	case kdsync.DirtyType_SyncAndPersist:
+		if x.syncDirty&n == n && x.persistDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+		x.persistDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
 	}
-	x.syncDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
-}
-
-func (x *AllType) updatePersist(n uint64) {
-	if x.persistDirty&n == n {
-		return
-	}
-	x.persistDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
-}
-
-func (x *AllType) updateSyncAndPersist(n uint64) {
-	if x.syncDirty&n == n && x.persistDirty&n == n {
-		return
-	}
-	x.syncDirty |= n
-	x.persistDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllType) checkDirty(n uint64) bool {
@@ -1225,19 +1199,6 @@ func (x *AllList) initItemList() {
 	x.xxx_hidden_ItemList.Init(dirtyFunc, &message_ItemData_type)
 }
 
-func (x *AllList) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
-	switch dirtyType {
-	case kdsync.DirtyType_SyncAndPersist:
-		x.updateSyncAndPersist(n)
-	case kdsync.DirtyType_Sync:
-		x.updateSync(n)
-	case kdsync.DirtyType_Persist:
-		x.updatePersist(n)
-	default:
-		// nothing to do
-	}
-}
-
 func (x *AllList) Marshal(b []byte) ([]byte, error) {
 	var err error
 	if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Int32List); err != nil {
@@ -1276,63 +1237,63 @@ func (x *AllList) Marshal(b []byte) ([]byte, error) {
 	return b, err
 }
 
-func (x *AllList) MarshalDirty(b []byte) ([]byte, error) {
+func (x *AllList) MarshalChange(b []byte) ([]byte, error) {
 	if x.syncDirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
 	if x.syncDirty&(uint64(0x01)<<1) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 1, &x.xxx_hidden_Int32List); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 1, &x.xxx_hidden_Int32List); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<2) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 2, &x.xxx_hidden_Int64List); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 2, &x.xxx_hidden_Int64List); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<3) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 3, &x.xxx_hidden_FloatList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 3, &x.xxx_hidden_FloatList); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<4) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 4, &x.xxx_hidden_DoubleList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 4, &x.xxx_hidden_DoubleList); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<5) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 5, &x.xxx_hidden_BoolList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 5, &x.xxx_hidden_BoolList); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<6) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 6, &x.xxx_hidden_StringList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 6, &x.xxx_hidden_StringList); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<7) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 7, &x.xxx_hidden_TimestampList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 7, &x.xxx_hidden_TimestampList); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<8) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 8, &x.xxx_hidden_DurationList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 8, &x.xxx_hidden_DurationList); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<9) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 9, &x.xxx_hidden_EmptyList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 9, &x.xxx_hidden_EmptyList); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<10) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 10, &x.xxx_hidden_EnumList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 10, &x.xxx_hidden_EnumList); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<11) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 11, &x.xxx_hidden_ItemList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 11, &x.xxx_hidden_ItemList); err != nil {
 			return b, err
 		}
 	}
@@ -1480,29 +1441,28 @@ func (x *AllList) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, er
 	return b, nil
 }
 
-func (x *AllList) updateSync(n uint64) {
-	if x.syncDirty&n == n {
-		return
+func (x *AllList) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
+	switch dirtyType {	
+	case kdsync.DirtyType_Sync:
+		if x.syncDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
+	case kdsync.DirtyType_Persist:
+		if x.persistDirty&n == n {
+			return
+		}
+		x.persistDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
+	case kdsync.DirtyType_SyncAndPersist:
+		if x.syncDirty&n == n && x.persistDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+		x.persistDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
 	}
-	x.syncDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
-}
-
-func (x *AllList) updatePersist(n uint64) {
-	if x.persistDirty&n == n {
-		return
-	}
-	x.persistDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
-}
-
-func (x *AllList) updateSyncAndPersist(n uint64) {
-	if x.syncDirty&n == n && x.persistDirty&n == n {
-		return
-	}
-	x.syncDirty |= n
-	x.persistDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllList) checkDirty(n uint64) bool {
@@ -1990,19 +1950,6 @@ func (x *AllMap) initBoolItemData() {
 	x.xxx_hidden_BoolItemData.Init(dirtyFunc, kdsync.BoolCodec(), &message_ItemData_type)
 }
 
-func (x *AllMap) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
-	switch dirtyType {
-	case kdsync.DirtyType_SyncAndPersist:
-		x.updateSyncAndPersist(n)
-	case kdsync.DirtyType_Sync:
-		x.updateSync(n)
-	case kdsync.DirtyType_Persist:
-		x.updatePersist(n)
-	default:
-		// nothing to do
-	}
-}
-
 func (x *AllMap) Marshal(b []byte) ([]byte, error) {
 	var err error
 	if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Int32Int32); err != nil {
@@ -2092,148 +2039,148 @@ func (x *AllMap) Marshal(b []byte) ([]byte, error) {
 	return b, err
 }
 
-func (x *AllMap) MarshalDirty(b []byte) ([]byte, error) {
+func (x *AllMap) MarshalChange(b []byte) ([]byte, error) {
 	if x.syncDirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
 	var err error
 	if x.syncDirty&(uint64(0x01)<<1) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 1, &x.xxx_hidden_Int32Int32); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 1, &x.xxx_hidden_Int32Int32); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<2) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 2, &x.xxx_hidden_Int32String); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 2, &x.xxx_hidden_Int32String); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<3) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 3, &x.xxx_hidden_Int32Timestamp); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 3, &x.xxx_hidden_Int32Timestamp); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<4) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 4, &x.xxx_hidden_Int32Duration); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 4, &x.xxx_hidden_Int32Duration); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<5) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 5, &x.xxx_hidden_Int32Empty); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 5, &x.xxx_hidden_Int32Empty); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<6) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 6, &x.xxx_hidden_Int32Enum); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 6, &x.xxx_hidden_Int32Enum); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<7) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 7, &x.xxx_hidden_Int32ItemData); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 7, &x.xxx_hidden_Int32ItemData); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<8) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 8, &x.xxx_hidden_Int64Int64); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 8, &x.xxx_hidden_Int64Int64); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<9) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 9, &x.xxx_hidden_Int64String); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 9, &x.xxx_hidden_Int64String); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<10) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 10, &x.xxx_hidden_Int64Timestamp); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 10, &x.xxx_hidden_Int64Timestamp); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<11) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 11, &x.xxx_hidden_Int64Duration); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 11, &x.xxx_hidden_Int64Duration); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<12) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 12, &x.xxx_hidden_Int64Empty); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 12, &x.xxx_hidden_Int64Empty); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<13) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 13, &x.xxx_hidden_Int64Enum); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 13, &x.xxx_hidden_Int64Enum); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<14) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 14, &x.xxx_hidden_Int64ItemData); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 14, &x.xxx_hidden_Int64ItemData); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<15) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 15, &x.xxx_hidden_StringInt32); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 15, &x.xxx_hidden_StringInt32); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<16) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 16, &x.xxx_hidden_StringString); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 16, &x.xxx_hidden_StringString); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<17) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 17, &x.xxx_hidden_StringTimestamp); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 17, &x.xxx_hidden_StringTimestamp); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<18) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 18, &x.xxx_hidden_StringDuration); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 18, &x.xxx_hidden_StringDuration); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<19) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 19, &x.xxx_hidden_StringEmpty); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 19, &x.xxx_hidden_StringEmpty); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<20) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 20, &x.xxx_hidden_StringEnum); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 20, &x.xxx_hidden_StringEnum); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<21) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 21, &x.xxx_hidden_StringItemData); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 21, &x.xxx_hidden_StringItemData); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<22) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 22, &x.xxx_hidden_BoolInt32); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 22, &x.xxx_hidden_BoolInt32); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<23) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 23, &x.xxx_hidden_BoolString); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 23, &x.xxx_hidden_BoolString); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<24) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 24, &x.xxx_hidden_BoolTimestamp); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 24, &x.xxx_hidden_BoolTimestamp); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<25) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 25, &x.xxx_hidden_BoolDuration); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 25, &x.xxx_hidden_BoolDuration); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<26) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 26, &x.xxx_hidden_BoolEmpty); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 26, &x.xxx_hidden_BoolEmpty); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<27) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 27, &x.xxx_hidden_BoolEnum); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 27, &x.xxx_hidden_BoolEnum); err != nil {
 			return b, err
 		}
 	}
 	if x.syncDirty&(uint64(0x01)<<28) != 0 {
-		if b, err = wire.MarshalMessageDirty(b, 28, &x.xxx_hidden_BoolItemData); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 28, &x.xxx_hidden_BoolItemData); err != nil {
 			return b, err
 		}
 	}
@@ -2535,29 +2482,28 @@ func (x *AllMap) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, err
 	return b, nil
 }
 
-func (x *AllMap) updateSync(n uint64) {
-	if x.syncDirty&n == n {
-		return
+func (x *AllMap) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
+	switch dirtyType {	
+	case kdsync.DirtyType_Sync:
+		if x.syncDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
+	case kdsync.DirtyType_Persist:
+		if x.persistDirty&n == n {
+			return
+		}
+		x.persistDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
+	case kdsync.DirtyType_SyncAndPersist:
+		if x.syncDirty&n == n && x.persistDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+		x.persistDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
 	}
-	x.syncDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
-}
-
-func (x *AllMap) updatePersist(n uint64) {
-	if x.persistDirty&n == n {
-		return
-	}
-	x.persistDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
-}
-
-func (x *AllMap) updateSyncAndPersist(n uint64) {
-	if x.syncDirty&n == n && x.persistDirty&n == n {
-		return
-	}
-	x.syncDirty |= n
-	x.persistDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *AllMap) checkDirty(n uint64) bool {

@@ -177,19 +177,6 @@ func (x *{{$MessageName}}) Set{{.Name}}(v {{template "FieldType" .}}) {
 {{- end}}
 {{- end}}
 
-func (x *{{.Name}}) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
-	switch dirtyType {
-	case kdsync.DirtyType_SyncAndPersist:
-		x.updateSyncAndPersist(n)
-	case kdsync.DirtyType_Sync:
-		x.updateSync(n)
-	case kdsync.DirtyType_Persist:
-		x.updatePersist(n)
-	default:
-		// nothing to do
-	}
-}
-
 func (x *{{$MessageName}}) Marshal(b []byte) ([]byte, error) {
 	var err error
 {{- range .Fields}}
@@ -219,7 +206,7 @@ func (x *{{$MessageName}}) Marshal(b []byte) ([]byte, error) {
 	return b, err
 }
 
-func (x *{{$MessageName}}) MarshalDirty(b []byte) ([]byte, error) {
+func (x *{{$MessageName}}) MarshalChange(b []byte) ([]byte, error) {
 	if x.syncDirty&uint64(0x01) != 0 {
 		return x.Marshal(b)
 	}
@@ -227,15 +214,15 @@ func (x *{{$MessageName}}) MarshalDirty(b []byte) ([]byte, error) {
 {{- range .Fields}}
 	if x.syncDirty&(uint64(0x01)<<{{.Number}}) != 0 {
 {{- if .Repeated}}
-		if b, err = wire.MarshalMessageDirty(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
+		if b, err = wire.MarshalMessageChange(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
 		}
 {{- else if .Map}}
-		if b, err = wire.MarshalMessageDirty(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
+		if b, err = wire.MarshalMessageChange(b, {{.Number}}, &x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
 		}
 {{- else if eq .TypeKind "component"}}
-		if b, err = wire.MarshalMessageDirty(b, {{.Number}}, x.xxx_hidden_{{.Name}}); err != nil {
+		if b, err = wire.MarshalMessageChange(b, {{.Number}}, x.xxx_hidden_{{.Name}}); err != nil {
 			return b, err
 		}
 {{- else if eq .TypeKind "enum"}}
@@ -373,26 +360,27 @@ func (x *{{.Name}}) Id() int64 {
 }
 {{- template "Message" .}}
 
-func (x *{{.Name}}) updateSync(n uint64) {
-	if x.syncDirty&n == n {
-		return
+func (x *{{.Name}}) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
+	switch dirtyType {	
+	case kdsync.DirtyType_Sync:
+		if x.syncDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+	case kdsync.DirtyType_Persist:
+		if x.persistDirty&n == n {
+			return
+		}
+		x.persistDirty |= n
+	case kdsync.DirtyType_SyncAndPersist:
+		if x.syncDirty&n == n && x.persistDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+		x.persistDirty |= n
+	default:
+		// nothing to do
 	}
-	x.syncDirty |= n
-}
-
-func (x *{{.Name}}) updatePersist(n uint64) {
-	if x.persistDirty&n == n {
-		return
-	}
-	x.persistDirty |= n
-}
-
-func (x *{{.Name}}) updateSyncAndPersist(n uint64) {
-	if x.syncDirty&n == n && x.persistDirty&n == n {
-		return
-	}
-	x.syncDirty |= n
-	x.persistDirty |= n
 }
 
 func (x *{{.Name}}) checkDirty(n uint64) bool {
@@ -498,29 +486,28 @@ func New{{.Name}}() *{{.Name}} {
 }
 {{- template "Message" .}}
 
-func (x *{{.Name}}) updateSync(n uint64) {
-	if x.syncDirty&n == n {
-		return
+func (x *{{.Name}}) updateDirty(n uint64, dirtyType kdsync.DirtyType) {
+	switch dirtyType {	
+	case kdsync.DirtyType_Sync:
+		if x.syncDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
+	case kdsync.DirtyType_Persist:
+		if x.persistDirty&n == n {
+			return
+		}
+		x.persistDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
+	case kdsync.DirtyType_SyncAndPersist:
+		if x.syncDirty&n == n && x.persistDirty&n == n {
+			return
+		}
+		x.syncDirty |= n
+		x.persistDirty |= n
+		x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
 	}
-	x.syncDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_Sync)
-}
-
-func (x *{{.Name}}) updatePersist(n uint64) {
-	if x.persistDirty&n == n {
-		return
-	}
-	x.persistDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_Persist)
-}
-
-func (x *{{.Name}}) updateSyncAndPersist(n uint64) {
-	if x.syncDirty&n == n && x.persistDirty&n == n {
-		return
-	}
-	x.syncDirty |= n
-	x.persistDirty |= n
-	x.dirtyParent.Invoke(kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *{{.Name}}) checkDirty(n uint64) bool {

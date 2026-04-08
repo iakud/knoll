@@ -30,7 +30,7 @@ type Repeated[T any] interface {
 	ClearDirty()
 	ClearPersistDirty()
 	Marshal(b []byte) ([]byte, error)
-	MarshalDirty(b []byte) ([]byte, error)
+	MarshalChange(b []byte) ([]byte, error)
 	Unmarshal(b []byte) error
 	MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error)
 }
@@ -75,7 +75,7 @@ func (x *RepeatedField[E]) Clear() {
 	}
 	clear(x.data)
 	x.data = x.data[:0]
-	x.markDirty()
+	x.updateDirty()
 }
 
 func (x *RepeatedField[E]) Get(i int) E {
@@ -87,7 +87,7 @@ func (x *RepeatedField[E]) Set(i int, v E) {
 		return
 	}
 	x.data[i] = v
-	x.markDirty()
+	x.updateDirty()
 }
 
 func (x *RepeatedField[E]) Append(v ...E) {
@@ -95,7 +95,7 @@ func (x *RepeatedField[E]) Append(v ...E) {
 		return
 	}
 	x.data = append(x.data, v...)
-	x.markDirty()
+	x.updateDirty()
 }
 
 func (x *RepeatedField[E]) Index(v E) int {
@@ -130,7 +130,7 @@ func (x *RepeatedField[E]) Insert(i int, v ...E) {
 		return
 	}
 	x.data = slices.Insert(x.data, i, v...)
-	x.markDirty()
+	x.updateDirty()
 }
 
 func (x *RepeatedField[E]) Delete(i, j int) {
@@ -139,7 +139,7 @@ func (x *RepeatedField[E]) Delete(i, j int) {
 		return
 	}
 	x.data = slices.Delete(x.data, i, j)
-	x.markDirty()
+	x.updateDirty()
 }
 
 func (x *RepeatedField[E]) DeleteFunc(del func(E) bool) {
@@ -157,7 +157,7 @@ func (x *RepeatedField[E]) DeleteFunc(del func(E) bool) {
 	}
 	clear(x.data[i:])
 	x.data = x.data[:i]
-	x.markDirty()
+	x.updateDirty()
 }
 
 func (x *RepeatedField[E]) Replace(i, j int, v ...E) {
@@ -166,7 +166,7 @@ func (x *RepeatedField[E]) Replace(i, j int, v ...E) {
 		return
 	}
 	x.data = slices.Replace(x.data, i, j, v...)
-	x.markDirty()
+	x.updateDirty()
 }
 
 func (x *RepeatedField[E]) Reverse() {
@@ -174,7 +174,7 @@ func (x *RepeatedField[E]) Reverse() {
 		return
 	}
 	slices.Reverse(x.data)
-	x.markDirty()
+	x.updateDirty()
 }
 
 func (x *RepeatedField[E]) All() iter.Seq2[int, E] {
@@ -189,7 +189,7 @@ func (x *RepeatedField[E]) Values() iter.Seq[E] {
 	return slices.Values(x.data)
 }
 
-func (x *RepeatedField[E]) markDirty() {
+func (x *RepeatedField[E]) updateDirty() {
 	if x.syncDirty {
 		return
 	}
@@ -215,7 +215,7 @@ func (x *RepeatedField[E]) Marshal(b []byte) ([]byte, error) {
 	return b, nil
 }
 
-func (x *RepeatedField[E]) MarshalDirty(b []byte) ([]byte, error) {
+func (x *RepeatedField[E]) MarshalChange(b []byte) ([]byte, error) {
 	return x.Marshal(b)
 }
 
@@ -451,39 +451,25 @@ func (x *RepeatedMessage[T, E]) Values() iter.Seq[E] {
 func (x *RepeatedMessage[T, E]) updateDirty(dirtyType DirtyType) {
 	switch dirtyType {
 	case DirtyType_Sync:
-		x.updateSync()
+		if x.syncDirty {
+			return
+		}
+		x.syncDirty = true
+		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
-		x.updatePersist()
+		if x.persistDirty {
+			return
+		}
+		x.persistDirty = true
+		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		x.updateSyncAndPersist()
-	default:
-		// nothing to do
+		if x.syncDirty && x.persistDirty {
+			return
+		}
+		x.syncDirty = true
+		x.persistDirty = true
+		x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
 	}
-}
-
-func (x *RepeatedMessage[T, E]) updateSync() {
-	if x.syncDirty {
-		return
-	}
-	x.syncDirty = true
-	x.dirtyParent.Invoke(DirtyType_Sync)
-}
-
-func (x *RepeatedMessage[T, E]) updatePersist() {
-	if x.persistDirty {
-		return
-	}
-	x.persistDirty = true
-	x.dirtyParent.Invoke(DirtyType_Persist)
-}
-
-func (x *RepeatedMessage[T, E]) updateSyncAndPersist() {
-	if x.syncDirty && x.persistDirty {
-		return
-	}
-	x.syncDirty = true
-	x.persistDirty = true
-	x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
 }
 
 func (x *RepeatedMessage[T, E]) ClearDirty() {
@@ -517,7 +503,7 @@ func (x *RepeatedMessage[T, E]) Marshal(b []byte) ([]byte, error) {
 	return b, nil
 }
 
-func (x *RepeatedMessage[T, E]) MarshalDirty(b []byte) ([]byte, error) {
+func (x *RepeatedMessage[T, E]) MarshalChange(b []byte) ([]byte, error) {
 	return x.Marshal(b)
 }
 

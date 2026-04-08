@@ -39,7 +39,7 @@ type UnmarshalFunc func(b []byte) error
 
 type Marshaler interface {
 	Marshal(b []byte) ([]byte, error)
-	MarshalDirty(b []byte) ([]byte, error)
+	MarshalChange(b []byte) ([]byte, error)
 }
 
 type Unmarshaler interface {
@@ -122,11 +122,11 @@ func AppendMessage(b []byte, m Marshaler) ([]byte, error) {
 	return b, nil
 }
 
-func AppendMessageDirty(b []byte, m Marshaler) ([]byte, error) {
+func AppendMessageChange(b []byte, m Marshaler) ([]byte, error) {
 	var pos int
 	var err error
 	b, pos = AppendSpeculativeLength(b)
-	b, err = m.MarshalDirty(b)
+	b, err = m.MarshalChange(b)
 	if err != nil {
 		return b, err
 	}
