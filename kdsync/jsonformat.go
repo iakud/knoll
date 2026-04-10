@@ -34,12 +34,40 @@ func MarshalJSONIndent(b []byte, v any, prefix, indent string) ([]byte, error) {
 	case []byte:
 		return strconv.AppendQuote(b, base64.StdEncoding.EncodeToString(t)), nil
 	case time.Time:
-		return append(b, "{Seconds: "+strconv.FormatInt(t.Unix(), 10)+", Nanos: "+strconv.Itoa(t.Nanosecond())+"}"...), nil
+		b = append(b, '{')
+		b = append(b, '\n')
+		b = append(b, prefix...)
+		b = append(b, indent...)
+		b = append(b, `"Seconds": `...)
+		b = strconv.AppendQuote(b, strconv.FormatInt(t.Unix(), 10))
+		b = append(b, ',', '\n')
+		b = append(b, prefix...)
+		b = append(b, indent...)
+		b = append(b, `"Nanos": `...)
+		b = strconv.AppendInt(b, int64(t.Nanosecond()), 10)
+		b = append(b, '\n')
+		b = append(b, prefix...)
+		b = append(b, '}')
+		return b, nil
 	case time.Duration:
 		nanos := t.Nanoseconds()
 		secs := nanos / 1e9
 		nanos -= secs * 1e9
-		return append(b, "{Seconds: "+strconv.FormatInt(secs, 10)+", Nanos: "+strconv.FormatInt(nanos, 10)+"}"...), nil
+		b = append(b, '{')
+		b = append(b, '\n')
+		b = append(b, prefix...)
+		b = append(b, indent...)
+		b = append(b, `"Seconds": `...)
+		b = strconv.AppendQuote(b, strconv.FormatInt(secs, 10))
+		b = append(b, ',', '\n')
+		b = append(b, prefix...)
+		b = append(b, indent...)
+		b = append(b, `"Nanos": `...)
+		b = strconv.AppendInt(b, nanos, 10)
+		b = append(b, '\n')
+		b = append(b, prefix...)
+		b = append(b, '}')
+		return b, nil
 	case struct{}:
 		return append(b, '{', '}'), nil
 	case JSONMarshaler:

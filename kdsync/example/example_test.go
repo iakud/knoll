@@ -1,10 +1,14 @@
 package example
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/iakud/knoll/kdsync"
 	"github.com/iakud/knoll/kdsync/example/kds"
 )
 
@@ -29,7 +33,7 @@ func sync(t *testing.T) {
 	all.ClearDirty()
 	mergeFrom(fullData)
 	// check
-	checkKds(t)
+	checkKds2(t)
 }
 
 func syncUpdate(t *testing.T) {
@@ -40,7 +44,7 @@ func syncUpdate(t *testing.T) {
 	all.ClearDirty()
 	mergeFrom(dirtyData)
 	// check
-	checkKds(t)
+	checkKds2(t)
 }
 
 func checkKds(t *testing.T) {
@@ -65,6 +69,624 @@ func checkKds(t *testing.T) {
 			t.Logf("Line %d differ:\n  Go: %s\n  C#: %s\n", i+1, goLine, csLine)
 			t.Fatal("Kds mismatch!")
 		}
+	}
+}
+
+func checkKds2(t *testing.T) {
+	csJson := getString()
+	var csData map[string]any
+	if err := json.Unmarshal([]byte(csJson), &csData); err != nil {
+		t.Fatal(err)
+	}
+
+	types := csData["Types"].(map[string]any)
+	compareTypes(t, types, all.GetTypes(), "Types")
+
+	lists := csData["Lists"].(map[string]any)
+	compareLists(t, lists, all.GetLists(), "Lists")
+
+	maps := csData["Maps"].(map[string]any)
+	compareMaps2(t, maps, all.GetMaps(), "Maps")
+}
+
+func compareTypes(t *testing.T, cs map[string]any, goTypes *kds.AllType, path string) {
+	compareValue(t, cs["Int32Val"], goTypes.GetInt32Val(), path+".Int32Val")
+	compareInt64Value(t, cs["Int64Val"], goTypes.GetInt64Val(), path+".Int64Val")
+	compareValue(t, cs["Uint32Val"], goTypes.GetUint32Val(), path+".Uint32Val")
+	compareUint64Value(t, cs["Uint64Val"], goTypes.GetUint64Val(), path+".Uint64Val")
+	compareValue(t, cs["Sint32Val"], goTypes.GetSint32Val(), path+".Sint32Val")
+	compareInt64Value(t, cs["Sint64Val"], goTypes.GetSint64Val(), path+".Sint64Val")
+	compareValue(t, cs["Fixed32Val"], goTypes.GetFixed32Val(), path+".Fixed32Val")
+	compareUint64Value(t, cs["Fixed64Val"], goTypes.GetFixed64Val(), path+".Fixed64Val")
+	compareValue(t, cs["Sfixed32Val"], goTypes.GetSfixed32Val(), path+".Sfixed32Val")
+	compareInt64Value(t, cs["Sfixed64Val"], goTypes.GetSfixed64Val(), path+".Sfixed64Val")
+	compareValue(t, cs["FloatVal"], goTypes.GetFloatVal(), path+".FloatVal")
+	compareValue(t, cs["DoubleVal"], goTypes.GetDoubleVal(), path+".DoubleVal")
+	compareValue(t, cs["BoolVal"], goTypes.GetBoolVal(), path+".BoolVal")
+	compareValue(t, cs["StringVal"], goTypes.GetStringVal(), path+".StringVal")
+	compareBytesValue(t, cs["BytesVal"], goTypes.GetBytesVal(), path+".BytesVal")
+	compareTimestampValue(t, cs["TimestampVal"], goTypes.GetTimestampVal(), path+".TimestampVal")
+	compareDurationValue(t, cs["DurationVal"], goTypes.GetDurationVal(), path+".DurationVal")
+	compareValue(t, cs["EnumVal"], int(goTypes.GetEnumVal()), path+".EnumVal")
+
+	itemData := cs["ItemData"].(map[string]any)
+	goItemData := goTypes.GetItemData()
+	compareValue(t, itemData["Id"], goItemData.GetId(), path+".ItemData.Id")
+	compareValue(t, itemData["Name"], goItemData.GetName(), path+".ItemData.Name")
+	compareValue(t, itemData["Count"], goItemData.GetCount(), path+".ItemData.Count")
+}
+
+func compareLists(t *testing.T, cs map[string]any, goLists *kds.AllList, path string) {
+	compareRepeatedInt32(t, cs["Int32List"].([]any), goLists.GetInt32List(), path+".Int32List")
+	compareRepeatedInt64(t, cs["Int64List"].([]any), goLists.GetInt64List(), path+".Int64List")
+	compareRepeatedFloat(t, cs["FloatList"].([]any), goLists.GetFloatList(), path+".FloatList")
+	compareRepeatedDouble(t, cs["DoubleList"].([]any), goLists.GetDoubleList(), path+".DoubleList")
+	compareRepeatedBool(t, cs["BoolList"].([]any), goLists.GetBoolList(), path+".BoolList")
+	compareRepeatedString(t, cs["StringList"].([]any), goLists.GetStringList(), path+".StringList")
+	compareRepeatedTimestamp(t, cs["TimestampList"].([]any), goLists.GetTimestampList(), path+".TimestampList")
+	compareRepeatedDuration(t, cs["DurationList"].([]any), goLists.GetDurationList(), path+".DurationList")
+	compareRepeatedEnum(t, cs["EnumList"].([]any), goLists.GetEnumList(), path+".EnumList")
+	// skip EmptyList - nosync
+
+	csItemList := cs["ItemList"].([]any)
+	goItemList := goLists.GetItemList()
+	if len(csItemList) != goItemList.Len() {
+		t.Fatalf("%s Length mismatch: cs=%d, go=%d", path+".ItemList", len(csItemList), goItemList.Len())
+	}
+	for i := 0; i < len(csItemList); i++ {
+		itemData := csItemList[i].(map[string]any)
+		goItemData := goItemList.Get(i)
+		compareValue(t, itemData["Id"], goItemData.GetId(), fmt.Sprintf("%s[%d].Id", path+".ItemList", i))
+		compareValue(t, itemData["Name"], goItemData.GetName(), fmt.Sprintf("%s[%d].Name", path+".ItemList", i))
+		compareValue(t, itemData["Count"], goItemData.GetCount(), fmt.Sprintf("%s[%d].Count", path+".ItemList", i))
+	}
+}
+
+func compareMaps2(t *testing.T, cs map[string]any, goMaps *kds.AllMap, path string) {
+	compareMapInt32Int32(t, cs["Int32Int32"].(map[string]any), goMaps.GetInt32Int32(), path+".Int32Int32")
+	compareMapInt32String(t, cs["Int32String"].(map[string]any), goMaps.GetInt32String(), path+".Int32String")
+	compareMapInt32Timestamp(t, cs["Int32Timestamp"].(map[string]any), goMaps.GetInt32Timestamp(), path+".Int32Timestamp")
+	compareMapInt32Duration(t, cs["Int32Duration"].(map[string]any), goMaps.GetInt32Duration(), path+".Int32Duration")
+	compareMapInt32Enum(t, cs["Int32Enum"].(map[string]any), goMaps.GetInt32Enum(), path+".Int32Enum")
+	compareMapInt32ItemData(t, cs["Int32ItemData"].(map[string]any), goMaps.GetInt32ItemData(), path+".Int32ItemData")
+	// skip Int32Empty - nosync
+
+	compareMapInt64Int64(t, cs["Int64Int64"].(map[string]any), goMaps.GetInt64Int64(), path+".Int64Int64")
+	compareMapInt64String(t, cs["Int64String"].(map[string]any), goMaps.GetInt64String(), path+".Int64String")
+	compareMapInt64Timestamp(t, cs["Int64Timestamp"].(map[string]any), goMaps.GetInt64Timestamp(), path+".Int64Timestamp")
+	compareMapInt64Duration(t, cs["Int64Duration"].(map[string]any), goMaps.GetInt64Duration(), path+".Int64Duration")
+	compareMapInt64Enum(t, cs["Int64Enum"].(map[string]any), goMaps.GetInt64Enum(), path+".Int64Enum")
+	compareMapInt64ItemData(t, cs["Int64ItemData"].(map[string]any), goMaps.GetInt64ItemData(), path+".Int64ItemData")
+	// skip Int64Empty - nosync
+
+	compareMapStringInt32(t, cs["StringInt32"].(map[string]any), goMaps.GetStringInt32(), path+".StringInt32")
+	compareMapStringString(t, cs["StringString"].(map[string]any), goMaps.GetStringString(), path+".StringString")
+	compareMapStringTimestamp(t, cs["StringTimestamp"].(map[string]any), goMaps.GetStringTimestamp(), path+".StringTimestamp")
+	compareMapStringDuration(t, cs["StringDuration"].(map[string]any), goMaps.GetStringDuration(), path+".StringDuration")
+	compareMapStringEnum(t, cs["StringEnum"].(map[string]any), goMaps.GetStringEnum(), path+".StringEnum")
+	compareMapStringItemData(t, cs["StringItemData"].(map[string]any), goMaps.GetStringItemData(), path+".StringItemData")
+	// skip StringEmpty - nosync
+
+	compareMapBoolInt32(t, cs["BoolInt32"].(map[string]any), goMaps.GetBoolInt32(), path+".BoolInt32")
+	compareMapBoolString(t, cs["BoolString"].(map[string]any), goMaps.GetBoolString(), path+".BoolString")
+	compareMapBoolTimestamp(t, cs["BoolTimestamp"].(map[string]any), goMaps.GetBoolTimestamp(), path+".BoolTimestamp")
+	compareMapBoolDuration(t, cs["BoolDuration"].(map[string]any), goMaps.GetBoolDuration(), path+".BoolDuration")
+	// skip BoolEmpty - nosync
+	// skip BoolEnum - nosync,nopersist
+	compareMapBoolItemData(t, cs["BoolItemData"].(map[string]any), goMaps.GetBoolItemData(), path+".BoolItemData")
+}
+
+func compareValue(t *testing.T, cs, goVal any, path string) {
+	if fmt.Sprintf("%v", cs) != fmt.Sprintf("%v", goVal) {
+		t.Fatalf("%s mismatch: cs=%v, go=%v", path, cs, goVal)
+	}
+}
+
+func compareBytesValue(t *testing.T, cs, goVal any, path string) {
+	csStr, ok := cs.(string)
+	if !ok {
+		t.Fatalf("%s cs is not string: %v", path, cs)
+	}
+	goBytes, ok := goVal.([]byte)
+	if !ok {
+		t.Fatalf("%s goVal is not []byte: %v", path, goVal)
+	}
+	decoded, err := base64.StdEncoding.DecodeString(csStr)
+	if err != nil {
+		t.Fatalf("%s base64 decode failed: %v", path, err)
+	}
+	if string(decoded) != string(goBytes) {
+		t.Fatalf("%s mismatch: cs=%v, go=%v", path, string(decoded), string(goBytes))
+	}
+}
+
+func compareInt64Value(t *testing.T, cs, goVal any, path string) {
+	var csInt64 int64
+	if s, ok := cs.(string); ok {
+		csInt64 = mustParseInt(s)
+	} else if f, ok := cs.(float64); ok {
+		csInt64 = int64(f)
+	}
+	if csInt64 != goVal.(int64) {
+		t.Fatalf("%s mismatch: cs=%v, go=%v", path, csInt64, goVal)
+	}
+}
+
+func compareUint64Value(t *testing.T, cs, goVal any, path string) {
+	var csUint64 uint64
+	if s, ok := cs.(string); ok {
+		csUint64 = uint64(mustParseInt(s))
+	} else if f, ok := cs.(float64); ok {
+		csUint64 = uint64(f)
+	}
+	if csUint64 != goVal.(uint64) {
+		t.Fatalf("%s mismatch: cs=%v, go=%v", path, csUint64, goVal)
+	}
+}
+
+func compareTimestampValue(t *testing.T, cs any, goVal time.Time, path string) {
+	csMap := cs.(map[string]any)
+	var csSeconds int64
+	if s, ok := csMap["Seconds"].(string); ok {
+		csSeconds = mustParseInt(s)
+	} else if f, ok := csMap["Seconds"].(float64); ok {
+		csSeconds = int64(f)
+	}
+	if csSeconds != goVal.Unix() {
+		t.Fatalf("%s mismatch: cs=%v, go=%v", path, csSeconds, goVal.Unix())
+	}
+}
+
+func compareDurationValue(t *testing.T, cs any, goVal time.Duration, path string) {
+	csMap := cs.(map[string]any)
+	var csSeconds int64
+	if s, ok := csMap["Seconds"].(string); ok {
+		csSeconds = mustParseInt(s)
+	} else if f, ok := csMap["Seconds"].(float64); ok {
+		csSeconds = int64(f)
+	}
+	goSeconds := goVal.Milliseconds() / 1000
+	if csSeconds != goSeconds {
+		t.Fatalf("%s mismatch: cs=%v, go=%v", path, csSeconds, goSeconds)
+	}
+}
+
+func mustParseInt(s string) int64 {
+	var n int64
+	fmt.Sscanf(s, "%d", &n)
+	return n
+}
+
+func compareRepeatedInt32(t *testing.T, cs []any, goList kdsync.Repeated[int32], path string) {
+	if len(cs) != goList.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goList.Len())
+	}
+	for i := 0; i < len(cs); i++ {
+		compareValue(t, cs[i], goList.Get(i), fmt.Sprintf("%s[%d]", path, i))
+	}
+}
+
+func compareRepeatedInt64(t *testing.T, cs []any, goList kdsync.Repeated[int64], path string) {
+	if len(cs) != goList.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goList.Len())
+	}
+	for i := 0; i < len(cs); i++ {
+		compareInt64Value(t, cs[i], goList.Get(i), fmt.Sprintf("%s[%d]", path, i))
+	}
+}
+
+func compareRepeatedFloat(t *testing.T, cs []any, goList kdsync.Repeated[float32], path string) {
+	if len(cs) != goList.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goList.Len())
+	}
+	for i := 0; i < len(cs); i++ {
+		compareValue(t, cs[i], goList.Get(i), fmt.Sprintf("%s[%d]", path, i))
+	}
+}
+
+func compareRepeatedDouble(t *testing.T, cs []any, goList kdsync.Repeated[float64], path string) {
+	if len(cs) != goList.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goList.Len())
+	}
+	for i := 0; i < len(cs); i++ {
+		compareValue(t, cs[i], goList.Get(i), fmt.Sprintf("%s[%d]", path, i))
+	}
+}
+
+func compareRepeatedBool(t *testing.T, cs []any, goList kdsync.Repeated[bool], path string) {
+	if len(cs) != goList.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goList.Len())
+	}
+	for i := 0; i < len(cs); i++ {
+		compareValue(t, cs[i], goList.Get(i), fmt.Sprintf("%s[%d]", path, i))
+	}
+}
+
+func compareRepeatedString(t *testing.T, cs []any, goList kdsync.Repeated[string], path string) {
+	if len(cs) != goList.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goList.Len())
+	}
+	for i := 0; i < len(cs); i++ {
+		compareValue(t, cs[i], goList.Get(i), fmt.Sprintf("%s[%d]", path, i))
+	}
+}
+
+func compareRepeatedTimestamp(t *testing.T, cs []any, goList kdsync.Repeated[time.Time], path string) {
+	if len(cs) != goList.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goList.Len())
+	}
+	for i := 0; i < len(cs); i++ {
+		csMap := cs[i].(map[string]any)
+		var csSeconds int64
+		if s, ok := csMap["Seconds"].(string); ok {
+			csSeconds = mustParseInt(s)
+		} else if f, ok := csMap["Seconds"].(float64); ok {
+			csSeconds = int64(f)
+		}
+		goTime := goList.Get(i).Unix()
+		compareValue(t, csSeconds, goTime, fmt.Sprintf("%s[%d]", path, i))
+	}
+}
+
+func compareRepeatedDuration(t *testing.T, cs []any, goList kdsync.Repeated[time.Duration], path string) {
+	if len(cs) != goList.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goList.Len())
+	}
+	for i := 0; i < len(cs); i++ {
+		csMap := cs[i].(map[string]any)
+		var csSeconds int64
+		if s, ok := csMap["Seconds"].(string); ok {
+			csSeconds = mustParseInt(s)
+		} else if f, ok := csMap["Seconds"].(float64); ok {
+			csSeconds = int64(f)
+		}
+		goDur := goList.Get(i).Milliseconds() / 1000
+		compareValue(t, csSeconds, goDur, fmt.Sprintf("%s[%d]", path, i))
+	}
+}
+
+func compareRepeatedEnum(t *testing.T, cs []any, goList kdsync.Repeated[kds.ItemType], path string) {
+	if len(cs) != goList.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goList.Len())
+	}
+	for i := 0; i < len(cs); i++ {
+		compareValue(t, cs[i], int(goList.Get(i)), fmt.Sprintf("%s[%d]", path, i))
+	}
+}
+
+func compareMapInt32Int32(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, int32], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := int32(mustParseInt(k))
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapInt32String(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, string], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := int32(mustParseInt(k))
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapInt32Timestamp(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, time.Time], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := int32(mustParseInt(k))
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareTimestampValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapInt32Duration(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, time.Duration], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := int32(mustParseInt(k))
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareDurationValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapInt32Enum(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, kds.ItemType], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := int32(mustParseInt(k))
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, int(goVal), path+"."+k)
+	}
+}
+
+func compareMapInt32ItemData(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, *kds.ItemData], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := int32(mustParseInt(k))
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		itemData := v.(map[string]any)
+		compareValue(t, itemData["Id"], goVal.GetId(), path+"."+k+".id")
+		compareValue(t, itemData["Name"], goVal.GetName(), path+"."+k+".name")
+		compareValue(t, itemData["Count"], goVal.GetCount(), path+"."+k+".count")
+	}
+}
+
+func compareMapInt64Int64(t *testing.T, cs map[string]any, goMap kdsync.Map[int64, int64], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := mustParseInt(k)
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapInt64String(t *testing.T, cs map[string]any, goMap kdsync.Map[int64, string], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := mustParseInt(k)
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapInt64Timestamp(t *testing.T, cs map[string]any, goMap kdsync.Map[int64, time.Time], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := mustParseInt(k)
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareTimestampValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapInt64Duration(t *testing.T, cs map[string]any, goMap kdsync.Map[int64, time.Duration], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := mustParseInt(k)
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareDurationValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapInt64Enum(t *testing.T, cs map[string]any, goMap kdsync.Map[int64, kds.ItemType], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := mustParseInt(k)
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, int(goVal), path+"."+k)
+	}
+}
+
+func compareMapInt64ItemData(t *testing.T, cs map[string]any, goMap kdsync.Map[int64, *kds.ItemData], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := mustParseInt(k)
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		itemData := v.(map[string]any)
+		compareValue(t, itemData["Id"], goVal.GetId(), path+"."+k+".id")
+		compareValue(t, itemData["Name"], goVal.GetName(), path+"."+k+".name")
+		compareValue(t, itemData["Count"], goVal.GetCount(), path+"."+k+".count")
+	}
+}
+
+func compareMapStringInt32(t *testing.T, cs map[string]any, goMap kdsync.Map[string, int32], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapStringString(t *testing.T, cs map[string]any, goMap kdsync.Map[string, string], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapStringTimestamp(t *testing.T, cs map[string]any, goMap kdsync.Map[string, time.Time], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareTimestampValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapStringDuration(t *testing.T, cs map[string]any, goMap kdsync.Map[string, time.Duration], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareDurationValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapStringEnum(t *testing.T, cs map[string]any, goMap kdsync.Map[string, kds.ItemType], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, int(goVal), path+"."+k)
+	}
+}
+
+func compareMapStringItemData(t *testing.T, cs map[string]any, goMap kdsync.Map[string, *kds.ItemData], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		itemData := v.(map[string]any)
+		compareValue(t, itemData["Id"], goVal.GetId(), path+"."+k+".id")
+		compareValue(t, itemData["Name"], goVal.GetName(), path+"."+k+".name")
+		compareValue(t, itemData["Count"], goVal.GetCount(), path+"."+k+".count")
+	}
+}
+
+func compareMapBoolInt32(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, int32], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k == "true")
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapBoolString(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, string], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k == "true")
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapBoolTimestamp(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, time.Time], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k == "true")
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareTimestampValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapBoolDuration(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, time.Duration], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k == "true")
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareDurationValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapBoolEnum(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, kds.ItemType], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k == "true")
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, int(goVal), path+"."+k)
+	}
+}
+
+func compareMapBoolItemData(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, *kds.ItemData], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k == "true")
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		itemData := v.(map[string]any)
+		compareValue(t, itemData["Id"], goVal.GetId(), path+"."+k+".id")
+		compareValue(t, itemData["Name"], goVal.GetName(), path+"."+k+".name")
+		compareValue(t, itemData["Count"], goVal.GetCount(), path+"."+k+".count")
 	}
 }
 
