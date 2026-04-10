@@ -41,7 +41,7 @@ func MarshalJSONIndent(b []byte, v any, prefix, indent string) ([]byte, error) {
 		nanos -= secs * 1e9
 		return append(b, "{Seconds: "+strconv.FormatInt(secs, 10)+", Nanos: "+strconv.FormatInt(nanos, 10)+"}"...), nil
 	case struct{}:
-		return append(b, "{}"...), nil
+		return append(b, '{', '}'), nil
 	case JSONMarshaler:
 		return t.MarshalJSONIndent(b, prefix, indent)
 	default:

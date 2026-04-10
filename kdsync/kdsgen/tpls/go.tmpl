@@ -278,20 +278,32 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 }
 
 func (x *{{$MessageName}}) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
-{{- if not (len .Fields)}}
-	return append(b, "{}"...)
+{{- $HasSync := false}}
+{{- range .Fields}}
+{{- if not .NoSync}}
+{{- $HasSync = true}}
+{{- end}}
+{{- end}}
+{{- if not $HasSync}}
+	return append(b, '{', '}')
 {{- end}}
 
 	var err error
 	_ = err
-	b = append(b, '{', '\n')
-{{- $LastIndex := len (slice .Fields 1)}}
-{{- range $Index, $Value := .Fields}}
-{{- if not $Value.NoSync}}
+	b = append(b, '{')
+{{- $HasSync = false}}
+{{- range .Fields}}
+{{- if not .NoSync}}
+{{- if $HasSync}}
+	b = append(b, ',', '\n')
+{{- else}}
+{{- $HasSync = true}}
+	b = append(b, '\n')
+{{- end}}
 	b = append(b, prefix...)
-	b = append(b, indent + "\"{{$Value.Name}}\": "...)
+	b = append(b, indent + "\"{{.Name}}\": "...)
 {{- if .Repeated}}
-	b, err = x.xxx_hidden_{{$Value.Name}}.MarshalJSONIndent(b, prefix+indent, indent)
+	b, err = x.xxx_hidden_{{.Name}}.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
@@ -306,12 +318,9 @@ func (x *{{$MessageName}}) MarshalJSONIndent(b []byte, prefix, indent string) ([
 		return nil, err
 	}
 {{- end}}
-{{- if ne $Index $LastIndex}}
-	b = append(b, ',')
+{{- end}}
 {{- end}}
 	b = append(b, '\n')
-{{- end}}
-{{- end}}
 	b = append(b, prefix...)
 	b = append(b, '}')
 	return b, nil

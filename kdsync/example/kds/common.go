@@ -139,23 +139,22 @@ func (x *ItemData) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, e
 
 	var err error
 	_ = err
-	b = append(b, '{', '\n')
+	b = append(b, '{')
+	b = append(b, '\n')
 	b = append(b, prefix...)
 	b = append(b, indent + "\"Id\": "...)
 	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Id, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
-	b = append(b, ',')
-	b = append(b, '\n')
+	b = append(b, ',', '\n')
 	b = append(b, prefix...)
 	b = append(b, indent + "\"Name\": "...)
 	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Name, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
-	b = append(b, ',')
-	b = append(b, '\n')
+	b = append(b, ',', '\n')
 	b = append(b, prefix...)
 	b = append(b, indent + "\"Count\": "...)
 	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Count, prefix+indent, indent)

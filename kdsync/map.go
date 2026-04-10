@@ -354,27 +354,29 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 
 func (x *MapField[K, V]) MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error) {
 	if len(x.data) == 0 {
-		return append(b, "{}"...), nil
+		return append(b, '{', '}'), nil
 	}
 
 	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.compareFunc)
 	var err error
-	b = append(b, "{\n"...)
+	b = append(b, '{')
 	for i, k := range keys {
-		b = append(b, prefix+indent...)
+		if i > 0 {
+			b = append(b, ',')
+		}
+		b = append(b, '\n')
+		b = append(b, prefix...)
+		b = append(b, indent...)
 		b = append(b, '"')
 		b = fmt.Append(b, k)
 		b = append(b, '"')
-		b = append(b, ": "...)
+		b = append(b, ':', ' ')
 		b, err = MarshalJSONIndent(b, x.data[k], prefix+indent, indent)
 		if err != nil {
 			return nil, err
 		}
-		if i+1 < len(keys) {
-			b = append(b, ',')
-		}
-		b = append(b, '\n')
 	}
+	b = append(b, '\n')
 	b = append(b, prefix...)
 	b = append(b, '}')
 	return b, nil
@@ -733,27 +735,29 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 
 func (x *MapMessage[K, T, V]) MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error) {
 	if len(x.data) == 0 {
-		return append(b, "{}"...), nil
+		return append(b, '{', '}'), nil
 	}
 
 	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.compareFunc)
 	var err error
-	b = append(b, "{\n"...)
+	b = append(b, '{')
 	for i, k := range keys {
-		b = append(b, prefix+indent...)
+		if i > 0 {
+			b = append(b, ',')
+		}
+		b = append(b, '\n')
+		b = append(b, prefix...)
+		b = append(b, indent...)
 		b = append(b, '"')
 		b = fmt.Append(b, k)
 		b = append(b, '"')
-		b = append(b, ": "...)
+		b = append(b, ':', ' ')
 		b, err = MarshalJSONIndent(b, x.data[k], prefix+indent, indent)
 		if err != nil {
 			return nil, err
 		}
-		if i+1 < len(keys) {
-			b = append(b, ',')
-		}
-		b = append(b, '\n')
 	}
+	b = append(b, '\n')
 	b = append(b, prefix...)
 	b = append(b, '}')
 	return b, nil
