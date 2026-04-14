@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Kdsync;
 
 namespace Kds
 {
@@ -90,7 +91,9 @@ namespace Kds
         [UnmanagedCallersOnly(EntryPoint = "get_string", CallConvs = new[] { typeof(CallConvCdecl) })]
         public static IntPtr GetString()
         {
-            return Marshal.StringToHGlobalAnsi(_all.ToString());
+            JsonWriter writer = new JsonWriter(true);
+            writer.WriteMessageValue(_all);
+            return Marshal.StringToHGlobalAnsi(writer.ToString());
         }
     }
 }

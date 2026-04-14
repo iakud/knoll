@@ -98,20 +98,20 @@ namespace Kds
 			_changed = 0;
 		}
 
-		public IEnumerable<KeyValuePair<string, object>> GetFields()
+		public void Write(Kdsync.JsonWriter writer)
 		{
-			var fields = new List<KeyValuePair<string, object>>()
-			{
-				new KeyValuePair<string, object>("Types", types_),
-				new KeyValuePair<string, object>("Lists", lists_),
-				new KeyValuePair<string, object>("Maps", maps_),
-			};
-			return fields;
+			writer.WriteStartObject();
+			writer.WriteMessage("Types", types_);
+			writer.WriteMessage("Lists", lists_);
+			writer.WriteMessage("Maps", maps_);
+			writer.WriteEndObject();
 		}
 
 		public override string ToString()
 		{
-			return Kdsync.JsonFormatter.Format(this);
+			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
+			writer.WriteMessageValue(this);
+			return writer.ToString();
 		}
 
 		public void MergeFrom(byte[] buffer)
@@ -338,37 +338,37 @@ namespace Kds
 			_changed = 0;
 		}
 
-		public IEnumerable<KeyValuePair<string, object>> GetFields()
+		public void Write(Kdsync.JsonWriter writer)
 		{
-			var fields = new List<KeyValuePair<string, object>>()
-			{
-				new KeyValuePair<string, object>("Int32Val", int32Val_),
-				new KeyValuePair<string, object>("Int64Val", int64Val_),
-				new KeyValuePair<string, object>("Uint32Val", uint32Val_),
-				new KeyValuePair<string, object>("Uint64Val", uint64Val_),
-				new KeyValuePair<string, object>("Sint32Val", sint32Val_),
-				new KeyValuePair<string, object>("Sint64Val", sint64Val_),
-				new KeyValuePair<string, object>("Fixed32Val", fixed32Val_),
-				new KeyValuePair<string, object>("Fixed64Val", fixed64Val_),
-				new KeyValuePair<string, object>("Sfixed32Val", sfixed32Val_),
-				new KeyValuePair<string, object>("Sfixed64Val", sfixed64Val_),
-				new KeyValuePair<string, object>("FloatVal", floatVal_),
-				new KeyValuePair<string, object>("DoubleVal", doubleVal_),
-				new KeyValuePair<string, object>("BoolVal", boolVal_),
-				new KeyValuePair<string, object>("StringVal", stringVal_),
-				new KeyValuePair<string, object>("BytesVal", bytesVal_),
-				new KeyValuePair<string, object>("TimestampVal", timestampVal_),
-				new KeyValuePair<string, object>("DurationVal", durationVal_),
-				new KeyValuePair<string, object>("EmptyVal", emptyVal_),
-				new KeyValuePair<string, object>("EnumVal", enumVal_),
-				new KeyValuePair<string, object>("ItemData", itemData_),
-			};
-			return fields;
+			writer.WriteStartObject();
+			writer.WriteNumber("Int32Val", int32Val_);
+			writer.WriteNumber("Int64Val", int64Val_);
+			writer.WriteNumber("Uint32Val", uint32Val_);
+			writer.WriteNumber("Uint64Val", uint64Val_);
+			writer.WriteNumber("Sint32Val", sint32Val_);
+			writer.WriteNumber("Sint64Val", sint64Val_);
+			writer.WriteNumber("Fixed32Val", fixed32Val_);
+			writer.WriteNumber("Fixed64Val", fixed64Val_);
+			writer.WriteNumber("Sfixed32Val", sfixed32Val_);
+			writer.WriteNumber("Sfixed64Val", sfixed64Val_);
+			writer.WriteNumber("FloatVal", floatVal_);
+			writer.WriteNumber("DoubleVal", doubleVal_);
+			writer.WriteBoolean("BoolVal", boolVal_);
+			writer.WriteString("StringVal", stringVal_);
+			writer.WriteBase64("BytesVal", bytesVal_);
+			writer.WriteTimestamp("TimestampVal", timestampVal_);
+			writer.WriteDuration("DurationVal", durationVal_);
+			writer.WriteEmpty("EmptyVal", emptyVal_);
+			writer.WriteEnum("EnumVal", enumVal_);
+			writer.WriteMessage("ItemData", itemData_);
+			writer.WriteEndObject();
 		}
 
 		public override string ToString()
 		{
-			return Kdsync.JsonFormatter.Format(this);
+			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
+			writer.WriteMessageValue(this);
+			return writer.ToString();
 		}
 	}
 
@@ -575,28 +575,28 @@ namespace Kds
 			_changed = 0;
 		}
 
-		public IEnumerable<KeyValuePair<string, object>> GetFields()
+		public void Write(Kdsync.JsonWriter writer)
 		{
-			var fields = new List<KeyValuePair<string, object>>()
-			{
-				new KeyValuePair<string, object>("Int32List", int32List_),
-				new KeyValuePair<string, object>("Int64List", int64List_),
-				new KeyValuePair<string, object>("FloatList", floatList_),
-				new KeyValuePair<string, object>("DoubleList", doubleList_),
-				new KeyValuePair<string, object>("BoolList", boolList_),
-				new KeyValuePair<string, object>("StringList", stringList_),
-				new KeyValuePair<string, object>("TimestampList", timestampList_),
-				new KeyValuePair<string, object>("DurationList", durationList_),
-				new KeyValuePair<string, object>("EmptyList", emptyList_),
-				new KeyValuePair<string, object>("EnumList", enumList_),
-				new KeyValuePair<string, object>("ItemList", itemList_),
-			};
-			return fields;
+			writer.WriteStartObject();
+			writer.WriteRepeated("Int32List", int32List_);
+			writer.WriteRepeated("Int64List", int64List_);
+			writer.WriteRepeated("FloatList", floatList_);
+			writer.WriteRepeated("DoubleList", doubleList_);
+			writer.WriteRepeated("BoolList", boolList_);
+			writer.WriteRepeated("StringList", stringList_);
+			writer.WriteRepeated("TimestampList", timestampList_);
+			writer.WriteRepeated("DurationList", durationList_);
+			writer.WriteRepeated("EmptyList", emptyList_);
+			writer.WriteRepeated("EnumList", enumList_);
+			writer.WriteRepeated("ItemList", itemList_);
+			writer.WriteEndObject();
 		}
 
 		public override string ToString()
 		{
-			return Kdsync.JsonFormatter.Format(this);
+			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
+			writer.WriteMessageValue(this);
+			return writer.ToString();
 		}
 	}
 
@@ -1013,43 +1013,43 @@ namespace Kds
 			_changed = 0;
 		}
 
-		public IEnumerable<KeyValuePair<string, object>> GetFields()
+		public void Write(Kdsync.JsonWriter writer)
 		{
-			var fields = new List<KeyValuePair<string, object>>()
-			{
-				new KeyValuePair<string, object>("Int32Int32", int32Int32_),
-				new KeyValuePair<string, object>("Int32String", int32String_),
-				new KeyValuePair<string, object>("Int32Timestamp", int32Timestamp_),
-				new KeyValuePair<string, object>("Int32Duration", int32Duration_),
-				new KeyValuePair<string, object>("Int32Enum", int32Enum_),
-				new KeyValuePair<string, object>("Int32ItemData", int32ItemData_),
-				new KeyValuePair<string, object>("Int64Int64", int64Int64_),
-				new KeyValuePair<string, object>("Int64String", int64String_),
-				new KeyValuePair<string, object>("Int64Timestamp", int64Timestamp_),
-				new KeyValuePair<string, object>("Int64Duration", int64Duration_),
-				new KeyValuePair<string, object>("Int64Empty", int64Empty_),
-				new KeyValuePair<string, object>("Int64Enum", int64Enum_),
-				new KeyValuePair<string, object>("Int64ItemData", int64ItemData_),
-				new KeyValuePair<string, object>("StringInt32", stringInt32_),
-				new KeyValuePair<string, object>("StringString", stringString_),
-				new KeyValuePair<string, object>("StringTimestamp", stringTimestamp_),
-				new KeyValuePair<string, object>("StringDuration", stringDuration_),
-				new KeyValuePair<string, object>("StringEmpty", stringEmpty_),
-				new KeyValuePair<string, object>("StringEnum", stringEnum_),
-				new KeyValuePair<string, object>("StringItemData", stringItemData_),
-				new KeyValuePair<string, object>("BoolInt32", boolInt32_),
-				new KeyValuePair<string, object>("BoolString", boolString_),
-				new KeyValuePair<string, object>("BoolTimestamp", boolTimestamp_),
-				new KeyValuePair<string, object>("BoolDuration", boolDuration_),
-				new KeyValuePair<string, object>("BoolEmpty", boolEmpty_),
-				new KeyValuePair<string, object>("BoolItemData", boolItemData_),
-			};
-			return fields;
+			writer.WriteStartObject();
+			writer.WriteMap("Int32Int32", int32Int32_);
+			writer.WriteMap("Int32String", int32String_);
+			writer.WriteMap("Int32Timestamp", int32Timestamp_);
+			writer.WriteMap("Int32Duration", int32Duration_);
+			writer.WriteMap("Int32Enum", int32Enum_);
+			writer.WriteMap("Int32ItemData", int32ItemData_);
+			writer.WriteMap("Int64Int64", int64Int64_);
+			writer.WriteMap("Int64String", int64String_);
+			writer.WriteMap("Int64Timestamp", int64Timestamp_);
+			writer.WriteMap("Int64Duration", int64Duration_);
+			writer.WriteMap("Int64Empty", int64Empty_);
+			writer.WriteMap("Int64Enum", int64Enum_);
+			writer.WriteMap("Int64ItemData", int64ItemData_);
+			writer.WriteMap("StringInt32", stringInt32_);
+			writer.WriteMap("StringString", stringString_);
+			writer.WriteMap("StringTimestamp", stringTimestamp_);
+			writer.WriteMap("StringDuration", stringDuration_);
+			writer.WriteMap("StringEmpty", stringEmpty_);
+			writer.WriteMap("StringEnum", stringEnum_);
+			writer.WriteMap("StringItemData", stringItemData_);
+			writer.WriteMap("BoolInt32", boolInt32_);
+			writer.WriteMap("BoolString", boolString_);
+			writer.WriteMap("BoolTimestamp", boolTimestamp_);
+			writer.WriteMap("BoolDuration", boolDuration_);
+			writer.WriteMap("BoolEmpty", boolEmpty_);
+			writer.WriteMap("BoolItemData", boolItemData_);
+			writer.WriteEndObject();
 		}
 
 		public override string ToString()
 		{
-			return Kdsync.JsonFormatter.Format(this);
+			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
+			writer.WriteMessageValue(this);
+			return writer.ToString();
 		}
 	}
 }

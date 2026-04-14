@@ -245,25 +245,42 @@
 			_changed = 0;
 		}
 
-		public IEnumerable<KeyValuePair<string, object>> GetFields()
+		public void Write(Kdsync.JsonWriter writer)
 		{
-{{- if len .Fields}}
-			var fields = new List<KeyValuePair<string, object>>()
-			{
-{{- $lastIndex := len .Fields}}
-{{- range $index, $value := .Fields}}
-				new KeyValuePair<string, object>("{{.Name}}", {{template "FieldName" .}}){{- if ne $index $lastIndex}},{{- end}}
+			writer.WriteStartObject();
+{{- range .Fields}}
+{{- if .Repeated}}
+			writer.WriteRepeated("{{.Name}}", {{template "FieldName" .}});
+{{- else if .Map}}
+			writer.WriteMap("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .TypeKind "component"}}
+			writer.WriteMessage("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .TypeKind "enum"}}
+			writer.WriteEnum("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "bool"}}
+			writer.WriteBoolean("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "int32" "sint32" "uint32" "int64" "sint64" "uint64" "fixed32" "sfixed32" "fixed64" "sfixed64" "float" "double"}}
+			writer.WriteNumber("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "string"}}
+			writer.WriteString("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "bytes"}}
+			writer.WriteBase64("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "timestamp"}}
+			writer.WriteTimestamp("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "duration"}}
+			writer.WriteDuration("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "empty"}}
+			writer.WriteEmpty("{{.Name}}", {{template "FieldName" .}});
 {{- end}}
-			};
-			return fields;
-{{- else}}
-			return new List<KeyValuePair<string, object>>();
 {{- end}}
+			writer.WriteEndObject();
 		}
 
 		public override string ToString()
 		{
-			return Kdsync.JsonFormatter.Format(this);
+			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
+			writer.WriteMessageValue(this);
+			return writer.ToString();
 		}
 {{- end}}
 

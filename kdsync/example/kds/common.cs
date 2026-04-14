@@ -88,20 +88,20 @@ namespace Kds
 			_changed = 0;
 		}
 
-		public IEnumerable<KeyValuePair<string, object>> GetFields()
+		public void Write(Kdsync.JsonWriter writer)
 		{
-			var fields = new List<KeyValuePair<string, object>>()
-			{
-				new KeyValuePair<string, object>("Id", id_),
-				new KeyValuePair<string, object>("Name", name_),
-				new KeyValuePair<string, object>("Count", count_),
-			};
-			return fields;
+			writer.WriteStartObject();
+			writer.WriteNumber("Id", id_);
+			writer.WriteString("Name", name_);
+			writer.WriteNumber("Count", count_);
+			writer.WriteEndObject();
 		}
 
 		public override string ToString()
 		{
-			return Kdsync.JsonFormatter.Format(this);
+			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
+			writer.WriteMessageValue(this);
+			return writer.ToString();
 		}
 	}
 }
