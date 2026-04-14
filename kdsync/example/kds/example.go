@@ -1023,7 +1023,9 @@ var message_AllType_type = kdsync.MessageType[AllType, *AllType]{
 
 type AllList struct {
 	xxx_hidden_Int32List kdsync.RepeatedField[int32]
+	xxx_hidden_Uint32List kdsync.RepeatedField[uint32]
 	xxx_hidden_Int64List kdsync.RepeatedField[int64]
+	xxx_hidden_Uint64List kdsync.RepeatedField[uint64]
 	xxx_hidden_FloatList kdsync.RepeatedField[float32]
 	xxx_hidden_DoubleList kdsync.RepeatedField[float64]
 	xxx_hidden_BoolList kdsync.RepeatedField[bool]
@@ -1044,7 +1046,9 @@ func NewAllList() *AllList {
 	x.dirty = 1
 	x.persistDirty = 1
 	x.initInt32List()
+	x.initUint32List()
 	x.initInt64List()
+	x.initUint64List()
 	x.initFloatList()
 	x.initDoubleList()
 	x.initBoolList()
@@ -1068,15 +1072,37 @@ func (x *AllList) initInt32List() {
 	x.xxx_hidden_Int32List.Init(dirtyFunc, kdsync.Int32Codec())
 }
 
+func (x *AllList) GetUint32List() kdsync.Repeated[uint32] {
+	return &x.xxx_hidden_Uint32List
+}
+
+func (x *AllList) initUint32List() {
+	dirtyFunc := func(t kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 2, t&kdsync.DirtyType_SyncAndPersist)
+	}
+	x.xxx_hidden_Uint32List.Init(dirtyFunc, kdsync.Uint32Codec())
+}
+
 func (x *AllList) GetInt64List() kdsync.Repeated[int64] {
 	return &x.xxx_hidden_Int64List
 }
 
 func (x *AllList) initInt64List() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 2, t&kdsync.DirtyType_SyncAndPersist)
+		x.updateDirty(uint64(0x01) << 3, t&kdsync.DirtyType_SyncAndPersist)
 	}
 	x.xxx_hidden_Int64List.Init(dirtyFunc, kdsync.Int64Codec())
+}
+
+func (x *AllList) GetUint64List() kdsync.Repeated[uint64] {
+	return &x.xxx_hidden_Uint64List
+}
+
+func (x *AllList) initUint64List() {
+	dirtyFunc := func(t kdsync.DirtyType) {
+		x.updateDirty(uint64(0x01) << 4, t&kdsync.DirtyType_SyncAndPersist)
+	}
+	x.xxx_hidden_Uint64List.Init(dirtyFunc, kdsync.Uint64Codec())
 }
 
 func (x *AllList) GetFloatList() kdsync.Repeated[float32] {
@@ -1085,7 +1111,7 @@ func (x *AllList) GetFloatList() kdsync.Repeated[float32] {
 
 func (x *AllList) initFloatList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 3, t&kdsync.DirtyType_SyncAndPersist)
+		x.updateDirty(uint64(0x01) << 5, t&kdsync.DirtyType_SyncAndPersist)
 	}
 	x.xxx_hidden_FloatList.Init(dirtyFunc, kdsync.Float32Codec())
 }
@@ -1096,7 +1122,7 @@ func (x *AllList) GetDoubleList() kdsync.Repeated[float64] {
 
 func (x *AllList) initDoubleList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 4, t&kdsync.DirtyType_SyncAndPersist)
+		x.updateDirty(uint64(0x01) << 6, t&kdsync.DirtyType_SyncAndPersist)
 	}
 	x.xxx_hidden_DoubleList.Init(dirtyFunc, kdsync.Float64Codec())
 }
@@ -1107,7 +1133,7 @@ func (x *AllList) GetBoolList() kdsync.Repeated[bool] {
 
 func (x *AllList) initBoolList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 5, t&kdsync.DirtyType_SyncAndPersist)
+		x.updateDirty(uint64(0x01) << 7, t&kdsync.DirtyType_SyncAndPersist)
 	}
 	x.xxx_hidden_BoolList.Init(dirtyFunc, kdsync.BoolCodec())
 }
@@ -1118,7 +1144,7 @@ func (x *AllList) GetStringList() kdsync.Repeated[string] {
 
 func (x *AllList) initStringList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 6, t&kdsync.DirtyType_SyncAndPersist)
+		x.updateDirty(uint64(0x01) << 8, t&kdsync.DirtyType_SyncAndPersist)
 	}
 	x.xxx_hidden_StringList.Init(dirtyFunc, kdsync.StringCodec())
 }
@@ -1129,7 +1155,7 @@ func (x *AllList) GetTimestampList() kdsync.Repeated[time.Time] {
 
 func (x *AllList) initTimestampList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 7, t&kdsync.DirtyType_SyncAndPersist)
+		x.updateDirty(uint64(0x01) << 9, t&kdsync.DirtyType_SyncAndPersist)
 	}
 	x.xxx_hidden_TimestampList.Init(dirtyFunc, kdsync.TimestampCodec())
 }
@@ -1140,7 +1166,7 @@ func (x *AllList) GetDurationList() kdsync.Repeated[time.Duration] {
 
 func (x *AllList) initDurationList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 8, t&kdsync.DirtyType_SyncAndPersist)
+		x.updateDirty(uint64(0x01) << 10, t&kdsync.DirtyType_SyncAndPersist)
 	}
 	x.xxx_hidden_DurationList.Init(dirtyFunc, kdsync.DurationCodec())
 }
@@ -1151,7 +1177,7 @@ func (x *AllList) GetEmptyList() kdsync.Repeated[struct{}] {
 
 func (x *AllList) initEmptyList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 9, t&kdsync.DirtyType_SyncAndPersist)
+		x.updateDirty(uint64(0x01) << 11, t&kdsync.DirtyType_SyncAndPersist)
 	}
 	x.xxx_hidden_EmptyList.Init(dirtyFunc, kdsync.EmptyCodec())
 }
@@ -1162,7 +1188,7 @@ func (x *AllList) GetEnumList() kdsync.Repeated[ItemType] {
 
 func (x *AllList) initEnumList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 10, t&kdsync.DirtyType_SyncAndPersist)
+		x.updateDirty(uint64(0x01) << 12, t&kdsync.DirtyType_SyncAndPersist)
 	}
 	x.xxx_hidden_EnumList.Init(dirtyFunc, kdsync.EnumCodec[ItemType]())
 }
@@ -1173,7 +1199,7 @@ func (x *AllList) GetItemList() kdsync.Repeated[*ItemData] {
 
 func (x *AllList) initItemList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 11, t&kdsync.DirtyType_SyncAndPersist)
+		x.updateDirty(uint64(0x01) << 13, t&kdsync.DirtyType_SyncAndPersist)
 	}
 	x.xxx_hidden_ItemList.Init(dirtyFunc, &message_ItemData_type)
 }
@@ -1183,34 +1209,40 @@ func (x *AllList) Marshal(b []byte) ([]byte, error) {
 	if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Int32List); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 2, &x.xxx_hidden_Int64List); err != nil {
+	if b, err = wire.MarshalMessage(b, 2, &x.xxx_hidden_Uint32List); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 3, &x.xxx_hidden_FloatList); err != nil {
+	if b, err = wire.MarshalMessage(b, 3, &x.xxx_hidden_Int64List); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 4, &x.xxx_hidden_DoubleList); err != nil {
+	if b, err = wire.MarshalMessage(b, 4, &x.xxx_hidden_Uint64List); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 5, &x.xxx_hidden_BoolList); err != nil {
+	if b, err = wire.MarshalMessage(b, 5, &x.xxx_hidden_FloatList); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 6, &x.xxx_hidden_StringList); err != nil {
+	if b, err = wire.MarshalMessage(b, 6, &x.xxx_hidden_DoubleList); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 7, &x.xxx_hidden_TimestampList); err != nil {
+	if b, err = wire.MarshalMessage(b, 7, &x.xxx_hidden_BoolList); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 8, &x.xxx_hidden_DurationList); err != nil {
+	if b, err = wire.MarshalMessage(b, 8, &x.xxx_hidden_StringList); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 9, &x.xxx_hidden_EmptyList); err != nil {
+	if b, err = wire.MarshalMessage(b, 9, &x.xxx_hidden_TimestampList); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 10, &x.xxx_hidden_EnumList); err != nil {
+	if b, err = wire.MarshalMessage(b, 10, &x.xxx_hidden_DurationList); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 11, &x.xxx_hidden_ItemList); err != nil {
+	if b, err = wire.MarshalMessage(b, 11, &x.xxx_hidden_EmptyList); err != nil {
+		return b, err
+	}
+	if b, err = wire.MarshalMessage(b, 12, &x.xxx_hidden_EnumList); err != nil {
+		return b, err
+	}
+	if b, err = wire.MarshalMessage(b, 13, &x.xxx_hidden_ItemList); err != nil {
 		return b, err
 	}
 	return b, err
@@ -1227,52 +1259,62 @@ func (x *AllList) MarshalChange(b []byte) ([]byte, error) {
 		}
 	}
 	if x.dirty&(uint64(0x01)<<2) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 2, &x.xxx_hidden_Int64List); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 2, &x.xxx_hidden_Uint32List); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<3) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 3, &x.xxx_hidden_FloatList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 3, &x.xxx_hidden_Int64List); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<4) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 4, &x.xxx_hidden_DoubleList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 4, &x.xxx_hidden_Uint64List); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<5) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 5, &x.xxx_hidden_BoolList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 5, &x.xxx_hidden_FloatList); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<6) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 6, &x.xxx_hidden_StringList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 6, &x.xxx_hidden_DoubleList); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<7) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 7, &x.xxx_hidden_TimestampList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 7, &x.xxx_hidden_BoolList); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<8) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 8, &x.xxx_hidden_DurationList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 8, &x.xxx_hidden_StringList); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<9) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 9, &x.xxx_hidden_EmptyList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 9, &x.xxx_hidden_TimestampList); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<10) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 10, &x.xxx_hidden_EnumList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 10, &x.xxx_hidden_DurationList); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<11) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 11, &x.xxx_hidden_ItemList); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 11, &x.xxx_hidden_EmptyList); err != nil {
+			return b, err
+		}
+	}
+	if x.dirty&(uint64(0x01)<<12) != 0 {
+		if b, err = wire.MarshalMessageChange(b, 12, &x.xxx_hidden_EnumList); err != nil {
+			return b, err
+		}
+	}
+	if x.dirty&(uint64(0x01)<<13) != 0 {
+		if b, err = wire.MarshalMessageChange(b, 13, &x.xxx_hidden_ItemList); err != nil {
 			return b, err
 		}
 	}
@@ -1291,24 +1333,28 @@ func (x *AllList) Unmarshal(b []byte) error {
 		case 1:
 			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int32List)
 		case 2:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int64List)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Uint32List)
 		case 3:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_FloatList)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int64List)
 		case 4:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_DoubleList)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Uint64List)
 		case 5:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_BoolList)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_FloatList)
 		case 6:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_StringList)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_DoubleList)
 		case 7:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_TimestampList)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_BoolList)
 		case 8:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_DurationList)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_StringList)
 		case 9:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_EmptyList)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_TimestampList)
 		case 10:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_EnumList)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_DurationList)
 		case 11:
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_EmptyList)
+		case 12:
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_EnumList)
+		case 13:
 			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_ItemList)
 		}
 		if err == wire.ErrUnknown {
@@ -1337,8 +1383,22 @@ func (x *AllList) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, er
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
+	b = append(b, indent + "\"Uint32List\": "...)
+	b, err = x.xxx_hidden_Uint32List.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',', '\n')
+	b = append(b, prefix...)
 	b = append(b, indent + "\"Int64List\": "...)
 	b, err = x.xxx_hidden_Int64List.MarshalJSONIndent(b, prefix+indent, indent)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, ',', '\n')
+	b = append(b, prefix...)
+	b = append(b, indent + "\"Uint64List\": "...)
+	b, err = x.xxx_hidden_Uint64List.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
@@ -1447,33 +1507,39 @@ func (x *AllList) ClearDirty() {
 		x.xxx_hidden_Int32List.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<2) != 0 {
-		x.xxx_hidden_Int64List.ClearDirty()
+		x.xxx_hidden_Uint32List.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<3) != 0 {
-		x.xxx_hidden_FloatList.ClearDirty()
+		x.xxx_hidden_Int64List.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<4) != 0 {
-		x.xxx_hidden_DoubleList.ClearDirty()
+		x.xxx_hidden_Uint64List.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<5) != 0 {
-		x.xxx_hidden_BoolList.ClearDirty()
+		x.xxx_hidden_FloatList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<6) != 0 {
-		x.xxx_hidden_StringList.ClearDirty()
+		x.xxx_hidden_DoubleList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<7) != 0 {
-		x.xxx_hidden_TimestampList.ClearDirty()
+		x.xxx_hidden_BoolList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<8) != 0 {
-		x.xxx_hidden_DurationList.ClearDirty()
+		x.xxx_hidden_StringList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<9) != 0 {
-		x.xxx_hidden_EmptyList.ClearDirty()
+		x.xxx_hidden_TimestampList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<10) != 0 {
-		x.xxx_hidden_EnumList.ClearDirty()
+		x.xxx_hidden_DurationList.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<11) != 0 {
+		x.xxx_hidden_EmptyList.ClearDirty()
+	}
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<12) != 0 {
+		x.xxx_hidden_EnumList.ClearDirty()
+	}
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<13) != 0 {
 		x.xxx_hidden_ItemList.ClearDirty()
 	}
 	x.dirty = 0
@@ -1487,33 +1553,39 @@ func (x *AllList) ClearPersistDirty() {
 		x.xxx_hidden_Int32List.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<2) != 0 {
-		x.xxx_hidden_Int64List.ClearDirty()
+		x.xxx_hidden_Uint32List.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<3) != 0 {
-		x.xxx_hidden_FloatList.ClearDirty()
+		x.xxx_hidden_Int64List.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<4) != 0 {
-		x.xxx_hidden_DoubleList.ClearDirty()
+		x.xxx_hidden_Uint64List.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<5) != 0 {
-		x.xxx_hidden_BoolList.ClearDirty()
+		x.xxx_hidden_FloatList.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<6) != 0 {
-		x.xxx_hidden_StringList.ClearDirty()
+		x.xxx_hidden_DoubleList.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<7) != 0 {
-		x.xxx_hidden_TimestampList.ClearDirty()
+		x.xxx_hidden_BoolList.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<8) != 0 {
-		x.xxx_hidden_DurationList.ClearDirty()
+		x.xxx_hidden_StringList.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<9) != 0 {
-		x.xxx_hidden_EmptyList.ClearDirty()
+		x.xxx_hidden_TimestampList.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<10) != 0 {
-		x.xxx_hidden_EnumList.ClearDirty()
+		x.xxx_hidden_DurationList.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<11) != 0 {
+		x.xxx_hidden_EmptyList.ClearDirty()
+	}
+	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<12) != 0 {
+		x.xxx_hidden_EnumList.ClearDirty()
+	}
+	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<13) != 0 {
 		x.xxx_hidden_ItemList.ClearDirty()
 	}
 	x.persistDirty = 0
@@ -1543,34 +1615,20 @@ var message_AllList_type = kdsync.MessageType[AllList, *AllList]{
 }
 
 type AllMap struct {
-	xxx_hidden_Int32Int32 kdsync.MapField[int32, int32]
-	xxx_hidden_Int32String kdsync.MapField[int32, string]
-	xxx_hidden_Int32Timestamp kdsync.MapField[int32, time.Time]
-	xxx_hidden_Int32Duration kdsync.MapField[int32, time.Duration]
-	xxx_hidden_Int32Empty kdsync.MapField[int32, struct{}]
-	xxx_hidden_Int32Enum kdsync.MapField[int32, ItemType]
-	xxx_hidden_Int32ItemData kdsync.MapMessage[int32, ItemData, *ItemData]
-	xxx_hidden_Int64Int64 kdsync.MapField[int64, int64]
-	xxx_hidden_Int64String kdsync.MapField[int64, string]
-	xxx_hidden_Int64Timestamp kdsync.MapField[int64, time.Time]
-	xxx_hidden_Int64Duration kdsync.MapField[int64, time.Duration]
-	xxx_hidden_Int64Empty kdsync.MapField[int64, struct{}]
-	xxx_hidden_Int64Enum kdsync.MapField[int64, ItemType]
-	xxx_hidden_Int64ItemData kdsync.MapMessage[int64, ItemData, *ItemData]
-	xxx_hidden_StringInt32 kdsync.MapField[string, int32]
-	xxx_hidden_StringString kdsync.MapField[string, string]
-	xxx_hidden_StringTimestamp kdsync.MapField[string, time.Time]
-	xxx_hidden_StringDuration kdsync.MapField[string, time.Duration]
-	xxx_hidden_StringEmpty kdsync.MapField[string, struct{}]
-	xxx_hidden_StringEnum kdsync.MapField[string, ItemType]
-	xxx_hidden_StringItemData kdsync.MapMessage[string, ItemData, *ItemData]
-	xxx_hidden_BoolInt32 kdsync.MapField[bool, int32]
-	xxx_hidden_BoolString kdsync.MapField[bool, string]
-	xxx_hidden_BoolTimestamp kdsync.MapField[bool, time.Time]
-	xxx_hidden_BoolDuration kdsync.MapField[bool, time.Duration]
-	xxx_hidden_BoolEmpty kdsync.MapField[bool, struct{}]
-	xxx_hidden_BoolEnum kdsync.MapField[bool, ItemType]
-	xxx_hidden_BoolItemData kdsync.MapMessage[bool, ItemData, *ItemData]
+	xxx_hidden_Int32Int32Map kdsync.MapField[int32, int32]
+	xxx_hidden_Int64Int64Map kdsync.MapField[int64, int64]
+	xxx_hidden_Uint32Uint32Map kdsync.MapField[uint32, uint32]
+	xxx_hidden_Uint64Uint64Map kdsync.MapField[uint64, uint64]
+	xxx_hidden_BoolFloatMap kdsync.MapField[bool, float32]
+	xxx_hidden_StringDoubleMap kdsync.MapField[string, float64]
+	xxx_hidden_Int32BoolMap kdsync.MapField[int32, bool]
+	xxx_hidden_Int64StringMap kdsync.MapField[int64, string]
+	xxx_hidden_Uint32BytesMap kdsync.MapField[uint32, []byte]
+	xxx_hidden_Uint64TimestampMap kdsync.MapField[uint64, time.Time]
+	xxx_hidden_BoolDurationMap kdsync.MapField[bool, time.Duration]
+	xxx_hidden_StringEmptyMap kdsync.MapField[string, struct{}]
+	xxx_hidden_Int32ItemTypeMap kdsync.MapField[int32, ItemType]
+	xxx_hidden_Int64ItemDataMap kdsync.MapMessage[int64, ItemData, *ItemData]
 
 	dirty        uint64
 	persistDirty uint64
@@ -1581,429 +1639,219 @@ func NewAllMap() *AllMap {
 	x := new(AllMap)
 	x.dirty = 1
 	x.persistDirty = 1
-	x.initInt32Int32()
-	x.initInt32String()
-	x.initInt32Timestamp()
-	x.initInt32Duration()
-	x.initInt32Empty()
-	x.initInt32Enum()
-	x.initInt32ItemData()
-	x.initInt64Int64()
-	x.initInt64String()
-	x.initInt64Timestamp()
-	x.initInt64Duration()
-	x.initInt64Empty()
-	x.initInt64Enum()
-	x.initInt64ItemData()
-	x.initStringInt32()
-	x.initStringString()
-	x.initStringTimestamp()
-	x.initStringDuration()
-	x.initStringEmpty()
-	x.initStringEnum()
-	x.initStringItemData()
-	x.initBoolInt32()
-	x.initBoolString()
-	x.initBoolTimestamp()
-	x.initBoolDuration()
-	x.initBoolEmpty()
-	x.initBoolEnum()
-	x.initBoolItemData()
+	x.initInt32Int32Map()
+	x.initInt64Int64Map()
+	x.initUint32Uint32Map()
+	x.initUint64Uint64Map()
+	x.initBoolFloatMap()
+	x.initStringDoubleMap()
+	x.initInt32BoolMap()
+	x.initInt64StringMap()
+	x.initUint32BytesMap()
+	x.initUint64TimestampMap()
+	x.initBoolDurationMap()
+	x.initStringEmptyMap()
+	x.initInt32ItemTypeMap()
+	x.initInt64ItemDataMap()
 	return x
 }
 
-func (x *AllMap) GetInt32Int32() kdsync.Map[int32, int32] {
-	return &x.xxx_hidden_Int32Int32
+func (x *AllMap) GetInt32Int32Map() kdsync.Map[int32, int32] {
+	return &x.xxx_hidden_Int32Int32Map
 }
 
-func (x *AllMap) initInt32Int32() {
+func (x *AllMap) initInt32Int32Map() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 1, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int32Int32.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.Int32Codec())
+	x.xxx_hidden_Int32Int32Map.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.Int32Codec())
 }
 
-func (x *AllMap) GetInt32String() kdsync.Map[int32, string] {
-	return &x.xxx_hidden_Int32String
+func (x *AllMap) GetInt64Int64Map() kdsync.Map[int64, int64] {
+	return &x.xxx_hidden_Int64Int64Map
 }
 
-func (x *AllMap) initInt32String() {
+func (x *AllMap) initInt64Int64Map() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 2, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int32String.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.StringCodec())
+	x.xxx_hidden_Int64Int64Map.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.Int64Codec())
 }
 
-func (x *AllMap) GetInt32Timestamp() kdsync.Map[int32, time.Time] {
-	return &x.xxx_hidden_Int32Timestamp
+func (x *AllMap) GetUint32Uint32Map() kdsync.Map[uint32, uint32] {
+	return &x.xxx_hidden_Uint32Uint32Map
 }
 
-func (x *AllMap) initInt32Timestamp() {
+func (x *AllMap) initUint32Uint32Map() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 3, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int32Timestamp.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.TimestampCodec())
+	x.xxx_hidden_Uint32Uint32Map.Init(dirtyFunc, kdsync.Uint32Codec(), kdsync.Uint32Codec())
 }
 
-func (x *AllMap) GetInt32Duration() kdsync.Map[int32, time.Duration] {
-	return &x.xxx_hidden_Int32Duration
+func (x *AllMap) GetUint64Uint64Map() kdsync.Map[uint64, uint64] {
+	return &x.xxx_hidden_Uint64Uint64Map
 }
 
-func (x *AllMap) initInt32Duration() {
+func (x *AllMap) initUint64Uint64Map() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 4, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int32Duration.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.DurationCodec())
+	x.xxx_hidden_Uint64Uint64Map.Init(dirtyFunc, kdsync.Uint64Codec(), kdsync.Uint64Codec())
 }
 
-func (x *AllMap) GetInt32Empty() kdsync.Map[int32, struct{}] {
-	return &x.xxx_hidden_Int32Empty
+func (x *AllMap) GetBoolFloatMap() kdsync.Map[bool, float32] {
+	return &x.xxx_hidden_BoolFloatMap
 }
 
-func (x *AllMap) initInt32Empty() {
+func (x *AllMap) initBoolFloatMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 5, t&kdsync.DirtyType_Persist)
+		x.updateDirty(uint64(0x01) << 5, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int32Empty.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.EmptyCodec())
+	x.xxx_hidden_BoolFloatMap.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.Float32Codec())
 }
 
-func (x *AllMap) GetInt32Enum() kdsync.Map[int32, ItemType] {
-	return &x.xxx_hidden_Int32Enum
+func (x *AllMap) GetStringDoubleMap() kdsync.Map[string, float64] {
+	return &x.xxx_hidden_StringDoubleMap
 }
 
-func (x *AllMap) initInt32Enum() {
+func (x *AllMap) initStringDoubleMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 6, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int32Enum.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.EnumCodec[ItemType]())
+	x.xxx_hidden_StringDoubleMap.Init(dirtyFunc, kdsync.StringCodec(), kdsync.Float64Codec())
 }
 
-func (x *AllMap) GetInt32ItemData() kdsync.Map[int32, *ItemData] {
-	return &x.xxx_hidden_Int32ItemData
+func (x *AllMap) GetInt32BoolMap() kdsync.Map[int32, bool] {
+	return &x.xxx_hidden_Int32BoolMap
 }
 
-func (x *AllMap) initInt32ItemData() {
+func (x *AllMap) initInt32BoolMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 7, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int32ItemData.Init(dirtyFunc, kdsync.Int32Codec(), &message_ItemData_type)
+	x.xxx_hidden_Int32BoolMap.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.BoolCodec())
 }
 
-func (x *AllMap) GetInt64Int64() kdsync.Map[int64, int64] {
-	return &x.xxx_hidden_Int64Int64
+func (x *AllMap) GetInt64StringMap() kdsync.Map[int64, string] {
+	return &x.xxx_hidden_Int64StringMap
 }
 
-func (x *AllMap) initInt64Int64() {
+func (x *AllMap) initInt64StringMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 8, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int64Int64.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.Int64Codec())
+	x.xxx_hidden_Int64StringMap.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.StringCodec())
 }
 
-func (x *AllMap) GetInt64String() kdsync.Map[int64, string] {
-	return &x.xxx_hidden_Int64String
+func (x *AllMap) GetUint32BytesMap() kdsync.Map[uint32, []byte] {
+	return &x.xxx_hidden_Uint32BytesMap
 }
 
-func (x *AllMap) initInt64String() {
+func (x *AllMap) initUint32BytesMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 9, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int64String.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.StringCodec())
+	x.xxx_hidden_Uint32BytesMap.Init(dirtyFunc, kdsync.Uint32Codec(), kdsync.BytesCodec())
 }
 
-func (x *AllMap) GetInt64Timestamp() kdsync.Map[int64, time.Time] {
-	return &x.xxx_hidden_Int64Timestamp
+func (x *AllMap) GetUint64TimestampMap() kdsync.Map[uint64, time.Time] {
+	return &x.xxx_hidden_Uint64TimestampMap
 }
 
-func (x *AllMap) initInt64Timestamp() {
+func (x *AllMap) initUint64TimestampMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 10, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int64Timestamp.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.TimestampCodec())
+	x.xxx_hidden_Uint64TimestampMap.Init(dirtyFunc, kdsync.Uint64Codec(), kdsync.TimestampCodec())
 }
 
-func (x *AllMap) GetInt64Duration() kdsync.Map[int64, time.Duration] {
-	return &x.xxx_hidden_Int64Duration
+func (x *AllMap) GetBoolDurationMap() kdsync.Map[bool, time.Duration] {
+	return &x.xxx_hidden_BoolDurationMap
 }
 
-func (x *AllMap) initInt64Duration() {
+func (x *AllMap) initBoolDurationMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 11, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int64Duration.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.DurationCodec())
+	x.xxx_hidden_BoolDurationMap.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.DurationCodec())
 }
 
-func (x *AllMap) GetInt64Empty() kdsync.Map[int64, struct{}] {
-	return &x.xxx_hidden_Int64Empty
+func (x *AllMap) GetStringEmptyMap() kdsync.Map[string, struct{}] {
+	return &x.xxx_hidden_StringEmptyMap
 }
 
-func (x *AllMap) initInt64Empty() {
+func (x *AllMap) initStringEmptyMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 12, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int64Empty.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.EmptyCodec())
+	x.xxx_hidden_StringEmptyMap.Init(dirtyFunc, kdsync.StringCodec(), kdsync.EmptyCodec())
 }
 
-func (x *AllMap) GetInt64Enum() kdsync.Map[int64, ItemType] {
-	return &x.xxx_hidden_Int64Enum
+func (x *AllMap) GetInt32ItemTypeMap() kdsync.Map[int32, ItemType] {
+	return &x.xxx_hidden_Int32ItemTypeMap
 }
 
-func (x *AllMap) initInt64Enum() {
+func (x *AllMap) initInt32ItemTypeMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 13, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int64Enum.Init(dirtyFunc, kdsync.Int64Codec(), kdsync.EnumCodec[ItemType]())
+	x.xxx_hidden_Int32ItemTypeMap.Init(dirtyFunc, kdsync.Int32Codec(), kdsync.EnumCodec[ItemType]())
 }
 
-func (x *AllMap) GetInt64ItemData() kdsync.Map[int64, *ItemData] {
-	return &x.xxx_hidden_Int64ItemData
+func (x *AllMap) GetInt64ItemDataMap() kdsync.Map[int64, *ItemData] {
+	return &x.xxx_hidden_Int64ItemDataMap
 }
 
-func (x *AllMap) initInt64ItemData() {
+func (x *AllMap) initInt64ItemDataMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 14, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int64ItemData.Init(dirtyFunc, kdsync.Int64Codec(), &message_ItemData_type)
-}
-
-func (x *AllMap) GetStringInt32() kdsync.Map[string, int32] {
-	return &x.xxx_hidden_StringInt32
-}
-
-func (x *AllMap) initStringInt32() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 15, t&kdsync.DirtyType_SyncAndPersist)
-	}
-	x.xxx_hidden_StringInt32.Init(dirtyFunc, kdsync.StringCodec(), kdsync.Int32Codec())
-}
-
-func (x *AllMap) GetStringString() kdsync.Map[string, string] {
-	return &x.xxx_hidden_StringString
-}
-
-func (x *AllMap) initStringString() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 16, t&kdsync.DirtyType_SyncAndPersist)
-	}
-	x.xxx_hidden_StringString.Init(dirtyFunc, kdsync.StringCodec(), kdsync.StringCodec())
-}
-
-func (x *AllMap) GetStringTimestamp() kdsync.Map[string, time.Time] {
-	return &x.xxx_hidden_StringTimestamp
-}
-
-func (x *AllMap) initStringTimestamp() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 17, t&kdsync.DirtyType_SyncAndPersist)
-	}
-	x.xxx_hidden_StringTimestamp.Init(dirtyFunc, kdsync.StringCodec(), kdsync.TimestampCodec())
-}
-
-func (x *AllMap) GetStringDuration() kdsync.Map[string, time.Duration] {
-	return &x.xxx_hidden_StringDuration
-}
-
-func (x *AllMap) initStringDuration() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 18, t&kdsync.DirtyType_Sync)
-	}
-	x.xxx_hidden_StringDuration.Init(dirtyFunc, kdsync.StringCodec(), kdsync.DurationCodec())
-}
-
-func (x *AllMap) GetStringEmpty() kdsync.Map[string, struct{}] {
-	return &x.xxx_hidden_StringEmpty
-}
-
-func (x *AllMap) initStringEmpty() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 19, t&kdsync.DirtyType_SyncAndPersist)
-	}
-	x.xxx_hidden_StringEmpty.Init(dirtyFunc, kdsync.StringCodec(), kdsync.EmptyCodec())
-}
-
-func (x *AllMap) GetStringEnum() kdsync.Map[string, ItemType] {
-	return &x.xxx_hidden_StringEnum
-}
-
-func (x *AllMap) initStringEnum() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 20, t&kdsync.DirtyType_SyncAndPersist)
-	}
-	x.xxx_hidden_StringEnum.Init(dirtyFunc, kdsync.StringCodec(), kdsync.EnumCodec[ItemType]())
-}
-
-func (x *AllMap) GetStringItemData() kdsync.Map[string, *ItemData] {
-	return &x.xxx_hidden_StringItemData
-}
-
-func (x *AllMap) initStringItemData() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 21, t&kdsync.DirtyType_SyncAndPersist)
-	}
-	x.xxx_hidden_StringItemData.Init(dirtyFunc, kdsync.StringCodec(), &message_ItemData_type)
-}
-
-func (x *AllMap) GetBoolInt32() kdsync.Map[bool, int32] {
-	return &x.xxx_hidden_BoolInt32
-}
-
-func (x *AllMap) initBoolInt32() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 22, t&kdsync.DirtyType_SyncAndPersist)
-	}
-	x.xxx_hidden_BoolInt32.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.Int32Codec())
-}
-
-func (x *AllMap) GetBoolString() kdsync.Map[bool, string] {
-	return &x.xxx_hidden_BoolString
-}
-
-func (x *AllMap) initBoolString() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 23, t&kdsync.DirtyType_SyncAndPersist)
-	}
-	x.xxx_hidden_BoolString.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.StringCodec())
-}
-
-func (x *AllMap) GetBoolTimestamp() kdsync.Map[bool, time.Time] {
-	return &x.xxx_hidden_BoolTimestamp
-}
-
-func (x *AllMap) initBoolTimestamp() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 24, t&kdsync.DirtyType_SyncAndPersist)
-	}
-	x.xxx_hidden_BoolTimestamp.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.TimestampCodec())
-}
-
-func (x *AllMap) GetBoolDuration() kdsync.Map[bool, time.Duration] {
-	return &x.xxx_hidden_BoolDuration
-}
-
-func (x *AllMap) initBoolDuration() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 25, t&kdsync.DirtyType_SyncAndPersist)
-	}
-	x.xxx_hidden_BoolDuration.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.DurationCodec())
-}
-
-func (x *AllMap) GetBoolEmpty() kdsync.Map[bool, struct{}] {
-	return &x.xxx_hidden_BoolEmpty
-}
-
-func (x *AllMap) initBoolEmpty() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 26, t&kdsync.DirtyType_SyncAndPersist)
-	}
-	x.xxx_hidden_BoolEmpty.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.EmptyCodec())
-}
-
-func (x *AllMap) GetBoolEnum() kdsync.Map[bool, ItemType] {
-	return &x.xxx_hidden_BoolEnum
-}
-
-func (x *AllMap) initBoolEnum() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 27, t&kdsync.DirtyType_None)
-	}
-	x.xxx_hidden_BoolEnum.Init(dirtyFunc, kdsync.BoolCodec(), kdsync.EnumCodec[ItemType]())
-}
-
-func (x *AllMap) GetBoolItemData() kdsync.Map[bool, *ItemData] {
-	return &x.xxx_hidden_BoolItemData
-}
-
-func (x *AllMap) initBoolItemData() {
-	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 28, t&kdsync.DirtyType_SyncAndPersist)
-	}
-	x.xxx_hidden_BoolItemData.Init(dirtyFunc, kdsync.BoolCodec(), &message_ItemData_type)
+	x.xxx_hidden_Int64ItemDataMap.Init(dirtyFunc, kdsync.Int64Codec(), &message_ItemData_type)
 }
 
 func (x *AllMap) Marshal(b []byte) ([]byte, error) {
 	var err error
-	if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Int32Int32); err != nil {
+	if b, err = wire.MarshalMessage(b, 1, &x.xxx_hidden_Int32Int32Map); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 2, &x.xxx_hidden_Int32String); err != nil {
+	if b, err = wire.MarshalMessage(b, 2, &x.xxx_hidden_Int64Int64Map); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 3, &x.xxx_hidden_Int32Timestamp); err != nil {
+	if b, err = wire.MarshalMessage(b, 3, &x.xxx_hidden_Uint32Uint32Map); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 4, &x.xxx_hidden_Int32Duration); err != nil {
+	if b, err = wire.MarshalMessage(b, 4, &x.xxx_hidden_Uint64Uint64Map); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 5, &x.xxx_hidden_Int32Empty); err != nil {
+	if b, err = wire.MarshalMessage(b, 5, &x.xxx_hidden_BoolFloatMap); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 6, &x.xxx_hidden_Int32Enum); err != nil {
+	if b, err = wire.MarshalMessage(b, 6, &x.xxx_hidden_StringDoubleMap); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 7, &x.xxx_hidden_Int32ItemData); err != nil {
+	if b, err = wire.MarshalMessage(b, 7, &x.xxx_hidden_Int32BoolMap); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 8, &x.xxx_hidden_Int64Int64); err != nil {
+	if b, err = wire.MarshalMessage(b, 8, &x.xxx_hidden_Int64StringMap); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 9, &x.xxx_hidden_Int64String); err != nil {
+	if b, err = wire.MarshalMessage(b, 9, &x.xxx_hidden_Uint32BytesMap); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 10, &x.xxx_hidden_Int64Timestamp); err != nil {
+	if b, err = wire.MarshalMessage(b, 10, &x.xxx_hidden_Uint64TimestampMap); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 11, &x.xxx_hidden_Int64Duration); err != nil {
+	if b, err = wire.MarshalMessage(b, 11, &x.xxx_hidden_BoolDurationMap); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 12, &x.xxx_hidden_Int64Empty); err != nil {
+	if b, err = wire.MarshalMessage(b, 12, &x.xxx_hidden_StringEmptyMap); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 13, &x.xxx_hidden_Int64Enum); err != nil {
+	if b, err = wire.MarshalMessage(b, 13, &x.xxx_hidden_Int32ItemTypeMap); err != nil {
 		return b, err
 	}
-	if b, err = wire.MarshalMessage(b, 14, &x.xxx_hidden_Int64ItemData); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 15, &x.xxx_hidden_StringInt32); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 16, &x.xxx_hidden_StringString); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 17, &x.xxx_hidden_StringTimestamp); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 18, &x.xxx_hidden_StringDuration); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 19, &x.xxx_hidden_StringEmpty); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 20, &x.xxx_hidden_StringEnum); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 21, &x.xxx_hidden_StringItemData); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 22, &x.xxx_hidden_BoolInt32); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 23, &x.xxx_hidden_BoolString); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 24, &x.xxx_hidden_BoolTimestamp); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 25, &x.xxx_hidden_BoolDuration); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 26, &x.xxx_hidden_BoolEmpty); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 27, &x.xxx_hidden_BoolEnum); err != nil {
-		return b, err
-	}
-	if b, err = wire.MarshalMessage(b, 28, &x.xxx_hidden_BoolItemData); err != nil {
+	if b, err = wire.MarshalMessage(b, 14, &x.xxx_hidden_Int64ItemDataMap); err != nil {
 		return b, err
 	}
 	return b, err
@@ -2015,142 +1863,72 @@ func (x *AllMap) MarshalChange(b []byte) ([]byte, error) {
 	}
 	var err error
 	if x.dirty&(uint64(0x01)<<1) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 1, &x.xxx_hidden_Int32Int32); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 1, &x.xxx_hidden_Int32Int32Map); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<2) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 2, &x.xxx_hidden_Int32String); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 2, &x.xxx_hidden_Int64Int64Map); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<3) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 3, &x.xxx_hidden_Int32Timestamp); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 3, &x.xxx_hidden_Uint32Uint32Map); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<4) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 4, &x.xxx_hidden_Int32Duration); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 4, &x.xxx_hidden_Uint64Uint64Map); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<5) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 5, &x.xxx_hidden_Int32Empty); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 5, &x.xxx_hidden_BoolFloatMap); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<6) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 6, &x.xxx_hidden_Int32Enum); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 6, &x.xxx_hidden_StringDoubleMap); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<7) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 7, &x.xxx_hidden_Int32ItemData); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 7, &x.xxx_hidden_Int32BoolMap); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<8) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 8, &x.xxx_hidden_Int64Int64); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 8, &x.xxx_hidden_Int64StringMap); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<9) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 9, &x.xxx_hidden_Int64String); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 9, &x.xxx_hidden_Uint32BytesMap); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<10) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 10, &x.xxx_hidden_Int64Timestamp); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 10, &x.xxx_hidden_Uint64TimestampMap); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<11) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 11, &x.xxx_hidden_Int64Duration); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 11, &x.xxx_hidden_BoolDurationMap); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<12) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 12, &x.xxx_hidden_Int64Empty); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 12, &x.xxx_hidden_StringEmptyMap); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<13) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 13, &x.xxx_hidden_Int64Enum); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 13, &x.xxx_hidden_Int32ItemTypeMap); err != nil {
 			return b, err
 		}
 	}
 	if x.dirty&(uint64(0x01)<<14) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 14, &x.xxx_hidden_Int64ItemData); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<15) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 15, &x.xxx_hidden_StringInt32); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<16) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 16, &x.xxx_hidden_StringString); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<17) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 17, &x.xxx_hidden_StringTimestamp); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<18) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 18, &x.xxx_hidden_StringDuration); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<19) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 19, &x.xxx_hidden_StringEmpty); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<20) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 20, &x.xxx_hidden_StringEnum); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<21) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 21, &x.xxx_hidden_StringItemData); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<22) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 22, &x.xxx_hidden_BoolInt32); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<23) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 23, &x.xxx_hidden_BoolString); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<24) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 24, &x.xxx_hidden_BoolTimestamp); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<25) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 25, &x.xxx_hidden_BoolDuration); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<26) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 26, &x.xxx_hidden_BoolEmpty); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<27) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 27, &x.xxx_hidden_BoolEnum); err != nil {
-			return b, err
-		}
-	}
-	if x.dirty&(uint64(0x01)<<28) != 0 {
-		if b, err = wire.MarshalMessageChange(b, 28, &x.xxx_hidden_BoolItemData); err != nil {
+		if b, err = wire.MarshalMessageChange(b, 14, &x.xxx_hidden_Int64ItemDataMap); err != nil {
 			return b, err
 		}
 	}
@@ -2167,61 +1945,33 @@ func (x *AllMap) Unmarshal(b []byte) error {
 		err = wire.ErrUnknown
 		switch num {
 		case 1:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int32Int32)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int32Int32Map)
 		case 2:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int32String)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int64Int64Map)
 		case 3:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int32Timestamp)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Uint32Uint32Map)
 		case 4:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int32Duration)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Uint64Uint64Map)
 		case 5:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int32Empty)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_BoolFloatMap)
 		case 6:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int32Enum)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_StringDoubleMap)
 		case 7:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int32ItemData)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int32BoolMap)
 		case 8:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int64Int64)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int64StringMap)
 		case 9:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int64String)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Uint32BytesMap)
 		case 10:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int64Timestamp)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Uint64TimestampMap)
 		case 11:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int64Duration)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_BoolDurationMap)
 		case 12:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int64Empty)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_StringEmptyMap)
 		case 13:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int64Enum)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int32ItemTypeMap)
 		case 14:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int64ItemData)
-		case 15:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_StringInt32)
-		case 16:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_StringString)
-		case 17:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_StringTimestamp)
-		case 18:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_StringDuration)
-		case 19:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_StringEmpty)
-		case 20:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_StringEnum)
-		case 21:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_StringItemData)
-		case 22:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_BoolInt32)
-		case 23:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_BoolString)
-		case 24:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_BoolTimestamp)
-		case 25:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_BoolDuration)
-		case 26:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_BoolEmpty)
-		case 27:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_BoolEnum)
-		case 28:
-			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_BoolItemData)
+			valLen, err = wire.UnmarshalMessage(b[tagLen:], wtyp, &x.xxx_hidden_Int64ItemDataMap)
 		}
 		if err == wire.ErrUnknown {
 			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -2242,183 +1992,99 @@ func (x *AllMap) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, err
 	b = append(b, '{')
 	b = append(b, '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int32Int32\": "...)
-	b, err = x.xxx_hidden_Int32Int32.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"Int32Int32Map\": "...)
+	b, err = x.xxx_hidden_Int32Int32Map.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int32String\": "...)
-	b, err = x.xxx_hidden_Int32String.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"Int64Int64Map\": "...)
+	b, err = x.xxx_hidden_Int64Int64Map.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int32Timestamp\": "...)
-	b, err = x.xxx_hidden_Int32Timestamp.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"Uint32Uint32Map\": "...)
+	b, err = x.xxx_hidden_Uint32Uint32Map.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int32Duration\": "...)
-	b, err = x.xxx_hidden_Int32Duration.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"Uint64Uint64Map\": "...)
+	b, err = x.xxx_hidden_Uint64Uint64Map.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int32Enum\": "...)
-	b, err = x.xxx_hidden_Int32Enum.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"BoolFloatMap\": "...)
+	b, err = x.xxx_hidden_BoolFloatMap.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int32ItemData\": "...)
-	b, err = x.xxx_hidden_Int32ItemData.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"StringDoubleMap\": "...)
+	b, err = x.xxx_hidden_StringDoubleMap.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int64Int64\": "...)
-	b, err = x.xxx_hidden_Int64Int64.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"Int32BoolMap\": "...)
+	b, err = x.xxx_hidden_Int32BoolMap.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int64String\": "...)
-	b, err = x.xxx_hidden_Int64String.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"Int64StringMap\": "...)
+	b, err = x.xxx_hidden_Int64StringMap.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int64Timestamp\": "...)
-	b, err = x.xxx_hidden_Int64Timestamp.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"Uint32BytesMap\": "...)
+	b, err = x.xxx_hidden_Uint32BytesMap.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int64Duration\": "...)
-	b, err = x.xxx_hidden_Int64Duration.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"Uint64TimestampMap\": "...)
+	b, err = x.xxx_hidden_Uint64TimestampMap.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int64Empty\": "...)
-	b, err = x.xxx_hidden_Int64Empty.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"BoolDurationMap\": "...)
+	b, err = x.xxx_hidden_BoolDurationMap.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int64Enum\": "...)
-	b, err = x.xxx_hidden_Int64Enum.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"StringEmptyMap\": "...)
+	b, err = x.xxx_hidden_StringEmptyMap.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"Int64ItemData\": "...)
-	b, err = x.xxx_hidden_Int64ItemData.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"Int32ItemTypeMap\": "...)
+	b, err = x.xxx_hidden_Int32ItemTypeMap.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
 	b = append(b, ',', '\n')
 	b = append(b, prefix...)
-	b = append(b, indent + "\"StringInt32\": "...)
-	b, err = x.xxx_hidden_StringInt32.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"StringString\": "...)
-	b, err = x.xxx_hidden_StringString.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"StringTimestamp\": "...)
-	b, err = x.xxx_hidden_StringTimestamp.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"StringDuration\": "...)
-	b, err = x.xxx_hidden_StringDuration.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"StringEmpty\": "...)
-	b, err = x.xxx_hidden_StringEmpty.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"StringEnum\": "...)
-	b, err = x.xxx_hidden_StringEnum.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"StringItemData\": "...)
-	b, err = x.xxx_hidden_StringItemData.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"BoolInt32\": "...)
-	b, err = x.xxx_hidden_BoolInt32.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"BoolString\": "...)
-	b, err = x.xxx_hidden_BoolString.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"BoolTimestamp\": "...)
-	b, err = x.xxx_hidden_BoolTimestamp.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"BoolDuration\": "...)
-	b, err = x.xxx_hidden_BoolDuration.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"BoolEmpty\": "...)
-	b, err = x.xxx_hidden_BoolEmpty.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"BoolItemData\": "...)
-	b, err = x.xxx_hidden_BoolItemData.MarshalJSONIndent(b, prefix+indent, indent)
+	b = append(b, indent + "\"Int64ItemDataMap\": "...)
+	b, err = x.xxx_hidden_Int64ItemDataMap.MarshalJSONIndent(b, prefix+indent, indent)
 	if err != nil {
 		return nil, err
 	}
@@ -2461,82 +2127,46 @@ func (x *AllMap) ClearDirty() {
 		return
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<1) != 0 {
-		x.xxx_hidden_Int32Int32.ClearDirty()
+		x.xxx_hidden_Int32Int32Map.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<2) != 0 {
-		x.xxx_hidden_Int32String.ClearDirty()
+		x.xxx_hidden_Int64Int64Map.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<3) != 0 {
-		x.xxx_hidden_Int32Timestamp.ClearDirty()
+		x.xxx_hidden_Uint32Uint32Map.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<4) != 0 {
-		x.xxx_hidden_Int32Duration.ClearDirty()
+		x.xxx_hidden_Uint64Uint64Map.ClearDirty()
+	}
+	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<5) != 0 {
+		x.xxx_hidden_BoolFloatMap.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<6) != 0 {
-		x.xxx_hidden_Int32Enum.ClearDirty()
+		x.xxx_hidden_StringDoubleMap.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<7) != 0 {
-		x.xxx_hidden_Int32ItemData.ClearDirty()
+		x.xxx_hidden_Int32BoolMap.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<8) != 0 {
-		x.xxx_hidden_Int64Int64.ClearDirty()
+		x.xxx_hidden_Int64StringMap.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<9) != 0 {
-		x.xxx_hidden_Int64String.ClearDirty()
+		x.xxx_hidden_Uint32BytesMap.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<10) != 0 {
-		x.xxx_hidden_Int64Timestamp.ClearDirty()
+		x.xxx_hidden_Uint64TimestampMap.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<11) != 0 {
-		x.xxx_hidden_Int64Duration.ClearDirty()
+		x.xxx_hidden_BoolDurationMap.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<12) != 0 {
-		x.xxx_hidden_Int64Empty.ClearDirty()
+		x.xxx_hidden_StringEmptyMap.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<13) != 0 {
-		x.xxx_hidden_Int64Enum.ClearDirty()
+		x.xxx_hidden_Int32ItemTypeMap.ClearDirty()
 	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<14) != 0 {
-		x.xxx_hidden_Int64ItemData.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<15) != 0 {
-		x.xxx_hidden_StringInt32.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<16) != 0 {
-		x.xxx_hidden_StringString.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<17) != 0 {
-		x.xxx_hidden_StringTimestamp.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<18) != 0 {
-		x.xxx_hidden_StringDuration.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<19) != 0 {
-		x.xxx_hidden_StringEmpty.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<20) != 0 {
-		x.xxx_hidden_StringEnum.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<21) != 0 {
-		x.xxx_hidden_StringItemData.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<22) != 0 {
-		x.xxx_hidden_BoolInt32.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<23) != 0 {
-		x.xxx_hidden_BoolString.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<24) != 0 {
-		x.xxx_hidden_BoolTimestamp.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<25) != 0 {
-		x.xxx_hidden_BoolDuration.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<26) != 0 {
-		x.xxx_hidden_BoolEmpty.ClearDirty()
-	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<28) != 0 {
-		x.xxx_hidden_BoolItemData.ClearDirty()
+		x.xxx_hidden_Int64ItemDataMap.ClearDirty()
 	}
 	x.dirty = 0
 }
@@ -2546,82 +2176,46 @@ func (x *AllMap) ClearPersistDirty() {
 		return
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<1) != 0 {
-		x.xxx_hidden_Int32Int32.ClearDirty()
+		x.xxx_hidden_Int32Int32Map.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<2) != 0 {
-		x.xxx_hidden_Int32String.ClearDirty()
+		x.xxx_hidden_Int64Int64Map.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<3) != 0 {
-		x.xxx_hidden_Int32Timestamp.ClearDirty()
+		x.xxx_hidden_Uint32Uint32Map.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<4) != 0 {
-		x.xxx_hidden_Int32Duration.ClearDirty()
+		x.xxx_hidden_Uint64Uint64Map.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<5) != 0 {
-		x.xxx_hidden_Int32Empty.ClearDirty()
+		x.xxx_hidden_BoolFloatMap.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<6) != 0 {
-		x.xxx_hidden_Int32Enum.ClearDirty()
+		x.xxx_hidden_StringDoubleMap.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<7) != 0 {
-		x.xxx_hidden_Int32ItemData.ClearDirty()
+		x.xxx_hidden_Int32BoolMap.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<8) != 0 {
-		x.xxx_hidden_Int64Int64.ClearDirty()
+		x.xxx_hidden_Int64StringMap.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<9) != 0 {
-		x.xxx_hidden_Int64String.ClearDirty()
+		x.xxx_hidden_Uint32BytesMap.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<10) != 0 {
-		x.xxx_hidden_Int64Timestamp.ClearDirty()
+		x.xxx_hidden_Uint64TimestampMap.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<11) != 0 {
-		x.xxx_hidden_Int64Duration.ClearDirty()
+		x.xxx_hidden_BoolDurationMap.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<12) != 0 {
-		x.xxx_hidden_Int64Empty.ClearDirty()
+		x.xxx_hidden_StringEmptyMap.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<13) != 0 {
-		x.xxx_hidden_Int64Enum.ClearDirty()
+		x.xxx_hidden_Int32ItemTypeMap.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<14) != 0 {
-		x.xxx_hidden_Int64ItemData.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<15) != 0 {
-		x.xxx_hidden_StringInt32.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<16) != 0 {
-		x.xxx_hidden_StringString.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<17) != 0 {
-		x.xxx_hidden_StringTimestamp.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<19) != 0 {
-		x.xxx_hidden_StringEmpty.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<20) != 0 {
-		x.xxx_hidden_StringEnum.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<21) != 0 {
-		x.xxx_hidden_StringItemData.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<22) != 0 {
-		x.xxx_hidden_BoolInt32.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<23) != 0 {
-		x.xxx_hidden_BoolString.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<24) != 0 {
-		x.xxx_hidden_BoolTimestamp.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<25) != 0 {
-		x.xxx_hidden_BoolDuration.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<26) != 0 {
-		x.xxx_hidden_BoolEmpty.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<28) != 0 {
-		x.xxx_hidden_BoolItemData.ClearDirty()
+		x.xxx_hidden_Int64ItemDataMap.ClearDirty()
 	}
 	x.persistDirty = 0
 }

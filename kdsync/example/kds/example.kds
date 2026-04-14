@@ -42,52 +42,33 @@ component AllType {
 
 component AllList {
 	repeated int32 int32List = 1;
-	repeated int64 int64List = 2;
-	repeated float floatList = 3;
-	repeated double doubleList = 4;
-	repeated bool boolList = 5;
-	repeated string stringList = 6;
-	repeated timestamp timestampList = 7;
-	repeated duration durationList = 8;
-	repeated empty emptyList = 9;
-	repeated ItemType enumList = 10;
-	repeated ItemData itemList = 11;
+	repeated uint32 uint32List = 2;
+	repeated int64 int64List = 3;
+	repeated uint64 uint64List = 4;
+	repeated float floatList = 5;
+	repeated double doubleList = 6;
+	repeated bool boolList = 7;
+	repeated string stringList = 8;
+	repeated timestamp timestampList = 9;
+	repeated duration durationList = 10;
+	repeated empty emptyList = 11;
+	repeated ItemType enumList = 12;
+	repeated ItemData itemList = 13;
 }
 
 component AllMap {
-	// map<int32, value>
-	map<int32, int32> int32_int32 = 1;
-	map<int32, string> int32_string = 2;
-	map<int32, timestamp> int32_timestamp = 3;
-	map<int32, duration> int32_duration = 4;
-	map<int32, empty> int32_empty = 5 [nosync];
-	map<int32, ItemType> int32_enum = 6;
-	map<int32, ItemData> int32_itemData = 7;
-
-	// map<int64, value>
-	map<int64, int64> int64_int64 = 8;
-	map<int64, string> int64_string = 9;
-	map<int64, timestamp> int64_timestamp = 10;
-	map<int64, duration> int64_duration = 11;
-	map<int64, empty> int64_empty = 12;
-	map<int64, ItemType> int64_enum = 13;
-	map<int64, ItemData> int64_itemData = 14;
-
-	// map<string, value>
-	map<string, int32> string_int32 = 15;
-	map<string, string> string_string = 16;
-	map<string, timestamp> string_timestamp = 17;
-	map<string, duration> string_duration = 18 [nopersist];
-	map<string, empty> string_empty = 19;
-	map<string, ItemType> string_enum = 20;
-	map<string, ItemData> string_itemData = 21;
-
-	// map<bool, value>
-	map<bool, int32> bool_int32 = 22;
-	map<bool, string> bool_string = 23;
-	map<bool, timestamp> bool_timestamp = 24;
-	map<bool, duration> bool_duration = 25;
-	map<bool, empty> bool_empty = 26;
-	map<bool, ItemType> bool_enum = 27 [nosync, nopersist];
-	map<bool, ItemData> bool_itemData = 28;
+	map<int32, int32> int32Int32Map = 1;
+	map<int64, int64> int64Int64Map = 2;
+	map<uint32, uint32> uint32Uint32Map = 3;
+	map<uint64, uint64> uint64Uint64Map = 4;
+	map<bool, float> boolFloatMap = 5;
+	map<string, double> stringDoubleMap = 6;
+	map<int32, bool> int32BoolMap = 7;
+	map<int64, string> int64StringMap = 8;
+	map<uint32, bytes> uint32BytesMap = 9;
+	map<uint64, timestamp> uint64TimestampMap = 10;
+	map<bool, duration> boolDurationMap = 11;
+	map<string, empty> stringEmptyMap = 12;
+	map<int32, ItemType> int32ItemTypeMap = 13;
+	map<int64, ItemData> int64ItemDataMap = 14;
 }

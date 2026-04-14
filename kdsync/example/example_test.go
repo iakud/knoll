@@ -143,37 +143,20 @@ func compareLists(t *testing.T, cs map[string]any, goLists *kds.AllList, path st
 }
 
 func compareMaps2(t *testing.T, cs map[string]any, goMaps *kds.AllMap, path string) {
-	compareMapInt32Int32(t, cs["Int32Int32"].(map[string]any), goMaps.GetInt32Int32(), path+".Int32Int32")
-	compareMapInt32String(t, cs["Int32String"].(map[string]any), goMaps.GetInt32String(), path+".Int32String")
-	compareMapInt32Timestamp(t, cs["Int32Timestamp"].(map[string]any), goMaps.GetInt32Timestamp(), path+".Int32Timestamp")
-	compareMapInt32Duration(t, cs["Int32Duration"].(map[string]any), goMaps.GetInt32Duration(), path+".Int32Duration")
-	compareMapInt32Enum(t, cs["Int32Enum"].(map[string]any), goMaps.GetInt32Enum(), path+".Int32Enum")
-	compareMapInt32ItemData(t, cs["Int32ItemData"].(map[string]any), goMaps.GetInt32ItemData(), path+".Int32ItemData")
-	// skip Int32Empty - nosync
-
-	compareMapInt64Int64(t, cs["Int64Int64"].(map[string]any), goMaps.GetInt64Int64(), path+".Int64Int64")
-	compareMapInt64String(t, cs["Int64String"].(map[string]any), goMaps.GetInt64String(), path+".Int64String")
-	compareMapInt64Timestamp(t, cs["Int64Timestamp"].(map[string]any), goMaps.GetInt64Timestamp(), path+".Int64Timestamp")
-	compareMapInt64Duration(t, cs["Int64Duration"].(map[string]any), goMaps.GetInt64Duration(), path+".Int64Duration")
-	compareMapInt64Enum(t, cs["Int64Enum"].(map[string]any), goMaps.GetInt64Enum(), path+".Int64Enum")
-	compareMapInt64ItemData(t, cs["Int64ItemData"].(map[string]any), goMaps.GetInt64ItemData(), path+".Int64ItemData")
-	// skip Int64Empty - nosync
-
-	compareMapStringInt32(t, cs["StringInt32"].(map[string]any), goMaps.GetStringInt32(), path+".StringInt32")
-	compareMapStringString(t, cs["StringString"].(map[string]any), goMaps.GetStringString(), path+".StringString")
-	compareMapStringTimestamp(t, cs["StringTimestamp"].(map[string]any), goMaps.GetStringTimestamp(), path+".StringTimestamp")
-	compareMapStringDuration(t, cs["StringDuration"].(map[string]any), goMaps.GetStringDuration(), path+".StringDuration")
-	compareMapStringEnum(t, cs["StringEnum"].(map[string]any), goMaps.GetStringEnum(), path+".StringEnum")
-	compareMapStringItemData(t, cs["StringItemData"].(map[string]any), goMaps.GetStringItemData(), path+".StringItemData")
-	// skip StringEmpty - nosync
-
-	compareMapBoolInt32(t, cs["BoolInt32"].(map[string]any), goMaps.GetBoolInt32(), path+".BoolInt32")
-	compareMapBoolString(t, cs["BoolString"].(map[string]any), goMaps.GetBoolString(), path+".BoolString")
-	compareMapBoolTimestamp(t, cs["BoolTimestamp"].(map[string]any), goMaps.GetBoolTimestamp(), path+".BoolTimestamp")
-	compareMapBoolDuration(t, cs["BoolDuration"].(map[string]any), goMaps.GetBoolDuration(), path+".BoolDuration")
-	// skip BoolEmpty - nosync
-	// skip BoolEnum - nosync,nopersist
-	compareMapBoolItemData(t, cs["BoolItemData"].(map[string]any), goMaps.GetBoolItemData(), path+".BoolItemData")
+	compareMapInt32Int32(t, cs["Int32Int32Map"].(map[string]any), goMaps.GetInt32Int32Map(), path+".Int32Int32Map")
+	compareMapInt64Int64(t, cs["Int64Int64Map"].(map[string]any), goMaps.GetInt64Int64Map(), path+".Int64Int64Map")
+	compareMapUint32Uint32(t, cs["Uint32Uint32Map"].(map[string]any), goMaps.GetUint32Uint32Map(), path+".Uint32Uint32Map")
+	compareMapUint64Uint64(t, cs["Uint64Uint64Map"].(map[string]any), goMaps.GetUint64Uint64Map(), path+".Uint64Uint64Map")
+	compareMapBoolFloat(t, cs["BoolFloatMap"].(map[string]any), goMaps.GetBoolFloatMap(), path+".BoolFloatMap")
+	compareMapStringDouble(t, cs["StringDoubleMap"].(map[string]any), goMaps.GetStringDoubleMap(), path+".StringDoubleMap")
+	compareMapInt32Bool(t, cs["Int32BoolMap"].(map[string]any), goMaps.GetInt32BoolMap(), path+".Int32BoolMap")
+	compareMapInt64String(t, cs["Int64StringMap"].(map[string]any), goMaps.GetInt64StringMap(), path+".Int64StringMap")
+	compareMapUint32Bytes(t, cs["Uint32BytesMap"].(map[string]any), goMaps.GetUint32BytesMap(), path+".Uint32BytesMap")
+	compareMapUint64Timestamp(t, cs["Uint64TimestampMap"].(map[string]any), goMaps.GetUint64TimestampMap(), path+".Uint64TimestampMap")
+	compareMapBoolDuration(t, cs["BoolDurationMap"].(map[string]any), goMaps.GetBoolDurationMap(), path+".BoolDurationMap")
+	compareMapStringEmpty(t, cs["StringEmptyMap"].(map[string]any), goMaps.GetStringEmptyMap(), path+".StringEmptyMap")
+	compareMapInt32ItemType(t, cs["Int32ItemTypeMap"].(map[string]any), goMaps.GetInt32ItemTypeMap(), path+".Int32ItemTypeMap")
+	compareMapInt64ItemData(t, cs["Int64ItemDataMap"].(map[string]any), goMaps.GetInt64ItemDataMap(), path+".Int64ItemDataMap")
 }
 
 func compareValue(t *testing.T, cs, goVal any, path string) {
@@ -221,6 +204,18 @@ func compareUint64Value(t *testing.T, cs, goVal any, path string) {
 	}
 	if csUint64 != goVal.(uint64) {
 		t.Fatalf("%s mismatch: cs=%v, go=%v", path, csUint64, goVal)
+	}
+}
+
+func compareUint32Value(t *testing.T, cs, goVal any, path string) {
+	var csUint32 uint32
+	if s, ok := cs.(string); ok {
+		csUint32 = uint32(mustParseInt(s))
+	} else if f, ok := cs.(float64); ok {
+		csUint32 = uint32(f)
+	}
+	if csUint32 != goVal.(uint32) {
+		t.Fatalf("%s mismatch: cs=%v, go=%v", path, csUint32, goVal)
 	}
 }
 
@@ -368,79 +363,6 @@ func compareMapInt32Int32(t *testing.T, cs map[string]any, goMap kdsync.Map[int3
 	}
 }
 
-func compareMapInt32String(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, string], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		key := int32(mustParseInt(k))
-		goVal, ok := goMap.Get(key)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapInt32Timestamp(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, time.Time], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		key := int32(mustParseInt(k))
-		goVal, ok := goMap.Get(key)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareTimestampValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapInt32Duration(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, time.Duration], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		key := int32(mustParseInt(k))
-		goVal, ok := goMap.Get(key)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareDurationValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapInt32Enum(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, kds.ItemType], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		key := int32(mustParseInt(k))
-		goVal, ok := goMap.Get(key)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareValue(t, v, int(goVal), path+"."+k)
-	}
-}
-
-func compareMapInt32ItemData(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, *kds.ItemData], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		key := int32(mustParseInt(k))
-		goVal, ok := goMap.Get(key)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		itemData := v.(map[string]any)
-		compareValue(t, itemData["Id"], goVal.GetId(), path+"."+k+".id")
-		compareValue(t, itemData["Name"], goVal.GetName(), path+"."+k+".name")
-		compareValue(t, itemData["Count"], goVal.GetCount(), path+"."+k+".count")
-	}
-}
-
 func compareMapInt64Int64(t *testing.T, cs map[string]any, goMap kdsync.Map[int64, int64], path string) {
 	if len(cs) != goMap.Len() {
 		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
@@ -469,45 +391,16 @@ func compareMapInt64String(t *testing.T, cs map[string]any, goMap kdsync.Map[int
 	}
 }
 
-func compareMapInt64Timestamp(t *testing.T, cs map[string]any, goMap kdsync.Map[int64, time.Time], path string) {
+func compareMapBoolDuration(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, time.Duration], path string) {
 	if len(cs) != goMap.Len() {
 		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
 	}
 	for k, v := range cs {
-		key := mustParseInt(k)
-		goVal, ok := goMap.Get(key)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareTimestampValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapInt64Duration(t *testing.T, cs map[string]any, goMap kdsync.Map[int64, time.Duration], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		key := mustParseInt(k)
-		goVal, ok := goMap.Get(key)
+		goVal, ok := goMap.Get(k == "true")
 		if !ok {
 			t.Fatalf("%s missing key %s", path, k)
 		}
 		compareDurationValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapInt64Enum(t *testing.T, cs map[string]any, goMap kdsync.Map[int64, kds.ItemType], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		key := mustParseInt(k)
-		goVal, ok := goMap.Get(key)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareValue(t, v, int(goVal), path+"."+k)
 	}
 }
 
@@ -528,152 +421,6 @@ func compareMapInt64ItemData(t *testing.T, cs map[string]any, goMap kdsync.Map[i
 	}
 }
 
-func compareMapStringInt32(t *testing.T, cs map[string]any, goMap kdsync.Map[string, int32], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		goVal, ok := goMap.Get(k)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapStringString(t *testing.T, cs map[string]any, goMap kdsync.Map[string, string], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		goVal, ok := goMap.Get(k)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapStringTimestamp(t *testing.T, cs map[string]any, goMap kdsync.Map[string, time.Time], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		goVal, ok := goMap.Get(k)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareTimestampValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapStringDuration(t *testing.T, cs map[string]any, goMap kdsync.Map[string, time.Duration], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		goVal, ok := goMap.Get(k)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareDurationValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapStringEnum(t *testing.T, cs map[string]any, goMap kdsync.Map[string, kds.ItemType], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		goVal, ok := goMap.Get(k)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareValue(t, v, int(goVal), path+"."+k)
-	}
-}
-
-func compareMapStringItemData(t *testing.T, cs map[string]any, goMap kdsync.Map[string, *kds.ItemData], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		goVal, ok := goMap.Get(k)
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		itemData := v.(map[string]any)
-		compareValue(t, itemData["Id"], goVal.GetId(), path+"."+k+".id")
-		compareValue(t, itemData["Name"], goVal.GetName(), path+"."+k+".name")
-		compareValue(t, itemData["Count"], goVal.GetCount(), path+"."+k+".count")
-	}
-}
-
-func compareMapBoolInt32(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, int32], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		goVal, ok := goMap.Get(k == "true")
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapBoolString(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, string], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		goVal, ok := goMap.Get(k == "true")
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapBoolTimestamp(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, time.Time], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		goVal, ok := goMap.Get(k == "true")
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareTimestampValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapBoolDuration(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, time.Duration], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		goVal, ok := goMap.Get(k == "true")
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareDurationValue(t, v, goVal, path+"."+k)
-	}
-}
-
-func compareMapBoolEnum(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, kds.ItemType], path string) {
-	if len(cs) != goMap.Len() {
-		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
-	}
-	for k, v := range cs {
-		goVal, ok := goMap.Get(k == "true")
-		if !ok {
-			t.Fatalf("%s missing key %s", path, k)
-		}
-		compareValue(t, v, int(goVal), path+"."+k)
-	}
-}
-
 func compareMapBoolItemData(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, *kds.ItemData], path string) {
 	if len(cs) != goMap.Len() {
 		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
@@ -687,6 +434,129 @@ func compareMapBoolItemData(t *testing.T, cs map[string]any, goMap kdsync.Map[bo
 		compareValue(t, itemData["Id"], goVal.GetId(), path+"."+k+".id")
 		compareValue(t, itemData["Name"], goVal.GetName(), path+"."+k+".name")
 		compareValue(t, itemData["Count"], goVal.GetCount(), path+"."+k+".count")
+	}
+}
+
+func compareMapUint32Uint32(t *testing.T, cs map[string]any, goMap kdsync.Map[uint32, uint32], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := uint32(mustParseInt(k))
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareUint32Value(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapUint64Uint64(t *testing.T, cs map[string]any, goMap kdsync.Map[uint64, uint64], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := uint64(mustParseInt(k))
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareUint64Value(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapBoolFloat(t *testing.T, cs map[string]any, goMap kdsync.Map[bool, float32], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := k == "true"
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapStringDouble(t *testing.T, cs map[string]any, goMap kdsync.Map[string, float64], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		goVal, ok := goMap.Get(k)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapInt32Bool(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, bool], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := int32(mustParseInt(k))
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapUint32Bytes(t *testing.T, cs map[string]any, goMap kdsync.Map[uint32, []byte], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := uint32(mustParseInt(k))
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareBytesValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapUint64Timestamp(t *testing.T, cs map[string]any, goMap kdsync.Map[uint64, time.Time], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := uint64(mustParseInt(k))
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareTimestampValue(t, v, goVal, path+"."+k)
+	}
+}
+
+func compareMapStringEmpty(t *testing.T, cs map[string]any, goMap kdsync.Map[string, struct{}], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k := range cs {
+		_, ok := goMap.Get(k)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+	}
+}
+
+func compareMapInt32ItemType(t *testing.T, cs map[string]any, goMap kdsync.Map[int32, kds.ItemType], path string) {
+	if len(cs) != goMap.Len() {
+		t.Fatalf("%s length mismatch: cs=%d, go=%d", path, len(cs), goMap.Len())
+	}
+	for k, v := range cs {
+		key := int32(mustParseInt(k))
+		goVal, ok := goMap.Get(key)
+		if !ok {
+			t.Fatalf("%s missing key %s", path, k)
+		}
+		compareValue(t, v, int(goVal), path+"."+k)
 	}
 }
 
@@ -717,13 +587,16 @@ func testInit(t *testing.T) {
 	// Lists
 	lists := all.GetLists()
 	lists.GetInt32List().Append(1, 2, 3)
+	lists.GetUint32List().Append(10, 20, 30)
 	lists.GetInt64List().Append(100, 200, 300)
+	lists.GetUint64List().Append(1000, 2000, 3000)
 	lists.GetFloatList().Append(1.1, 2.2, 3.3)
 	lists.GetDoubleList().Append(1.11, 2.22, 3.33)
 	lists.GetBoolList().Append(true, false)
 	lists.GetStringList().Append("a", "b", "c")
 	lists.GetTimestampList().Append(time.Unix(1000, 0), time.Unix(2000, 0))
 	lists.GetDurationList().Append(time.Second, time.Minute)
+	lists.GetEmptyList().Append(struct{}{}, struct{}{})
 	lists.GetEnumList().Append(kds.ItemType_ItemTypeWeapon, kds.ItemType_ItemTypeArmor)
 	itemList := lists.GetItemList()
 	item1 := kds.NewItemData()
@@ -734,57 +607,33 @@ func testInit(t *testing.T) {
 
 	// Maps
 	maps := all.GetMaps()
-	maps.GetInt32Int32().Set(1, 100)
-	maps.GetInt32Int32().Set(2, 200)
-	maps.GetInt32String().Set(1, "one")
-	maps.GetInt32String().Set(2, "two")
-	maps.GetInt32Timestamp().Set(1, time.Unix(1000, 0))
-	maps.GetInt32Duration().Set(1, time.Second)
-	maps.GetInt32Enum().Set(1, kds.ItemType_ItemTypeWeapon)
+	maps.GetInt32Int32Map().Set(1, 100)
+	maps.GetInt32Int32Map().Set(2, 200)
+	maps.GetInt64Int64Map().Set(1, 1000)
+	maps.GetInt64Int64Map().Set(2, 2000)
+	maps.GetUint32Uint32Map().Set(3, 300)
+	maps.GetUint64Uint64Map().Set(4, 4000)
+	maps.GetBoolFloatMap().Set(true, 3.14)
+	maps.GetStringDoubleMap().Set("key1", 2.718)
+	maps.GetInt32BoolMap().Set(1, true)
+	maps.GetInt32BoolMap().Set(2, false)
+	maps.GetInt64StringMap().Set(1, "one")
+	maps.GetInt64StringMap().Set(2, "two")
+	maps.GetUint32BytesMap().Set(1, []byte("bytes1"))
+	maps.GetUint32BytesMap().Set(2, []byte("bytes2"))
+	maps.GetUint64TimestampMap().Set(1, time.Unix(1000, 0))
+	maps.GetUint64TimestampMap().Set(2, time.Unix(2000, 0))
+	maps.GetBoolDurationMap().Set(true, time.Second)
+	maps.GetBoolDurationMap().Set(false, time.Minute)
+	maps.GetStringEmptyMap().Set("key1", struct{}{})
+	maps.GetStringEmptyMap().Set("key2", struct{}{})
+	maps.GetInt32ItemTypeMap().Set(1, kds.ItemType_ItemTypeWeapon)
+	maps.GetInt32ItemTypeMap().Set(2, kds.ItemType_ItemTypeArmor)
 	item2 := kds.NewItemData()
 	item2.SetId(2)
 	item2.SetName("sword")
 	item2.SetCount(10)
-	maps.GetInt32ItemData().Set(1, item2)
-
-	maps.GetInt64Int64().Set(1, 1000)
-	maps.GetInt64Int64().Set(2, 2000)
-	maps.GetInt64String().Set(1, "one")
-	maps.GetInt64String().Set(2, "two")
-	maps.GetInt64Timestamp().Set(1, time.Unix(1000, 0))
-	maps.GetInt64Duration().Set(1, time.Second)
-	maps.GetInt64Enum().Set(1, kds.ItemType_ItemTypeWeapon)
-	item3 := kds.NewItemData()
-	item3.SetId(3)
-	item3.SetName("shield")
-	item3.SetCount(3)
-	maps.GetInt64ItemData().Set(1, item3)
-
-	maps.GetStringInt32().Set("a", 1)
-	maps.GetStringInt32().Set("b", 2)
-	maps.GetStringString().Set("a", "value_a")
-	maps.GetStringString().Set("b", "value_b")
-	maps.GetStringTimestamp().Set("a", time.Unix(1000, 0))
-	maps.GetStringDuration().Set("a", time.Second)
-	maps.GetStringEnum().Set("a", kds.ItemType_ItemTypeWeapon)
-	item4 := kds.NewItemData()
-	item4.SetId(4)
-	item4.SetName("armor")
-	item4.SetCount(7)
-	maps.GetStringItemData().Set("a", item4)
-
-	maps.GetBoolInt32().Set(true, 1)
-	maps.GetBoolInt32().Set(false, 0)
-	maps.GetBoolString().Set(true, "true")
-	maps.GetBoolString().Set(false, "false")
-	maps.GetBoolTimestamp().Set(true, time.Unix(1000, 0))
-	maps.GetBoolDuration().Set(true, time.Second)
-	maps.GetBoolEnum().Set(true, kds.ItemType_ItemTypeWeapon)
-	item5 := kds.NewItemData()
-	item5.SetId(5)
-	item5.SetName("helm")
-	item5.SetCount(2)
-	maps.GetBoolItemData().Set(true, item5)
+	maps.GetInt64ItemDataMap().Set(1, item2)
 	// sync
 	sync(t)
 }
@@ -963,255 +812,144 @@ func testListsDelete(t *testing.T) {
 func testMapsAdd(t *testing.T) {
 	// Maps 新增
 	maps := all.GetMaps()
-	maps.GetInt32Int32().Set(3, 300)
+
+	maps.GetInt32Int32Map().Set(11, 1100)
 	syncUpdate(t)
 
-	maps.GetInt32String().Set(3, "three")
+	maps.GetInt64Int64Map().Set(12, 12000)
 	syncUpdate(t)
 
-	maps.GetInt32Timestamp().Set(2, time.Unix(2000, 0))
+	maps.GetUint32Uint32Map().Set(13, 1300)
 	syncUpdate(t)
 
-	maps.GetInt32Duration().Set(2, time.Minute)
+	maps.GetUint64Uint64Map().Set(14, 14000)
 	syncUpdate(t)
 
-	maps.GetInt32Enum().Set(2, kds.ItemType_ItemTypeArmor)
+	maps.GetBoolFloatMap().Set(false, 31.4)
 	syncUpdate(t)
 
-	itemMap2 := kds.NewItemData()
-	itemMap2.SetId(7)
-	itemMap2.SetName("boots")
-	itemMap2.SetCount(1)
-	maps.GetInt32ItemData().Set(2, itemMap2)
+	maps.GetStringDoubleMap().Set("key2", 27.18)
 	syncUpdate(t)
 
-	maps.GetInt64Int64().Set(3, 3000)
+	maps.GetInt32BoolMap().Set(31, true)
 	syncUpdate(t)
 
-	maps.GetInt64String().Set(3, "three")
+	maps.GetInt64StringMap().Set(32, "hello")
 	syncUpdate(t)
 
-	maps.GetInt64Timestamp().Set(2, time.Unix(2000, 0))
+	maps.GetUint32BytesMap().Set(33, []byte("bytes"))
 	syncUpdate(t)
 
-	maps.GetInt64Duration().Set(2, time.Minute)
+	maps.GetUint64TimestampMap().Set(34, time.Unix(3000, 0))
 	syncUpdate(t)
 
-	maps.GetInt64Enum().Set(2, kds.ItemType_ItemTypeArmor)
+	maps.GetBoolDurationMap().Set(true, time.Hour)
 	syncUpdate(t)
 
-	itemMap3 := kds.NewItemData()
-	itemMap3.SetId(8)
-	itemMap3.SetName("gloves")
-	itemMap3.SetCount(2)
-	maps.GetInt64ItemData().Set(2, itemMap3)
+	maps.GetStringEmptyMap().Set("key3", struct{}{})
 	syncUpdate(t)
 
-	maps.GetStringInt32().Set("c", 3)
+	maps.GetInt32ItemTypeMap().Set(35, kds.ItemType_ItemTypeArmor)
 	syncUpdate(t)
 
-	maps.GetStringString().Set("c", "value_c")
-	syncUpdate(t)
-
-	maps.GetStringTimestamp().Set("b", time.Unix(2000, 0))
-	syncUpdate(t)
-
-	maps.GetStringDuration().Set("b", time.Minute)
-	syncUpdate(t)
-
-	maps.GetStringEnum().Set("b", kds.ItemType_ItemTypeArmor)
-	syncUpdate(t)
-
-	itemMap4 := kds.NewItemData()
-	itemMap4.SetId(9)
-	itemMap4.SetName("belt")
-	itemMap4.SetCount(4)
-	maps.GetStringItemData().Set("b", itemMap4)
-	syncUpdate(t)
-
-	maps.GetBoolInt32().Set(false, 2)
-	syncUpdate(t)
-
-	maps.GetBoolString().Set(false, "no")
-	syncUpdate(t)
-
-	maps.GetBoolTimestamp().Set(false, time.Unix(2000, 0))
-	syncUpdate(t)
-
-	maps.GetBoolDuration().Set(false, time.Minute)
-	syncUpdate(t)
-
-	maps.GetBoolEnum().Set(false, kds.ItemType_ItemTypeArmor)
-	syncUpdate(t)
-
-	itemMap5 := kds.NewItemData()
-	itemMap5.SetId(10)
-	itemMap5.SetName("amulet")
-	itemMap5.SetCount(1)
-	maps.GetBoolItemData().Set(false, itemMap5)
+	itemMap1 := kds.NewItemData()
+	itemMap1.SetId(11)
+	itemMap1.SetName("sword")
+	itemMap1.SetCount(1)
+	maps.GetInt64ItemDataMap().Set(10, itemMap1)
 	syncUpdate(t)
 }
 
 func testMapsUpdate(t *testing.T) {
 	// Maps 修改
 	maps := all.GetMaps()
-	maps.GetInt32Int32().Set(1, 999)
+
+	maps.GetInt32Int32Map().Set(11, 999)
 	syncUpdate(t)
 
-	maps.GetInt32String().Set(1, "modified_one")
+	maps.GetInt64Int64Map().Set(12, 9999)
 	syncUpdate(t)
 
-	maps.GetInt32Timestamp().Set(1, time.Unix(8888, 0))
+	maps.GetUint32Uint32Map().Set(13, 999)
 	syncUpdate(t)
 
-	maps.GetInt32Duration().Set(1, time.Hour)
+	maps.GetUint64Uint64Map().Set(14, 9999)
 	syncUpdate(t)
 
-	maps.GetInt32Enum().Set(1, kds.ItemType_ItemTypePotion)
+	maps.GetBoolFloatMap().Set(false, 99.9)
 	syncUpdate(t)
 
-	itemInt32, _ := maps.GetInt32ItemData().Get(1)
-	itemInt32.SetId(111)
-	itemInt32.SetName("modified_itemdata")
-	itemInt32.SetCount(55)
+	maps.GetStringDoubleMap().Set("key2", 99.99)
 	syncUpdate(t)
 
-	maps.GetInt64Int64().Set(1, 9999)
+	maps.GetInt32BoolMap().Set(31, false)
 	syncUpdate(t)
 
-	maps.GetInt64String().Set(1, "modified_one")
+	maps.GetInt64StringMap().Set(32, "modified")
 	syncUpdate(t)
 
-	maps.GetInt64Timestamp().Set(1, time.Unix(8888, 0))
+	maps.GetUint32BytesMap().Set(33, []byte("modified_bytes"))
 	syncUpdate(t)
 
-	maps.GetInt64Duration().Set(1, time.Hour)
+	maps.GetUint64TimestampMap().Set(34, time.Unix(9999, 0))
 	syncUpdate(t)
 
-	maps.GetInt64Enum().Set(1, kds.ItemType_ItemTypePotion)
+	maps.GetBoolDurationMap().Set(true, time.Hour*2)
 	syncUpdate(t)
 
-	itemInt64, _ := maps.GetInt64ItemData().Get(1)
-	itemInt64.SetId(112)
-	itemInt64.SetName("modified_itemdata2")
-	itemInt64.SetCount(56)
+	maps.GetInt32ItemTypeMap().Set(35, kds.ItemType_ItemTypePotion)
 	syncUpdate(t)
 
-	maps.GetStringInt32().Set("a", 999)
-	syncUpdate(t)
-
-	maps.GetStringString().Set("a", "modified_value_a")
-	syncUpdate(t)
-
-	maps.GetStringTimestamp().Set("a", time.Unix(9999, 0))
-	syncUpdate(t)
-
-	maps.GetStringDuration().Set("a", time.Hour*3)
-	syncUpdate(t)
-
-	maps.GetStringEnum().Set("a", kds.ItemType_ItemTypePotion)
-	syncUpdate(t)
-
-	itemString, _ := maps.GetStringItemData().Get("a")
-	itemString.SetId(113)
-	itemString.SetName("modified_itemdata3")
-	itemString.SetCount(57)
-	syncUpdate(t)
-
-	maps.GetBoolInt32().Set(true, 888)
-	syncUpdate(t)
-
-	maps.GetBoolString().Set(true, "modified_true")
-	syncUpdate(t)
-
-	maps.GetBoolTimestamp().Set(true, time.Unix(7777, 0))
-	syncUpdate(t)
-
-	maps.GetBoolDuration().Set(true, time.Hour*4)
-	syncUpdate(t)
-
-	maps.GetBoolEnum().Set(true, kds.ItemType_ItemTypePotion)
-	syncUpdate(t)
-
-	itemBool, _ := maps.GetBoolItemData().Get(true)
-	itemBool.SetId(114)
-	itemBool.SetName("modified_itemdata4")
-	itemBool.SetCount(58)
+	itemMap1, _ := maps.GetInt64ItemDataMap().Get(10)
+	itemMap1.SetId(100)
+	itemMap1.SetName("modified_sword")
+	itemMap1.SetCount(99)
 	syncUpdate(t)
 }
 
 func testMapsDelete(t *testing.T) {
 	// 删除 Map 元素
 	maps := all.GetMaps()
-	maps.GetInt32Int32().Delete(1)
+
+	maps.GetInt32Int32Map().Delete(11)
 	syncUpdate(t)
 
-	maps.GetInt32String().Delete(1)
+	maps.GetInt64Int64Map().Delete(12)
 	syncUpdate(t)
 
-	maps.GetInt32Timestamp().Delete(1)
+	maps.GetUint32Uint32Map().Delete(13)
 	syncUpdate(t)
 
-	maps.GetInt32Duration().Delete(1)
+	maps.GetUint64Uint64Map().Delete(14)
 	syncUpdate(t)
 
-	maps.GetInt32Enum().Delete(1)
+	maps.GetBoolFloatMap().Delete(false)
 	syncUpdate(t)
 
-	maps.GetInt32ItemData().Delete(1)
+	maps.GetStringDoubleMap().Delete("key2")
 	syncUpdate(t)
 
-	maps.GetInt64Int64().Delete(1)
+	maps.GetInt32BoolMap().Delete(31)
 	syncUpdate(t)
 
-	maps.GetInt64String().Delete(1)
+	maps.GetInt64StringMap().Delete(32)
 	syncUpdate(t)
 
-	maps.GetInt64Timestamp().Delete(1)
+	maps.GetUint32BytesMap().Delete(33)
 	syncUpdate(t)
 
-	maps.GetInt64Duration().Delete(1)
+	maps.GetUint64TimestampMap().Delete(34)
 	syncUpdate(t)
 
-	maps.GetInt64Enum().Delete(1)
+	maps.GetBoolDurationMap().Delete(true)
 	syncUpdate(t)
 
-	maps.GetInt64ItemData().Delete(1)
+	maps.GetStringEmptyMap().Delete("key3")
 	syncUpdate(t)
 
-	maps.GetStringInt32().Delete("a")
+	maps.GetInt32ItemTypeMap().Delete(35)
 	syncUpdate(t)
 
-	maps.GetStringString().Delete("a")
-	syncUpdate(t)
-
-	maps.GetStringTimestamp().Delete("a")
-	syncUpdate(t)
-
-	maps.GetStringDuration().Delete("a")
-	syncUpdate(t)
-
-	maps.GetStringEnum().Delete("a")
-	syncUpdate(t)
-
-	maps.GetStringItemData().Delete("a")
-	syncUpdate(t)
-
-	maps.GetBoolInt32().Delete(true)
-	syncUpdate(t)
-
-	maps.GetBoolString().Delete(true)
-	syncUpdate(t)
-
-	maps.GetBoolTimestamp().Delete(true)
-	syncUpdate(t)
-
-	maps.GetBoolDuration().Delete(true)
-	syncUpdate(t)
-
-	maps.GetBoolEnum().Delete(true)
-	syncUpdate(t)
-
-	maps.GetBoolItemData().Delete(true)
+	maps.GetInt64ItemDataMap().Delete(10)
 	syncUpdate(t)
 }
