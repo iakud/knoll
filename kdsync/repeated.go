@@ -5,6 +5,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/iakud/knoll/kdsync/json"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
@@ -32,7 +33,7 @@ type Repeated[T any] interface {
 	Marshal(b []byte) ([]byte, error)
 	MarshalChange(b []byte) ([]byte, error)
 	Unmarshal(b []byte) error
-	MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error)
+	WriteJSON(e *json.Encoder)
 }
 
 // Field repeated check
@@ -247,28 +248,12 @@ func (x *RepeatedField[E]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *RepeatedField[E]) MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error) {
-	if len(x.data) == 0 {
-		return append(b, '[', ']'), nil
+func (x *RepeatedField[E]) WriteJSON(e *json.Encoder) {
+	e.WriteStartArray()
+	for _, v := range x.data {
+		x.fieldCodec.writeJSONFunc(e, v)
 	}
-	var err error
-	b = append(b, '[')
-	for i, v := range x.data {
-		if i > 0 {
-			b = append(b, ',')
-		}
-		b = append(b, '\n')
-		b = append(b, prefix...)
-		b = append(b, indent...)
-		b, err = MarshalJSONIndent(b, v, prefix+indent, indent)
-		if err != nil {
-			return nil, err
-		}
-	}
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, ']')
-	return b, nil
+	e.WriteEndArray()
 }
 
 // Message repeated
@@ -537,26 +522,10 @@ func (x *RepeatedMessage[T, E]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *RepeatedMessage[T, E]) MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error) {
-	if len(x.data) == 0 {
-		return append(b, '[', ']'), nil
+func (x *RepeatedMessage[T, E]) WriteJSON(e *json.Encoder) {
+	e.WriteStartArray()
+	for _, v := range x.data {
+		e.WriteMessageValue(v)
 	}
-	var err error
-	b = append(b, '[')
-	for i, v := range x.data {
-		if i > 0 {
-			b = append(b, ',')
-		}
-		b = append(b, '\n')
-		b = append(b, prefix...)
-		b = append(b, indent...)
-		b, err = MarshalJSONIndent(b, v, prefix+indent, indent)
-		if err != nil {
-			return nil, err
-		}
-	}
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, ']')
-	return b, nil
+	e.WriteEndArray()
 }

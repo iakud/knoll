@@ -7,6 +7,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/iakud/knoll/kdsync/json"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
@@ -25,7 +26,7 @@ type Map[K comparable, V any] interface {
 	Marshal(b []byte) ([]byte, error)
 	MarshalChange(b []byte) ([]byte, error)
 	Unmarshal(b []byte) error
-	MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error)
+	WriteJSON(e *json.Encoder)
 }
 
 // Field map check
@@ -352,34 +353,14 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *MapField[K, V]) MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error) {
-	if len(x.data) == 0 {
-		return append(b, '{', '}'), nil
-	}
-
+func (x *MapField[K, V]) WriteJSON(e *json.Encoder) {
+	e.WriteStartArray()
 	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.compareFunc)
-	var err error
-	b = append(b, '{')
-	for i, k := range keys {
-		if i > 0 {
-			b = append(b, ',')
-		}
-		b = append(b, '\n')
-		b = append(b, prefix...)
-		b = append(b, indent...)
-		b = append(b, '"')
-		b = fmt.Append(b, k)
-		b = append(b, '"')
-		b = append(b, ':', ' ')
-		b, err = MarshalJSONIndent(b, x.data[k], prefix+indent, indent)
-		if err != nil {
-			return nil, err
-		}
+	for _, k := range keys {
+		e.WritePropertyName(fmt.Sprint(k))
+		x.valueCodec.writeJSONFunc(e, x.data[k])
 	}
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, '}')
-	return b, nil
+	e.WriteEndArray()
 }
 
 // Message map
@@ -733,32 +714,12 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *MapMessage[K, T, V]) MarshalJSONIndent(b []byte, prefix string, indent string) ([]byte, error) {
-	if len(x.data) == 0 {
-		return append(b, '{', '}'), nil
-	}
-
+func (x *MapMessage[K, T, V]) WriteJSON(e *json.Encoder) {
+	e.WriteStartArray()
 	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.compareFunc)
-	var err error
-	b = append(b, '{')
-	for i, k := range keys {
-		if i > 0 {
-			b = append(b, ',')
-		}
-		b = append(b, '\n')
-		b = append(b, prefix...)
-		b = append(b, indent...)
-		b = append(b, '"')
-		b = fmt.Append(b, k)
-		b = append(b, '"')
-		b = append(b, ':', ' ')
-		b, err = MarshalJSONIndent(b, x.data[k], prefix+indent, indent)
-		if err != nil {
-			return nil, err
-		}
+	for _, k := range keys {
+		e.WritePropertyName(fmt.Sprint(k))
+		e.WriteMessageValue(x.data[k])
 	}
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, '}')
-	return b, nil
+	e.WriteEndArray()
 }

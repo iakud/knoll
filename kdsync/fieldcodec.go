@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/iakud/knoll/kdsync/json"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
@@ -14,6 +15,7 @@ type FieldCodec[T any] struct {
 	compareFunc   func(a, b T) int
 	marshalFunc   func(b []byte, v T) []byte
 	unmarshalFunc func(b []byte) (T, int, error)
+	writeJSONFunc func(e *json.Encoder, v T)
 }
 
 func boolCompare(a, b bool) int {
@@ -39,6 +41,7 @@ func BoolCodec() FieldCodec[bool] {
 		compareFunc:   boolCompare,
 		marshalFunc:   wire.AppendBool,
 		unmarshalFunc: wire.ConsumeBool,
+		writeJSONFunc: (*json.Encoder).WriteBoolValue,
 	}
 }
 
@@ -48,6 +51,7 @@ func Int32Codec() FieldCodec[int32] {
 		compareFunc:   cmp.Compare[int32],
 		marshalFunc:   wire.AppendInt32,
 		unmarshalFunc: wire.ConsumeInt32,
+		writeJSONFunc: (*json.Encoder).WriteInt32Value,
 	}
 }
 
@@ -57,6 +61,7 @@ func Uint32Codec() FieldCodec[uint32] {
 		compareFunc:   cmp.Compare[uint32],
 		marshalFunc:   wire.AppendUint32,
 		unmarshalFunc: wire.ConsumeUint32,
+		writeJSONFunc: (*json.Encoder).WriteUint32Value,
 	}
 }
 
@@ -66,6 +71,7 @@ func Int64Codec() FieldCodec[int64] {
 		compareFunc:   cmp.Compare[int64],
 		marshalFunc:   wire.AppendInt64,
 		unmarshalFunc: wire.ConsumeInt64,
+		writeJSONFunc: (*json.Encoder).WriteInt64Value,
 	}
 }
 
@@ -75,6 +81,7 @@ func Uint64Codec() FieldCodec[uint64] {
 		compareFunc:   cmp.Compare[uint64],
 		marshalFunc:   wire.AppendUint64,
 		unmarshalFunc: wire.ConsumeUint64,
+		writeJSONFunc: (*json.Encoder).WriteUint64Value,
 	}
 }
 
@@ -84,6 +91,7 @@ func Float32Codec() FieldCodec[float32] {
 		compareFunc:   cmp.Compare[float32],
 		marshalFunc:   wire.AppendFloat,
 		unmarshalFunc: wire.ConsumeFloat,
+		writeJSONFunc: (*json.Encoder).WriteFloat32Value,
 	}
 }
 
@@ -93,6 +101,7 @@ func Float64Codec() FieldCodec[float64] {
 		compareFunc:   cmp.Compare[float64],
 		marshalFunc:   wire.AppendDouble,
 		unmarshalFunc: wire.ConsumeDouble,
+		writeJSONFunc: (*json.Encoder).WriteFloat64Value,
 	}
 }
 
@@ -102,6 +111,7 @@ func StringCodec() FieldCodec[string] {
 		compareFunc:   strings.Compare,
 		marshalFunc:   wire.AppendString,
 		unmarshalFunc: wire.ConsumeString,
+		writeJSONFunc: (*json.Encoder).WriteStringValue,
 	}
 }
 
@@ -111,6 +121,7 @@ func BytesCodec() FieldCodec[[]byte] {
 		compareFunc:   bytes.Compare,
 		marshalFunc:   wire.AppendBytes,
 		unmarshalFunc: wire.ConsumeBytes,
+		writeJSONFunc: (*json.Encoder).WriteBytesValue,
 	}
 }
 
@@ -120,6 +131,7 @@ func TimestampCodec() FieldCodec[time.Time] {
 		compareFunc:   timestampCompare,
 		marshalFunc:   wire.AppendTimestamp,
 		unmarshalFunc: wire.ConsumeTimestamp,
+		writeJSONFunc: (*json.Encoder).WriteTimestampValue,
 	}
 }
 
@@ -129,6 +141,7 @@ func DurationCodec() FieldCodec[time.Duration] {
 		compareFunc:   cmp.Compare[time.Duration],
 		marshalFunc:   wire.AppendDuration,
 		unmarshalFunc: wire.ConsumeDuration,
+		writeJSONFunc: (*json.Encoder).WriteDurationValue,
 	}
 }
 
@@ -138,6 +151,7 @@ func EmptyCodec() FieldCodec[struct{}] {
 		compareFunc:   emptyCompare,
 		marshalFunc:   wire.AppendEmpty,
 		unmarshalFunc: wire.ConsumeEmpty,
+		writeJSONFunc: (*json.Encoder).WriteEmptyValue,
 	}
 }
 
@@ -147,5 +161,6 @@ func EnumCodec[T ~int32]() FieldCodec[T] {
 		compareFunc:   cmp.Compare[T],
 		marshalFunc:   wire.AppendEnum[T],
 		unmarshalFunc: wire.ConsumeEnum[T],
+		writeJSONFunc: func(e *json.Encoder, v T) { e.WriteInt32Value(int32(v)) },
 	}
 }

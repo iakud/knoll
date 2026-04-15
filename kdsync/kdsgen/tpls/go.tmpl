@@ -277,53 +277,46 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *{{$MessageName}}) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
-{{- $HasSync := false}}
+func (x *{{$MessageName}}) WriteJSON(e *json.Encoder) {
+	e.WriteStartObject()
 {{- range .Fields}}
 {{- if not .NoSync}}
-{{- $HasSync = true}}
-{{- end}}
-{{- end}}
-{{- if not $HasSync}}
-	return append(b, '{', '}')
-{{- end}}
-
-	var err error
-	_ = err
-	b = append(b, '{')
-{{- $HasSync = false}}
-{{- range .Fields}}
-{{- if not .NoSync}}
-{{- if $HasSync}}
-	b = append(b, ',', '\n')
-{{- else}}
-{{- $HasSync = true}}
-	b = append(b, '\n')
-{{- end}}
-	b = append(b, prefix...)
-	b = append(b, indent + "\"{{.Name}}\": "...)
 {{- if .Repeated}}
-	b, err = x.xxx_hidden_{{.Name}}.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
+	e.WriteMessage("{{.Name}}", &x.xxx_hidden_{{.Name}})
 {{- else if .Map}}
-	b, err = x.xxx_hidden_{{.Name}}.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-{{- else}}
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_{{.Name}}, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
+	e.WriteMessage("{{.Name}}", &x.xxx_hidden_{{.Name}})
+{{- else if eq .TypeKind "component"}}
+	e.WriteMessage("{{.Name}}", x.xxx_hidden_{{.Name}})
+{{- else if eq .TypeKind "enum"}}
+	e.WriteInt32("{{.Name}}", int32(x.xxx_hidden_{{.Name}}))
+{{- else if eq .Type "bool"}}
+	e.WriteBool("{{.Name}}", x.xxx_hidden_{{.Name}})
+{{- else if eq .Type "int32" "sint32" "sfixed32"}}
+	e.WriteInt32("{{.Name}}", x.xxx_hidden_{{.Name}})
+{{- else if eq .Type "uint32" "fixed32"}}
+	e.WriteUint32("{{.Name}}", x.xxx_hidden_{{.Name}})
+{{- else if eq .Type "int64" "sint64" "sfixed64"}}
+	e.WriteInt64("{{.Name}}", x.xxx_hidden_{{.Name}})
+{{- else if eq .Type "uint64" "fixed64"}}
+	e.WriteUint64("{{.Name}}", x.xxx_hidden_{{.Name}})
+{{- else if eq .Type "float"}}
+	e.WriteFloat32("{{.Name}}", x.xxx_hidden_{{.Name}})
+{{- else if eq .Type "double"}}
+	e.WriteFloat64("{{.Name}}", x.xxx_hidden_{{.Name}})
+{{- else if eq .Type "bytes"}}
+	e.WriteBytes("{{.Name}}", x.xxx_hidden_{{.Name}})
+{{- else if eq .Type "string"}}
+	e.WriteString("{{.Name}}", x.xxx_hidden_{{.Name}})
+{{- else if eq .Type "timestamp"}}
+	e.WriteTimestamp("{{.Name}}", x.xxx_hidden_{{.Name}})
+{{- else if eq .Type "duration"}}
+	e.WriteDuration("{{.Name}}", x.xxx_hidden_{{.Name}})
+{{- else if eq .Type "empty"}}
+	e.WriteEmpty("{{.Name}}", x.xxx_hidden_{{.Name}})
 {{- end}}
 {{- end}}
 {{- end}}
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, '}')
-	return b, nil
+	e.WriteEndObject()
 }
 {{- end}}
 
@@ -451,8 +444,9 @@ func (x *{{.Name}}) CheckPersistDirty() bool {
 }
 
 func (x *{{.Name}}) String() string {
-	b, _ := x.MarshalJSONIndent(nil, "", "  ")
-	return string(b)
+	var e json.Encoder
+	x.WriteJSON(&e)
+	return e.String()
 }
 {{- end}}
 
@@ -618,6 +612,7 @@ import (
 {{/* EMPTY LINE */}}
 {{- end}}
 	"github.com/iakud/knoll/kdsync"
+	"github.com/iakud/knoll/kdsync/json"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 {{- end}}

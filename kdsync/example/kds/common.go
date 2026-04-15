@@ -5,6 +5,7 @@ package kds
 
 import (
 	"github.com/iakud/knoll/kdsync"
+	"github.com/iakud/knoll/kdsync/json"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
@@ -135,36 +136,12 @@ func (x *ItemData) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *ItemData) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
-
-	var err error
-	_ = err
-	b = append(b, '{')
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Id\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Id, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Name\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Name, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Count\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Count, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, '}')
-	return b, nil
+func (x *ItemData) WriteJSON(e *json.Encoder) {
+	e.WriteStartObject()
+	e.WriteInt32("Id", x.xxx_hidden_Id)
+	e.WriteString("Name", x.xxx_hidden_Name)
+	e.WriteInt32("Count", x.xxx_hidden_Count)
+	e.WriteEndObject()
 }
 
 func (x *ItemData) updateDirty(n uint64, t kdsync.DirtyType) {

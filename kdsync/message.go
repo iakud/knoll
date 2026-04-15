@@ -1,6 +1,7 @@
 package kdsync
 
 import (
+	"github.com/iakud/knoll/kdsync/json"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
@@ -10,6 +11,7 @@ type Message[T any] interface {
 	wire.Unmarshaler
 	ClearDirty()
 	ClearPersistDirty()
+	WriteJSON(*json.Encoder)
 }
 
 type DirtyType byte

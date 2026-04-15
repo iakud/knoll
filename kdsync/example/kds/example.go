@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/iakud/knoll/kdsync"
+	"github.com/iakud/knoll/kdsync/json"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
@@ -172,36 +173,12 @@ func (x *All) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *All) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
-
-	var err error
-	_ = err
-	b = append(b, '{')
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Types\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Types, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Lists\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Lists, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Maps\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Maps, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, '}')
-	return b, nil
+func (x *All) WriteJSON(e *json.Encoder) {
+	e.WriteStartObject()
+	e.WriteMessage("Types", x.xxx_hidden_Types)
+	e.WriteMessage("Lists", x.xxx_hidden_Lists)
+	e.WriteMessage("Maps", x.xxx_hidden_Maps)
+	e.WriteEndObject()
 }
 
 func (x *All) updateDirty(n uint64, t kdsync.DirtyType) {
@@ -270,8 +247,9 @@ func (x *All) CheckPersistDirty() bool {
 }
 
 func (x *All) String() string {
-	b, _ := x.MarshalJSONIndent(nil, "", "  ")
-	return string(b)
+	var e json.Encoder
+	x.WriteJSON(&e)
+	return e.String()
 }
 
 type AllType struct {
@@ -799,155 +777,29 @@ func (x *AllType) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *AllType) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
-
-	var err error
-	_ = err
-	b = append(b, '{')
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Int32Val\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Int32Val, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Int64Val\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Int64Val, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Uint32Val\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Uint32Val, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Uint64Val\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Uint64Val, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Sint32Val\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Sint32Val, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Sint64Val\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Sint64Val, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Fixed32Val\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Fixed32Val, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Fixed64Val\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Fixed64Val, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Sfixed32Val\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Sfixed32Val, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Sfixed64Val\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_Sfixed64Val, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"FloatVal\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_FloatVal, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"DoubleVal\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_DoubleVal, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"BoolVal\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_BoolVal, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"StringVal\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_StringVal, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"BytesVal\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_BytesVal, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"TimestampVal\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_TimestampVal, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"DurationVal\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_DurationVal, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"EmptyVal\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_EmptyVal, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"EnumVal\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_EnumVal, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"ItemData\": "...)
-	b, err = kdsync.MarshalJSONIndent(b, x.xxx_hidden_ItemData, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, '}')
-	return b, nil
+func (x *AllType) WriteJSON(e *json.Encoder) {
+	e.WriteStartObject()
+	e.WriteInt32("Int32Val", x.xxx_hidden_Int32Val)
+	e.WriteInt64("Int64Val", x.xxx_hidden_Int64Val)
+	e.WriteUint32("Uint32Val", x.xxx_hidden_Uint32Val)
+	e.WriteUint64("Uint64Val", x.xxx_hidden_Uint64Val)
+	e.WriteInt32("Sint32Val", x.xxx_hidden_Sint32Val)
+	e.WriteInt64("Sint64Val", x.xxx_hidden_Sint64Val)
+	e.WriteUint32("Fixed32Val", x.xxx_hidden_Fixed32Val)
+	e.WriteUint64("Fixed64Val", x.xxx_hidden_Fixed64Val)
+	e.WriteInt32("Sfixed32Val", x.xxx_hidden_Sfixed32Val)
+	e.WriteInt64("Sfixed64Val", x.xxx_hidden_Sfixed64Val)
+	e.WriteFloat32("FloatVal", x.xxx_hidden_FloatVal)
+	e.WriteFloat64("DoubleVal", x.xxx_hidden_DoubleVal)
+	e.WriteBool("BoolVal", x.xxx_hidden_BoolVal)
+	e.WriteString("StringVal", x.xxx_hidden_StringVal)
+	e.WriteBytes("BytesVal", x.xxx_hidden_BytesVal)
+	e.WriteTimestamp("TimestampVal", x.xxx_hidden_TimestampVal)
+	e.WriteDuration("DurationVal", x.xxx_hidden_DurationVal)
+	e.WriteEmpty("EmptyVal", x.xxx_hidden_EmptyVal)
+	e.WriteInt32("EnumVal", int32(x.xxx_hidden_EnumVal))
+	e.WriteMessage("ItemData", x.xxx_hidden_ItemData)
+	e.WriteEndObject()
 }
 
 func (x *AllType) updateDirty(n uint64, t kdsync.DirtyType) {
@@ -1369,106 +1221,22 @@ func (x *AllList) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *AllList) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
-
-	var err error
-	_ = err
-	b = append(b, '{')
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Int32List\": "...)
-	b, err = x.xxx_hidden_Int32List.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Uint32List\": "...)
-	b, err = x.xxx_hidden_Uint32List.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Int64List\": "...)
-	b, err = x.xxx_hidden_Int64List.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Uint64List\": "...)
-	b, err = x.xxx_hidden_Uint64List.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"FloatList\": "...)
-	b, err = x.xxx_hidden_FloatList.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"DoubleList\": "...)
-	b, err = x.xxx_hidden_DoubleList.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"BoolList\": "...)
-	b, err = x.xxx_hidden_BoolList.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"StringList\": "...)
-	b, err = x.xxx_hidden_StringList.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"TimestampList\": "...)
-	b, err = x.xxx_hidden_TimestampList.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"DurationList\": "...)
-	b, err = x.xxx_hidden_DurationList.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"EmptyList\": "...)
-	b, err = x.xxx_hidden_EmptyList.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"EnumList\": "...)
-	b, err = x.xxx_hidden_EnumList.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"ItemList\": "...)
-	b, err = x.xxx_hidden_ItemList.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, '}')
-	return b, nil
+func (x *AllList) WriteJSON(e *json.Encoder) {
+	e.WriteStartObject()
+	e.WriteMessage("Int32List", &x.xxx_hidden_Int32List)
+	e.WriteMessage("Uint32List", &x.xxx_hidden_Uint32List)
+	e.WriteMessage("Int64List", &x.xxx_hidden_Int64List)
+	e.WriteMessage("Uint64List", &x.xxx_hidden_Uint64List)
+	e.WriteMessage("FloatList", &x.xxx_hidden_FloatList)
+	e.WriteMessage("DoubleList", &x.xxx_hidden_DoubleList)
+	e.WriteMessage("BoolList", &x.xxx_hidden_BoolList)
+	e.WriteMessage("StringList", &x.xxx_hidden_StringList)
+	e.WriteMessage("TimestampList", &x.xxx_hidden_TimestampList)
+	e.WriteMessage("DurationList", &x.xxx_hidden_DurationList)
+	e.WriteMessage("EmptyList", &x.xxx_hidden_EmptyList)
+	e.WriteMessage("EnumList", &x.xxx_hidden_EnumList)
+	e.WriteMessage("ItemList", &x.xxx_hidden_ItemList)
+	e.WriteEndObject()
 }
 
 func (x *AllList) updateDirty(n uint64, t kdsync.DirtyType) {
@@ -1985,113 +1753,23 @@ func (x *AllMap) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *AllMap) MarshalJSONIndent(b []byte, prefix, indent string) ([]byte, error) {
-
-	var err error
-	_ = err
-	b = append(b, '{')
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Int32Int32Map\": "...)
-	b, err = x.xxx_hidden_Int32Int32Map.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Int64Int64Map\": "...)
-	b, err = x.xxx_hidden_Int64Int64Map.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Uint32Uint32Map\": "...)
-	b, err = x.xxx_hidden_Uint32Uint32Map.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Uint64Uint64Map\": "...)
-	b, err = x.xxx_hidden_Uint64Uint64Map.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"BoolFloatMap\": "...)
-	b, err = x.xxx_hidden_BoolFloatMap.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"StringDoubleMap\": "...)
-	b, err = x.xxx_hidden_StringDoubleMap.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Int32BoolMap\": "...)
-	b, err = x.xxx_hidden_Int32BoolMap.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Int64StringMap\": "...)
-	b, err = x.xxx_hidden_Int64StringMap.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Uint32BytesMap\": "...)
-	b, err = x.xxx_hidden_Uint32BytesMap.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Uint64TimestampMap\": "...)
-	b, err = x.xxx_hidden_Uint64TimestampMap.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"BoolDurationMap\": "...)
-	b, err = x.xxx_hidden_BoolDurationMap.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"StringEmptyMap\": "...)
-	b, err = x.xxx_hidden_StringEmptyMap.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Int32ItemTypeMap\": "...)
-	b, err = x.xxx_hidden_Int32ItemTypeMap.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, ',', '\n')
-	b = append(b, prefix...)
-	b = append(b, indent + "\"Int64ItemDataMap\": "...)
-	b, err = x.xxx_hidden_Int64ItemDataMap.MarshalJSONIndent(b, prefix+indent, indent)
-	if err != nil {
-		return nil, err
-	}
-	b = append(b, '\n')
-	b = append(b, prefix...)
-	b = append(b, '}')
-	return b, nil
+func (x *AllMap) WriteJSON(e *json.Encoder) {
+	e.WriteStartObject()
+	e.WriteMessage("Int32Int32Map", &x.xxx_hidden_Int32Int32Map)
+	e.WriteMessage("Int64Int64Map", &x.xxx_hidden_Int64Int64Map)
+	e.WriteMessage("Uint32Uint32Map", &x.xxx_hidden_Uint32Uint32Map)
+	e.WriteMessage("Uint64Uint64Map", &x.xxx_hidden_Uint64Uint64Map)
+	e.WriteMessage("BoolFloatMap", &x.xxx_hidden_BoolFloatMap)
+	e.WriteMessage("StringDoubleMap", &x.xxx_hidden_StringDoubleMap)
+	e.WriteMessage("Int32BoolMap", &x.xxx_hidden_Int32BoolMap)
+	e.WriteMessage("Int64StringMap", &x.xxx_hidden_Int64StringMap)
+	e.WriteMessage("Uint32BytesMap", &x.xxx_hidden_Uint32BytesMap)
+	e.WriteMessage("Uint64TimestampMap", &x.xxx_hidden_Uint64TimestampMap)
+	e.WriteMessage("BoolDurationMap", &x.xxx_hidden_BoolDurationMap)
+	e.WriteMessage("StringEmptyMap", &x.xxx_hidden_StringEmptyMap)
+	e.WriteMessage("Int32ItemTypeMap", &x.xxx_hidden_Int32ItemTypeMap)
+	e.WriteMessage("Int64ItemDataMap", &x.xxx_hidden_Int64ItemDataMap)
+	e.WriteEndObject()
 }
 
 func (x *AllMap) updateDirty(n uint64, t kdsync.DirtyType) {
