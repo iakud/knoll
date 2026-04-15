@@ -5,7 +5,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/iakud/knoll/kdsync/json"
+	"github.com/iakud/knoll/kdsync/kdsjson"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
@@ -33,7 +33,7 @@ type Repeated[T any] interface {
 	Marshal(b []byte) ([]byte, error)
 	MarshalChange(b []byte) ([]byte, error)
 	Unmarshal(b []byte) error
-	WriteJSON(e *json.Encoder)
+	WriteJSON(e *kdsjson.Encoder)
 }
 
 // Field repeated check
@@ -248,7 +248,7 @@ func (x *RepeatedField[E]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *RepeatedField[E]) WriteJSON(e *json.Encoder) {
+func (x *RepeatedField[E]) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartArray()
 	for _, v := range x.data {
 		x.fieldCodec.writeJSONFunc(e, v)
@@ -522,10 +522,10 @@ func (x *RepeatedMessage[T, E]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *RepeatedMessage[T, E]) WriteJSON(e *json.Encoder) {
+func (x *RepeatedMessage[T, E]) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartArray()
 	for _, v := range x.data {
-		e.WriteMessageValue(v)
+		e.WriteValue(v)
 	}
 	e.WriteEndArray()
 }

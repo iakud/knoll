@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/iakud/knoll/kdsync"
-	"github.com/iakud/knoll/kdsync/json"
+	"github.com/iakud/knoll/kdsync/kdsjson"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
@@ -173,11 +173,11 @@ func (x *All) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *All) WriteJSON(e *json.Encoder) {
+func (x *All) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartObject()
-	e.WriteMessage("Types", x.xxx_hidden_Types)
-	e.WriteMessage("Lists", x.xxx_hidden_Lists)
-	e.WriteMessage("Maps", x.xxx_hidden_Maps)
+	e.Write("Types", x.xxx_hidden_Types)
+	e.Write("Lists", x.xxx_hidden_Lists)
+	e.Write("Maps", x.xxx_hidden_Maps)
 	e.WriteEndObject()
 }
 
@@ -247,9 +247,7 @@ func (x *All) CheckPersistDirty() bool {
 }
 
 func (x *All) String() string {
-	var e json.Encoder
-	x.WriteJSON(&e)
-	return e.String()
+	return kdsjson.Marshal(x)
 }
 
 type AllType struct {
@@ -777,7 +775,7 @@ func (x *AllType) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *AllType) WriteJSON(e *json.Encoder) {
+func (x *AllType) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartObject()
 	e.WriteInt32("Int32Val", x.xxx_hidden_Int32Val)
 	e.WriteInt64("Int64Val", x.xxx_hidden_Int64Val)
@@ -797,8 +795,8 @@ func (x *AllType) WriteJSON(e *json.Encoder) {
 	e.WriteTimestamp("TimestampVal", x.xxx_hidden_TimestampVal)
 	e.WriteDuration("DurationVal", x.xxx_hidden_DurationVal)
 	e.WriteEmpty("EmptyVal", x.xxx_hidden_EmptyVal)
-	e.WriteInt32("EnumVal", int32(x.xxx_hidden_EnumVal))
-	e.WriteMessage("ItemData", x.xxx_hidden_ItemData)
+	kdsjson.WriteEnum(e, "EnumVal", x.xxx_hidden_EnumVal)
+	e.Write("ItemData", x.xxx_hidden_ItemData)
 	e.WriteEndObject()
 }
 
@@ -1221,21 +1219,21 @@ func (x *AllList) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *AllList) WriteJSON(e *json.Encoder) {
+func (x *AllList) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartObject()
-	e.WriteMessage("Int32List", &x.xxx_hidden_Int32List)
-	e.WriteMessage("Uint32List", &x.xxx_hidden_Uint32List)
-	e.WriteMessage("Int64List", &x.xxx_hidden_Int64List)
-	e.WriteMessage("Uint64List", &x.xxx_hidden_Uint64List)
-	e.WriteMessage("FloatList", &x.xxx_hidden_FloatList)
-	e.WriteMessage("DoubleList", &x.xxx_hidden_DoubleList)
-	e.WriteMessage("BoolList", &x.xxx_hidden_BoolList)
-	e.WriteMessage("StringList", &x.xxx_hidden_StringList)
-	e.WriteMessage("TimestampList", &x.xxx_hidden_TimestampList)
-	e.WriteMessage("DurationList", &x.xxx_hidden_DurationList)
-	e.WriteMessage("EmptyList", &x.xxx_hidden_EmptyList)
-	e.WriteMessage("EnumList", &x.xxx_hidden_EnumList)
-	e.WriteMessage("ItemList", &x.xxx_hidden_ItemList)
+	e.Write("Int32List", &x.xxx_hidden_Int32List)
+	e.Write("Uint32List", &x.xxx_hidden_Uint32List)
+	e.Write("Int64List", &x.xxx_hidden_Int64List)
+	e.Write("Uint64List", &x.xxx_hidden_Uint64List)
+	e.Write("FloatList", &x.xxx_hidden_FloatList)
+	e.Write("DoubleList", &x.xxx_hidden_DoubleList)
+	e.Write("BoolList", &x.xxx_hidden_BoolList)
+	e.Write("StringList", &x.xxx_hidden_StringList)
+	e.Write("TimestampList", &x.xxx_hidden_TimestampList)
+	e.Write("DurationList", &x.xxx_hidden_DurationList)
+	e.Write("EmptyList", &x.xxx_hidden_EmptyList)
+	e.Write("EnumList", &x.xxx_hidden_EnumList)
+	e.Write("ItemList", &x.xxx_hidden_ItemList)
 	e.WriteEndObject()
 }
 
@@ -1753,22 +1751,22 @@ func (x *AllMap) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *AllMap) WriteJSON(e *json.Encoder) {
+func (x *AllMap) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartObject()
-	e.WriteMessage("Int32Int32Map", &x.xxx_hidden_Int32Int32Map)
-	e.WriteMessage("Int64Int64Map", &x.xxx_hidden_Int64Int64Map)
-	e.WriteMessage("Uint32Uint32Map", &x.xxx_hidden_Uint32Uint32Map)
-	e.WriteMessage("Uint64Uint64Map", &x.xxx_hidden_Uint64Uint64Map)
-	e.WriteMessage("BoolFloatMap", &x.xxx_hidden_BoolFloatMap)
-	e.WriteMessage("StringDoubleMap", &x.xxx_hidden_StringDoubleMap)
-	e.WriteMessage("Int32BoolMap", &x.xxx_hidden_Int32BoolMap)
-	e.WriteMessage("Int64StringMap", &x.xxx_hidden_Int64StringMap)
-	e.WriteMessage("Uint32BytesMap", &x.xxx_hidden_Uint32BytesMap)
-	e.WriteMessage("Uint64TimestampMap", &x.xxx_hidden_Uint64TimestampMap)
-	e.WriteMessage("BoolDurationMap", &x.xxx_hidden_BoolDurationMap)
-	e.WriteMessage("StringEmptyMap", &x.xxx_hidden_StringEmptyMap)
-	e.WriteMessage("Int32ItemTypeMap", &x.xxx_hidden_Int32ItemTypeMap)
-	e.WriteMessage("Int64ItemDataMap", &x.xxx_hidden_Int64ItemDataMap)
+	e.Write("Int32Int32Map", &x.xxx_hidden_Int32Int32Map)
+	e.Write("Int64Int64Map", &x.xxx_hidden_Int64Int64Map)
+	e.Write("Uint32Uint32Map", &x.xxx_hidden_Uint32Uint32Map)
+	e.Write("Uint64Uint64Map", &x.xxx_hidden_Uint64Uint64Map)
+	e.Write("BoolFloatMap", &x.xxx_hidden_BoolFloatMap)
+	e.Write("StringDoubleMap", &x.xxx_hidden_StringDoubleMap)
+	e.Write("Int32BoolMap", &x.xxx_hidden_Int32BoolMap)
+	e.Write("Int64StringMap", &x.xxx_hidden_Int64StringMap)
+	e.Write("Uint32BytesMap", &x.xxx_hidden_Uint32BytesMap)
+	e.Write("Uint64TimestampMap", &x.xxx_hidden_Uint64TimestampMap)
+	e.Write("BoolDurationMap", &x.xxx_hidden_BoolDurationMap)
+	e.Write("StringEmptyMap", &x.xxx_hidden_StringEmptyMap)
+	e.Write("Int32ItemTypeMap", &x.xxx_hidden_Int32ItemTypeMap)
+	e.Write("Int64ItemDataMap", &x.xxx_hidden_Int64ItemDataMap)
 	e.WriteEndObject()
 }
 

@@ -33,7 +33,7 @@ func sync(t *testing.T) {
 	all.ClearDirty()
 	mergeFrom(fullData)
 	// check
-	checkKds2(t)
+	checkKds(t)
 }
 
 func syncUpdate(t *testing.T) {
@@ -44,12 +44,12 @@ func syncUpdate(t *testing.T) {
 	all.ClearDirty()
 	mergeFrom(dirtyData)
 	// check
-	checkKds2(t)
+	checkKds(t)
 }
 
 func checkKds(t *testing.T) {
 	goKds := all.String()
-	csKds := getString()
+	csKds := toString()
 
 	goLines := strings.Split(goKds, "\n")
 	csLines := strings.Split(csKds, "\n")
@@ -73,7 +73,7 @@ func checkKds(t *testing.T) {
 }
 
 func checkKds2(t *testing.T) {
-	csJson := getString()
+	csJson := toString()
 	var csData map[string]any
 	if err := json.Unmarshal([]byte(csJson), &csData); err != nil {
 		t.Fatal(err)

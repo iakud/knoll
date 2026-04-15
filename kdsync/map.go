@@ -1,13 +1,12 @@
 package kdsync
 
 import (
-	"fmt"
 	"iter"
 	"maps"
 	"slices"
 	"time"
 
-	"github.com/iakud/knoll/kdsync/json"
+	"github.com/iakud/knoll/kdsync/kdsjson"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
@@ -26,7 +25,7 @@ type Map[K comparable, V any] interface {
 	Marshal(b []byte) ([]byte, error)
 	MarshalChange(b []byte) ([]byte, error)
 	Unmarshal(b []byte) error
-	WriteJSON(e *json.Encoder)
+	WriteJSON(e *kdsjson.Encoder)
 }
 
 // Field map check
@@ -353,14 +352,14 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *MapField[K, V]) WriteJSON(e *json.Encoder) {
-	e.WriteStartArray()
+func (x *MapField[K, V]) WriteJSON(e *kdsjson.Encoder) {
+	e.WriteStartObject()
 	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.compareFunc)
 	for _, k := range keys {
-		e.WritePropertyName(fmt.Sprint(k))
+		x.keyCodec.writeJSONPropertyNameFunc(e, k)
 		x.valueCodec.writeJSONFunc(e, x.data[k])
 	}
-	e.WriteEndArray()
+	e.WriteEndObject()
 }
 
 // Message map
@@ -714,12 +713,12 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *MapMessage[K, T, V]) WriteJSON(e *json.Encoder) {
-	e.WriteStartArray()
+func (x *MapMessage[K, T, V]) WriteJSON(e *kdsjson.Encoder) {
+	e.WriteStartObject()
 	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.compareFunc)
 	for _, k := range keys {
-		e.WritePropertyName(fmt.Sprint(k))
-		e.WriteMessageValue(x.data[k])
+		x.keyCodec.writeJSONPropertyNameFunc(e, k)
+		e.WriteValue(x.data[k])
 	}
-	e.WriteEndArray()
+	e.WriteEndObject()
 }

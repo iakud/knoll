@@ -74,9 +74,13 @@ namespace Kds
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_string", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static IntPtr GetString()
+        [UnmanagedCallersOnly(EntryPoint = "to_string", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static IntPtr ToString()
         {
+            // JsonWriter writer = new JsonWriter(true);
+			// writer.WriteMessageValue(_all);
+			// return Marshal.StringToHGlobalAnsi(writer.ToString());
+            
             return Marshal.StringToHGlobalAnsi(_all.ToString());
         }
     }

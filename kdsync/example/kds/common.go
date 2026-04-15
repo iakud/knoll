@@ -5,7 +5,7 @@ package kds
 
 import (
 	"github.com/iakud/knoll/kdsync"
-	"github.com/iakud/knoll/kdsync/json"
+	"github.com/iakud/knoll/kdsync/kdsjson"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
@@ -136,7 +136,7 @@ func (x *ItemData) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *ItemData) WriteJSON(e *json.Encoder) {
+func (x *ItemData) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartObject()
 	e.WriteInt32("Id", x.xxx_hidden_Id)
 	e.WriteString("Name", x.xxx_hidden_Name)

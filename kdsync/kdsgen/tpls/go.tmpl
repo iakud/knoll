@@ -277,18 +277,18 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *{{$MessageName}}) WriteJSON(e *json.Encoder) {
+func (x *{{$MessageName}}) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartObject()
 {{- range .Fields}}
 {{- if not .NoSync}}
 {{- if .Repeated}}
-	e.WriteMessage("{{.Name}}", &x.xxx_hidden_{{.Name}})
+	e.Write("{{.Name}}", &x.xxx_hidden_{{.Name}})
 {{- else if .Map}}
-	e.WriteMessage("{{.Name}}", &x.xxx_hidden_{{.Name}})
+	e.Write("{{.Name}}", &x.xxx_hidden_{{.Name}})
 {{- else if eq .TypeKind "component"}}
-	e.WriteMessage("{{.Name}}", x.xxx_hidden_{{.Name}})
+	e.Write("{{.Name}}", x.xxx_hidden_{{.Name}})
 {{- else if eq .TypeKind "enum"}}
-	e.WriteInt32("{{.Name}}", int32(x.xxx_hidden_{{.Name}}))
+	kdsjson.WriteEnum(e, "{{.Name}}", x.xxx_hidden_{{.Name}})
 {{- else if eq .Type "bool"}}
 	e.WriteBool("{{.Name}}", x.xxx_hidden_{{.Name}})
 {{- else if eq .Type "int32" "sint32" "sfixed32"}}
@@ -444,9 +444,7 @@ func (x *{{.Name}}) CheckPersistDirty() bool {
 }
 
 func (x *{{.Name}}) String() string {
-	var e json.Encoder
-	x.WriteJSON(&e)
-	return e.String()
+	return kdsjson.Marshal(x)
 }
 {{- end}}
 
@@ -612,7 +610,7 @@ import (
 {{/* EMPTY LINE */}}
 {{- end}}
 	"github.com/iakud/knoll/kdsync"
-	"github.com/iakud/knoll/kdsync/json"
+	"github.com/iakud/knoll/kdsync/kdsjson"
 	"github.com/iakud/knoll/kdsync/wire"
 )
 {{- end}}
