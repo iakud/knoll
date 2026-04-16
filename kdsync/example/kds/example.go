@@ -919,7 +919,7 @@ func (x *AllList) initInt32List() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 1, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int32List.Init(dirtyFunc, kdsync.Int32ValueCodec)
+	x.xxx_hidden_Int32List.Init(dirtyFunc, &kdsync.Int32ValueCodec)
 }
 
 func (x *AllList) GetUint32List() kdsync.Repeated[uint32] {
@@ -930,7 +930,7 @@ func (x *AllList) initUint32List() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 2, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Uint32List.Init(dirtyFunc, kdsync.Uint32ValueCodec)
+	x.xxx_hidden_Uint32List.Init(dirtyFunc, &kdsync.Uint32ValueCodec)
 }
 
 func (x *AllList) GetInt64List() kdsync.Repeated[int64] {
@@ -941,7 +941,7 @@ func (x *AllList) initInt64List() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 3, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int64List.Init(dirtyFunc, kdsync.Int64ValueCodec)
+	x.xxx_hidden_Int64List.Init(dirtyFunc, &kdsync.Int64ValueCodec)
 }
 
 func (x *AllList) GetUint64List() kdsync.Repeated[uint64] {
@@ -952,7 +952,7 @@ func (x *AllList) initUint64List() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 4, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Uint64List.Init(dirtyFunc, kdsync.Uint64ValueCodec)
+	x.xxx_hidden_Uint64List.Init(dirtyFunc, &kdsync.Uint64ValueCodec)
 }
 
 func (x *AllList) GetFloatList() kdsync.Repeated[float32] {
@@ -963,7 +963,7 @@ func (x *AllList) initFloatList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 5, t&kdsync.DirtyType_Sync)
 	}
-	x.xxx_hidden_FloatList.Init(dirtyFunc, kdsync.Float32ValueCodec)
+	x.xxx_hidden_FloatList.Init(dirtyFunc, &kdsync.Float32ValueCodec)
 }
 
 func (x *AllList) GetDoubleList() kdsync.Repeated[float64] {
@@ -974,7 +974,7 @@ func (x *AllList) initDoubleList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 6, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_DoubleList.Init(dirtyFunc, kdsync.Float64ValueCodec)
+	x.xxx_hidden_DoubleList.Init(dirtyFunc, &kdsync.Float64ValueCodec)
 }
 
 func (x *AllList) GetBoolList() kdsync.Repeated[bool] {
@@ -985,7 +985,7 @@ func (x *AllList) initBoolList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 7, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_BoolList.Init(dirtyFunc, kdsync.BoolValueCodec)
+	x.xxx_hidden_BoolList.Init(dirtyFunc, &kdsync.BoolValueCodec)
 }
 
 func (x *AllList) GetStringList() kdsync.Repeated[string] {
@@ -996,7 +996,7 @@ func (x *AllList) initStringList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 8, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_StringList.Init(dirtyFunc, kdsync.StringValueCodec)
+	x.xxx_hidden_StringList.Init(dirtyFunc, &kdsync.StringValueCodec)
 }
 
 func (x *AllList) GetTimestampList() kdsync.Repeated[time.Time] {
@@ -1007,7 +1007,7 @@ func (x *AllList) initTimestampList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 9, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_TimestampList.Init(dirtyFunc, kdsync.TimestampValueCodec)
+	x.xxx_hidden_TimestampList.Init(dirtyFunc, &kdsync.TimestampValueCodec)
 }
 
 func (x *AllList) GetDurationList() kdsync.Repeated[time.Duration] {
@@ -1018,7 +1018,7 @@ func (x *AllList) initDurationList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 10, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_DurationList.Init(dirtyFunc, kdsync.DurationValueCodec)
+	x.xxx_hidden_DurationList.Init(dirtyFunc, &kdsync.DurationValueCodec)
 }
 
 func (x *AllList) GetEmptyList() kdsync.Repeated[struct{}] {
@@ -1029,7 +1029,7 @@ func (x *AllList) initEmptyList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 11, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_EmptyList.Init(dirtyFunc, kdsync.EmptyValueCodec)
+	x.xxx_hidden_EmptyList.Init(dirtyFunc, &kdsync.EmptyValueCodec)
 }
 
 func (x *AllList) GetEnumList() kdsync.Repeated[ItemType] {
@@ -1427,7 +1427,7 @@ func (x *AllMap) initInt32Int32Map() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 1, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int32Int32Map.Init(dirtyFunc, kdsync.Int32KeyCodec, kdsync.Int32ValueCodec)
+	x.xxx_hidden_Int32Int32Map.Init(dirtyFunc, &kdsync.Int32KeyCodec, &kdsync.Int32ValueCodec)
 }
 
 func (x *AllMap) GetInt64Int64Map() kdsync.Map[int64, int64] {
@@ -1438,7 +1438,7 @@ func (x *AllMap) initInt64Int64Map() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 2, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int64Int64Map.Init(dirtyFunc, kdsync.Int64KeyCodec, kdsync.Int64ValueCodec)
+	x.xxx_hidden_Int64Int64Map.Init(dirtyFunc, &kdsync.Int64KeyCodec, &kdsync.Int64ValueCodec)
 }
 
 func (x *AllMap) GetUint32Uint32Map() kdsync.Map[uint32, uint32] {
@@ -1449,7 +1449,7 @@ func (x *AllMap) initUint32Uint32Map() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 3, t&kdsync.DirtyType_None)
 	}
-	x.xxx_hidden_Uint32Uint32Map.Init(dirtyFunc, kdsync.Uint32KeyCodec, kdsync.Uint32ValueCodec)
+	x.xxx_hidden_Uint32Uint32Map.Init(dirtyFunc, &kdsync.Uint32KeyCodec, &kdsync.Uint32ValueCodec)
 }
 
 func (x *AllMap) GetUint64Uint64Map() kdsync.Map[uint64, uint64] {
@@ -1460,7 +1460,7 @@ func (x *AllMap) initUint64Uint64Map() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 4, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Uint64Uint64Map.Init(dirtyFunc, kdsync.Uint64KeyCodec, kdsync.Uint64ValueCodec)
+	x.xxx_hidden_Uint64Uint64Map.Init(dirtyFunc, &kdsync.Uint64KeyCodec, &kdsync.Uint64ValueCodec)
 }
 
 func (x *AllMap) GetBoolFloatMap() kdsync.Map[bool, float32] {
@@ -1471,7 +1471,7 @@ func (x *AllMap) initBoolFloatMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 5, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_BoolFloatMap.Init(dirtyFunc, kdsync.BoolKeyCodec, kdsync.Float32ValueCodec)
+	x.xxx_hidden_BoolFloatMap.Init(dirtyFunc, &kdsync.BoolKeyCodec, &kdsync.Float32ValueCodec)
 }
 
 func (x *AllMap) GetStringDoubleMap() kdsync.Map[string, float64] {
@@ -1482,7 +1482,7 @@ func (x *AllMap) initStringDoubleMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 6, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_StringDoubleMap.Init(dirtyFunc, kdsync.StringKeyCodec, kdsync.Float64ValueCodec)
+	x.xxx_hidden_StringDoubleMap.Init(dirtyFunc, &kdsync.StringKeyCodec, &kdsync.Float64ValueCodec)
 }
 
 func (x *AllMap) GetInt32BoolMap() kdsync.Map[int32, bool] {
@@ -1493,7 +1493,7 @@ func (x *AllMap) initInt32BoolMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 7, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int32BoolMap.Init(dirtyFunc, kdsync.Int32KeyCodec, kdsync.BoolValueCodec)
+	x.xxx_hidden_Int32BoolMap.Init(dirtyFunc, &kdsync.Int32KeyCodec, &kdsync.BoolValueCodec)
 }
 
 func (x *AllMap) GetInt64StringMap() kdsync.Map[int64, string] {
@@ -1504,7 +1504,7 @@ func (x *AllMap) initInt64StringMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 8, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int64StringMap.Init(dirtyFunc, kdsync.Int64KeyCodec, kdsync.StringValueCodec)
+	x.xxx_hidden_Int64StringMap.Init(dirtyFunc, &kdsync.Int64KeyCodec, &kdsync.StringValueCodec)
 }
 
 func (x *AllMap) GetUint32BytesMap() kdsync.Map[uint32, []byte] {
@@ -1515,7 +1515,7 @@ func (x *AllMap) initUint32BytesMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 9, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Uint32BytesMap.Init(dirtyFunc, kdsync.Uint32KeyCodec, kdsync.BytesValueCodec)
+	x.xxx_hidden_Uint32BytesMap.Init(dirtyFunc, &kdsync.Uint32KeyCodec, &kdsync.BytesValueCodec)
 }
 
 func (x *AllMap) GetUint64TimestampMap() kdsync.Map[uint64, time.Time] {
@@ -1526,7 +1526,7 @@ func (x *AllMap) initUint64TimestampMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 10, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Uint64TimestampMap.Init(dirtyFunc, kdsync.Uint64KeyCodec, kdsync.TimestampValueCodec)
+	x.xxx_hidden_Uint64TimestampMap.Init(dirtyFunc, &kdsync.Uint64KeyCodec, &kdsync.TimestampValueCodec)
 }
 
 func (x *AllMap) GetBoolDurationMap() kdsync.Map[bool, time.Duration] {
@@ -1537,7 +1537,7 @@ func (x *AllMap) initBoolDurationMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 11, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_BoolDurationMap.Init(dirtyFunc, kdsync.BoolKeyCodec, kdsync.DurationValueCodec)
+	x.xxx_hidden_BoolDurationMap.Init(dirtyFunc, &kdsync.BoolKeyCodec, &kdsync.DurationValueCodec)
 }
 
 func (x *AllMap) GetStringEmptyMap() kdsync.Map[string, struct{}] {
@@ -1548,7 +1548,7 @@ func (x *AllMap) initStringEmptyMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 12, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_StringEmptyMap.Init(dirtyFunc, kdsync.StringKeyCodec, kdsync.EmptyValueCodec)
+	x.xxx_hidden_StringEmptyMap.Init(dirtyFunc, &kdsync.StringKeyCodec, &kdsync.EmptyValueCodec)
 }
 
 func (x *AllMap) GetInt32ItemTypeMap() kdsync.Map[int32, ItemType] {
@@ -1559,7 +1559,7 @@ func (x *AllMap) initInt32ItemTypeMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 13, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int32ItemTypeMap.Init(dirtyFunc, kdsync.Int32KeyCodec, kdsync.EnumValueCodec[ItemType]())
+	x.xxx_hidden_Int32ItemTypeMap.Init(dirtyFunc, &kdsync.Int32KeyCodec, kdsync.EnumValueCodec[ItemType]())
 }
 
 func (x *AllMap) GetInt64ItemDataMap() kdsync.Map[int64, *ItemData] {
@@ -1570,7 +1570,7 @@ func (x *AllMap) initInt64ItemDataMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01) << 14, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int64ItemDataMap.Init(dirtyFunc, kdsync.Int64KeyCodec, &message_ItemData_type)
+	x.xxx_hidden_Int64ItemDataMap.Init(dirtyFunc, &kdsync.Int64KeyCodec, &message_ItemData_type)
 }
 
 func (x *AllMap) Marshal(b []byte) ([]byte, error) {

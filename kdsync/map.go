@@ -55,11 +55,11 @@ type MapField[K comparable, V any] struct {
 
 	dirtyParent DirtyFunc
 
-	keyCodec   fieldCodec[K]
-	valueCodec fieldCodec[V]
+	keyCodec   *fieldCodec[K]
+	valueCodec *fieldCodec[V]
 }
 
-func (x *MapField[K, V]) Init(dirtyParent DirtyFunc, keyCodec fieldCodec[K], valueCodec fieldCodec[V]) {
+func (x *MapField[K, V]) Init(dirtyParent DirtyFunc, keyCodec *fieldCodec[K], valueCodec *fieldCodec[V]) {
 	x.data = make(map[K]V)
 	x.updated = make(map[K]V)
 	x.deleted = make(map[K]struct{})
@@ -376,11 +376,11 @@ type MapMessage[K comparable, T any, V Message[T]] struct {
 
 	dirtyParent DirtyFunc
 
-	keyCodec  fieldCodec[K]
+	keyCodec  *fieldCodec[K]
 	valueType *MessageType[T, V]
 }
 
-func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, keyCodec fieldCodec[K], valueType *MessageType[T, V]) {
+func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, keyCodec *fieldCodec[K], valueType *MessageType[T, V]) {
 	x.data = make(map[K]V)
 	x.updated = make(map[K]V)
 	x.deleted = make(map[K]struct{})

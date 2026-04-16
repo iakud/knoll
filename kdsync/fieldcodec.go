@@ -183,8 +183,8 @@ var EmptyValueCodec = fieldCodec[struct{}]{
 	writeJSONFunc: kdsjson.WriteEmptyValue,
 }
 
-func EnumValueCodec[T ~int32]() fieldCodec[T] {
-	return fieldCodec[T]{
+func EnumValueCodec[T ~int32]() *fieldCodec[T] {
+	return &fieldCodec[T]{
 		wireType:      wire.VarintType,
 		compareFunc:   cmp.Compare[T],
 		marshalFunc:   wire.AppendEnum[T],
