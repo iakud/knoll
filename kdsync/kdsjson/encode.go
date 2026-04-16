@@ -8,8 +8,18 @@ import (
 	"strconv"
 	"time"
 	"unicode/utf8"
+)
 
-	"github.com/iakud/knoll/kdsync/kdsjson/internal"
+type tokenKind byte
+
+const (
+	tokenNone tokenKind = iota
+	tokenName
+	tokenScalar
+	tokenStartObject
+	tokenEndObject
+	tokenStartArray
+	tokenEndArray
 )
 
 type Encoder struct {
@@ -17,7 +27,7 @@ type Encoder struct {
 
 	indented     bool
 	depth        int
-	tokenType    internal.TokenType
+	tokenType    tokenKind
 	indentLength int
 }
 
@@ -27,22 +37,22 @@ func (e *Encoder) String() string {
 
 func (e *Encoder) WriteStartObject() {
 	e.writeStart('{')
-	e.tokenType = internal.TokenStartObject
+	e.tokenType = tokenStartObject
 }
 
 func (e *Encoder) WriteEndObject() {
 	e.writeEnd('}')
-	e.tokenType = internal.TokenEndObject
+	e.tokenType = tokenEndObject
 }
 
 func (e *Encoder) WriteStartArray() {
 	e.writeStart('[')
-	e.tokenType = internal.TokenStartArray
+	e.tokenType = tokenStartArray
 }
 
 func (e *Encoder) WriteEndArray() {
 	e.writeEnd(']')
-	e.tokenType = internal.TokenEndArray
+	e.tokenType = tokenEndArray
 }
 
 func (e *Encoder) writeStart(token byte) {
@@ -54,7 +64,7 @@ func (e *Encoder) writeStart(token byte) {
 }
 
 func (e *Encoder) writeStartMinimized(token byte) {
-	if e.tokenType != internal.TokenNone && e.tokenType != internal.TokenPropertyName && e.tokenType != internal.TokenStartObject && e.tokenType != internal.TokenStartArray {
+	if e.tokenType != tokenNone && e.tokenType != tokenName && e.tokenType != tokenStartObject && e.tokenType != tokenStartArray {
 		e.out = append(e.out, ',')
 	}
 	e.out = append(e.out, token)
@@ -62,10 +72,10 @@ func (e *Encoder) writeStartMinimized(token byte) {
 }
 
 func (e *Encoder) writeStartIndented(token byte) {
-	if e.tokenType != internal.TokenNone && e.tokenType != internal.TokenPropertyName && e.tokenType != internal.TokenStartObject && e.tokenType != internal.TokenStartArray {
+	if e.tokenType != tokenNone && e.tokenType != tokenName && e.tokenType != tokenStartObject && e.tokenType != tokenStartArray {
 		e.out = append(e.out, ',')
 	}
-	if e.tokenType != internal.TokenNone && e.tokenType != internal.TokenPropertyName {
+	if e.tokenType != tokenNone && e.tokenType != tokenName {
 		e.out = append(e.out, '\n')
 		e.writeIndentation(e.depth)
 	}
@@ -88,7 +98,7 @@ func (e *Encoder) writeEndMinimized(token byte) {
 
 func (e *Encoder) writeEndIndented(token byte) {
 	e.depth--
-	if e.tokenType != internal.TokenStartObject && e.tokenType != internal.TokenStartArray {
+	if e.tokenType != tokenStartObject && e.tokenType != tokenStartArray {
 		e.out = append(e.out, '\n')
 		e.writeIndentation(e.depth)
 	}
@@ -102,12 +112,12 @@ func (e *Encoder) WritePropertyName(name string) error {
 	} else {
 		err = e.writePropertyNameMinimized(name)
 	}
-	e.tokenType = internal.TokenPropertyName
+	e.tokenType = tokenName
 	return err
 }
 
 func (e *Encoder) writePropertyNameMinimized(name string) error {
-	if e.tokenType != internal.TokenStartObject {
+	if e.tokenType != tokenStartObject {
 		e.out = append(e.out, ',')
 	}
 	err := e.writeEscapedString(name)
@@ -116,7 +126,7 @@ func (e *Encoder) writePropertyNameMinimized(name string) error {
 }
 
 func (e *Encoder) writePropertyNameIndented(name string) error {
-	if e.tokenType != internal.TokenStartObject {
+	if e.tokenType != tokenStartObject {
 		e.out = append(e.out, ',')
 	}
 	e.out = append(e.out, '\n')
@@ -243,30 +253,29 @@ func (e *Encoder) Write(name string, v Marshaler) error {
 func (e *Encoder) WriteNullValue() {
 	e.writeValueSeparator()
 	e.out = append(e.out, "null"...)
-	e.tokenType = internal.TokenNull
+	e.tokenType = tokenScalar
 }
 
 func (e *Encoder) WriteBoolValue(v bool) {
 	e.writeValueSeparator()
 	if v {
 		e.out = append(e.out, "true"...)
-		e.tokenType = internal.TokenTrue
 	} else {
 		e.out = append(e.out, "false"...)
-		e.tokenType = internal.TokenFalse
 	}
+	e.tokenType = tokenScalar
 }
 
 func (e *Encoder) WriteInt32Value(v int32) {
 	e.writeValueSeparator()
 	e.out = strconv.AppendInt(e.out, int64(v), 10)
-	e.tokenType = internal.TokenNumber
+	e.tokenType = tokenScalar
 }
 
 func (e *Encoder) WriteUint32Value(v uint32) {
 	e.writeValueSeparator()
 	e.out = strconv.AppendUint(e.out, uint64(v), 10)
-	e.tokenType = internal.TokenNumber
+	e.tokenType = tokenScalar
 }
 
 func (e *Encoder) WriteInt64Value(v int64) {
@@ -274,7 +283,7 @@ func (e *Encoder) WriteInt64Value(v int64) {
 	e.out = append(e.out, '"')
 	e.out = strconv.AppendInt(e.out, v, 10)
 	e.out = append(e.out, '"')
-	e.tokenType = internal.TokenNumber
+	e.tokenType = tokenScalar
 }
 
 func (e *Encoder) WriteUint64Value(v uint64) {
@@ -282,19 +291,19 @@ func (e *Encoder) WriteUint64Value(v uint64) {
 	e.out = append(e.out, '"')
 	e.out = strconv.AppendUint(e.out, v, 10)
 	e.out = append(e.out, '"')
-	e.tokenType = internal.TokenNumber
+	e.tokenType = tokenScalar
 }
 
 func (e *Encoder) WriteFloat32Value(v float32) {
 	e.writeValueSeparator()
 	e.out = appendFloat(e.out, float64(v), 32)
-	e.tokenType = internal.TokenNumber
+	e.tokenType = tokenScalar
 }
 
 func (e *Encoder) WriteFloat64Value(v float64) {
 	e.writeValueSeparator()
 	e.out = appendFloat(e.out, v, 64)
-	e.tokenType = internal.TokenNumber
+	e.tokenType = tokenScalar
 }
 
 func appendFloat(out []byte, n float64, bitSize int) []byte {
@@ -329,13 +338,13 @@ func (e *Encoder) WriteBytesValue(v []byte) {
 	e.out = append(e.out, '"')
 	e.out = base64.StdEncoding.AppendEncode(e.out, v)
 	e.out = append(e.out, '"')
-	e.tokenType = internal.TokenString
+	e.tokenType = tokenScalar
 }
 
 func (e *Encoder) WriteStringValue(v string) error {
 	e.writeValueSeparator()
 	err := e.writeEscapedString(v)
-	e.tokenType = internal.TokenString
+	e.tokenType = tokenScalar
 	return err
 }
 
@@ -436,16 +445,16 @@ func (e *Encoder) writeValueSeparator() {
 }
 
 func (e *Encoder) writeValueSeparatorMinimized() {
-	if e.tokenType != internal.TokenPropertyName && e.tokenType != internal.TokenStartArray {
+	if e.tokenType != tokenName && e.tokenType != tokenStartArray {
 		e.out = append(e.out, ',')
 	}
 }
 
 func (e *Encoder) writeValueSeparatorIndented() {
-	if e.tokenType != internal.TokenPropertyName && e.tokenType != internal.TokenStartArray {
+	if e.tokenType != tokenName && e.tokenType != tokenStartArray {
 		e.out = append(e.out, ',')
 	}
-	if e.tokenType != internal.TokenPropertyName {
+	if e.tokenType != tokenName {
 		e.out = append(e.out, '\n')
 		e.writeIndentation(e.depth)
 	}

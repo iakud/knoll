@@ -1,17 +1,11 @@
 {{- /* BEGIN DEFINE */ -}}
 {{- define "Type"}}
 {{- if eq . "bool"}}bool
-{{- else if eq . "int32"}}int
-{{- else if eq . "sint32"}}int
-{{- else if eq . "uint32"}}uint
-{{- else if eq . "int64"}}long
-{{- else if eq . "sint64"}}long
-{{- else if eq . "uint64"}}ulong
-{{- else if eq . "sfixed32"}}int
-{{- else if eq . "fixed32"}}uint
+{{- else if eq . "int32" "sint32" "sfixed32"}}int
+{{- else if eq . "uint32" "fixed32"}}uint
+{{- else if eq . "int64" "sint64" "sfixed64"}}long
+{{- else if eq . "uint64" "fixed64"}}ulong
 {{- else if eq . "float"}}float
-{{- else if eq . "sfixed64"}}long
-{{- else if eq . "fixed64"}}ulong
 {{- else if eq . "double"}}double
 {{- else if eq . "string"}}string
 {{- else if eq . "bytes"}}byte[]
@@ -23,43 +17,32 @@
 {{- end}}
 
 {{- define "FieldCodec"}}
-{{- if eq .Type "bool"}}Kdsync.FieldCodec.ForBool()
-{{- else if eq .Type "int32"}}Kdsync.FieldCodec.ForInt32()
-{{- else if eq .Type "sint32"}}Kdsync.FieldCodec.ForSInt32()
-{{- else if eq .Type "uint32"}}Kdsync.FieldCodec.ForUInt32()
-{{- else if eq .Type "int64"}}Kdsync.FieldCodec.ForInt64()
-{{- else if eq .Type "sint64"}}Kdsync.FieldCodec.ForSInt64()
-{{- else if eq .Type "uint64"}}Kdsync.FieldCodec.ForUInt64()
-{{- else if eq .Type "sfixed32"}}Kdsync.FieldCodec.SFixed32()
-{{- else if eq .Type "fixed32"}}Kdsync.FieldCodec.Fixed32()
-{{- else if eq .Type "float"}}Kdsync.FieldCodec.ForFloat()
-{{- else if eq .Type "sfixed64"}}Kdsync.FieldCodec.ForSFixed64()
-{{- else if eq .Type "fixed64"}}Kdsync.FieldCodec.ForFixed64()
-{{- else if eq .Type "double"}}Kdsync.FieldCodec.ForDouble()
-{{- else if eq .Type "string"}}Kdsync.FieldCodec.ForString()
-{{- else if eq .Type "bytes"}}Kdsync.FieldCodec.ForBytes()
-{{- else if eq .Type "timestamp"}}Kdsync.FieldCodec.ForTimestamp()
-{{- else if eq .Type "duration"}}Kdsync.FieldCodec.ForDuration()
-{{- else if eq .Type "empty"}}Kdsync.FieldCodec.ForEmpty()
-{{- else if eq .TypeKind "enum"}}Kdsync.FieldCodec.ForEnum(x => (int)x, x => ({{.Type}})x)
-{{- else}}Kdsync.FieldCodec.ForMessage<{{.Type}}>()
+{{- if eq .TypeKind "component"}}Kdsync.FieldCodec.ForMessage<{{.Type}}>()
+{{- else if eq .TypeKind "enum"}}Kdsync.FieldCodec.ForEnum<{{.Type}}>()
+{{- else if eq .Type "bool"}}Kdsync.FieldCodec.ForBoolValue()
+{{- else if eq .Type "int32" "sint32" "sfixed32"}}Kdsync.FieldCodec.ForIntValue()
+{{- else if eq .Type "uint32" "fixed32"}}Kdsync.FieldCodec.ForUIntValue()
+{{- else if eq .Type "int64" "sint64" "sfixed64"}}Kdsync.FieldCodec.ForLongValue()
+{{- else if eq .Type "uint64" "fixed64"}}Kdsync.FieldCodec.ForULongValue()
+{{- else if eq .Type "float"}}Kdsync.FieldCodec.ForFloatValue()
+{{- else if eq .Type "double"}}Kdsync.FieldCodec.ForDoubleValue()
+{{- else if eq .Type "string"}}Kdsync.FieldCodec.ForStringValue()
+{{- else if eq .Type "bytes"}}Kdsync.FieldCodec.ForBytesValue()
+{{- else if eq .Type "timestamp"}}Kdsync.FieldCodec.ForTimestampValue()
+{{- else if eq .Type "duration"}}Kdsync.FieldCodec.ForDurationValue()
+{{- else if eq .Type "empty"}}Kdsync.FieldCodec.ForEmptyValue()
+{{- else}}Kdsync.FieldCodec.For{{ucFirst .Type}}Value()
 {{- end}}
 {{- end}}
 
 {{- define "KeyCodec"}}
-{{- if eq .KeyType "bool"}}Kdsync.FieldCodec.ForBool()
-{{- else if eq .KeyType "int32"}}Kdsync.FieldCodec.ForInt32()
-{{- else if eq .KeyType "sint32"}}Kdsync.FieldCodec.ForSInt32()
-{{- else if eq .KeyType "uint32"}}Kdsync.FieldCodec.ForUInt32()
-{{- else if eq .KeyType "int64"}}Kdsync.FieldCodec.ForInt64()
-{{- else if eq .KeyType "sint64"}}Kdsync.FieldCodec.ForSInt64()
-{{- else if eq .KeyType "uint64"}}Kdsync.FieldCodec.ForUInt64()
-{{- else if eq .KeyType "sfixed32"}}Kdsync.FieldCodec.SFixed32()
-{{- else if eq .KeyType "fixed32"}}Kdsync.FieldCodec.Fixed32()
-{{- else if eq .KeyType "sfixed64"}}Kdsync.FieldCodec.ForSFixed64()
-{{- else if eq .KeyType "fixed64"}}Kdsync.FieldCodec.ForFixed64()
-{{- else if eq .KeyType "string"}}Kdsync.FieldCodec.ForString()
-{{- else}}
+{{- if eq .KeyType "bool"}}Kdsync.FieldCodec.ForBoolKey()
+{{- else if eq .KeyType "int32" "sint32" "sfixed32"}}Kdsync.FieldCodec.ForIntKey()
+{{- else if eq .KeyType "uint32" "fixed32"}}Kdsync.FieldCodec.ForUIntKey()
+{{- else if eq .KeyType "int64" "sint64" "sfixed64"}}Kdsync.FieldCodec.ForLongKey()
+{{- else if eq .KeyType "uint64" "fixed64"}}Kdsync.FieldCodec.ForULongKey()
+{{- else if eq .KeyType "string"}}Kdsync.FieldCodec.ForStringKey()
+{{- else}}Kdsync.FieldCodec.For{{ucFirst .Type}}Key()
 {{- end}}
 {{- end}}
 
@@ -151,9 +134,9 @@
 {{- range .Fields}}
 					case {{.Number}}:
 {{- if .Repeated}}
-						{{template "FieldName" .}}.MergeFrom(ref ctx, _list_{{template "FieldName" .}}_codec);
+						{{template "FieldName" .}}.MergeFrom(ref ctx);
 {{- else if .Map}}
-						{{template "FieldName" .}}.MergeFrom(ref ctx, _map_{{template "FieldName" .}}_codec);
+						{{template "FieldName" .}}.MergeFrom(ref ctx);
 {{- else if eq .TypeKind "component"}}
 						ctx.ReadMessage({{template "FieldName" .}});
 {{- else if eq .TypeKind "enum"}}
@@ -258,9 +241,19 @@
 {{- else if eq .TypeKind "enum"}}
 			writer.WriteEnum("{{.Name}}", {{template "FieldName" .}});
 {{- else if eq .Type "bool"}}
-			writer.WriteBoolean("{{.Name}}", {{template "FieldName" .}});
-{{- else if eq .Type "int32" "sint32" "uint32" "int64" "sint64" "uint64" "fixed32" "sfixed32" "fixed64" "sfixed64" "float" "double"}}
-			writer.WriteNumber("{{.Name}}", {{template "FieldName" .}});
+			writer.WriteBool("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "int32" "sint32" "sfixed32"}}
+			writer.WriteInt("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "uint32" "fixed32"}}
+			writer.WriteUInt("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "int64" "sint64" "sfixed64"}}
+			writer.WriteLong("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "uint64" "fixed64"}}
+			writer.WriteULong("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "float"}}
+			writer.WriteFloat("{{.Name}}", {{template "FieldName" .}});
+{{- else if eq .Type "double"}}
+			writer.WriteDouble("{{.Name}}", {{template "FieldName" .}});
 {{- else if eq .Type "string"}}
 			writer.WriteString("{{.Name}}", {{template "FieldName" .}});
 {{- else if eq .Type "bytes"}}
@@ -279,7 +272,7 @@
 		public override string ToString()
 		{
 			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
-			writer.WriteMessageValue(this);
+			writer.WriteValue(this);
 			return writer.ToString();
 		}
 {{- end}}
@@ -297,9 +290,9 @@
 			_id = id;
 {{- range .Fields}}
 {{- if .Repeated}}
-			{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>();
+			{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>(_list_{{template "FieldName" .}}_codec);
 {{- else if .Map}}
-			{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>();
+			{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>(_map_{{template "FieldName" .}}_codec);
 {{- else if eq .TypeKind "component"}}
 			{{template "FieldName" .}} = new {{.Type}}();
 {{- else if eq .Type "string"}}
@@ -329,9 +322,9 @@
 		{
 {{- range .Fields}}
 {{- if .Repeated}}
-			{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>();
+			{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>(_list_{{template "FieldName" .}}_codec);
 {{- else if .Map}}
-			{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>();
+			{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>(_map_{{template "FieldName" .}}_codec);
 {{- else if eq .TypeKind "component"}}
 			{{template "FieldName" .}} = new {{.Type}}();
 {{- else if eq .Type "string"}}

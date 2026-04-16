@@ -91,16 +91,16 @@ namespace Kds
 		public void Write(Kdsync.JsonWriter writer)
 		{
 			writer.WriteStartObject();
-			writer.WriteNumber("Id", id_);
+			writer.WriteInt("Id", id_);
 			writer.WriteString("Name", name_);
-			writer.WriteNumber("Count", count_);
+			writer.WriteInt("Count", count_);
 			writer.WriteEndObject();
 		}
 
 		public override string ToString()
 		{
 			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
-			writer.WriteMessageValue(this);
+			writer.WriteValue(this);
 			return writer.ToString();
 		}
 	}
