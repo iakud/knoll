@@ -58,10 +58,10 @@ type RepeatedField[E any] struct {
 	persistDirty bool
 	dirtyParent  DirtyFunc
 
-	fieldCodec FieldCodec[E]
+	fieldCodec fieldCodec[E]
 }
 
-func (x *RepeatedField[E]) Init(dirtyParent DirtyFunc, fieldCodec FieldCodec[E]) {
+func (x *RepeatedField[E]) Init(dirtyParent DirtyFunc, fieldCodec fieldCodec[E]) {
 	x.dirtyParent = dirtyParent
 	x.fieldCodec = fieldCodec
 }

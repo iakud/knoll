@@ -55,11 +55,11 @@ type MapField[K comparable, V any] struct {
 
 	dirtyParent DirtyFunc
 
-	keyCodec   FieldCodec[K]
-	valueCodec FieldCodec[V]
+	keyCodec   fieldCodec[K]
+	valueCodec fieldCodec[V]
 }
 
-func (x *MapField[K, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueCodec FieldCodec[V]) {
+func (x *MapField[K, V]) Init(dirtyParent DirtyFunc, keyCodec fieldCodec[K], valueCodec fieldCodec[V]) {
 	x.data = make(map[K]V)
 	x.updated = make(map[K]V)
 	x.deleted = make(map[K]struct{})
@@ -356,7 +356,7 @@ func (x *MapField[K, V]) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartObject()
 	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.compareFunc)
 	for _, k := range keys {
-		x.keyCodec.writeJSONPropertyNameFunc(e, k)
+		x.keyCodec.writeJSONFunc(e, k)
 		x.valueCodec.writeJSONFunc(e, x.data[k])
 	}
 	e.WriteEndObject()
@@ -376,11 +376,11 @@ type MapMessage[K comparable, T any, V Message[T]] struct {
 
 	dirtyParent DirtyFunc
 
-	keyCodec  FieldCodec[K]
+	keyCodec  fieldCodec[K]
 	valueType *MessageType[T, V]
 }
 
-func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueType *MessageType[T, V]) {
+func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, keyCodec fieldCodec[K], valueType *MessageType[T, V]) {
 	x.data = make(map[K]V)
 	x.updated = make(map[K]V)
 	x.deleted = make(map[K]struct{})
@@ -717,7 +717,7 @@ func (x *MapMessage[K, T, V]) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartObject()
 	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.compareFunc)
 	for _, k := range keys {
-		x.keyCodec.writeJSONPropertyNameFunc(e, k)
+		x.keyCodec.writeJSONFunc(e, k)
 		e.WriteValue(x.data[k])
 	}
 	e.WriteEndObject()
