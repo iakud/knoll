@@ -6,51 +6,51 @@ import (
 )
 
 type Marshaler interface {
-	WriteJSON(e *Encoder)
+	WriteJSON(e *Encoder) error
 }
 
-func Marshal(v Marshaler) string {
+func Marshal(v Marshaler) (string, error) {
 	var e Encoder
-	v.WriteJSON(&e)
-	return e.String()
+	err := v.WriteJSON(&e)
+	return e.String(), err
 }
 
-func MarshalIndent(v Marshaler) string {
+func MarshalIndent(v Marshaler) (string, error) {
 	e := Encoder{indented: true, indentLength: 2}
-	v.WriteJSON(&e)
-	return e.String()
+	err := v.WriteJSON(&e)
+	return e.String(), err
 }
 
-func WriteBoolPropertyName(e *Encoder, name bool) {
+func WriteBoolPropertyName(e *Encoder, name bool) error {
 	if name {
-		e.WritePropertyName("true")
+		return e.WritePropertyName("true")
 	} else {
-		e.WritePropertyName("false")
+		return e.WritePropertyName("false")
 	}
 }
 
-func WriteInt32PropertyName(e *Encoder, name int32) {
-	e.WritePropertyName(strconv.FormatInt(int64(name), 10))
+func WriteInt32PropertyName(e *Encoder, name int32) error {
+	return e.WritePropertyName(strconv.FormatInt(int64(name), 10))
 }
 
-func WriteUint32PropertyName(e *Encoder, name uint32) {
-	e.WritePropertyName(strconv.FormatUint(uint64(name), 10))
+func WriteUint32PropertyName(e *Encoder, name uint32) error {
+	return e.WritePropertyName(strconv.FormatUint(uint64(name), 10))
 }
 
-func WriteInt64PropertyName(e *Encoder, name int64) {
-	e.WritePropertyName(strconv.FormatInt(name, 10))
+func WriteInt64PropertyName(e *Encoder, name int64) error {
+	return e.WritePropertyName(strconv.FormatInt(name, 10))
 }
 
-func WriteUint64PropertyName(e *Encoder, name uint64) {
-	e.WritePropertyName(strconv.FormatUint(name, 10))
+func WriteUint64PropertyName(e *Encoder, name uint64) error {
+	return e.WritePropertyName(strconv.FormatUint(name, 10))
 }
 
-func WritePropertyName(e *Encoder, name string) {
-	e.WritePropertyName(name)
+func WritePropertyName(e *Encoder, name string) error {
+	return e.WritePropertyName(name)
 }
 
-func WriteEnum[T ~int32](e *Encoder, name string, v T) {
-	e.WriteInt32(name, int32(v))
+func WriteEnum[T ~int32](e *Encoder, name string, v T) error {
+	return e.WriteInt32(name, int32(v))
 }
 
 func WriteEnumValue[T ~int32](e *Encoder, v T) {
@@ -89,8 +89,8 @@ func WriteBytesValue(e *Encoder, v []byte) {
 	e.WriteBytesValue(v)
 }
 
-func WriteStringValue(e *Encoder, v string) {
-	e.WriteStringValue(v)
+func WriteStringValue(e *Encoder, v string) error {
+	return e.WriteStringValue(v)
 }
 
 func WriteTimestampValue(e *Encoder, v time.Time) {

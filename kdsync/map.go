@@ -25,7 +25,7 @@ type Map[K comparable, V any] interface {
 	Marshal(b []byte) ([]byte, error)
 	MarshalChange(b []byte) ([]byte, error)
 	Unmarshal(b []byte) error
-	WriteJSON(e *kdsjson.Encoder)
+	WriteJSON(e *kdsjson.Encoder) error
 }
 
 // Field map check
@@ -352,14 +352,19 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *MapField[K, V]) WriteJSON(e *kdsjson.Encoder) {
+func (x *MapField[K, V]) WriteJSON(e *kdsjson.Encoder) error {
 	e.WriteStartObject()
 	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.Compare)
 	for _, k := range keys {
-		x.keyCodec.WriteJson(e, k)
-		x.valueCodec.WriteJson(e, x.data[k])
+		if err := x.keyCodec.WriteJson(e, k); err != nil {
+			return err
+		}
+		if err := x.valueCodec.WriteJson(e, x.data[k]); err != nil {
+			return err
+		}
 	}
 	e.WriteEndObject()
+	return nil
 }
 
 // Message map
@@ -713,12 +718,17 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *MapMessage[K, T, V]) WriteJSON(e *kdsjson.Encoder) {
+func (x *MapMessage[K, T, V]) WriteJSON(e *kdsjson.Encoder) error {
 	e.WriteStartObject()
 	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.Compare)
 	for _, k := range keys {
-		x.keyCodec.WriteJson(e, k)
-		e.WriteValue(x.data[k])
+		if err := x.keyCodec.WriteJson(e, k); err != nil {
+			return err
+		}
+		if err := e.WriteValue(x.data[k]); err != nil {
+			return err
+		}
 	}
 	e.WriteEndObject()
+	return nil
 }

@@ -282,44 +282,77 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *{{$MessageName}}) WriteJSON(e *kdsjson.Encoder) {
+func (x *{{$MessageName}}) WriteJSON(e *kdsjson.Encoder) error {
 	e.WriteStartObject()
 {{- range .Fields}}
 {{- if .Repeated}}
-	e.Write("{{.Name}}", &x.xxx_hidden_{{.Name}})
+	if err := e.Write("{{.Name}}", &x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if .Map}}
-	e.Write("{{.Name}}", &x.xxx_hidden_{{.Name}})
+	if err := e.Write("{{.Name}}", &x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .TypeKind "component"}}
-	e.Write("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.Write("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .TypeKind "enum"}}
-	kdsjson.WriteEnum(e, "{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := kdsjson.WriteEnum(e, "{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .Type "bool"}}
-	e.WriteBool("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.WriteBool("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .Type "int32" "sint32" "sfixed32"}}
-	e.WriteInt32("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.WriteInt32("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .Type "uint32" "fixed32"}}
-	e.WriteUint32("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.WriteUint32("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .Type "int64" "sint64" "sfixed64"}}
-	e.WriteInt64("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.WriteInt64("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .Type "uint64" "fixed64"}}
-	e.WriteUint64("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.WriteUint64("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .Type "float"}}
-	e.WriteFloat32("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.WriteFloat32("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .Type "double"}}
-	e.WriteFloat64("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.WriteFloat64("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .Type "bytes"}}
-	e.WriteBytes("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.WriteBytes("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .Type "string"}}
-	e.WriteString("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.WriteString("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .Type "timestamp"}}
-	e.WriteTimestamp("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.WriteTimestamp("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .Type "duration"}}
-	e.WriteDuration("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.WriteDuration("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- else if eq .Type "empty"}}
-	e.WriteEmpty("{{.Name}}", x.xxx_hidden_{{.Name}})
+	if err := e.WriteEmpty("{{.Name}}", x.xxx_hidden_{{.Name}}); err != nil {
+		return err
+	}
 {{- end}}
 {{- end}}
 	e.WriteEndObject()
+	return nil
 }
 {{- end}}
 
@@ -447,7 +480,8 @@ func (x *{{.Name}}) CheckPersistDirty() bool {
 }
 
 func (x *{{.Name}}) String() string {
-	return kdsjson.Marshal(x)
+	s, _ := kdsjson.Marshal(x)
+	return s
 }
 {{- end}}
 

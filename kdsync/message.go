@@ -11,7 +11,7 @@ type Message[T any] interface {
 	wire.Unmarshaler
 	ClearDirty()
 	ClearPersistDirty()
-	WriteJSON(*kdsjson.Encoder)
+	WriteJSON(*kdsjson.Encoder) error
 }
 
 type DirtyType byte

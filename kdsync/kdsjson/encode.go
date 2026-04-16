@@ -2,14 +2,18 @@ package kdsjson
 
 import (
 	"encoding/base64"
+	"errors"
+	"math"
+	"math/bits"
 	"strconv"
 	"time"
+	"unicode/utf8"
 
 	"github.com/iakud/knoll/kdsync/kdsjson/internal"
 )
 
 type Encoder struct {
-	buf []byte
+	out []byte
 
 	indented     bool
 	depth        int
@@ -18,7 +22,7 @@ type Encoder struct {
 }
 
 func (e *Encoder) String() string {
-	return string(e.buf)
+	return string(e.out)
 }
 
 func (e *Encoder) WriteStartObject() {
@@ -51,21 +55,21 @@ func (e *Encoder) writeStart(token byte) {
 
 func (e *Encoder) writeStartMinimized(token byte) {
 	if e.tokenType != internal.TokenNone && e.tokenType != internal.TokenPropertyName && e.tokenType != internal.TokenStartObject && e.tokenType != internal.TokenStartArray {
-		e.buf = append(e.buf, ',')
+		e.out = append(e.out, ',')
 	}
-	e.buf = append(e.buf, token)
+	e.out = append(e.out, token)
 	e.depth++
 }
 
 func (e *Encoder) writeStartIndented(token byte) {
 	if e.tokenType != internal.TokenNone && e.tokenType != internal.TokenPropertyName && e.tokenType != internal.TokenStartObject && e.tokenType != internal.TokenStartArray {
-		e.buf = append(e.buf, ',')
+		e.out = append(e.out, ',')
 	}
 	if e.tokenType != internal.TokenNone && e.tokenType != internal.TokenPropertyName {
-		e.buf = append(e.buf, '\n')
+		e.out = append(e.out, '\n')
 		e.writeIndentation(e.depth)
 	}
-	e.buf = append(e.buf, token)
+	e.out = append(e.out, token)
 	e.depth++
 }
 
@@ -79,184 +83,260 @@ func (e *Encoder) writeEnd(token byte) {
 
 func (e *Encoder) writeEndMinimized(token byte) {
 	e.depth--
-	e.buf = append(e.buf, token)
+	e.out = append(e.out, token)
 }
 
 func (e *Encoder) writeEndIndented(token byte) {
 	e.depth--
 	if e.tokenType != internal.TokenStartObject && e.tokenType != internal.TokenStartArray {
-		e.buf = append(e.buf, '\n')
+		e.out = append(e.out, '\n')
 		e.writeIndentation(e.depth)
 	}
-	e.buf = append(e.buf, token)
+	e.out = append(e.out, token)
 }
 
-func (e *Encoder) WritePropertyName(name string) {
+func (e *Encoder) WritePropertyName(name string) error {
+	var err error
 	if e.indented {
-		e.writePropertyNameIndented(name)
+		err = e.writePropertyNameIndented(name)
 	} else {
-		e.writePropertyNameMinimized(name)
+		err = e.writePropertyNameMinimized(name)
 	}
 	e.tokenType = internal.TokenPropertyName
+	return err
 }
 
-func (e *Encoder) writePropertyNameMinimized(name string) {
+func (e *Encoder) writePropertyNameMinimized(name string) error {
 	if e.tokenType != internal.TokenStartObject {
-		e.buf = append(e.buf, ',')
+		e.out = append(e.out, ',')
 	}
-	e.writeEscapedString(name)
-	e.buf = append(e.buf, ':')
+	err := e.writeEscapedString(name)
+	e.out = append(e.out, ':')
+	return err
 }
 
-func (e *Encoder) writePropertyNameIndented(name string) {
+func (e *Encoder) writePropertyNameIndented(name string) error {
 	if e.tokenType != internal.TokenStartObject {
-		e.buf = append(e.buf, ',')
+		e.out = append(e.out, ',')
 	}
-	e.buf = append(e.buf, '\n')
+	e.out = append(e.out, '\n')
 	e.writeIndentation(e.depth)
-	e.writeEscapedString(name)
-	e.buf = append(e.buf, ':')
-	e.buf = append(e.buf, ' ')
+	err := e.writeEscapedString(name)
+	e.out = append(e.out, ':')
+	e.out = append(e.out, ' ')
+	return err
 }
 
-func (e *Encoder) WriteNull(name string) {
-	e.WritePropertyName(name)
+func (e *Encoder) WriteNull(name string) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
 	e.WriteNullValue()
+	return nil
 }
 
-func (e *Encoder) WriteBool(name string, v bool) {
-	e.WritePropertyName(name)
+func (e *Encoder) WriteBool(name string, v bool) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
 	e.WriteBoolValue(v)
+	return nil
 }
 
-func (e *Encoder) WriteInt32(name string, v int32) {
-	e.WritePropertyName(name)
+func (e *Encoder) WriteInt32(name string, v int32) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
 	e.WriteInt32Value(v)
+	return nil
 }
 
-func (e *Encoder) WriteUint32(name string, v uint32) {
-	e.WritePropertyName(name)
+func (e *Encoder) WriteUint32(name string, v uint32) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
 	e.WriteUint32Value(v)
+	return nil
 }
 
-func (e *Encoder) WriteInt64(name string, v int64) {
-	e.WritePropertyName(name)
+func (e *Encoder) WriteInt64(name string, v int64) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
 	e.WriteInt64Value(v)
+	return nil
 }
 
-func (e *Encoder) WriteUint64(name string, v uint64) {
-	e.WritePropertyName(name)
+func (e *Encoder) WriteUint64(name string, v uint64) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
 	e.WriteUint64Value(v)
+	return nil
 }
 
-func (e *Encoder) WriteFloat32(name string, v float32) {
-	e.WritePropertyName(name)
+func (e *Encoder) WriteFloat32(name string, v float32) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
 	e.WriteFloat32Value(v)
+	return nil
 }
 
-func (e *Encoder) WriteFloat64(name string, v float64) {
-	e.WritePropertyName(name)
+func (e *Encoder) WriteFloat64(name string, v float64) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
 	e.WriteFloat64Value(v)
+	return nil
 }
 
-func (e *Encoder) WriteBytes(name string, v []byte) {
-	e.WritePropertyName(name)
+func (e *Encoder) WriteBytes(name string, v []byte) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
 	e.WriteBytesValue(v)
+	return nil
 }
 
-func (e *Encoder) WriteString(name string, v string) {
-	e.WritePropertyName(name)
-	e.WriteStringValue(v)
+func (e *Encoder) WriteString(name string, v string) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
+	if err := e.WriteStringValue(v); err != nil {
+		return InvalidUTF8(name)
+	}
+	return nil
 }
 
-func (e *Encoder) WriteTimestamp(name string, v time.Time) {
-	e.WritePropertyName(name)
+func (e *Encoder) WriteTimestamp(name string, v time.Time) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
 	e.WriteTimestampValue(v)
+	return nil
 }
 
-func (e *Encoder) WriteDuration(name string, v time.Duration) {
-	e.WritePropertyName(name)
+func (e *Encoder) WriteDuration(name string, v time.Duration) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
 	e.WriteDurationValue(v)
+	return nil
 }
 
-func (e *Encoder) WriteEmpty(name string, v struct{}) {
-	e.WritePropertyName(name)
+func (e *Encoder) WriteEmpty(name string, v struct{}) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
 	e.WriteEmptyValue(v)
+	return nil
 }
 
-func (e *Encoder) Write(name string, v Marshaler) {
-	e.WritePropertyName(name)
-	e.WriteValue(v)
+func (e *Encoder) Write(name string, v Marshaler) error {
+	if err := e.WritePropertyName(name); err != nil {
+		return err
+	}
+	return e.WriteValue(v)
 }
 
 func (e *Encoder) WriteNullValue() {
 	e.writeValueSeparator()
-	e.buf = append(e.buf, "null"...)
+	e.out = append(e.out, "null"...)
 	e.tokenType = internal.TokenNull
 }
 
 func (e *Encoder) WriteBoolValue(v bool) {
 	e.writeValueSeparator()
-	e.buf = strconv.AppendBool(e.buf, v)
 	if v {
+		e.out = append(e.out, "true"...)
 		e.tokenType = internal.TokenTrue
 	} else {
+		e.out = append(e.out, "false"...)
 		e.tokenType = internal.TokenFalse
 	}
 }
 
 func (e *Encoder) WriteInt32Value(v int32) {
 	e.writeValueSeparator()
-	e.buf = strconv.AppendInt(e.buf, int64(v), 10)
+	e.out = strconv.AppendInt(e.out, int64(v), 10)
 	e.tokenType = internal.TokenNumber
 }
 
 func (e *Encoder) WriteUint32Value(v uint32) {
 	e.writeValueSeparator()
-	e.buf = strconv.AppendUint(e.buf, uint64(v), 10)
+	e.out = strconv.AppendUint(e.out, uint64(v), 10)
 	e.tokenType = internal.TokenNumber
 }
 
 func (e *Encoder) WriteInt64Value(v int64) {
 	e.writeValueSeparator()
-	e.buf = append(e.buf, '"')
-	e.buf = strconv.AppendInt(e.buf, v, 10)
-	e.buf = append(e.buf, '"')
+	e.out = append(e.out, '"')
+	e.out = strconv.AppendInt(e.out, v, 10)
+	e.out = append(e.out, '"')
 	e.tokenType = internal.TokenNumber
 }
 
 func (e *Encoder) WriteUint64Value(v uint64) {
 	e.writeValueSeparator()
-	e.buf = append(e.buf, '"')
-	e.buf = strconv.AppendUint(e.buf, v, 10)
-	e.buf = append(e.buf, '"')
+	e.out = append(e.out, '"')
+	e.out = strconv.AppendUint(e.out, v, 10)
+	e.out = append(e.out, '"')
 	e.tokenType = internal.TokenNumber
 }
 
 func (e *Encoder) WriteFloat32Value(v float32) {
 	e.writeValueSeparator()
-	e.buf = strconv.AppendFloat(e.buf, float64(v), 'f', -1, 32)
+	e.out = appendFloat(e.out, float64(v), 32)
 	e.tokenType = internal.TokenNumber
 }
 
 func (e *Encoder) WriteFloat64Value(v float64) {
 	e.writeValueSeparator()
-	e.buf = strconv.AppendFloat(e.buf, v, 'f', -1, 64)
+	e.out = appendFloat(e.out, v, 64)
 	e.tokenType = internal.TokenNumber
+}
+
+func appendFloat(out []byte, n float64, bitSize int) []byte {
+	switch {
+	case math.IsNaN(n):
+		return append(out, `"NaN"`...)
+	case math.IsInf(n, +1):
+		return append(out, `"Infinity"`...)
+	case math.IsInf(n, -1):
+		return append(out, `"-Infinity"`...)
+	}
+	fmt := byte('f')
+	if abs := math.Abs(n); abs != 0 {
+		if bitSize == 64 && (abs < 1e-6 || abs >= 1e21) ||
+			bitSize == 32 && (float32(abs) < 1e-6 || float32(abs) >= 1e21) {
+			fmt = 'e'
+		}
+	}
+	out = strconv.AppendFloat(out, n, fmt, -1, bitSize)
+	if fmt == 'e' {
+		n := len(out)
+		if n >= 4 && out[n-4] == 'e' && out[n-3] == '-' && out[n-2] == '0' {
+			out[n-2] = out[n-1]
+			out = out[:n-1]
+		}
+	}
+	return out
 }
 
 func (e *Encoder) WriteBytesValue(v []byte) {
 	e.writeValueSeparator()
-	e.buf = append(e.buf, '"')
-	e.buf = base64.StdEncoding.AppendEncode(e.buf, v)
-	e.buf = append(e.buf, '"')
+	e.out = append(e.out, '"')
+	e.out = base64.StdEncoding.AppendEncode(e.out, v)
+	e.out = append(e.out, '"')
 	e.tokenType = internal.TokenString
 }
 
-func (e *Encoder) WriteStringValue(v string) {
+func (e *Encoder) WriteStringValue(v string) error {
 	e.writeValueSeparator()
-	e.writeEscapedString(v)
+	err := e.writeEscapedString(v)
 	e.tokenType = internal.TokenString
+	return err
 }
 
 func (e *Encoder) WriteTimestampValue(v time.Time) {
@@ -281,16 +361,70 @@ func (e *Encoder) WriteEmptyValue(v struct{}) {
 	e.WriteEndObject()
 }
 
-func (e *Encoder) WriteValue(v Marshaler) {
+func (e *Encoder) WriteValue(v Marshaler) error {
 	if v == nil {
 		e.WriteNullValue()
-		return
+		return nil
 	}
-	v.WriteJSON(e)
+	return v.WriteJSON(e)
 }
 
-func (e *Encoder) writeEscapedString(v string) {
-	e.buf = strconv.AppendQuote(e.buf, v)
+func (e *Encoder) writeEscapedString(v string) error {
+	var err error
+	if e.out, err = appendString(e.out, v); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Sentinel error used for indicating invalid UTF-8.
+var errInvalidUTF8 = errors.New("invalid UTF-8")
+
+func appendString(out []byte, in string) ([]byte, error) {
+	out = append(out, '"')
+	i := indexNeedEscapeInString(in)
+	in, out = in[i:], append(out, in[:i]...)
+	for len(in) > 0 {
+		switch r, n := utf8.DecodeRuneInString(in); {
+		case r == utf8.RuneError && n == 1:
+			return out, errInvalidUTF8
+		case r < ' ' || r == '"' || r == '\\':
+			out = append(out, '\\')
+			switch r {
+			case '"', '\\':
+				out = append(out, byte(r))
+			case '\b':
+				out = append(out, 'b')
+			case '\f':
+				out = append(out, 'f')
+			case '\n':
+				out = append(out, 'n')
+			case '\r':
+				out = append(out, 'r')
+			case '\t':
+				out = append(out, 't')
+			default:
+				out = append(out, 'u')
+				out = append(out, "0000"[1+(bits.Len32(uint32(r))-1)/4:]...)
+				out = strconv.AppendUint(out, uint64(r), 16)
+			}
+			in = in[n:]
+		default:
+			i := indexNeedEscapeInString(in[n:])
+			in, out = in[n+i:], append(out, in[:n+i]...)
+		}
+	}
+	out = append(out, '"')
+	return out, nil
+}
+
+func indexNeedEscapeInString(s string) int {
+	for i, r := range s {
+		if r < ' ' || r == '\\' || r == '"' || r == utf8.RuneError {
+			return i
+		}
+	}
+	return len(s)
 }
 
 func (e *Encoder) writeValueSeparator() {
@@ -303,22 +437,22 @@ func (e *Encoder) writeValueSeparator() {
 
 func (e *Encoder) writeValueSeparatorMinimized() {
 	if e.tokenType != internal.TokenPropertyName && e.tokenType != internal.TokenStartArray {
-		e.buf = append(e.buf, ',')
+		e.out = append(e.out, ',')
 	}
 }
 
 func (e *Encoder) writeValueSeparatorIndented() {
 	if e.tokenType != internal.TokenPropertyName && e.tokenType != internal.TokenStartArray {
-		e.buf = append(e.buf, ',')
+		e.out = append(e.out, ',')
 	}
 	if e.tokenType != internal.TokenPropertyName {
-		e.buf = append(e.buf, '\n')
+		e.out = append(e.out, '\n')
 		e.writeIndentation(e.depth)
 	}
 }
 
 func (e *Encoder) writeIndentation(depth int) {
 	for i := 0; i < depth*e.indentLength; i++ {
-		e.buf = append(e.buf, ' ')
+		e.out = append(e.out, ' ')
 	}
 }

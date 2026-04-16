@@ -33,7 +33,7 @@ type Repeated[T any] interface {
 	Marshal(b []byte) ([]byte, error)
 	MarshalChange(b []byte) ([]byte, error)
 	Unmarshal(b []byte) error
-	WriteJSON(e *kdsjson.Encoder)
+	WriteJSON(e *kdsjson.Encoder) error
 }
 
 // Field repeated check
@@ -248,12 +248,15 @@ func (x *RepeatedField[E]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *RepeatedField[E]) WriteJSON(e *kdsjson.Encoder) {
+func (x *RepeatedField[E]) WriteJSON(e *kdsjson.Encoder) error {
 	e.WriteStartArray()
 	for _, v := range x.data {
-		x.fieldCodec.WriteJson(e, v)
+		if err := x.fieldCodec.WriteJson(e, v); err != nil {
+			return err
+		}
 	}
 	e.WriteEndArray()
+	return nil
 }
 
 // Message repeated
@@ -522,10 +525,13 @@ func (x *RepeatedMessage[T, E]) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *RepeatedMessage[T, E]) WriteJSON(e *kdsjson.Encoder) {
+func (x *RepeatedMessage[T, E]) WriteJSON(e *kdsjson.Encoder) error {
 	e.WriteStartArray()
 	for _, v := range x.data {
-		e.WriteValue(v)
+		if err := e.WriteValue(v); err != nil {
+			return err
+		}
 	}
 	e.WriteEndArray()
+	return nil
 }

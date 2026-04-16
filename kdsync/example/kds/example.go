@@ -173,12 +173,19 @@ func (x *All) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *All) WriteJSON(e *kdsjson.Encoder) {
+func (x *All) WriteJSON(e *kdsjson.Encoder) error {
 	e.WriteStartObject()
-	e.Write("Types", x.xxx_hidden_Types)
-	e.Write("Lists", x.xxx_hidden_Lists)
-	e.Write("Maps", x.xxx_hidden_Maps)
+	if err := e.Write("Types", x.xxx_hidden_Types); err != nil {
+		return err
+	}
+	if err := e.Write("Lists", x.xxx_hidden_Lists); err != nil {
+		return err
+	}
+	if err := e.Write("Maps", x.xxx_hidden_Maps); err != nil {
+		return err
+	}
 	e.WriteEndObject()
+	return nil
 }
 
 func (x *All) updateDirty(n uint64, t kdsync.DirtyType) {
@@ -247,7 +254,8 @@ func (x *All) CheckPersistDirty() bool {
 }
 
 func (x *All) String() string {
-	return kdsjson.Marshal(x)
+	s, _ := kdsjson.Marshal(x)
+	return s
 }
 
 type AllType struct {
@@ -775,29 +783,70 @@ func (x *AllType) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *AllType) WriteJSON(e *kdsjson.Encoder) {
+func (x *AllType) WriteJSON(e *kdsjson.Encoder) error {
 	e.WriteStartObject()
-	e.WriteInt32("Int32Val", x.xxx_hidden_Int32Val)
-	e.WriteInt64("Int64Val", x.xxx_hidden_Int64Val)
-	e.WriteUint32("Uint32Val", x.xxx_hidden_Uint32Val)
-	e.WriteUint64("Uint64Val", x.xxx_hidden_Uint64Val)
-	e.WriteInt32("Sint32Val", x.xxx_hidden_Sint32Val)
-	e.WriteInt64("Sint64Val", x.xxx_hidden_Sint64Val)
-	e.WriteUint32("Fixed32Val", x.xxx_hidden_Fixed32Val)
-	e.WriteUint64("Fixed64Val", x.xxx_hidden_Fixed64Val)
-	e.WriteInt32("Sfixed32Val", x.xxx_hidden_Sfixed32Val)
-	e.WriteInt64("Sfixed64Val", x.xxx_hidden_Sfixed64Val)
-	e.WriteFloat32("FloatVal", x.xxx_hidden_FloatVal)
-	e.WriteFloat64("DoubleVal", x.xxx_hidden_DoubleVal)
-	e.WriteBool("BoolVal", x.xxx_hidden_BoolVal)
-	e.WriteString("StringVal", x.xxx_hidden_StringVal)
-	e.WriteBytes("BytesVal", x.xxx_hidden_BytesVal)
-	e.WriteTimestamp("TimestampVal", x.xxx_hidden_TimestampVal)
-	e.WriteDuration("DurationVal", x.xxx_hidden_DurationVal)
-	e.WriteEmpty("EmptyVal", x.xxx_hidden_EmptyVal)
-	kdsjson.WriteEnum(e, "EnumVal", x.xxx_hidden_EnumVal)
-	e.Write("ItemData", x.xxx_hidden_ItemData)
+	if err := e.WriteInt32("Int32Val", x.xxx_hidden_Int32Val); err != nil {
+		return err
+	}
+	if err := e.WriteInt64("Int64Val", x.xxx_hidden_Int64Val); err != nil {
+		return err
+	}
+	if err := e.WriteUint32("Uint32Val", x.xxx_hidden_Uint32Val); err != nil {
+		return err
+	}
+	if err := e.WriteUint64("Uint64Val", x.xxx_hidden_Uint64Val); err != nil {
+		return err
+	}
+	if err := e.WriteInt32("Sint32Val", x.xxx_hidden_Sint32Val); err != nil {
+		return err
+	}
+	if err := e.WriteInt64("Sint64Val", x.xxx_hidden_Sint64Val); err != nil {
+		return err
+	}
+	if err := e.WriteUint32("Fixed32Val", x.xxx_hidden_Fixed32Val); err != nil {
+		return err
+	}
+	if err := e.WriteUint64("Fixed64Val", x.xxx_hidden_Fixed64Val); err != nil {
+		return err
+	}
+	if err := e.WriteInt32("Sfixed32Val", x.xxx_hidden_Sfixed32Val); err != nil {
+		return err
+	}
+	if err := e.WriteInt64("Sfixed64Val", x.xxx_hidden_Sfixed64Val); err != nil {
+		return err
+	}
+	if err := e.WriteFloat32("FloatVal", x.xxx_hidden_FloatVal); err != nil {
+		return err
+	}
+	if err := e.WriteFloat64("DoubleVal", x.xxx_hidden_DoubleVal); err != nil {
+		return err
+	}
+	if err := e.WriteBool("BoolVal", x.xxx_hidden_BoolVal); err != nil {
+		return err
+	}
+	if err := e.WriteString("StringVal", x.xxx_hidden_StringVal); err != nil {
+		return err
+	}
+	if err := e.WriteBytes("BytesVal", x.xxx_hidden_BytesVal); err != nil {
+		return err
+	}
+	if err := e.WriteTimestamp("TimestampVal", x.xxx_hidden_TimestampVal); err != nil {
+		return err
+	}
+	if err := e.WriteDuration("DurationVal", x.xxx_hidden_DurationVal); err != nil {
+		return err
+	}
+	if err := e.WriteEmpty("EmptyVal", x.xxx_hidden_EmptyVal); err != nil {
+		return err
+	}
+	if err := kdsjson.WriteEnum(e, "EnumVal", x.xxx_hidden_EnumVal); err != nil {
+		return err
+	}
+	if err := e.Write("ItemData", x.xxx_hidden_ItemData); err != nil {
+		return err
+	}
 	e.WriteEndObject()
+	return nil
 }
 
 func (x *AllType) updateDirty(n uint64, t kdsync.DirtyType) {
@@ -1219,22 +1268,49 @@ func (x *AllList) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *AllList) WriteJSON(e *kdsjson.Encoder) {
+func (x *AllList) WriteJSON(e *kdsjson.Encoder) error {
 	e.WriteStartObject()
-	e.Write("Int32List", &x.xxx_hidden_Int32List)
-	e.Write("Uint32List", &x.xxx_hidden_Uint32List)
-	e.Write("Int64List", &x.xxx_hidden_Int64List)
-	e.Write("Uint64List", &x.xxx_hidden_Uint64List)
-	e.Write("FloatList", &x.xxx_hidden_FloatList)
-	e.Write("DoubleList", &x.xxx_hidden_DoubleList)
-	e.Write("BoolList", &x.xxx_hidden_BoolList)
-	e.Write("StringList", &x.xxx_hidden_StringList)
-	e.Write("TimestampList", &x.xxx_hidden_TimestampList)
-	e.Write("DurationList", &x.xxx_hidden_DurationList)
-	e.Write("EmptyList", &x.xxx_hidden_EmptyList)
-	e.Write("EnumList", &x.xxx_hidden_EnumList)
-	e.Write("ItemList", &x.xxx_hidden_ItemList)
+	if err := e.Write("Int32List", &x.xxx_hidden_Int32List); err != nil {
+		return err
+	}
+	if err := e.Write("Uint32List", &x.xxx_hidden_Uint32List); err != nil {
+		return err
+	}
+	if err := e.Write("Int64List", &x.xxx_hidden_Int64List); err != nil {
+		return err
+	}
+	if err := e.Write("Uint64List", &x.xxx_hidden_Uint64List); err != nil {
+		return err
+	}
+	if err := e.Write("FloatList", &x.xxx_hidden_FloatList); err != nil {
+		return err
+	}
+	if err := e.Write("DoubleList", &x.xxx_hidden_DoubleList); err != nil {
+		return err
+	}
+	if err := e.Write("BoolList", &x.xxx_hidden_BoolList); err != nil {
+		return err
+	}
+	if err := e.Write("StringList", &x.xxx_hidden_StringList); err != nil {
+		return err
+	}
+	if err := e.Write("TimestampList", &x.xxx_hidden_TimestampList); err != nil {
+		return err
+	}
+	if err := e.Write("DurationList", &x.xxx_hidden_DurationList); err != nil {
+		return err
+	}
+	if err := e.Write("EmptyList", &x.xxx_hidden_EmptyList); err != nil {
+		return err
+	}
+	if err := e.Write("EnumList", &x.xxx_hidden_EnumList); err != nil {
+		return err
+	}
+	if err := e.Write("ItemList", &x.xxx_hidden_ItemList); err != nil {
+		return err
+	}
 	e.WriteEndObject()
+	return nil
 }
 
 func (x *AllList) updateDirty(n uint64, t kdsync.DirtyType) {
@@ -1748,23 +1824,52 @@ func (x *AllMap) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *AllMap) WriteJSON(e *kdsjson.Encoder) {
+func (x *AllMap) WriteJSON(e *kdsjson.Encoder) error {
 	e.WriteStartObject()
-	e.Write("Int32Int32Map", &x.xxx_hidden_Int32Int32Map)
-	e.Write("Int64Int64Map", &x.xxx_hidden_Int64Int64Map)
-	e.Write("Uint32Uint32Map", &x.xxx_hidden_Uint32Uint32Map)
-	e.Write("Uint64Uint64Map", &x.xxx_hidden_Uint64Uint64Map)
-	e.Write("BoolFloatMap", &x.xxx_hidden_BoolFloatMap)
-	e.Write("StringDoubleMap", &x.xxx_hidden_StringDoubleMap)
-	e.Write("Int32BoolMap", &x.xxx_hidden_Int32BoolMap)
-	e.Write("Int64StringMap", &x.xxx_hidden_Int64StringMap)
-	e.Write("Uint32BytesMap", &x.xxx_hidden_Uint32BytesMap)
-	e.Write("Uint64TimestampMap", &x.xxx_hidden_Uint64TimestampMap)
-	e.Write("BoolDurationMap", &x.xxx_hidden_BoolDurationMap)
-	e.Write("StringEmptyMap", &x.xxx_hidden_StringEmptyMap)
-	e.Write("Int32ItemTypeMap", &x.xxx_hidden_Int32ItemTypeMap)
-	e.Write("Int64ItemDataMap", &x.xxx_hidden_Int64ItemDataMap)
+	if err := e.Write("Int32Int32Map", &x.xxx_hidden_Int32Int32Map); err != nil {
+		return err
+	}
+	if err := e.Write("Int64Int64Map", &x.xxx_hidden_Int64Int64Map); err != nil {
+		return err
+	}
+	if err := e.Write("Uint32Uint32Map", &x.xxx_hidden_Uint32Uint32Map); err != nil {
+		return err
+	}
+	if err := e.Write("Uint64Uint64Map", &x.xxx_hidden_Uint64Uint64Map); err != nil {
+		return err
+	}
+	if err := e.Write("BoolFloatMap", &x.xxx_hidden_BoolFloatMap); err != nil {
+		return err
+	}
+	if err := e.Write("StringDoubleMap", &x.xxx_hidden_StringDoubleMap); err != nil {
+		return err
+	}
+	if err := e.Write("Int32BoolMap", &x.xxx_hidden_Int32BoolMap); err != nil {
+		return err
+	}
+	if err := e.Write("Int64StringMap", &x.xxx_hidden_Int64StringMap); err != nil {
+		return err
+	}
+	if err := e.Write("Uint32BytesMap", &x.xxx_hidden_Uint32BytesMap); err != nil {
+		return err
+	}
+	if err := e.Write("Uint64TimestampMap", &x.xxx_hidden_Uint64TimestampMap); err != nil {
+		return err
+	}
+	if err := e.Write("BoolDurationMap", &x.xxx_hidden_BoolDurationMap); err != nil {
+		return err
+	}
+	if err := e.Write("StringEmptyMap", &x.xxx_hidden_StringEmptyMap); err != nil {
+		return err
+	}
+	if err := e.Write("Int32ItemTypeMap", &x.xxx_hidden_Int32ItemTypeMap); err != nil {
+		return err
+	}
+	if err := e.Write("Int64ItemDataMap", &x.xxx_hidden_Int64ItemDataMap); err != nil {
+		return err
+	}
 	e.WriteEndObject()
+	return nil
 }
 
 func (x *AllMap) updateDirty(n uint64, t kdsync.DirtyType) {

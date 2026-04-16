@@ -136,12 +136,19 @@ func (x *ItemData) Unmarshal(b []byte) error {
 	return nil
 }
 
-func (x *ItemData) WriteJSON(e *kdsjson.Encoder) {
+func (x *ItemData) WriteJSON(e *kdsjson.Encoder) error {
 	e.WriteStartObject()
-	e.WriteInt32("Id", x.xxx_hidden_Id)
-	e.WriteString("Name", x.xxx_hidden_Name)
-	e.WriteInt32("Count", x.xxx_hidden_Count)
+	if err := e.WriteInt32("Id", x.xxx_hidden_Id); err != nil {
+		return err
+	}
+	if err := e.WriteString("Name", x.xxx_hidden_Name); err != nil {
+		return err
+	}
+	if err := e.WriteInt32("Count", x.xxx_hidden_Count); err != nil {
+		return err
+	}
 	e.WriteEndObject()
+	return nil
 }
 
 func (x *ItemData) updateDirty(n uint64, t kdsync.DirtyType) {
