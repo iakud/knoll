@@ -57,7 +57,7 @@
 {{- end}}
 {{- end}}
 {{- /* ENUM VALUE CODEC */ -}}
-{{- define "EnumCodec"}}kdsync.EnumValueCodec[{{.}}](){{- end}}
+{{- define "EnumCodec"}}kdsync.EnumValueCodec[{{.}}]{{- end}}
 {{- /* REPEATED TYPE */ -}}
 {{- define "RepeatedType"}}
 {{- if eq .TypeKind "enum"}}kdsync.RepeatedField[{{.Type}}]
@@ -111,9 +111,9 @@ func (x *{{$MessageName}}) init{{.Name}}() {
 {{- if eq .TypeKind "component"}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "MessageType" .Type}})
 {{- else if eq .TypeKind "enum"}}
-	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, {{template "EnumCodec" .Type}})
+	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "EnumCodec" .Type}}{})
 {{- else}}
-	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "ValueCodec" .Type}})
+	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "ValueCodec" .Type}}{})
 {{- end}}
 }
 {{- else if .Map}}
@@ -126,11 +126,11 @@ func (x *{{$MessageName}}) init{{.Name}}() {
 		x.updateDirty(uint64(0x01) << {{.Number}}, t&{{template "DirtyType" .}})
 	}
 {{- if eq .TypeKind "component"}}
-	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "KeyCodec" .KeyType}}, &{{template "MessageType" .Type}})
+	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "KeyCodec" .KeyType}}{}, &{{template "MessageType" .Type}})
 {{- else if eq .TypeKind "enum"}}
-	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "KeyCodec" .KeyType}}, {{template "EnumCodec" .Type}})
+	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "KeyCodec" .KeyType}}{}, &{{template "EnumCodec" .Type}}{})
 {{- else}}
-	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "KeyCodec" .KeyType}}, &{{template "ValueCodec" .Type}})
+	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "KeyCodec" .KeyType}}{}, &{{template "ValueCodec" .Type}}{})
 {{- end}}
 }
 {{- else if eq .TypeKind "component"}}

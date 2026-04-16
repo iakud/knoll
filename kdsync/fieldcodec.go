@@ -10,15 +10,41 @@ import (
 	"github.com/iakud/knoll/kdsync/wire"
 )
 
-type fieldCodec[T any] struct {
-	wireType      wire.Type
-	compareFunc   func(a, b T) int
-	marshalFunc   func(b []byte, v T) []byte
-	unmarshalFunc func(b []byte) (T, int, error)
-	writeJSONFunc func(e *kdsjson.Encoder, v T)
+// Field Codec
+type FieldCodec[T any] interface {
+	WireType() wire.Type
+	Compare(a, b T) int
+	Marshal(b []byte, v T) []byte
+	Unmarshal(b []byte) (T, int, error)
+	WriteJson(e *kdsjson.Encoder, v T)
 }
 
-func boolCompare(a, b bool) int {
+// Check Codecs
+var _ FieldCodec[bool] = (*BoolKeyCodec)(nil)
+var _ FieldCodec[int32] = (*Int32KeyCodec)(nil)
+var _ FieldCodec[uint32] = (*Uint32KeyCodec)(nil)
+var _ FieldCodec[int64] = (*Int64KeyCodec)(nil)
+var _ FieldCodec[uint64] = (*Uint64KeyCodec)(nil)
+var _ FieldCodec[string] = (*StringKeyCodec)(nil)
+var _ FieldCodec[bool] = (*BoolValueCodec)(nil)
+var _ FieldCodec[int32] = (*Int32ValueCodec)(nil)
+var _ FieldCodec[uint32] = (*Uint32ValueCodec)(nil)
+var _ FieldCodec[int64] = (*Int64ValueCodec)(nil)
+var _ FieldCodec[uint64] = (*Uint64ValueCodec)(nil)
+var _ FieldCodec[float32] = (*Float32ValueCodec)(nil)
+var _ FieldCodec[float64] = (*Float64ValueCodec)(nil)
+var _ FieldCodec[string] = (*StringValueCodec)(nil)
+var _ FieldCodec[[]byte] = (*BytesValueCodec)(nil)
+var _ FieldCodec[time.Time] = (*TimestampValueCodec)(nil)
+var _ FieldCodec[time.Duration] = (*DurationValueCodec)(nil)
+var _ FieldCodec[struct{}] = (*EmptyValueCodec)(nil)
+
+// Key Codecs
+
+type BoolKeyCodec struct{}
+
+func (c *BoolKeyCodec) WireType() wire.Type { return wire.VarintType }
+func (c *BoolKeyCodec) Compare(a, b bool) int {
 	if a {
 		return 1
 	} else if b {
@@ -26,169 +52,175 @@ func boolCompare(a, b bool) int {
 	}
 	return 0
 }
+func (c *BoolKeyCodec) Marshal(b []byte, v bool) []byte       { return wire.AppendBool(b, v) }
+func (c *BoolKeyCodec) Unmarshal(b []byte) (bool, int, error) { return wire.ConsumeBool(b) }
+func (c *BoolKeyCodec) WriteJson(e *kdsjson.Encoder, v bool)  { kdsjson.WriteBoolPropertyName(e, v) }
 
-func timestampCompare(a, b time.Time) int {
-	return a.Compare(b)
+type Int32KeyCodec struct{}
+
+func (c *Int32KeyCodec) WireType() wire.Type                    { return wire.VarintType }
+func (c *Int32KeyCodec) Compare(a, b int32) int                 { return cmp.Compare(a, b) }
+func (c *Int32KeyCodec) Marshal(b []byte, v int32) []byte       { return wire.AppendInt32(b, v) }
+func (c *Int32KeyCodec) Unmarshal(b []byte) (int32, int, error) { return wire.ConsumeInt32(b) }
+func (c *Int32KeyCodec) WriteJson(e *kdsjson.Encoder, v int32)  { kdsjson.WriteInt32PropertyName(e, v) }
+
+type Uint32KeyCodec struct{}
+
+func (c *Uint32KeyCodec) WireType() wire.Type                     { return wire.VarintType }
+func (c *Uint32KeyCodec) Compare(a, b uint32) int                 { return cmp.Compare(a, b) }
+func (c *Uint32KeyCodec) Marshal(b []byte, v uint32) []byte       { return wire.AppendUint32(b, v) }
+func (c *Uint32KeyCodec) Unmarshal(b []byte) (uint32, int, error) { return wire.ConsumeUint32(b) }
+func (c *Uint32KeyCodec) WriteJson(e *kdsjson.Encoder, v uint32) {
+	kdsjson.WriteUint32PropertyName(e, v)
 }
 
-func emptyCompare(a, b struct{}) int {
+type Int64KeyCodec struct{}
+
+func (c *Int64KeyCodec) WireType() wire.Type                    { return wire.VarintType }
+func (c *Int64KeyCodec) Compare(a, b int64) int                 { return cmp.Compare(a, b) }
+func (c *Int64KeyCodec) Marshal(b []byte, v int64) []byte       { return wire.AppendInt64(b, v) }
+func (c *Int64KeyCodec) Unmarshal(b []byte) (int64, int, error) { return wire.ConsumeInt64(b) }
+func (c *Int64KeyCodec) WriteJson(e *kdsjson.Encoder, v int64)  { kdsjson.WriteInt64PropertyName(e, v) }
+
+type Uint64KeyCodec struct{}
+
+func (c *Uint64KeyCodec) WireType() wire.Type                     { return wire.VarintType }
+func (c *Uint64KeyCodec) Compare(a, b uint64) int                 { return cmp.Compare(a, b) }
+func (c *Uint64KeyCodec) Marshal(b []byte, v uint64) []byte       { return wire.AppendUint64(b, v) }
+func (c *Uint64KeyCodec) Unmarshal(b []byte) (uint64, int, error) { return wire.ConsumeUint64(b) }
+func (c *Uint64KeyCodec) WriteJson(e *kdsjson.Encoder, v uint64) {
+	kdsjson.WriteUint64PropertyName(e, v)
+}
+
+type StringKeyCodec struct{}
+
+func (c *StringKeyCodec) WireType() wire.Type                     { return wire.BytesType }
+func (c *StringKeyCodec) Compare(a, b string) int                 { return strings.Compare(a, b) }
+func (c *StringKeyCodec) Marshal(b []byte, v string) []byte       { return wire.AppendString(b, v) }
+func (c *StringKeyCodec) Unmarshal(b []byte) (string, int, error) { return wire.ConsumeString(b) }
+func (c *StringKeyCodec) WriteJson(e *kdsjson.Encoder, v string)  { kdsjson.WritePropertyName(e, v) }
+
+// Value Codecs
+
+type BoolValueCodec struct{}
+
+func (c *BoolValueCodec) WireType() wire.Type { return wire.VarintType }
+func (c *BoolValueCodec) Compare(a, b bool) int {
+	if a {
+		return 1
+	} else if b {
+		return -1
+	}
 	return 0
 }
+func (c *BoolValueCodec) Marshal(b []byte, v bool) []byte       { return wire.AppendBool(b, v) }
+func (c *BoolValueCodec) Unmarshal(b []byte) (bool, int, error) { return wire.ConsumeBool(b) }
+func (c *BoolValueCodec) WriteJson(e *kdsjson.Encoder, v bool)  { kdsjson.WriteBoolValue(e, v) }
 
-// Key Codec
+type Int32ValueCodec struct{}
 
-var BoolKeyCodec = fieldCodec[bool]{
-	wireType:      wire.VarintType,
-	compareFunc:   boolCompare,
-	marshalFunc:   wire.AppendBool,
-	unmarshalFunc: wire.ConsumeBool,
-	writeJSONFunc: kdsjson.WriteBoolPropertyName,
+func (c *Int32ValueCodec) WireType() wire.Type                    { return wire.VarintType }
+func (c *Int32ValueCodec) Compare(a, b int32) int                 { return cmp.Compare(a, b) }
+func (c *Int32ValueCodec) Marshal(b []byte, v int32) []byte       { return wire.AppendInt32(b, v) }
+func (c *Int32ValueCodec) Unmarshal(b []byte) (int32, int, error) { return wire.ConsumeInt32(b) }
+func (c *Int32ValueCodec) WriteJson(e *kdsjson.Encoder, v int32)  { kdsjson.WriteInt32Value(e, v) }
+
+type Uint32ValueCodec struct{}
+
+func (c *Uint32ValueCodec) WireType() wire.Type                     { return wire.VarintType }
+func (c *Uint32ValueCodec) Compare(a, b uint32) int                 { return cmp.Compare(a, b) }
+func (c *Uint32ValueCodec) Marshal(b []byte, v uint32) []byte       { return wire.AppendUint32(b, v) }
+func (c *Uint32ValueCodec) Unmarshal(b []byte) (uint32, int, error) { return wire.ConsumeUint32(b) }
+func (c *Uint32ValueCodec) WriteJson(e *kdsjson.Encoder, v uint32)  { kdsjson.WriteUint32Value(e, v) }
+
+type Int64ValueCodec struct{}
+
+func (c *Int64ValueCodec) WireType() wire.Type                    { return wire.VarintType }
+func (c *Int64ValueCodec) Compare(a, b int64) int                 { return cmp.Compare(a, b) }
+func (c *Int64ValueCodec) Marshal(b []byte, v int64) []byte       { return wire.AppendInt64(b, v) }
+func (c *Int64ValueCodec) Unmarshal(b []byte) (int64, int, error) { return wire.ConsumeInt64(b) }
+func (c *Int64ValueCodec) WriteJson(e *kdsjson.Encoder, v int64)  { kdsjson.WriteInt64Value(e, v) }
+
+type Uint64ValueCodec struct{}
+
+func (c *Uint64ValueCodec) WireType() wire.Type                     { return wire.VarintType }
+func (c *Uint64ValueCodec) Compare(a, b uint64) int                 { return cmp.Compare(a, b) }
+func (c *Uint64ValueCodec) Marshal(b []byte, v uint64) []byte       { return wire.AppendUint64(b, v) }
+func (c *Uint64ValueCodec) Unmarshal(b []byte) (uint64, int, error) { return wire.ConsumeUint64(b) }
+func (c *Uint64ValueCodec) WriteJson(e *kdsjson.Encoder, v uint64)  { kdsjson.WriteUint64Value(e, v) }
+
+type Float32ValueCodec struct{}
+
+func (c *Float32ValueCodec) WireType() wire.Type                      { return wire.Fixed32Type }
+func (c *Float32ValueCodec) Compare(a, b float32) int                 { return cmp.Compare(a, b) }
+func (c *Float32ValueCodec) Marshal(b []byte, v float32) []byte       { return wire.AppendFloat(b, v) }
+func (c *Float32ValueCodec) Unmarshal(b []byte) (float32, int, error) { return wire.ConsumeFloat(b) }
+func (c *Float32ValueCodec) WriteJson(e *kdsjson.Encoder, v float32)  { kdsjson.WriteFloat32Value(e, v) }
+
+type Float64ValueCodec struct{}
+
+func (c *Float64ValueCodec) WireType() wire.Type                      { return wire.Fixed64Type }
+func (c *Float64ValueCodec) Compare(a, b float64) int                 { return cmp.Compare(a, b) }
+func (c *Float64ValueCodec) Marshal(b []byte, v float64) []byte       { return wire.AppendDouble(b, v) }
+func (c *Float64ValueCodec) Unmarshal(b []byte) (float64, int, error) { return wire.ConsumeDouble(b) }
+func (c *Float64ValueCodec) WriteJson(e *kdsjson.Encoder, v float64)  { kdsjson.WriteFloat64Value(e, v) }
+
+type StringValueCodec struct{}
+
+func (c *StringValueCodec) WireType() wire.Type                     { return wire.BytesType }
+func (c *StringValueCodec) Compare(a, b string) int                 { return strings.Compare(a, b) }
+func (c *StringValueCodec) Marshal(b []byte, v string) []byte       { return wire.AppendString(b, v) }
+func (c *StringValueCodec) Unmarshal(b []byte) (string, int, error) { return wire.ConsumeString(b) }
+func (c *StringValueCodec) WriteJson(e *kdsjson.Encoder, v string)  { kdsjson.WriteStringValue(e, v) }
+
+type BytesValueCodec struct{}
+
+func (c *BytesValueCodec) WireType() wire.Type                     { return wire.BytesType }
+func (c *BytesValueCodec) Compare(a, b []byte) int                 { return bytes.Compare(a, b) }
+func (c *BytesValueCodec) Marshal(b []byte, v []byte) []byte       { return wire.AppendBytes(b, v) }
+func (c *BytesValueCodec) Unmarshal(b []byte) ([]byte, int, error) { return wire.ConsumeBytes(b) }
+func (c *BytesValueCodec) WriteJson(e *kdsjson.Encoder, v []byte)  { kdsjson.WriteBytesValue(e, v) }
+
+type TimestampValueCodec struct{}
+
+func (c *TimestampValueCodec) WireType() wire.Type        { return wire.BytesType }
+func (c *TimestampValueCodec) Compare(a, b time.Time) int { return a.Compare(b) }
+func (c *TimestampValueCodec) Marshal(b []byte, v time.Time) []byte {
+	return wire.AppendTimestamp(b, v)
+}
+func (c *TimestampValueCodec) Unmarshal(b []byte) (time.Time, int, error) {
+	return wire.ConsumeTimestamp(b)
+}
+func (c *TimestampValueCodec) WriteJson(e *kdsjson.Encoder, v time.Time) {
+	kdsjson.WriteTimestampValue(e, v)
 }
 
-var Int32KeyCodec = fieldCodec[int32]{
-	wireType:      wire.VarintType,
-	compareFunc:   cmp.Compare[int32],
-	marshalFunc:   wire.AppendInt32,
-	unmarshalFunc: wire.ConsumeInt32,
-	writeJSONFunc: kdsjson.WriteInt32PropertyName,
+type DurationValueCodec struct{}
+
+func (c *DurationValueCodec) WireType() wire.Type            { return wire.BytesType }
+func (c *DurationValueCodec) Compare(a, b time.Duration) int { return cmp.Compare(a, b) }
+func (c *DurationValueCodec) Marshal(b []byte, v time.Duration) []byte {
+	return wire.AppendDuration(b, v)
+}
+func (c *DurationValueCodec) Unmarshal(b []byte) (time.Duration, int, error) {
+	return wire.ConsumeDuration(b)
+}
+func (c *DurationValueCodec) WriteJson(e *kdsjson.Encoder, v time.Duration) {
+	kdsjson.WriteDurationValue(e, v)
 }
 
-var Uint32KeyCodec = fieldCodec[uint32]{
-	wireType:      wire.VarintType,
-	compareFunc:   cmp.Compare[uint32],
-	marshalFunc:   wire.AppendUint32,
-	unmarshalFunc: wire.ConsumeUint32,
-	writeJSONFunc: kdsjson.WriteUint32PropertyName,
-}
+type EmptyValueCodec struct{}
 
-var Int64KeyCodec = fieldCodec[int64]{
-	wireType:      wire.VarintType,
-	compareFunc:   cmp.Compare[int64],
-	marshalFunc:   wire.AppendInt64,
-	unmarshalFunc: wire.ConsumeInt64,
-	writeJSONFunc: kdsjson.WriteInt64PropertyName,
-}
+func (c *EmptyValueCodec) WireType() wire.Type                       { return wire.BytesType }
+func (c *EmptyValueCodec) Compare(a, b struct{}) int                 { return 0 }
+func (c *EmptyValueCodec) Marshal(b []byte, v struct{}) []byte       { return wire.AppendEmpty(b, v) }
+func (c *EmptyValueCodec) Unmarshal(b []byte) (struct{}, int, error) { return wire.ConsumeEmpty(b) }
+func (c *EmptyValueCodec) WriteJson(e *kdsjson.Encoder, v struct{})  { kdsjson.WriteEmptyValue(e, v) }
 
-var Uint64KeyCodec = fieldCodec[uint64]{
-	wireType:      wire.VarintType,
-	compareFunc:   cmp.Compare[uint64],
-	marshalFunc:   wire.AppendUint64,
-	unmarshalFunc: wire.ConsumeUint64,
-	writeJSONFunc: kdsjson.WriteUint64PropertyName,
-}
+type EnumValueCodec[T ~int32] struct{}
 
-var StringKeyCodec = fieldCodec[string]{
-	wireType:      wire.BytesType,
-	compareFunc:   strings.Compare,
-	marshalFunc:   wire.AppendString,
-	unmarshalFunc: wire.ConsumeString,
-	writeJSONFunc: kdsjson.WritePropertyName,
-}
-
-// Value Codec
-
-var BoolValueCodec = fieldCodec[bool]{
-	wireType:      wire.VarintType,
-	compareFunc:   boolCompare,
-	marshalFunc:   wire.AppendBool,
-	unmarshalFunc: wire.ConsumeBool,
-	writeJSONFunc: kdsjson.WriteBoolValue,
-}
-
-var Int32ValueCodec = fieldCodec[int32]{
-	wireType:      wire.VarintType,
-	compareFunc:   cmp.Compare[int32],
-	marshalFunc:   wire.AppendInt32,
-	unmarshalFunc: wire.ConsumeInt32,
-	writeJSONFunc: kdsjson.WriteInt32Value,
-}
-
-var Uint32ValueCodec = fieldCodec[uint32]{
-	wireType:      wire.VarintType,
-	compareFunc:   cmp.Compare[uint32],
-	marshalFunc:   wire.AppendUint32,
-	unmarshalFunc: wire.ConsumeUint32,
-	writeJSONFunc: kdsjson.WriteUint32Value,
-}
-
-var Int64ValueCodec = fieldCodec[int64]{
-	wireType:      wire.VarintType,
-	compareFunc:   cmp.Compare[int64],
-	marshalFunc:   wire.AppendInt64,
-	unmarshalFunc: wire.ConsumeInt64,
-	writeJSONFunc: kdsjson.WriteInt64Value,
-}
-
-var Uint64ValueCodec = fieldCodec[uint64]{
-	wireType:      wire.VarintType,
-	compareFunc:   cmp.Compare[uint64],
-	marshalFunc:   wire.AppendUint64,
-	unmarshalFunc: wire.ConsumeUint64,
-	writeJSONFunc: kdsjson.WriteUint64Value,
-}
-
-var Float32ValueCodec = fieldCodec[float32]{
-	wireType:      wire.Fixed32Type,
-	compareFunc:   cmp.Compare[float32],
-	marshalFunc:   wire.AppendFloat,
-	unmarshalFunc: wire.ConsumeFloat,
-	writeJSONFunc: kdsjson.WriteFloat32Value,
-}
-
-var Float64ValueCodec = fieldCodec[float64]{
-	wireType:      wire.Fixed64Type,
-	compareFunc:   cmp.Compare[float64],
-	marshalFunc:   wire.AppendDouble,
-	unmarshalFunc: wire.ConsumeDouble,
-	writeJSONFunc: kdsjson.WriteFloat64Value,
-}
-
-var StringValueCodec = fieldCodec[string]{
-	wireType:      wire.BytesType,
-	compareFunc:   strings.Compare,
-	marshalFunc:   wire.AppendString,
-	unmarshalFunc: wire.ConsumeString,
-	writeJSONFunc: kdsjson.WriteStringValue,
-}
-
-var BytesValueCodec = fieldCodec[[]byte]{
-	wireType:      wire.BytesType,
-	compareFunc:   bytes.Compare,
-	marshalFunc:   wire.AppendBytes,
-	unmarshalFunc: wire.ConsumeBytes,
-	writeJSONFunc: kdsjson.WriteBytesValue,
-}
-
-var TimestampValueCodec = fieldCodec[time.Time]{
-	wireType:      wire.BytesType,
-	compareFunc:   timestampCompare,
-	marshalFunc:   wire.AppendTimestamp,
-	unmarshalFunc: wire.ConsumeTimestamp,
-	writeJSONFunc: kdsjson.WriteTimestampValue,
-}
-
-var DurationValueCodec = fieldCodec[time.Duration]{
-	wireType:      wire.BytesType,
-	compareFunc:   cmp.Compare[time.Duration],
-	marshalFunc:   wire.AppendDuration,
-	unmarshalFunc: wire.ConsumeDuration,
-	writeJSONFunc: kdsjson.WriteDurationValue,
-}
-
-var EmptyValueCodec = fieldCodec[struct{}]{
-	wireType:      wire.BytesType,
-	compareFunc:   emptyCompare,
-	marshalFunc:   wire.AppendEmpty,
-	unmarshalFunc: wire.ConsumeEmpty,
-	writeJSONFunc: kdsjson.WriteEmptyValue,
-}
-
-func EnumValueCodec[T ~int32]() *fieldCodec[T] {
-	return &fieldCodec[T]{
-		wireType:      wire.VarintType,
-		compareFunc:   cmp.Compare[T],
-		marshalFunc:   wire.AppendEnum[T],
-		unmarshalFunc: wire.ConsumeEnum[T],
-		writeJSONFunc: kdsjson.WriteEnumValue[T],
-	}
-}
+func (c *EnumValueCodec[T]) WireType() wire.Type                { return wire.VarintType }
+func (c *EnumValueCodec[T]) Compare(a, b T) int                 { return cmp.Compare(a, b) }
+func (c *EnumValueCodec[T]) Marshal(b []byte, v T) []byte       { return wire.AppendEnum(b, v) }
+func (c *EnumValueCodec[T]) Unmarshal(b []byte) (T, int, error) { return wire.ConsumeEnum[T](b) }
+func (c *EnumValueCodec[T]) WriteJson(e *kdsjson.Encoder, v T)  { kdsjson.WriteEnumValue(e, v) }

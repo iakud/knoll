@@ -58,10 +58,10 @@ type RepeatedField[E any] struct {
 	persistDirty bool
 	dirtyParent  DirtyFunc
 
-	fieldCodec *fieldCodec[E]
+	fieldCodec FieldCodec[E]
 }
 
-func (x *RepeatedField[E]) Init(dirtyParent DirtyFunc, fieldCodec *fieldCodec[E]) {
+func (x *RepeatedField[E]) Init(dirtyParent DirtyFunc, fieldCodec FieldCodec[E]) {
 	x.dirtyParent = dirtyParent
 	x.fieldCodec = fieldCodec
 }
@@ -84,7 +84,7 @@ func (x *RepeatedField[E]) Get(i int) E {
 }
 
 func (x *RepeatedField[E]) Set(i int, v E) {
-	if x.fieldCodec.compareFunc(v, x.data[i]) == 0 {
+	if x.fieldCodec.Compare(v, x.data[i]) == 0 {
 		return
 	}
 	x.data[i] = v
@@ -101,7 +101,7 @@ func (x *RepeatedField[E]) Append(v ...E) {
 
 func (x *RepeatedField[E]) Index(v E) int {
 	for i := range x.data {
-		if x.fieldCodec.compareFunc(v, x.data[i]) == 0 {
+		if x.fieldCodec.Compare(v, x.data[i]) == 0 {
 			return i
 		}
 	}
@@ -227,7 +227,7 @@ func (x *RepeatedField[E]) Marshal(b []byte) ([]byte, error) {
 		return b, nil
 	}
 	for _, v := range x.data {
-		b = x.fieldCodec.marshalFunc(b, v)
+		b = x.fieldCodec.Marshal(b, v)
 	}
 	return b, nil
 }
@@ -238,7 +238,7 @@ func (x *RepeatedField[E]) MarshalChange(b []byte) ([]byte, error) {
 
 func (x *RepeatedField[E]) Unmarshal(b []byte) error {
 	for len(b) > 0 {
-		v, n, err := x.fieldCodec.unmarshalFunc(b)
+		v, n, err := x.fieldCodec.Unmarshal(b)
 		if err != nil {
 			return err
 		}
@@ -251,7 +251,7 @@ func (x *RepeatedField[E]) Unmarshal(b []byte) error {
 func (x *RepeatedField[E]) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartArray()
 	for _, v := range x.data {
-		x.fieldCodec.writeJSONFunc(e, v)
+		x.fieldCodec.WriteJson(e, v)
 	}
 	e.WriteEndArray()
 }

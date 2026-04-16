@@ -55,11 +55,11 @@ type MapField[K comparable, V any] struct {
 
 	dirtyParent DirtyFunc
 
-	keyCodec   *fieldCodec[K]
-	valueCodec *fieldCodec[V]
+	keyCodec   FieldCodec[K]
+	valueCodec FieldCodec[V]
 }
 
-func (x *MapField[K, V]) Init(dirtyParent DirtyFunc, keyCodec *fieldCodec[K], valueCodec *fieldCodec[V]) {
+func (x *MapField[K, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueCodec FieldCodec[V]) {
 	x.data = make(map[K]V)
 	x.updated = make(map[K]V)
 	x.deleted = make(map[K]struct{})
@@ -89,7 +89,7 @@ func (x *MapField[K, V]) Get(k K) (V, bool) {
 
 func (x *MapField[K, V]) Set(k K, v V) {
 	if e, ok := x.data[k]; ok {
-		if x.valueCodec.compareFunc(v, e) == 0 {
+		if x.valueCodec.Compare(v, e) == 0 {
 			return
 		}
 	}
@@ -236,10 +236,10 @@ func (x *MapField[K, V]) Marshal(b []byte) ([]byte, error) {
 	for k, v := range x.data {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.wireType)
-		b = x.keyCodec.marshalFunc(b, k)
-		b = wire.AppendTag(b, wire.MapEntryValueFieldNumber, x.valueCodec.wireType)
-		b = x.valueCodec.marshalFunc(b, v)
+		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType())
+		b = x.keyCodec.Marshal(b, k)
+		b = wire.AppendTag(b, wire.MapEntryValueFieldNumber, x.valueCodec.WireType())
+		b = x.valueCodec.Marshal(b, v)
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	return b, err
@@ -257,17 +257,17 @@ func (x *MapField[K, V]) MarshalChange(b []byte) ([]byte, error) {
 		b = wire.AppendTag(b, wire.MapDeleteFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
 		for k := range x.deleted {
-			b = x.keyCodec.marshalFunc(b, k)
+			b = x.keyCodec.Marshal(b, k)
 		}
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	for k, v := range x.updated {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.wireType)
-		b = x.keyCodec.marshalFunc(b, k)
-		b = wire.AppendTag(b, wire.MapEntryValueFieldNumber, x.valueCodec.wireType)
-		b = x.valueCodec.marshalFunc(b, v)
+		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType())
+		b = x.keyCodec.Marshal(b, k)
+		b = wire.AppendTag(b, wire.MapEntryValueFieldNumber, x.valueCodec.WireType())
+		b = x.valueCodec.Marshal(b, v)
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	return b, err
@@ -309,7 +309,7 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 		x.Clear()
 	}
 	for b := deleted; len(b) > 0; {
-		k, n, err := x.keyCodec.unmarshalFunc(b)
+		k, n, err := x.keyCodec.Unmarshal(b)
 		if err != nil {
 			return err
 		}
@@ -328,15 +328,15 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 			err = wire.ErrUnknown
 			switch num {
 			case wire.MapEntryKeyFieldNumber:
-				if wtyp != x.keyCodec.wireType {
+				if wtyp != x.keyCodec.WireType() {
 					break
 				}
-				k, valLen, err = x.keyCodec.unmarshalFunc(b[tagLen:])
+				k, valLen, err = x.keyCodec.Unmarshal(b[tagLen:])
 			case wire.MapEntryValueFieldNumber:
-				if wtyp != x.valueCodec.wireType {
+				if wtyp != x.valueCodec.WireType() {
 					break
 				}
-				v, valLen, err = x.valueCodec.unmarshalFunc(b[tagLen:])
+				v, valLen, err = x.valueCodec.Unmarshal(b[tagLen:])
 			}
 			if err == wire.ErrUnknown {
 				if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
@@ -354,10 +354,10 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 
 func (x *MapField[K, V]) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartObject()
-	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.compareFunc)
+	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.Compare)
 	for _, k := range keys {
-		x.keyCodec.writeJSONFunc(e, k)
-		x.valueCodec.writeJSONFunc(e, x.data[k])
+		x.keyCodec.WriteJson(e, k)
+		x.valueCodec.WriteJson(e, x.data[k])
 	}
 	e.WriteEndObject()
 }
@@ -376,11 +376,11 @@ type MapMessage[K comparable, T any, V Message[T]] struct {
 
 	dirtyParent DirtyFunc
 
-	keyCodec  *fieldCodec[K]
+	keyCodec  FieldCodec[K]
 	valueType *MessageType[T, V]
 }
 
-func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, keyCodec *fieldCodec[K], valueType *MessageType[T, V]) {
+func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueType *MessageType[T, V]) {
 	x.data = make(map[K]V)
 	x.updated = make(map[K]V)
 	x.deleted = make(map[K]struct{})
@@ -589,8 +589,8 @@ func (x *MapMessage[K, T, V]) Marshal(b []byte) ([]byte, error) {
 	for k, v := range x.data {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.wireType)
-		b = x.keyCodec.marshalFunc(b, k)
+		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType())
+		b = x.keyCodec.Marshal(b, k)
 		if b, err = wire.MarshalMessage(b, wire.MapEntryValueFieldNumber, v); err != nil {
 			return b, err
 		}
@@ -611,15 +611,15 @@ func (x *MapMessage[K, T, V]) MarshalChange(b []byte) ([]byte, error) {
 		b = wire.AppendTag(b, wire.MapDeleteFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
 		for k := range x.deleted {
-			b = x.keyCodec.marshalFunc(b, k)
+			b = x.keyCodec.Marshal(b, k)
 		}
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
 	for k, v := range x.updated {
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
-		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.wireType)
-		b = x.keyCodec.marshalFunc(b, k)
+		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType())
+		b = x.keyCodec.Marshal(b, k)
 		if b, err = wire.MarshalMessageChange(b, wire.MapEntryValueFieldNumber, v); err != nil {
 			return b, err
 		}
@@ -664,7 +664,7 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 		x.Clear()
 	}
 	for b := deleted; len(b) > 0; {
-		k, n, err := x.keyCodec.unmarshalFunc(b)
+		k, n, err := x.keyCodec.Unmarshal(b)
 		if err != nil {
 			return err
 		}
@@ -683,10 +683,10 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 			err = wire.ErrUnknown
 			switch num {
 			case wire.MapEntryKeyFieldNumber:
-				if wtyp != x.keyCodec.wireType {
+				if wtyp != x.keyCodec.WireType() {
 					break
 				}
-				k, valLen, err = x.keyCodec.unmarshalFunc(b)
+				k, valLen, err = x.keyCodec.Unmarshal(b)
 			case wire.MapEntryValueFieldNumber:
 				v, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
 			}
@@ -715,9 +715,9 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 
 func (x *MapMessage[K, T, V]) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartObject()
-	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.compareFunc)
+	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.Compare)
 	for _, k := range keys {
-		x.keyCodec.writeJSONFunc(e, k)
+		x.keyCodec.WriteJson(e, k)
 		e.WriteValue(x.data[k])
 	}
 	e.WriteEndObject()
