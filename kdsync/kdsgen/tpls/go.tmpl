@@ -280,7 +280,6 @@ func (x *{{$MessageName}}) Unmarshal(b []byte) error {
 func (x *{{$MessageName}}) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteStartObject()
 {{- range .Fields}}
-{{- if not .NoSync}}
 {{- if .Repeated}}
 	e.Write("{{.Name}}", &x.xxx_hidden_{{.Name}})
 {{- else if .Map}}
@@ -313,7 +312,6 @@ func (x *{{$MessageName}}) WriteJSON(e *kdsjson.Encoder) {
 	e.WriteDuration("{{.Name}}", x.xxx_hidden_{{.Name}})
 {{- else if eq .Type "empty"}}
 	e.WriteEmpty("{{.Name}}", x.xxx_hidden_{{.Name}})
-{{- end}}
 {{- end}}
 {{- end}}
 	e.WriteEndObject()

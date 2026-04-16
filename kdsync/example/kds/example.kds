@@ -12,7 +12,7 @@ component AllType {
 	int64 int64Val = 2;
 	uint32 uint32Val = 3;
 	uint64 uint64Val = 4;
-	sint32 sint32Val = 5;
+	sint32 sint32Val = 5 [nosync];
 	sint64 sint64Val = 6;
 	fixed32 fixed32Val = 7;
 	fixed64 fixed64Val = 8;
@@ -45,7 +45,7 @@ component AllList {
 	repeated uint32 uint32List = 2;
 	repeated int64 int64List = 3;
 	repeated uint64 uint64List = 4;
-	repeated float floatList = 5;
+	repeated float floatList = 5 [nopersist];
 	repeated double doubleList = 6;
 	repeated bool boolList = 7;
 	repeated string stringList = 8;
@@ -59,7 +59,7 @@ component AllList {
 component AllMap {
 	map<int32, int32> int32Int32Map = 1;
 	map<int64, int64> int64Int64Map = 2;
-	map<uint32, uint32> uint32Uint32Map = 3;
+	map<uint32, uint32> uint32Uint32Map = 3 [nosync, nopersist];
 	map<uint64, uint64> uint64Uint64Map = 4;
 	map<bool, float> boolFloatMap = 5;
 	map<string, double> stringDoubleMap = 6;

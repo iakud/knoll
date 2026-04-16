@@ -143,9 +143,6 @@ namespace Kds
 		private ulong uint64Val_;
 		public ulong Uint64Val => uint64Val_;
 
-		private int sint32Val_;
-		public int Sint32Val => sint32Val_;
-
 		private long sint64Val_;
 		public long Sint64Val => sint64Val_;
 
@@ -202,7 +199,6 @@ namespace Kds
 			public bool Int64Val => (_changed & (0x01 << 2)) != 0;
 			public bool Uint32Val => (_changed & (0x01 << 3)) != 0;
 			public bool Uint64Val => (_changed & (0x01 << 4)) != 0;
-			public bool Sint32Val => (_changed & (0x01 << 5)) != 0;
 			public bool Sint64Val => (_changed & (0x01 << 6)) != 0;
 			public bool Fixed32Val => (_changed & (0x01 << 7)) != 0;
 			public bool Fixed64Val => (_changed & (0x01 << 8)) != 0;
@@ -248,10 +244,6 @@ namespace Kds
 					case 4:
 						uint64Val_ = ctx.ReadUInt64();
 						_changed |= 0x01 << 4;
-						break;
-					case 5:
-						sint32Val_ = ctx.ReadSInt32();
-						_changed |= 0x01 << 5;
 						break;
 					case 6:
 						sint64Val_ = ctx.ReadSInt64();
@@ -345,7 +337,6 @@ namespace Kds
 			writer.WriteNumber("Int64Val", int64Val_);
 			writer.WriteNumber("Uint32Val", uint32Val_);
 			writer.WriteNumber("Uint64Val", uint64Val_);
-			writer.WriteNumber("Sint32Val", sint32Val_);
 			writer.WriteNumber("Sint64Val", sint64Val_);
 			writer.WriteNumber("Fixed32Val", fixed32Val_);
 			writer.WriteNumber("Fixed64Val", fixed64Val_);
@@ -636,7 +627,6 @@ namespace Kds
 		{
 			int32Int32Map_ = new Kdsync.Map<int, int>();
 			int64Int64Map_ = new Kdsync.Map<long, long>();
-			uint32Uint32Map_ = new Kdsync.Map<uint, uint>();
 			uint64Uint64Map_ = new Kdsync.Map<ulong, ulong>();
 			boolFloatMap_ = new Kdsync.Map<bool, float>();
 			stringDoubleMap_ = new Kdsync.Map<string, double>();
@@ -657,10 +647,6 @@ namespace Kds
 		private static readonly Kdsync.Map<long, long>.Codec _map_int64Int64Map__codec = new Kdsync.Map<long, long>.Codec(Kdsync.FieldCodec.ForInt64(), Kdsync.FieldCodec.ForInt64(), 2);
 		private Kdsync.Map<long, long> int64Int64Map_;
 		public Kdsync.Map<long, long> Int64Int64Map => int64Int64Map_;
-
-		private static readonly Kdsync.Map<uint, uint>.Codec _map_uint32Uint32Map__codec = new Kdsync.Map<uint, uint>.Codec(Kdsync.FieldCodec.ForUInt32(), Kdsync.FieldCodec.ForUInt32(), 3);
-		private Kdsync.Map<uint, uint> uint32Uint32Map_;
-		public Kdsync.Map<uint, uint> Uint32Uint32Map => uint32Uint32Map_;
 
 		private static readonly Kdsync.Map<ulong, ulong>.Codec _map_uint64Uint64Map__codec = new Kdsync.Map<ulong, ulong>.Codec(Kdsync.FieldCodec.ForUInt64(), Kdsync.FieldCodec.ForUInt64(), 4);
 		private Kdsync.Map<ulong, ulong> uint64Uint64Map_;
@@ -715,7 +701,6 @@ namespace Kds
 			public long _changed;
 			public bool Int32Int32Map => (_changed & (0x01 << 1)) != 0;
 			public bool Int64Int64Map => (_changed & (0x01 << 2)) != 0;
-			public bool Uint32Uint32Map => (_changed & (0x01 << 3)) != 0;
 			public bool Uint64Uint64Map => (_changed & (0x01 << 4)) != 0;
 			public bool BoolFloatMap => (_changed & (0x01 << 5)) != 0;
 			public bool StringDoubleMap => (_changed & (0x01 << 6)) != 0;
@@ -749,10 +734,6 @@ namespace Kds
 					case 2:
 						int64Int64Map_.MergeFrom(ref ctx, _map_int64Int64Map__codec);
 						_changed |= 0x01 << 2;
-						break;
-					case 3:
-						uint32Uint32Map_.MergeFrom(ref ctx, _map_uint32Uint32Map__codec);
-						_changed |= 0x01 << 3;
 						break;
 					case 4:
 						uint64Uint64Map_.MergeFrom(ref ctx, _map_uint64Uint64Map__codec);
@@ -813,8 +794,6 @@ namespace Kds
 				int32Int32Map_.RaiseChanged();
 			if ((_changed & (0x01 << 2)) != 0)
 				int64Int64Map_.RaiseChanged();
-			if ((_changed & (0x01 << 3)) != 0)
-				uint32Uint32Map_.RaiseChanged();
 			if ((_changed & (0x01 << 4)) != 0)
 				uint64Uint64Map_.RaiseChanged();
 			if ((_changed & (0x01 << 5)) != 0)
@@ -848,8 +827,6 @@ namespace Kds
 				int32Int32Map_.ClearChanged();
 			if ((_changed & (0x01 << 2)) != 0)
 				int64Int64Map_.ClearChanged();
-			if ((_changed & (0x01 << 3)) != 0)
-				uint32Uint32Map_.ClearChanged();
 			if ((_changed & (0x01 << 4)) != 0)
 				uint64Uint64Map_.ClearChanged();
 			if ((_changed & (0x01 << 5)) != 0)
@@ -880,7 +857,6 @@ namespace Kds
 			writer.WriteStartObject();
 			writer.WriteMap("Int32Int32Map", int32Int32Map_);
 			writer.WriteMap("Int64Int64Map", int64Int64Map_);
-			writer.WriteMap("Uint32Uint32Map", uint32Uint32Map_);
 			writer.WriteMap("Uint64Uint64Map", uint64Uint64Map_);
 			writer.WriteMap("BoolFloatMap", boolFloatMap_);
 			writer.WriteMap("StringDoubleMap", stringDoubleMap_);

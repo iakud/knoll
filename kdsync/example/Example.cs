@@ -38,7 +38,7 @@ namespace Kds
             _all.Maps.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Changed");
             _all.Maps.Int32Int32Map.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Int32Int32Map.Changed");
             _all.Maps.Int64Int64Map.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Int64Int64Map.Changed");
-            _all.Maps.Uint32Uint32Map.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Uint32Uint32Map.Changed");
+            // nosync: _all.Maps.Uint32Uint32Map.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Uint32Uint32Map.Changed");
             _all.Maps.Uint64Uint64Map.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.Uint64Uint64Map.Changed");
             _all.Maps.BoolFloatMap.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.BoolFloatMap.Changed");
             _all.Maps.StringDoubleMap.OnChanged += (sender, e) => Console.Out.WriteLine($"All.Maps.StringDoubleMap.Changed");
@@ -75,12 +75,8 @@ namespace Kds
         }
 
         [UnmanagedCallersOnly(EntryPoint = "to_string", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static IntPtr ToString()
+        public static new IntPtr ToString()
         {
-            // JsonWriter writer = new JsonWriter(true);
-			// writer.WriteMessageValue(_all);
-			// return Marshal.StringToHGlobalAnsi(writer.ToString());
-            
             return Marshal.StringToHGlobalAnsi(_all.ToString());
         }
     }

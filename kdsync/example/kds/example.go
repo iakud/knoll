@@ -342,7 +342,7 @@ func (x *AllType) SetSint32Val(v int32) {
 		return
 	}
 	x.xxx_hidden_Sint32Val = v
-	x.updateDirty(uint64(0x01) << 5, kdsync.DirtyType_SyncAndPersist)
+	x.updateDirty(uint64(0x01) << 5, kdsync.DirtyType_Persist)
 }
 
 func (x *AllType) GetSint64Val() int64 {
@@ -961,7 +961,7 @@ func (x *AllList) GetFloatList() kdsync.Repeated[float32] {
 
 func (x *AllList) initFloatList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 5, t&kdsync.DirtyType_SyncAndPersist)
+		x.updateDirty(uint64(0x01) << 5, t&kdsync.DirtyType_Sync)
 	}
 	x.xxx_hidden_FloatList.Init(dirtyFunc, kdsync.Float32Codec())
 }
@@ -1327,9 +1327,6 @@ func (x *AllList) ClearPersistDirty() {
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<4) != 0 {
 		x.xxx_hidden_Uint64List.ClearDirty()
 	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<5) != 0 {
-		x.xxx_hidden_FloatList.ClearDirty()
-	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<6) != 0 {
 		x.xxx_hidden_DoubleList.ClearDirty()
 	}
@@ -1450,7 +1447,7 @@ func (x *AllMap) GetUint32Uint32Map() kdsync.Map[uint32, uint32] {
 
 func (x *AllMap) initUint32Uint32Map() {
 	dirtyFunc := func(t kdsync.DirtyType) {
-		x.updateDirty(uint64(0x01) << 3, t&kdsync.DirtyType_SyncAndPersist)
+		x.updateDirty(uint64(0x01) << 3, t&kdsync.DirtyType_None)
 	}
 	x.xxx_hidden_Uint32Uint32Map.Init(dirtyFunc, kdsync.Uint32Codec(), kdsync.Uint32Codec())
 }
@@ -1808,9 +1805,6 @@ func (x *AllMap) ClearDirty() {
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<2) != 0 {
 		x.xxx_hidden_Int64Int64Map.ClearDirty()
 	}
-	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<3) != 0 {
-		x.xxx_hidden_Uint32Uint32Map.ClearDirty()
-	}
 	if x.dirty&uint64(0x01) != 0 || x.dirty&(uint64(0x01)<<4) != 0 {
 		x.xxx_hidden_Uint64Uint64Map.ClearDirty()
 	}
@@ -1856,9 +1850,6 @@ func (x *AllMap) ClearPersistDirty() {
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<2) != 0 {
 		x.xxx_hidden_Int64Int64Map.ClearDirty()
-	}
-	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<3) != 0 {
-		x.xxx_hidden_Uint32Uint32Map.ClearDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<4) != 0 {
 		x.xxx_hidden_Uint64Uint64Map.ClearDirty()
