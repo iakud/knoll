@@ -44,7 +44,7 @@ func (x *ItemData) SetId(v int32) {
 		return
 	}
 	x.xxx_hidden_Id = v
-	x.updateDirty(uint64(0x01) << 1, kdsync.DirtyType_SyncAndPersist)
+	x.updateDirty(uint64(0x01)<<1, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *ItemData) GetName() string {
@@ -56,7 +56,7 @@ func (x *ItemData) SetName(v string) {
 		return
 	}
 	x.xxx_hidden_Name = v
-	x.updateDirty(uint64(0x01) << 2, kdsync.DirtyType_SyncAndPersist)
+	x.updateDirty(uint64(0x01)<<2, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *ItemData) GetCount() int32 {
@@ -68,7 +68,7 @@ func (x *ItemData) SetCount(v int32) {
 		return
 	}
 	x.xxx_hidden_Count = v
-	x.updateDirty(uint64(0x01) << 3, kdsync.DirtyType_SyncAndPersist)
+	x.updateDirty(uint64(0x01)<<3, kdsync.DirtyType_SyncAndPersist)
 }
 
 func (x *ItemData) Marshal(b []byte) ([]byte, error) {
@@ -152,7 +152,7 @@ func (x *ItemData) WriteJSON(e *kdsjson.Encoder) error {
 }
 
 func (x *ItemData) updateDirty(n uint64, t kdsync.DirtyType) {
-	switch t {	
+	switch t {
 	case kdsync.DirtyType_Sync:
 		if x.dirty&n == n {
 			return
