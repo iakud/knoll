@@ -405,9 +405,7 @@ func (x *MapMessage[K, T, V]) Clear() {
 		return
 	}
 	for _, v := range x.data {
-		if v != nil {
-			x.valueType.ClearDirtyParent(v)
-		}
+		x.valueType.ClearDirtyParent(v)
 	}
 	clear(x.data)
 	x.updateDirtyCleared(DirtyType_SyncAndPersist)
@@ -419,24 +417,18 @@ func (x *MapMessage[K, T, V]) Get(k K) (V, bool) {
 }
 
 func (x *MapMessage[K, T, V]) Set(k K, v V) {
-	if v != nil {
-		if x.valueType.CheckDirtyParent(v) {
-			panic("the component should be removed from its original place first")
-		}
+	if x.valueType.CheckDirtyParent(v) {
+		panic("the component should be removed from its original place first")
 	}
 	if e, ok := x.data[k]; ok {
 		if e == v {
 			return
 		}
-		if e != nil {
-			x.valueType.ClearDirtyParent(e)
-		}
+		x.valueType.ClearDirtyParent(e)
 	}
-	if v != nil {
-		x.valueType.SetDirtyParent(v, func(t DirtyType) {
-			x.updateDirtyUpdated(k, v, t)
-		})
-	}
+	x.valueType.SetDirtyParent(v, func(t DirtyType) {
+		x.updateDirtyUpdated(k, v, t)
+	})
 	x.data[k] = v
 	x.updateDirtyUpdated(k, v, DirtyType_SyncAndPersist)
 }
@@ -446,9 +438,7 @@ func (x *MapMessage[K, T, V]) Delete(k K) {
 	if !ok {
 		return
 	}
-	if v != nil {
-		x.valueType.ClearDirtyParent(v)
-	}
+	x.valueType.ClearDirtyParent(v)
 	delete(x.data, k)
 	x.updateDirtyDeleted(k, DirtyType_SyncAndPersist)
 }
@@ -562,9 +552,7 @@ func (x *MapMessage[K, T, V]) ClearDirty() {
 		return
 	}
 	for _, v := range x.updated {
-		if v != nil {
-			v.ClearDirty()
-		}
+		v.ClearDirty()
 	}
 	x.cleared = false
 	clear(x.updated)
@@ -576,9 +564,7 @@ func (x *MapMessage[K, T, V]) ClearPersistDirty() {
 		return
 	}
 	for _, v := range x.persistUpdated {
-		if v != nil {
-			v.ClearPersistDirty()
-		}
+		v.ClearPersistDirty()
 	}
 	x.persistCleared = false
 	clear(x.persistUpdated)
@@ -691,9 +677,12 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 				if wtyp != x.keyCodec.WireType() {
 					break
 				}
-				k, valLen, err = x.keyCodec.Unmarshal(b)
+				k, valLen, err = x.keyCodec.Unmarshal(b[tagLen:])
 			case wire.MapEntryValueFieldNumber:
-				v, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
+				if wtyp != wire.BytesType {
+					break
+				}
+				v, valLen, err = wire.ConsumeBytes(b[tagLen:])
 			}
 			if err == wire.ErrUnknown {
 				if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {

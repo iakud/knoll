@@ -284,9 +284,7 @@ func (x *RepeatedMessage[T, E]) Clear() {
 		return
 	}
 	for _, v := range x.data {
-		if v != nil {
-			x.fieldType.ClearDirtyParent(v)
-		}
+		x.fieldType.ClearDirtyParent(v)
 	}
 	clear(x.data)
 	x.data = x.data[:0]
@@ -301,15 +299,11 @@ func (x *RepeatedMessage[T, E]) Set(i int, v E) {
 	if v == x.data[i] {
 		return
 	}
-	if v != nil {
-		if x.fieldType.CheckDirtyParent(v) {
-			panic("the component should be removed from its original place first")
-		}
-		x.fieldType.SetDirtyParent(v, x.updateDirty)
+	if x.fieldType.CheckDirtyParent(v) {
+		panic("the component should be removed from its original place first")
 	}
-	if x.data[i] != nil {
-		x.fieldType.ClearDirtyParent(x.data[i])
-	}
+	x.fieldType.SetDirtyParent(v, x.updateDirty)
+	x.fieldType.ClearDirtyParent(x.data[i])
 	x.data[i] = v
 	x.updateDirty(DirtyType_SyncAndPersist)
 }
@@ -319,12 +313,10 @@ func (x *RepeatedMessage[T, E]) Append(v ...E) {
 		return
 	}
 	for i := range v {
-		if v[i] != nil {
-			if x.fieldType.CheckDirtyParent(v[i]) {
-				panic("the component should be removed from its original place first")
-			}
-			x.fieldType.SetDirtyParent(v[i], x.updateDirty)
+		if x.fieldType.CheckDirtyParent(v[i]) {
+			panic("the component should be removed from its original place first")
 		}
+		x.fieldType.SetDirtyParent(v[i], x.updateDirty)
 	}
 	x.data = append(x.data, v...)
 	x.updateDirty(DirtyType_SyncAndPersist)
@@ -362,12 +354,10 @@ func (x *RepeatedMessage[T, E]) Insert(i int, v ...E) {
 		return
 	}
 	for j := range v {
-		if v[j] != nil {
-			if x.fieldType.CheckDirtyParent(v[j]) {
-				panic("the component should be removed from its original place first")
-			}
-			x.fieldType.SetDirtyParent(v[j], x.updateDirty)
+		if x.fieldType.CheckDirtyParent(v[j]) {
+			panic("the component should be removed from its original place first")
 		}
+		x.fieldType.SetDirtyParent(v[j], x.updateDirty)
 	}
 	x.data = slices.Insert(x.data, i, v...)
 	x.updateDirty(DirtyType_SyncAndPersist)
@@ -379,9 +369,7 @@ func (x *RepeatedMessage[T, E]) Delete(i, j int) {
 	}
 	r := x.data[i:j:len(x.data)]
 	for k := range r {
-		if r[k] != nil {
-			x.fieldType.ClearDirtyParent(r[k])
-		}
+		x.fieldType.ClearDirtyParent(r[k])
 	}
 	x.data = slices.Delete(x.data, i, j)
 	x.updateDirty(DirtyType_SyncAndPersist)
@@ -392,15 +380,11 @@ func (x *RepeatedMessage[T, E]) DeleteFunc(del func(E) bool) {
 	if i == -1 {
 		return
 	}
-	if x.data[i] != nil {
-		x.fieldType.ClearDirtyParent(x.data[i])
-	}
+	x.fieldType.ClearDirtyParent(x.data[i])
 	for j := i + 1; j < len(x.data); j++ {
 		v := x.data[j]
 		if del(v) {
-			if v != nil {
-				x.fieldType.ClearDirtyParent(v)
-			}
+			x.fieldType.ClearDirtyParent(v)
 			continue
 		}
 		x.data[i] = v
@@ -416,18 +400,14 @@ func (x *RepeatedMessage[T, E]) Replace(i, j int, v ...E) {
 		return
 	}
 	for k := range v {
-		if v[k] != nil {
-			if x.fieldType.CheckDirtyParent(v[k]) {
-				panic("the component should be removed from its original place first")
-			}
-			x.fieldType.SetDirtyParent(v[k], x.updateDirty)
+		if x.fieldType.CheckDirtyParent(v[k]) {
+			panic("the component should be removed from its original place first")
 		}
+		x.fieldType.SetDirtyParent(v[k], x.updateDirty)
 	}
 	r := x.data[i:j:len(x.data)]
 	for k := range r {
-		if r[k] != nil {
-			x.fieldType.ClearDirtyParent(r[k])
-		}
+		x.fieldType.ClearDirtyParent(r[k])
 	}
 	x.data = slices.Replace(x.data, i, j, v...)
 	x.updateDirty(DirtyType_SyncAndPersist)
@@ -479,18 +459,14 @@ func (x *RepeatedMessage[T, E]) updateDirty(t DirtyType) {
 
 func (x *RepeatedMessage[T, E]) ClearDirty() {
 	for _, v := range x.data {
-		if v != nil {
-			v.ClearDirty()
-		}
+		v.ClearDirty()
 	}
 	x.dirty = false
 }
 
 func (x *RepeatedMessage[T, E]) ClearPersistDirty() {
 	for _, v := range x.data {
-		if v != nil {
-			v.ClearPersistDirty()
-		}
+		v.ClearPersistDirty()
 	}
 	x.persistDirty = false
 }
