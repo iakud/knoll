@@ -2,7 +2,6 @@
 // source: kds/example.kds
 
 using System;
-using System.Collections.Generic;
 
 namespace Kds
 {
@@ -367,19 +366,19 @@ namespace Kds
 	{
 		public AllList()
 		{
-			int32List_ = new Kdsync.Repeated<int>(_list_int32List__codec);
-			uint32List_ = new Kdsync.Repeated<uint>(_list_uint32List__codec);
-			int64List_ = new Kdsync.Repeated<long>(_list_int64List__codec);
-			uint64List_ = new Kdsync.Repeated<ulong>(_list_uint64List__codec);
-			floatList_ = new Kdsync.Repeated<float>(_list_floatList__codec);
-			doubleList_ = new Kdsync.Repeated<double>(_list_doubleList__codec);
-			boolList_ = new Kdsync.Repeated<bool>(_list_boolList__codec);
-			stringList_ = new Kdsync.Repeated<string>(_list_stringList__codec);
-			timestampList_ = new Kdsync.Repeated<Kdsync.Timestamp>(_list_timestampList__codec);
-			durationList_ = new Kdsync.Repeated<Kdsync.Duration>(_list_durationList__codec);
-			emptyList_ = new Kdsync.Repeated<Kdsync.Empty>(_list_emptyList__codec);
-			enumList_ = new Kdsync.Repeated<ItemType>(_list_enumList__codec);
-			itemList_ = new Kdsync.Repeated<ItemData>(_list_itemList__codec);
+			int32List_ = new Kdsync.Repeated<int>();
+			uint32List_ = new Kdsync.Repeated<uint>();
+			int64List_ = new Kdsync.Repeated<long>();
+			uint64List_ = new Kdsync.Repeated<ulong>();
+			floatList_ = new Kdsync.Repeated<float>();
+			doubleList_ = new Kdsync.Repeated<double>();
+			boolList_ = new Kdsync.Repeated<bool>();
+			stringList_ = new Kdsync.Repeated<string>();
+			timestampList_ = new Kdsync.Repeated<Kdsync.Timestamp>();
+			durationList_ = new Kdsync.Repeated<Kdsync.Duration>();
+			emptyList_ = new Kdsync.Repeated<Kdsync.Empty>();
+			enumList_ = new Kdsync.Repeated<ItemType>();
+			itemList_ = new Kdsync.Repeated<ItemData>();
 		}
 
 		private static readonly Kdsync.FieldCodec<int> _list_int32List__codec = Kdsync.FieldCodec.ForIntValue();
@@ -470,55 +469,55 @@ namespace Kds
 				switch (num)
 				{
 					case 1:
-						int32List_.MergeFrom(ref ctx);
+						int32List_.MergeFrom(ref ctx, _list_int32List__codec);
 						_changed |= 0x01 << 1;
 						break;
 					case 2:
-						uint32List_.MergeFrom(ref ctx);
+						uint32List_.MergeFrom(ref ctx, _list_uint32List__codec);
 						_changed |= 0x01 << 2;
 						break;
 					case 3:
-						int64List_.MergeFrom(ref ctx);
+						int64List_.MergeFrom(ref ctx, _list_int64List__codec);
 						_changed |= 0x01 << 3;
 						break;
 					case 4:
-						uint64List_.MergeFrom(ref ctx);
+						uint64List_.MergeFrom(ref ctx, _list_uint64List__codec);
 						_changed |= 0x01 << 4;
 						break;
 					case 5:
-						floatList_.MergeFrom(ref ctx);
+						floatList_.MergeFrom(ref ctx, _list_floatList__codec);
 						_changed |= 0x01 << 5;
 						break;
 					case 6:
-						doubleList_.MergeFrom(ref ctx);
+						doubleList_.MergeFrom(ref ctx, _list_doubleList__codec);
 						_changed |= 0x01 << 6;
 						break;
 					case 7:
-						boolList_.MergeFrom(ref ctx);
+						boolList_.MergeFrom(ref ctx, _list_boolList__codec);
 						_changed |= 0x01 << 7;
 						break;
 					case 8:
-						stringList_.MergeFrom(ref ctx);
+						stringList_.MergeFrom(ref ctx, _list_stringList__codec);
 						_changed |= 0x01 << 8;
 						break;
 					case 9:
-						timestampList_.MergeFrom(ref ctx);
+						timestampList_.MergeFrom(ref ctx, _list_timestampList__codec);
 						_changed |= 0x01 << 9;
 						break;
 					case 10:
-						durationList_.MergeFrom(ref ctx);
+						durationList_.MergeFrom(ref ctx, _list_durationList__codec);
 						_changed |= 0x01 << 10;
 						break;
 					case 11:
-						emptyList_.MergeFrom(ref ctx);
+						emptyList_.MergeFrom(ref ctx, _list_emptyList__codec);
 						_changed |= 0x01 << 11;
 						break;
 					case 12:
-						enumList_.MergeFrom(ref ctx);
+						enumList_.MergeFrom(ref ctx, _list_enumList__codec);
 						_changed |= 0x01 << 12;
 						break;
 					case 13:
-						itemList_.MergeFrom(ref ctx);
+						itemList_.MergeFrom(ref ctx, _list_itemList__codec);
 						_changed |= 0x01 << 13;
 						break;
 					default:
@@ -625,19 +624,19 @@ namespace Kds
 	{
 		public AllMap()
 		{
-			int32Int32Map_ = new Kdsync.Map<int, int>(_map_int32Int32Map__codec);
-			int64Int64Map_ = new Kdsync.Map<long, long>(_map_int64Int64Map__codec);
-			uint64Uint64Map_ = new Kdsync.Map<ulong, ulong>(_map_uint64Uint64Map__codec);
-			boolFloatMap_ = new Kdsync.Map<bool, float>(_map_boolFloatMap__codec);
-			stringDoubleMap_ = new Kdsync.Map<string, double>(_map_stringDoubleMap__codec);
-			int32BoolMap_ = new Kdsync.Map<int, bool>(_map_int32BoolMap__codec);
-			int64StringMap_ = new Kdsync.Map<long, string>(_map_int64StringMap__codec);
-			uint32BytesMap_ = new Kdsync.Map<uint, byte[]>(_map_uint32BytesMap__codec);
-			uint64TimestampMap_ = new Kdsync.Map<ulong, Kdsync.Timestamp>(_map_uint64TimestampMap__codec);
-			boolDurationMap_ = new Kdsync.Map<bool, Kdsync.Duration>(_map_boolDurationMap__codec);
-			stringEmptyMap_ = new Kdsync.Map<string, Kdsync.Empty>(_map_stringEmptyMap__codec);
-			int32ItemTypeMap_ = new Kdsync.Map<int, ItemType>(_map_int32ItemTypeMap__codec);
-			int64ItemDataMap_ = new Kdsync.Map<long, ItemData>(_map_int64ItemDataMap__codec);
+			int32Int32Map_ = new Kdsync.Map<int, int>();
+			int64Int64Map_ = new Kdsync.Map<long, long>();
+			uint64Uint64Map_ = new Kdsync.Map<ulong, ulong>();
+			boolFloatMap_ = new Kdsync.Map<bool, float>();
+			stringDoubleMap_ = new Kdsync.Map<string, double>();
+			int32BoolMap_ = new Kdsync.Map<int, bool>();
+			int64StringMap_ = new Kdsync.Map<long, string>();
+			uint32BytesMap_ = new Kdsync.Map<uint, byte[]>();
+			uint64TimestampMap_ = new Kdsync.Map<ulong, Kdsync.Timestamp>();
+			boolDurationMap_ = new Kdsync.Map<bool, Kdsync.Duration>();
+			stringEmptyMap_ = new Kdsync.Map<string, Kdsync.Empty>();
+			int32ItemTypeMap_ = new Kdsync.Map<int, ItemType>();
+			int64ItemDataMap_ = new Kdsync.Map<long, ItemData>();
 		}
 
 		private static readonly Kdsync.Map<int, int>.Codec _map_int32Int32Map__codec = new Kdsync.Map<int, int>.Codec(Kdsync.FieldCodec.ForIntKey(), Kdsync.FieldCodec.ForIntValue(), 1);
@@ -728,55 +727,55 @@ namespace Kds
 				switch (num)
 				{
 					case 1:
-						int32Int32Map_.MergeFrom(ref ctx);
+						int32Int32Map_.MergeFrom(ref ctx, _map_int32Int32Map__codec);
 						_changed |= 0x01 << 1;
 						break;
 					case 2:
-						int64Int64Map_.MergeFrom(ref ctx);
+						int64Int64Map_.MergeFrom(ref ctx, _map_int64Int64Map__codec);
 						_changed |= 0x01 << 2;
 						break;
 					case 4:
-						uint64Uint64Map_.MergeFrom(ref ctx);
+						uint64Uint64Map_.MergeFrom(ref ctx, _map_uint64Uint64Map__codec);
 						_changed |= 0x01 << 4;
 						break;
 					case 5:
-						boolFloatMap_.MergeFrom(ref ctx);
+						boolFloatMap_.MergeFrom(ref ctx, _map_boolFloatMap__codec);
 						_changed |= 0x01 << 5;
 						break;
 					case 6:
-						stringDoubleMap_.MergeFrom(ref ctx);
+						stringDoubleMap_.MergeFrom(ref ctx, _map_stringDoubleMap__codec);
 						_changed |= 0x01 << 6;
 						break;
 					case 7:
-						int32BoolMap_.MergeFrom(ref ctx);
+						int32BoolMap_.MergeFrom(ref ctx, _map_int32BoolMap__codec);
 						_changed |= 0x01 << 7;
 						break;
 					case 8:
-						int64StringMap_.MergeFrom(ref ctx);
+						int64StringMap_.MergeFrom(ref ctx, _map_int64StringMap__codec);
 						_changed |= 0x01 << 8;
 						break;
 					case 9:
-						uint32BytesMap_.MergeFrom(ref ctx);
+						uint32BytesMap_.MergeFrom(ref ctx, _map_uint32BytesMap__codec);
 						_changed |= 0x01 << 9;
 						break;
 					case 10:
-						uint64TimestampMap_.MergeFrom(ref ctx);
+						uint64TimestampMap_.MergeFrom(ref ctx, _map_uint64TimestampMap__codec);
 						_changed |= 0x01 << 10;
 						break;
 					case 11:
-						boolDurationMap_.MergeFrom(ref ctx);
+						boolDurationMap_.MergeFrom(ref ctx, _map_boolDurationMap__codec);
 						_changed |= 0x01 << 11;
 						break;
 					case 12:
-						stringEmptyMap_.MergeFrom(ref ctx);
+						stringEmptyMap_.MergeFrom(ref ctx, _map_stringEmptyMap__codec);
 						_changed |= 0x01 << 12;
 						break;
 					case 13:
-						int32ItemTypeMap_.MergeFrom(ref ctx);
+						int32ItemTypeMap_.MergeFrom(ref ctx, _map_int32ItemTypeMap__codec);
 						_changed |= 0x01 << 13;
 						break;
 					case 14:
-						int64ItemDataMap_.MergeFrom(ref ctx);
+						int64ItemDataMap_.MergeFrom(ref ctx, _map_int64ItemDataMap__codec);
 						_changed |= 0x01 << 14;
 						break;
 					default:

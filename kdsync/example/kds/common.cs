@@ -2,7 +2,6 @@
 // source: kds/common.kds
 
 using System;
-using System.Collections.Generic;
 
 namespace Kds
 {

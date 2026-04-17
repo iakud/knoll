@@ -134,9 +134,9 @@
 {{- range .Fields}}
 					case {{.Number}}:
 {{- if .Repeated}}
-						{{template "FieldName" .}}.MergeFrom(ref ctx);
+						{{template "FieldName" .}}.MergeFrom(ref ctx, _list_{{template "FieldName" .}}_codec);
 {{- else if .Map}}
-						{{template "FieldName" .}}.MergeFrom(ref ctx);
+						{{template "FieldName" .}}.MergeFrom(ref ctx, _map_{{template "FieldName" .}}_codec);
 {{- else if eq .TypeKind "component"}}
 						ctx.ReadMessage({{template "FieldName" .}});
 {{- else if eq .TypeKind "enum"}}
@@ -290,9 +290,9 @@
 			_id = id;
 {{- range .Fields}}
 {{- if .Repeated}}
-			{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>(_list_{{template "FieldName" .}}_codec);
+			{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>();
 {{- else if .Map}}
-			{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>(_map_{{template "FieldName" .}}_codec);
+			{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>();
 {{- else if eq .TypeKind "component"}}
 			{{template "FieldName" .}} = new {{.Type}}();
 {{- else if eq .Type "string"}}
@@ -322,9 +322,9 @@
 		{
 {{- range .Fields}}
 {{- if .Repeated}}
-			{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>(_list_{{template "FieldName" .}}_codec);
+			{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>();
 {{- else if .Map}}
-			{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>(_map_{{template "FieldName" .}}_codec);
+			{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>();
 {{- else if eq .TypeKind "component"}}
 			{{template "FieldName" .}} = new {{.Type}}();
 {{- else if eq .Type "string"}}
@@ -346,7 +346,6 @@
 {{- if or (len .Entities) (len .Components) (len .Types)}}
 {{/* EMPTY LINE */}}
 using System;
-using System.Collections.Generic;
 {{- end}}
 
 namespace {{ucFirst .Package}}

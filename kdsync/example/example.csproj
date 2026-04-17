@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kdsync" Version="1.0.10" />
+    <PackageReference Include="Kdsync" Version="1.0.11" />
   </ItemGroup>
 
 </Project>
