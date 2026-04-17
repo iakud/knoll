@@ -105,18 +105,18 @@ func (e *Encoder) writeEndIndented(token byte) {
 	e.out = append(e.out, token)
 }
 
-func (e *Encoder) WritePropertyName(name string) error {
+func (e *Encoder) WriteName(name string) error {
 	var err error
 	if e.indented {
-		err = e.writePropertyNameIndented(name)
+		err = e.writeNameIndented(name)
 	} else {
-		err = e.writePropertyNameMinimized(name)
+		err = e.writeNameMinimized(name)
 	}
 	e.tokenType = tokenName
 	return err
 }
 
-func (e *Encoder) writePropertyNameMinimized(name string) error {
+func (e *Encoder) writeNameMinimized(name string) error {
 	if e.tokenType != tokenStartObject {
 		e.out = append(e.out, ',')
 	}
@@ -125,7 +125,7 @@ func (e *Encoder) writePropertyNameMinimized(name string) error {
 	return err
 }
 
-func (e *Encoder) writePropertyNameIndented(name string) error {
+func (e *Encoder) writeNameIndented(name string) error {
 	if e.tokenType != tokenStartObject {
 		e.out = append(e.out, ',')
 	}
@@ -138,7 +138,7 @@ func (e *Encoder) writePropertyNameIndented(name string) error {
 }
 
 func (e *Encoder) WriteNull(name string) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	e.WriteNullValue()
@@ -146,7 +146,7 @@ func (e *Encoder) WriteNull(name string) error {
 }
 
 func (e *Encoder) WriteBool(name string, v bool) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	e.WriteBoolValue(v)
@@ -154,7 +154,7 @@ func (e *Encoder) WriteBool(name string, v bool) error {
 }
 
 func (e *Encoder) WriteInt32(name string, v int32) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	e.WriteInt32Value(v)
@@ -162,7 +162,7 @@ func (e *Encoder) WriteInt32(name string, v int32) error {
 }
 
 func (e *Encoder) WriteUint32(name string, v uint32) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	e.WriteUint32Value(v)
@@ -170,7 +170,7 @@ func (e *Encoder) WriteUint32(name string, v uint32) error {
 }
 
 func (e *Encoder) WriteInt64(name string, v int64) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	e.WriteInt64Value(v)
@@ -178,7 +178,7 @@ func (e *Encoder) WriteInt64(name string, v int64) error {
 }
 
 func (e *Encoder) WriteUint64(name string, v uint64) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	e.WriteUint64Value(v)
@@ -186,7 +186,7 @@ func (e *Encoder) WriteUint64(name string, v uint64) error {
 }
 
 func (e *Encoder) WriteFloat32(name string, v float32) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	e.WriteFloat32Value(v)
@@ -194,7 +194,7 @@ func (e *Encoder) WriteFloat32(name string, v float32) error {
 }
 
 func (e *Encoder) WriteFloat64(name string, v float64) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	e.WriteFloat64Value(v)
@@ -202,7 +202,7 @@ func (e *Encoder) WriteFloat64(name string, v float64) error {
 }
 
 func (e *Encoder) WriteBytes(name string, v []byte) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	e.WriteBytesValue(v)
@@ -210,7 +210,7 @@ func (e *Encoder) WriteBytes(name string, v []byte) error {
 }
 
 func (e *Encoder) WriteString(name string, v string) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	if err := e.WriteStringValue(v); err != nil {
@@ -220,7 +220,7 @@ func (e *Encoder) WriteString(name string, v string) error {
 }
 
 func (e *Encoder) WriteTimestamp(name string, v time.Time) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	e.WriteTimestampValue(v)
@@ -228,7 +228,7 @@ func (e *Encoder) WriteTimestamp(name string, v time.Time) error {
 }
 
 func (e *Encoder) WriteDuration(name string, v time.Duration) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	e.WriteDurationValue(v)
@@ -236,7 +236,7 @@ func (e *Encoder) WriteDuration(name string, v time.Duration) error {
 }
 
 func (e *Encoder) WriteEmpty(name string, v struct{}) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	e.WriteEmptyValue(v)
@@ -244,7 +244,7 @@ func (e *Encoder) WriteEmpty(name string, v struct{}) error {
 }
 
 func (e *Encoder) Write(name string, v Marshaler) error {
-	if err := e.WritePropertyName(name); err != nil {
+	if err := e.WriteName(name); err != nil {
 		return err
 	}
 	return e.WriteValue(v)
@@ -445,16 +445,16 @@ func (e *Encoder) writeValueSeparator() {
 }
 
 func (e *Encoder) writeValueSeparatorMinimized() {
-	if e.tokenType != tokenName && e.tokenType != tokenStartArray {
+	if e.tokenType != tokenNone && e.tokenType != tokenName && e.tokenType != tokenStartArray {
 		e.out = append(e.out, ',')
 	}
 }
 
 func (e *Encoder) writeValueSeparatorIndented() {
-	if e.tokenType != tokenName && e.tokenType != tokenStartArray {
+	if e.tokenType != tokenNone && e.tokenType != tokenName && e.tokenType != tokenStartArray {
 		e.out = append(e.out, ',')
 	}
-	if e.tokenType != tokenName {
+	if e.tokenType != tokenNone && e.tokenType != tokenName {
 		e.out = append(e.out, '\n')
 		e.writeIndentation(e.depth)
 	}

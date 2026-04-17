@@ -932,7 +932,7 @@ type AllList struct {
 	xxx_hidden_TimestampList kdsync.RepeatedField[time.Time]
 	xxx_hidden_DurationList kdsync.RepeatedField[time.Duration]
 	xxx_hidden_EmptyList kdsync.RepeatedField[struct{}]
-	xxx_hidden_EnumList kdsync.RepeatedField[ItemType]
+	xxx_hidden_EnumList kdsync.RepeatedEnum[ItemType]
 	xxx_hidden_ItemList kdsync.RepeatedMessage[ItemData, *ItemData]
 
 	dirty        uint64
@@ -1089,7 +1089,7 @@ func (x *AllList) initEnumList() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01)<<12, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_EnumList.Init(dirtyFunc, &kdsync.EnumValueCodec[ItemType]{})
+	x.xxx_hidden_EnumList.Init(dirtyFunc)
 }
 
 func (x *AllList) GetItemList() kdsync.Repeated[*ItemData] {
@@ -1466,7 +1466,7 @@ type AllMap struct {
 	xxx_hidden_Uint64TimestampMap kdsync.MapField[uint64, time.Time]
 	xxx_hidden_BoolDurationMap kdsync.MapField[bool, time.Duration]
 	xxx_hidden_StringEmptyMap kdsync.MapField[string, struct{}]
-	xxx_hidden_Int32ItemTypeMap kdsync.MapField[int32, ItemType]
+	xxx_hidden_Int32ItemTypeMap kdsync.MapEnum[int32, ItemType]
 	xxx_hidden_Int64ItemDataMap kdsync.MapMessage[int64, ItemData, *ItemData]
 
 	dirty        uint64
@@ -1635,7 +1635,7 @@ func (x *AllMap) initInt32ItemTypeMap() {
 	dirtyFunc := func(t kdsync.DirtyType) {
 		x.updateDirty(uint64(0x01)<<13, t&kdsync.DirtyType_SyncAndPersist)
 	}
-	x.xxx_hidden_Int32ItemTypeMap.Init(dirtyFunc, &kdsync.Int32KeyCodec{}, &kdsync.EnumValueCodec[ItemType]{})
+	x.xxx_hidden_Int32ItemTypeMap.Init(dirtyFunc, &kdsync.Int32KeyCodec{})
 }
 
 func (x *AllMap) GetInt64ItemDataMap() kdsync.Map[int64, *ItemData] {

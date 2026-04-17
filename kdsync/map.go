@@ -1,6 +1,7 @@
 package kdsync
 
 import (
+	"cmp"
 	"iter"
 	"maps"
 	"slices"
@@ -353,15 +354,340 @@ func (x *MapField[K, V]) Unmarshal(b []byte) error {
 }
 
 func (x *MapField[K, V]) WriteJSON(e *kdsjson.Encoder) error {
+	nameWriter := kdsjson.NameWriter[K]()
+	valueWriter := kdsjson.ValueWriter[V]()
 	e.WriteStartObject()
 	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.Compare)
 	for _, k := range keys {
-		if err := x.keyCodec.WriteJson(e, k); err != nil {
+		if err := nameWriter(e, k); err != nil {
 			return err
 		}
-		if err := x.valueCodec.WriteJson(e, x.data[k]); err != nil {
+		if err := valueWriter(e, x.data[k]); err != nil {
 			return err
 		}
+	}
+	e.WriteEndObject()
+	return nil
+}
+
+// Enum map
+type MapEnum[K comparable, V ~int32] struct {
+	data map[K]V
+
+	cleared bool
+	updated map[K]V
+	deleted map[K]struct{}
+
+	persistCleared bool
+	persistUpdated map[K]V
+	persistDeleted map[K]struct{}
+
+	dirtyParent DirtyFunc
+
+	keyCodec FieldCodec[K]
+}
+
+func (x *MapEnum[K, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K]) {
+	x.data = make(map[K]V)
+	x.updated = make(map[K]V)
+	x.deleted = make(map[K]struct{})
+	x.persistUpdated = make(map[K]V)
+	x.persistDeleted = make(map[K]struct{})
+	x.dirtyParent = dirtyParent
+	x.keyCodec = keyCodec
+}
+
+func (x *MapEnum[K, V]) Len() int {
+	return len(x.data)
+}
+
+func (x *MapEnum[K, V]) Clear() {
+	if len(x.data) == 0 && len(x.deleted) == 0 {
+		return
+	}
+	clear(x.data)
+	x.updateDirtyCleared(DirtyType_SyncAndPersist)
+}
+
+func (x *MapEnum[K, V]) Get(k K) (V, bool) {
+	v, ok := x.data[k]
+	return v, ok
+}
+
+func (x *MapEnum[K, V]) Set(k K, v V) {
+	if e, ok := x.data[k]; ok {
+		if cmp.Compare(v, e) == 0 {
+			return
+		}
+	}
+	x.data[k] = v
+	x.updateDirtyUpdated(k, v, DirtyType_SyncAndPersist)
+}
+
+func (x *MapEnum[K, V]) Delete(k K) {
+	if _, ok := x.data[k]; !ok {
+		return
+	}
+	delete(x.data, k)
+	x.updateDirtyDeleted(k, DirtyType_SyncAndPersist)
+}
+
+func (x *MapEnum[K, V]) All() iter.Seq2[K, V] {
+	return maps.All(x.data)
+}
+
+func (x *MapEnum[K, V]) Keys() iter.Seq[K] {
+	return maps.Keys(x.data)
+}
+
+func (x *MapEnum[K, V]) Values() iter.Seq[V] {
+	return maps.Values(x.data)
+}
+
+func (x *MapEnum[K, V]) updateDirtyCleared(t DirtyType) {
+	switch t {
+	case DirtyType_Sync:
+		if len(x.updated) == 0 && len(x.deleted) == 0 {
+			return
+		}
+		x.cleared = true
+		clear(x.updated)
+		clear(x.deleted)
+		x.dirtyParent.Invoke(DirtyType_Sync)
+	case DirtyType_Persist:
+		if len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
+			return
+		}
+		x.persistCleared = true
+		clear(x.persistUpdated)
+		clear(x.persistDeleted)
+		x.dirtyParent.Invoke(DirtyType_Persist)
+	case DirtyType_SyncAndPersist:
+		if len(x.updated) == 0 && len(x.deleted) == 0 && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
+			return
+		}
+		x.cleared = true
+		clear(x.updated)
+		clear(x.deleted)
+		x.persistCleared = true
+		clear(x.persistUpdated)
+		clear(x.persistDeleted)
+		x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
+	}
+}
+
+func (x *MapEnum[K, V]) updateDirtyUpdated(k K, v V, t DirtyType) {
+	switch t {
+	case DirtyType_Sync:
+		if _, ok := x.updated[k]; ok {
+			return
+		}
+		x.updated[k] = v
+		delete(x.deleted, k)
+		x.dirtyParent.Invoke(DirtyType_Sync)
+	case DirtyType_Persist:
+		if _, persistOk := x.persistUpdated[k]; persistOk {
+			return
+		}
+		x.persistUpdated[k] = v
+		delete(x.persistDeleted, k)
+		x.dirtyParent.Invoke(DirtyType_Persist)
+	case DirtyType_SyncAndPersist:
+		_, ok := x.updated[k]
+		_, persistOk := x.persistUpdated[k]
+		if ok && persistOk {
+			return
+		}
+		x.updated[k] = v
+		delete(x.deleted, k)
+		x.persistUpdated[k] = v
+		delete(x.persistDeleted, k)
+		x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
+	}
+}
+
+func (x *MapEnum[K, V]) updateDirtyDeleted(k K, t DirtyType) {
+	switch t {
+	case DirtyType_Sync:
+		if _, ok := x.updated[k]; ok {
+			return
+		}
+		delete(x.updated, k)
+		x.deleted[k] = struct{}{}
+		x.dirtyParent.Invoke(DirtyType_Sync)
+	case DirtyType_Persist:
+		if _, persistOk := x.persistDeleted[k]; persistOk {
+			return
+		}
+		delete(x.persistUpdated, k)
+		x.persistDeleted[k] = struct{}{}
+		x.dirtyParent.Invoke(DirtyType_Persist)
+	case DirtyType_SyncAndPersist:
+		_, ok := x.updated[k]
+		_, persistOk := x.persistDeleted[k]
+		if ok && persistOk {
+			return
+		}
+		delete(x.updated, k)
+		x.deleted[k] = struct{}{}
+		delete(x.persistUpdated, k)
+		x.persistDeleted[k] = struct{}{}
+		x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
+	}
+}
+
+func (x *MapEnum[K, V]) ClearDirty() {
+	if !x.cleared && len(x.updated) == 0 && len(x.deleted) == 0 {
+		return
+	}
+	x.cleared = false
+	clear(x.updated)
+	clear(x.deleted)
+}
+
+func (x *MapEnum[K, V]) ClearPersistDirty() {
+	if !x.persistCleared && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
+		return
+	}
+	x.persistCleared = false
+	clear(x.persistUpdated)
+	clear(x.persistDeleted)
+}
+
+func (x *MapEnum[K, V]) Marshal(b []byte) ([]byte, error) {
+	var pos int
+	var err error
+	if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
+		return b, err
+	}
+	for k, v := range x.data {
+		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
+		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType())
+		b = x.keyCodec.Marshal(b, k)
+		b = wire.AppendTag(b, wire.MapEntryValueFieldNumber, wire.VarintType)
+		b = wire.AppendEnum(b, v)
+		b = wire.FinishSpeculativeLength(b, pos)
+	}
+	return b, err
+}
+
+func (x *MapEnum[K, V]) MarshalChange(b []byte) ([]byte, error) {
+	var pos int
+	var err error
+	if x.cleared {
+		if b, err = wire.MarshalBool(b, wire.MapClearFieldNumber, true); err != nil {
+			return b, err
+		}
+	}
+	if len(x.deleted) > 0 {
+		b = wire.AppendTag(b, wire.MapDeleteFieldNumber, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
+		for k := range x.deleted {
+			b = x.keyCodec.Marshal(b, k)
+		}
+		b = wire.FinishSpeculativeLength(b, pos)
+	}
+	for k, v := range x.updated {
+		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
+		b, pos = wire.AppendSpeculativeLength(b)
+		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType())
+		b = x.keyCodec.Marshal(b, k)
+		b = wire.AppendTag(b, wire.MapEntryValueFieldNumber, wire.VarintType)
+		b = wire.AppendEnum(b, v)
+		b = wire.FinishSpeculativeLength(b, pos)
+	}
+	return b, err
+}
+
+func (x *MapEnum[K, V]) Unmarshal(b []byte) error {
+	var cleared bool
+	var deleted []byte
+	var updated [][]byte
+	for len(b) > 0 {
+		num, wtyp, tagLen, err := wire.ConsumeTag(b)
+		if err != nil {
+			return err
+		}
+		var valLen int
+		err = wire.ErrUnknown
+		switch num {
+		case wire.MapClearFieldNumber:
+			cleared, valLen, err = wire.UnmarshalBool(b[tagLen:], wtyp)
+		case wire.MapDeleteFieldNumber:
+			deleted, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp)
+		case wire.MapEntryFieldNumber:
+			var entry []byte
+			if entry, valLen, err = wire.UnmarshalBytes(b[tagLen:], wtyp); err != nil {
+				break
+			}
+			updated = append(updated, entry)
+		}
+		if err == wire.ErrUnknown {
+			if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
+				return err
+			}
+		} else if err != nil {
+			return err
+		}
+		b = b[tagLen+valLen:]
+	}
+	if cleared {
+		x.Clear()
+	}
+	for b := deleted; len(b) > 0; {
+		k, n, err := x.keyCodec.Unmarshal(b)
+		if err != nil {
+			return err
+		}
+		b = b[n:]
+		x.Delete(k)
+	}
+	for _, b := range updated {
+		var k K
+		var v V
+		for len(b) > 0 {
+			num, wtyp, tagLen, err := wire.ConsumeTag(b)
+			if err != nil {
+				return err
+			}
+			var valLen int
+			err = wire.ErrUnknown
+			switch num {
+			case wire.MapEntryKeyFieldNumber:
+				if wtyp != x.keyCodec.WireType() {
+					break
+				}
+				k, valLen, err = x.keyCodec.Unmarshal(b[tagLen:])
+			case wire.MapEntryValueFieldNumber:
+				if wtyp != wire.VarintType {
+					break
+				}
+				v, valLen, err = wire.ConsumeEnum[V](b[tagLen:])
+			}
+			if err == wire.ErrUnknown {
+				if valLen, err = wire.ConsumeFieldValue(num, wtyp, b[tagLen:]); err != nil {
+					return err
+				}
+			} else if err != nil {
+				return err
+			}
+			b = b[tagLen+valLen:]
+		}
+		x.Set(k, v)
+	}
+	return nil
+}
+
+func (x *MapEnum[K, V]) WriteJSON(e *kdsjson.Encoder) error {
+	nameWriter := kdsjson.NameWriter[K]()
+	e.WriteStartObject()
+	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.Compare)
+	for _, k := range keys {
+		if err := nameWriter(e, k); err != nil {
+			return err
+		}
+		kdsjson.WriteEnumValue(e, x.data[k])
 	}
 	e.WriteEndObject()
 	return nil
@@ -708,10 +1034,11 @@ func (x *MapMessage[K, T, V]) Unmarshal(b []byte) error {
 }
 
 func (x *MapMessage[K, T, V]) WriteJSON(e *kdsjson.Encoder) error {
+	nameWriter := kdsjson.NameWriter[K]()
 	e.WriteStartObject()
 	keys := slices.SortedFunc(maps.Keys(x.data), x.keyCodec.Compare)
 	for _, k := range keys {
-		if err := x.keyCodec.WriteJson(e, k); err != nil {
+		if err := nameWriter(e, k); err != nil {
 			return err
 		}
 		if err := e.WriteValue(x.data[k]); err != nil {

@@ -1,6 +1,7 @@
 package kdsync
 
 import (
+	"cmp"
 	"iter"
 	"slices"
 	"time"
@@ -249,11 +250,216 @@ func (x *RepeatedField[E]) Unmarshal(b []byte) error {
 }
 
 func (x *RepeatedField[E]) WriteJSON(e *kdsjson.Encoder) error {
+	valueWriter := kdsjson.ValueWriter[E]()
 	e.WriteStartArray()
 	for _, v := range x.data {
-		if err := x.fieldCodec.WriteJson(e, v); err != nil {
+		if err := valueWriter(e, v); err != nil {
 			return err
 		}
+	}
+	e.WriteEndArray()
+	return nil
+}
+
+// Enum repeated
+type RepeatedEnum[E ~int32] struct {
+	data []E
+
+	dirty        bool
+	persistDirty bool
+	dirtyParent  DirtyFunc
+}
+
+func (x *RepeatedEnum[E]) Init(dirtyParent DirtyFunc) {
+	x.dirtyParent = dirtyParent
+}
+
+func (x *RepeatedEnum[E]) Len() int {
+	return len(x.data)
+}
+
+func (x *RepeatedEnum[E]) Clear() {
+	if len(x.data) == 0 {
+		return
+	}
+	clear(x.data)
+	x.data = x.data[:0]
+	x.updateDirty(DirtyType_SyncAndPersist)
+}
+
+func (x *RepeatedEnum[E]) Get(i int) E {
+	return x.data[i]
+}
+
+func (x *RepeatedEnum[E]) Set(i int, v E) {
+	if cmp.Compare(v, x.data[i]) == 0 {
+		return
+	}
+	x.data[i] = v
+	x.updateDirty(DirtyType_SyncAndPersist)
+}
+
+func (x *RepeatedEnum[E]) Append(v ...E) {
+	if len(v) == 0 {
+		return
+	}
+	x.data = append(x.data, v...)
+	x.updateDirty(DirtyType_SyncAndPersist)
+}
+
+func (x *RepeatedEnum[E]) Index(v E) int {
+	for i := range x.data {
+		if cmp.Compare(v, x.data[i]) == 0 {
+			return i
+		}
+	}
+	return -1
+}
+
+func (x *RepeatedEnum[E]) IndexFunc(f func(E) bool) int {
+	for i := range x.data {
+		if f(x.data[i]) {
+			return i
+		}
+	}
+	return -1
+}
+
+func (x *RepeatedEnum[E]) Contains(v E) bool {
+	return x.Index(v) >= 0
+}
+
+func (x *RepeatedEnum[E]) ContainsFunc(f func(E) bool) bool {
+	return x.IndexFunc(f) >= 0
+}
+
+func (x *RepeatedEnum[E]) Insert(i int, v ...E) {
+	_ = x.data[i:] // bounds check
+	if len(v) == 0 {
+		return
+	}
+	x.data = slices.Insert(x.data, i, v...)
+	x.updateDirty(DirtyType_SyncAndPersist)
+}
+
+func (x *RepeatedEnum[E]) Delete(i, j int) {
+	_ = x.data[i:j:len(x.data)] // bounds check
+	if i == j {
+		return
+	}
+	x.data = slices.Delete(x.data, i, j)
+	x.updateDirty(DirtyType_SyncAndPersist)
+}
+
+func (x *RepeatedEnum[E]) DeleteFunc(del func(E) bool) {
+	i := x.IndexFunc(del)
+	if i == -1 {
+		return
+	}
+	for j := i + 1; j < len(x.data); j++ {
+		v := x.data[j]
+		if del(v) {
+			continue
+		}
+		x.data[i] = v
+		i++
+	}
+	clear(x.data[i:])
+	x.data = x.data[:i]
+	x.updateDirty(DirtyType_SyncAndPersist)
+}
+
+func (x *RepeatedEnum[E]) Replace(i, j int, v ...E) {
+	_ = x.data[i:j] // bounds check
+	if i == j && len(v) == 0 {
+		return
+	}
+	x.data = slices.Replace(x.data, i, j, v...)
+	x.updateDirty(DirtyType_SyncAndPersist)
+}
+
+func (x *RepeatedEnum[E]) Reverse() {
+	if len(x.data) < 2 {
+		return
+	}
+	slices.Reverse(x.data)
+	x.updateDirty(DirtyType_SyncAndPersist)
+}
+
+func (x *RepeatedEnum[E]) All() iter.Seq2[int, E] {
+	return slices.All(x.data)
+}
+
+func (x *RepeatedEnum[E]) Backward() iter.Seq2[int, E] {
+	return slices.Backward(x.data)
+}
+
+func (x *RepeatedEnum[E]) Values() iter.Seq[E] {
+	return slices.Values(x.data)
+}
+
+func (x *RepeatedEnum[E]) updateDirty(t DirtyType) {
+	switch t {
+	case DirtyType_Sync:
+		if x.dirty {
+			return
+		}
+		x.dirty = true
+		x.dirtyParent.Invoke(DirtyType_Sync)
+	case DirtyType_Persist:
+		if x.persistDirty {
+			return
+		}
+		x.persistDirty = true
+		x.dirtyParent.Invoke(DirtyType_Persist)
+	case DirtyType_SyncAndPersist:
+		if x.dirty && x.persistDirty {
+			return
+		}
+		x.dirty = true
+		x.persistDirty = true
+		x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
+	}
+}
+
+func (x *RepeatedEnum[E]) ClearDirty() {
+	x.dirty = false
+}
+
+func (x *RepeatedEnum[E]) ClearPersistDirty() {
+	x.persistDirty = false
+}
+
+func (x *RepeatedEnum[E]) Marshal(b []byte) ([]byte, error) {
+	if len(x.data) == 0 {
+		return b, nil
+	}
+	for _, v := range x.data {
+		b = wire.AppendEnum(b, v)
+	}
+	return b, nil
+}
+
+func (x *RepeatedEnum[E]) MarshalChange(b []byte) ([]byte, error) {
+	return x.Marshal(b)
+}
+
+func (x *RepeatedEnum[E]) Unmarshal(b []byte) error {
+	for len(b) > 0 {
+		v, n, err := wire.ConsumeEnum[E](b)
+		if err != nil {
+			return err
+		}
+		b = b[n:]
+		x.Append(v)
+	}
+	return nil
+}
+
+func (x *RepeatedEnum[E]) WriteJSON(e *kdsjson.Encoder) error {
+	e.WriteStartArray()
+	for _, v := range x.data {
+		kdsjson.WriteEnumValue(e, v)
 	}
 	e.WriteEndArray()
 	return nil

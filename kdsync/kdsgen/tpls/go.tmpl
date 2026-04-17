@@ -23,8 +23,8 @@
 {{- end}}
 {{- /* FIELD TYPE */ -}}
 {{- define "FieldType"}}
-{{- if eq .TypeKind "enum"}}{{.Type}}
-{{- else if eq .TypeKind "component"}}*{{.Type}}
+{{- if eq .TypeKind "component"}}*{{.Type}}
+{{- else if eq .TypeKind "enum"}}{{.Type}}
 {{- else}}{{template "Type" .Type}}
 {{- end}}
 {{- end}}
@@ -56,19 +56,18 @@
 {{- else}}kdsync.{{ucFirst .}}ValueCodec
 {{- end}}
 {{- end}}
-{{- /* ENUM VALUE CODEC */ -}}
-{{- define "EnumCodec"}}kdsync.EnumValueCodec[{{.}}]{{- end}}
 {{- /* REPEATED TYPE */ -}}
 {{- define "RepeatedType"}}
-{{- if eq .TypeKind "enum"}}kdsync.RepeatedField[{{.Type}}]
-{{- else if eq .TypeKind "component"}}kdsync.RepeatedMessage[{{.Type}}, *{{.Type}}]
+{{- if eq .TypeKind "component"}}kdsync.RepeatedMessage[{{.Type}}, *{{.Type}}]
+{{- else if eq .TypeKind "enum"}}kdsync.RepeatedEnum[{{.Type}}]
 {{- else}}kdsync.RepeatedField[{{template "Type" .Type}}]
 {{- end}}
 {{- end}}
 {{- /* MAP FIELD TYPE */ -}}
 {{- define "MapType"}}
 {{- if eq .TypeKind "component"}}kdsync.MapMessage[{{template "Type" .KeyType}}, {{.Type}}, *{{.Type}}]
-{{- else}}kdsync.MapField[{{template "Type" .KeyType}}, {{template "FieldType" .}}]
+{{- else if eq .TypeKind "enum"}}kdsync.MapEnum[{{template "Type" .KeyType}}, {{.Type}}]
+{{- else}}kdsync.MapField[{{template "Type" .KeyType}}, {{template "Type" .Type}}]
 {{- end}}
 {{- end}}
 {{- define "MessageType"}}message_{{.}}_type{{- end}}
@@ -111,7 +110,7 @@ func (x *{{$MessageName}}) init{{.Name}}() {
 {{- if eq .TypeKind "component"}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "MessageType" .Type}})
 {{- else if eq .TypeKind "enum"}}
-	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "EnumCodec" .Type}}{})
+	x.xxx_hidden_{{.Name}}.Init(dirtyFunc)
 {{- else}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "ValueCodec" .Type}}{})
 {{- end}}
@@ -128,7 +127,7 @@ func (x *{{$MessageName}}) init{{.Name}}() {
 {{- if eq .TypeKind "component"}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "KeyCodec" .KeyType}}{}, &{{template "MessageType" .Type}})
 {{- else if eq .TypeKind "enum"}}
-	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "KeyCodec" .KeyType}}{}, &{{template "EnumCodec" .Type}}{})
+	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "KeyCodec" .KeyType}}{})
 {{- else}}
 	x.xxx_hidden_{{.Name}}.Init(dirtyFunc, &{{template "KeyCodec" .KeyType}}{}, &{{template "ValueCodec" .Type}}{})
 {{- end}}
