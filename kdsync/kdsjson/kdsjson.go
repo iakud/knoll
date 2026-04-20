@@ -104,13 +104,11 @@ func WriteStringValue(e *Encoder, v string) error {
 }
 
 func WriteTimestampValue(e *Encoder, v time.Time) error {
-	e.WriteTimestampValue(v)
-	return nil
+	return e.WriteTimestampValue(v)
 }
 
 func WriteDurationValue(e *Encoder, v time.Duration) error {
-	e.WriteDurationValue(v)
-	return nil
+	return e.WriteDurationValue(v)
 }
 
 func WriteEmptyValue(e *Encoder, v struct{}) error {

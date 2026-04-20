@@ -3,9 +3,11 @@ package kdsjson
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"math"
 	"math/bits"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 )
@@ -223,16 +225,14 @@ func (e *Encoder) WriteTimestamp(name string, v time.Time) error {
 	if err := e.WriteName(name); err != nil {
 		return err
 	}
-	e.WriteTimestampValue(v)
-	return nil
+	return e.WriteTimestampValue(v)
 }
 
 func (e *Encoder) WriteDuration(name string, v time.Duration) error {
 	if err := e.WriteName(name); err != nil {
 		return err
 	}
-	e.WriteDurationValue(v)
-	return nil
+	return e.WriteDurationValue(v)
 }
 
 func (e *Encoder) WriteEmpty(name string, v struct{}) error {
@@ -348,21 +348,61 @@ func (e *Encoder) WriteStringValue(v string) error {
 	return err
 }
 
-func (e *Encoder) WriteTimestampValue(v time.Time) {
-	e.WriteStartObject()
-	e.WriteInt64("Seconds", v.Unix())
-	e.WriteInt32("Nanos", int32(v.Nanosecond()))
-	e.WriteEndObject()
+const (
+	maxTimestampSeconds = 253402300799
+	minTimestampSeconds = -62135596800
+)
+
+const (
+	secondsInNanos       = 999999999
+	maxSecondsInDuration = 315576000000
+)
+
+func (e *Encoder) WriteTimestampValue(v time.Time) error {
+	e.writeValueSeparator()
+	secs := v.Unix()
+	nanos := int64(v.Nanosecond())
+	if secs < minTimestampSeconds || secs > maxTimestampSeconds {
+		return fmt.Errorf("seconds out of range %v", secs)
+	}
+	if nanos < 0 || nanos > secondsInNanos {
+		return fmt.Errorf("nanos out of range %v", nanos)
+	}
+	t := time.Unix(secs, nanos).UTC()
+	x := t.Format("2006-01-02T15:04:05.000000000")
+	x = strings.TrimSuffix(x, "000")
+	x = strings.TrimSuffix(x, "000")
+	x = strings.TrimSuffix(x, ".000")
+	err := e.writeEscapedString(x + "Z")
+	e.tokenType = tokenScalar
+	return err
 }
 
-func (e *Encoder) WriteDurationValue(v time.Duration) {
+func (e *Encoder) WriteDurationValue(v time.Duration) error {
+	e.writeValueSeparator()
 	nanos := v.Nanoseconds()
 	secs := nanos / 1e9
 	nanos -= secs * 1e9
-	e.WriteStartObject()
-	e.WriteInt64("Seconds", secs)
-	e.WriteInt32("Nanos", int32(nanos))
-	e.WriteEndObject()
+	if secs < -maxSecondsInDuration || secs > maxSecondsInDuration {
+		return fmt.Errorf("seconds out of range %v", secs)
+	}
+	if nanos < -secondsInNanos || nanos > secondsInNanos {
+		return fmt.Errorf("nanos out of range %v", nanos)
+	}
+	if (secs > 0 && nanos < 0) || (secs < 0 && nanos > 0) {
+		return errors.New("signs of seconds and nanos do not match")
+	}
+	var sign string
+	if secs < 0 || nanos < 0 {
+		sign, secs, nanos = "-", -1*secs, -1*nanos
+	}
+	x := fmt.Sprintf("%s%d.%09d", sign, secs, nanos)
+	x = strings.TrimSuffix(x, "000")
+	x = strings.TrimSuffix(x, "000")
+	x = strings.TrimSuffix(x, ".000")
+	err := e.writeEscapedString(x + "s")
+	e.tokenType = tokenScalar
+	return err
 }
 
 func (e *Encoder) WriteEmptyValue(v struct{}) {
