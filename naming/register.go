@@ -83,7 +83,7 @@ func (r *Register) registerEndpoint(session *concurrency.Session, key string, en
 	slog.Info("naming: register ok", "key", key, "endpoint", endpoint)
 
 	defer func() {
-		if err := manager.DeleteEndpoint(r.client.Ctx(), key, clientv3.WithLease(session.Lease())); err != nil {
+		if err := manager.DeleteEndpoint(r.client.Ctx(), key); err != nil {
 			slog.Error("naming: delete endpoint", "error", err, "key", key)
 		}
 	}()
