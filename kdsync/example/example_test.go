@@ -439,7 +439,6 @@ func testMapsUpdate(t *testing.T) {
 	syncUpdate(t)
 
 	itemMap1, _ := maps.GetInt64ItemDataMap().Get(10)
-	itemMap1.SetId(100)
 	itemMap1.SetName("modified_sword")
 	itemMap1.SetCount(99)
 	syncUpdate(t)
