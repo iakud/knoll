@@ -110,7 +110,7 @@
 
 		public event Action<{{$MessageName}}, EventChanged>? OnChanged;
 
-		public class EventChanged
+		public struct EventChanged
 		{
 			public long _changed;
 {{- range .Fields}}

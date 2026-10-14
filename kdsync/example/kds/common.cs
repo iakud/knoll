@@ -33,7 +33,7 @@ namespace Kds
 
 		public event Action<ItemData, EventChanged>? OnChanged;
 
-		public class EventChanged
+		public struct EventChanged
 		{
 			public long _changed;
 			public bool Id => (_changed & (0x01 << 1)) != 0;

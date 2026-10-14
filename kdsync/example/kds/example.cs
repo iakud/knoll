@@ -31,7 +31,7 @@ namespace Kds
 
 		public event Action<All, EventChanged>? OnChanged;
 
-		public class EventChanged
+		public struct EventChanged
 		{
 			public long _changed;
 			public bool Types => (_changed & (0x01 << 1)) != 0;
@@ -191,7 +191,7 @@ namespace Kds
 
 		public event Action<AllType, EventChanged>? OnChanged;
 
-		public class EventChanged
+		public struct EventChanged
 		{
 			public long _changed;
 			public bool Int32Val => (_changed & (0x01 << 1)) != 0;
@@ -437,7 +437,7 @@ namespace Kds
 
 		public event Action<AllList, EventChanged>? OnChanged;
 
-		public class EventChanged
+		public struct EventChanged
 		{
 			public long _changed;
 			public bool Int32List => (_changed & (0x01 << 1)) != 0;
@@ -695,7 +695,7 @@ namespace Kds
 
 		public event Action<AllMap, EventChanged>? OnChanged;
 
-		public class EventChanged
+		public struct EventChanged
 		{
 			public long _changed;
 			public bool Int32Int32Map => (_changed & (0x01 << 1)) != 0;
