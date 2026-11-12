@@ -47,11 +47,11 @@ type MapField[K comparable, V any] struct {
 	data map[K]V
 
 	cleared bool
-	updated map[K]V
+	updated map[K]struct{}
 	deleted map[K]struct{}
 
 	persistCleared bool
-	persistUpdated map[K]V
+	persistUpdated map[K]struct{}
 	persistDeleted map[K]struct{}
 
 	dirtyParent DirtyFunc
@@ -62,9 +62,9 @@ type MapField[K comparable, V any] struct {
 
 func (x *MapField[K, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueCodec FieldCodec[V]) {
 	x.data = make(map[K]V)
-	x.updated = make(map[K]V)
+	x.updated = make(map[K]struct{})
 	x.deleted = make(map[K]struct{})
-	x.persistUpdated = make(map[K]V)
+	x.persistUpdated = make(map[K]struct{})
 	x.persistDeleted = make(map[K]struct{})
 	x.dirtyParent = dirtyParent
 	x.keyCodec = keyCodec
@@ -95,7 +95,7 @@ func (x *MapField[K, V]) Set(k K, v V) {
 		}
 	}
 	x.data[k] = v
-	x.updateDirtyUpdated(k, v, DirtyType_SyncAndPersist)
+	x.updateDirtyUpdated(k, DirtyType_SyncAndPersist)
 }
 
 func (x *MapField[K, V]) Delete(k K) {
@@ -150,20 +150,20 @@ func (x *MapField[K, V]) updateDirtyCleared(t DirtyType) {
 	}
 }
 
-func (x *MapField[K, V]) updateDirtyUpdated(k K, v V, t DirtyType) {
+func (x *MapField[K, V]) updateDirtyUpdated(k K, t DirtyType) {
 	switch t {
 	case DirtyType_Sync:
 		if _, ok := x.updated[k]; ok {
 			return
 		}
-		x.updated[k] = v
+		x.updated[k] = struct{}{}
 		delete(x.deleted, k)
 		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
 		if _, persistOk := x.persistUpdated[k]; persistOk {
 			return
 		}
-		x.persistUpdated[k] = v
+		x.persistUpdated[k] = struct{}{}
 		delete(x.persistDeleted, k)
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
@@ -172,9 +172,9 @@ func (x *MapField[K, V]) updateDirtyUpdated(k K, v V, t DirtyType) {
 		if ok && persistOk {
 			return
 		}
-		x.updated[k] = v
+		x.updated[k] = struct{}{}
 		delete(x.deleted, k)
-		x.persistUpdated[k] = v
+		x.persistUpdated[k] = struct{}{}
 		delete(x.persistDeleted, k)
 		x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
 	}
@@ -183,7 +183,7 @@ func (x *MapField[K, V]) updateDirtyUpdated(k K, v V, t DirtyType) {
 func (x *MapField[K, V]) updateDirtyDeleted(k K, t DirtyType) {
 	switch t {
 	case DirtyType_Sync:
-		if _, ok := x.updated[k]; ok {
+		if _, ok := x.deleted[k]; ok {
 			return
 		}
 		delete(x.updated, k)
@@ -197,7 +197,7 @@ func (x *MapField[K, V]) updateDirtyDeleted(k K, t DirtyType) {
 		x.persistDeleted[k] = struct{}{}
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		_, ok := x.updated[k]
+		_, ok := x.deleted[k]
 		_, persistOk := x.persistDeleted[k]
 		if ok && persistOk {
 			return
@@ -262,7 +262,11 @@ func (x *MapField[K, V]) MarshalChange(b []byte) ([]byte, error) {
 		}
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
-	for k, v := range x.updated {
+	for k := range x.updated {
+		v, ok := x.data[k]
+		if !ok {
+			continue
+		}
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
 		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType())
@@ -375,11 +379,11 @@ type MapEnum[K comparable, V ~int32] struct {
 	data map[K]V
 
 	cleared bool
-	updated map[K]V
+	updated map[K]struct{}
 	deleted map[K]struct{}
 
 	persistCleared bool
-	persistUpdated map[K]V
+	persistUpdated map[K]struct{}
 	persistDeleted map[K]struct{}
 
 	dirtyParent DirtyFunc
@@ -389,9 +393,9 @@ type MapEnum[K comparable, V ~int32] struct {
 
 func (x *MapEnum[K, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K]) {
 	x.data = make(map[K]V)
-	x.updated = make(map[K]V)
+	x.updated = make(map[K]struct{})
 	x.deleted = make(map[K]struct{})
-	x.persistUpdated = make(map[K]V)
+	x.persistUpdated = make(map[K]struct{})
 	x.persistDeleted = make(map[K]struct{})
 	x.dirtyParent = dirtyParent
 	x.keyCodec = keyCodec
@@ -421,7 +425,7 @@ func (x *MapEnum[K, V]) Set(k K, v V) {
 		}
 	}
 	x.data[k] = v
-	x.updateDirtyUpdated(k, v, DirtyType_SyncAndPersist)
+	x.updateDirtyUpdated(k, DirtyType_SyncAndPersist)
 }
 
 func (x *MapEnum[K, V]) Delete(k K) {
@@ -476,20 +480,20 @@ func (x *MapEnum[K, V]) updateDirtyCleared(t DirtyType) {
 	}
 }
 
-func (x *MapEnum[K, V]) updateDirtyUpdated(k K, v V, t DirtyType) {
+func (x *MapEnum[K, V]) updateDirtyUpdated(k K, t DirtyType) {
 	switch t {
 	case DirtyType_Sync:
 		if _, ok := x.updated[k]; ok {
 			return
 		}
-		x.updated[k] = v
+		x.updated[k] = struct{}{}
 		delete(x.deleted, k)
 		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
 		if _, persistOk := x.persistUpdated[k]; persistOk {
 			return
 		}
-		x.persistUpdated[k] = v
+		x.persistUpdated[k] = struct{}{}
 		delete(x.persistDeleted, k)
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
@@ -498,9 +502,9 @@ func (x *MapEnum[K, V]) updateDirtyUpdated(k K, v V, t DirtyType) {
 		if ok && persistOk {
 			return
 		}
-		x.updated[k] = v
+		x.updated[k] = struct{}{}
 		delete(x.deleted, k)
-		x.persistUpdated[k] = v
+		x.persistUpdated[k] = struct{}{}
 		delete(x.persistDeleted, k)
 		x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
 	}
@@ -509,7 +513,7 @@ func (x *MapEnum[K, V]) updateDirtyUpdated(k K, v V, t DirtyType) {
 func (x *MapEnum[K, V]) updateDirtyDeleted(k K, t DirtyType) {
 	switch t {
 	case DirtyType_Sync:
-		if _, ok := x.updated[k]; ok {
+		if _, ok := x.deleted[k]; ok {
 			return
 		}
 		delete(x.updated, k)
@@ -523,7 +527,7 @@ func (x *MapEnum[K, V]) updateDirtyDeleted(k K, t DirtyType) {
 		x.persistDeleted[k] = struct{}{}
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		_, ok := x.updated[k]
+		_, ok := x.deleted[k]
 		_, persistOk := x.persistDeleted[k]
 		if ok && persistOk {
 			return
@@ -588,7 +592,11 @@ func (x *MapEnum[K, V]) MarshalChange(b []byte) ([]byte, error) {
 		}
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
-	for k, v := range x.updated {
+	for k := range x.updated {
+		v, ok := x.data[k]
+		if !ok {
+			continue
+		}
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
 		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType())
@@ -698,11 +706,11 @@ type MapMessage[K comparable, T any, V Message[T]] struct {
 	data map[K]V
 
 	cleared bool
-	updated map[K]V
+	updated map[K]struct{}
 	deleted map[K]struct{}
 
 	persistCleared bool
-	persistUpdated map[K]V
+	persistUpdated map[K]struct{}
 	persistDeleted map[K]struct{}
 
 	dirtyParent DirtyFunc
@@ -713,9 +721,9 @@ type MapMessage[K comparable, T any, V Message[T]] struct {
 
 func (x *MapMessage[K, T, V]) Init(dirtyParent DirtyFunc, keyCodec FieldCodec[K], valueType *MessageType[T, V]) {
 	x.data = make(map[K]V)
-	x.updated = make(map[K]V)
+	x.updated = make(map[K]struct{})
 	x.deleted = make(map[K]struct{})
-	x.persistUpdated = make(map[K]V)
+	x.persistUpdated = make(map[K]struct{})
 	x.persistDeleted = make(map[K]struct{})
 	x.dirtyParent = dirtyParent
 	x.keyCodec = keyCodec
@@ -753,10 +761,10 @@ func (x *MapMessage[K, T, V]) Set(k K, v V) {
 		x.valueType.ClearDirtyParent(e)
 	}
 	x.valueType.SetDirtyParent(v, func(t DirtyType) {
-		x.updateDirtyUpdated(k, v, t)
+		x.updateDirtyUpdated(k, t)
 	})
 	x.data[k] = v
-	x.updateDirtyUpdated(k, v, DirtyType_SyncAndPersist)
+	x.updateDirtyUpdated(k, DirtyType_SyncAndPersist)
 }
 
 func (x *MapMessage[K, T, V]) Delete(k K) {
@@ -813,20 +821,20 @@ func (x *MapMessage[K, T, V]) updateDirtyCleared(t DirtyType) {
 	}
 }
 
-func (x *MapMessage[K, T, V]) updateDirtyUpdated(k K, v V, t DirtyType) {
+func (x *MapMessage[K, T, V]) updateDirtyUpdated(k K, t DirtyType) {
 	switch t {
 	case DirtyType_Sync:
 		if _, ok := x.updated[k]; ok {
 			return
 		}
-		x.updated[k] = v
+		x.updated[k] = struct{}{}
 		delete(x.deleted, k)
 		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
 		if _, persistOk := x.persistUpdated[k]; persistOk {
 			return
 		}
-		x.persistUpdated[k] = v
+		x.persistUpdated[k] = struct{}{}
 		delete(x.persistDeleted, k)
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
@@ -835,9 +843,9 @@ func (x *MapMessage[K, T, V]) updateDirtyUpdated(k K, v V, t DirtyType) {
 		if ok && persistOk {
 			return
 		}
-		x.updated[k] = v
+		x.updated[k] = struct{}{}
 		delete(x.deleted, k)
-		x.persistUpdated[k] = v
+		x.persistUpdated[k] = struct{}{}
 		delete(x.persistDeleted, k)
 		x.dirtyParent.Invoke(DirtyType_SyncAndPersist)
 	}
@@ -846,7 +854,7 @@ func (x *MapMessage[K, T, V]) updateDirtyUpdated(k K, v V, t DirtyType) {
 func (x *MapMessage[K, T, V]) updateDirtyDeleted(k K, t DirtyType) {
 	switch t {
 	case DirtyType_Sync:
-		if _, ok := x.updated[k]; ok {
+		if _, ok := x.deleted[k]; ok {
 			return
 		}
 		delete(x.updated, k)
@@ -860,7 +868,7 @@ func (x *MapMessage[K, T, V]) updateDirtyDeleted(k K, t DirtyType) {
 		x.persistDeleted[k] = struct{}{}
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		_, ok := x.updated[k]
+		_, ok := x.deleted[k]
 		_, persistOk := x.persistDeleted[k]
 		if ok && persistOk {
 			return
@@ -877,7 +885,11 @@ func (x *MapMessage[K, T, V]) ClearDirty() {
 	if !x.cleared && len(x.updated) == 0 && len(x.deleted) == 0 {
 		return
 	}
-	for _, v := range x.updated {
+	for k := range x.updated {
+		v, ok := x.data[k]
+		if !ok {
+			continue
+		}
 		v.ClearDirty()
 	}
 	x.cleared = false
@@ -889,7 +901,11 @@ func (x *MapMessage[K, T, V]) ClearPersistDirty() {
 	if !x.persistCleared && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
 		return
 	}
-	for _, v := range x.persistUpdated {
+	for k := range x.persistUpdated {
+		v, ok := x.data[k]
+		if !ok {
+			continue
+		}
 		v.ClearPersistDirty()
 	}
 	x.persistCleared = false
@@ -932,7 +948,11 @@ func (x *MapMessage[K, T, V]) MarshalChange(b []byte) ([]byte, error) {
 		}
 		b = wire.FinishSpeculativeLength(b, pos)
 	}
-	for k, v := range x.updated {
+	for k := range x.updated {
+		v, ok := x.data[k]
+		if !ok {
+			continue
+		}
 		b = wire.AppendTag(b, wire.MapEntryFieldNumber, wire.BytesType)
 		b, pos = wire.AppendSpeculativeLength(b)
 		b = wire.AppendTag(b, wire.MapEntryKeyFieldNumber, x.keyCodec.WireType())

@@ -892,7 +892,7 @@ func (x *AllType) ClearPersistDirty() {
 		return
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<20) != 0 {
-		x.xxx_hidden_ItemData.ClearDirty()
+		x.xxx_hidden_ItemData.ClearPersistDirty()
 	}
 	x.persistDirty = 0
 }
@@ -1392,40 +1392,40 @@ func (x *AllList) ClearPersistDirty() {
 		return
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<1) != 0 {
-		x.xxx_hidden_Int32List.ClearDirty()
+		x.xxx_hidden_Int32List.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<2) != 0 {
-		x.xxx_hidden_Uint32List.ClearDirty()
+		x.xxx_hidden_Uint32List.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<3) != 0 {
-		x.xxx_hidden_Int64List.ClearDirty()
+		x.xxx_hidden_Int64List.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<4) != 0 {
-		x.xxx_hidden_Uint64List.ClearDirty()
+		x.xxx_hidden_Uint64List.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<6) != 0 {
-		x.xxx_hidden_DoubleList.ClearDirty()
+		x.xxx_hidden_DoubleList.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<7) != 0 {
-		x.xxx_hidden_BoolList.ClearDirty()
+		x.xxx_hidden_BoolList.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<8) != 0 {
-		x.xxx_hidden_StringList.ClearDirty()
+		x.xxx_hidden_StringList.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<9) != 0 {
-		x.xxx_hidden_TimestampList.ClearDirty()
+		x.xxx_hidden_TimestampList.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<10) != 0 {
-		x.xxx_hidden_DurationList.ClearDirty()
+		x.xxx_hidden_DurationList.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<11) != 0 {
-		x.xxx_hidden_EmptyList.ClearDirty()
+		x.xxx_hidden_EmptyList.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<12) != 0 {
-		x.xxx_hidden_EnumList.ClearDirty()
+		x.xxx_hidden_EnumList.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<13) != 0 {
-		x.xxx_hidden_ItemList.ClearDirty()
+		x.xxx_hidden_ItemList.ClearPersistDirty()
 	}
 	x.persistDirty = 0
 }
@@ -1951,43 +1951,43 @@ func (x *AllMap) ClearPersistDirty() {
 		return
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<1) != 0 {
-		x.xxx_hidden_Int32Int32Map.ClearDirty()
+		x.xxx_hidden_Int32Int32Map.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<2) != 0 {
-		x.xxx_hidden_Int64Int64Map.ClearDirty()
+		x.xxx_hidden_Int64Int64Map.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<4) != 0 {
-		x.xxx_hidden_Uint64Uint64Map.ClearDirty()
+		x.xxx_hidden_Uint64Uint64Map.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<5) != 0 {
-		x.xxx_hidden_BoolFloatMap.ClearDirty()
+		x.xxx_hidden_BoolFloatMap.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<6) != 0 {
-		x.xxx_hidden_StringDoubleMap.ClearDirty()
+		x.xxx_hidden_StringDoubleMap.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<7) != 0 {
-		x.xxx_hidden_Int32BoolMap.ClearDirty()
+		x.xxx_hidden_Int32BoolMap.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<8) != 0 {
-		x.xxx_hidden_Int64StringMap.ClearDirty()
+		x.xxx_hidden_Int64StringMap.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<9) != 0 {
-		x.xxx_hidden_Uint32BytesMap.ClearDirty()
+		x.xxx_hidden_Uint32BytesMap.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<10) != 0 {
-		x.xxx_hidden_Uint64TimestampMap.ClearDirty()
+		x.xxx_hidden_Uint64TimestampMap.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<11) != 0 {
-		x.xxx_hidden_BoolDurationMap.ClearDirty()
+		x.xxx_hidden_BoolDurationMap.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<12) != 0 {
-		x.xxx_hidden_StringEmptyMap.ClearDirty()
+		x.xxx_hidden_StringEmptyMap.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<13) != 0 {
-		x.xxx_hidden_Int32ItemTypeMap.ClearDirty()
+		x.xxx_hidden_Int32ItemTypeMap.ClearPersistDirty()
 	}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<14) != 0 {
-		x.xxx_hidden_Int64ItemDataMap.ClearDirty()
+		x.xxx_hidden_Int64ItemDataMap.ClearPersistDirty()
 	}
 	x.persistDirty = 0
 }

@@ -216,10 +216,16 @@ func (x *RepeatedField[E]) updateDirty(t DirtyType) {
 }
 
 func (x *RepeatedField[E]) ClearDirty() {
+	if !x.dirty {
+		return
+	}
 	x.dirty = false
 }
 
 func (x *RepeatedField[E]) ClearPersistDirty() {
+	if !x.persistDirty {
+		return
+	}
 	x.persistDirty = false
 }
 
@@ -423,10 +429,16 @@ func (x *RepeatedEnum[E]) updateDirty(t DirtyType) {
 }
 
 func (x *RepeatedEnum[E]) ClearDirty() {
+	if !x.dirty {
+		return
+	}
 	x.dirty = false
 }
 
 func (x *RepeatedEnum[E]) ClearPersistDirty() {
+	if !x.persistDirty {
+		return
+	}
 	x.persistDirty = false
 }
 
@@ -664,6 +676,9 @@ func (x *RepeatedMessage[T, E]) updateDirty(t DirtyType) {
 }
 
 func (x *RepeatedMessage[T, E]) ClearDirty() {
+	if !x.dirty {
+		return
+	}
 	for _, v := range x.data {
 		v.ClearDirty()
 	}
@@ -671,6 +686,9 @@ func (x *RepeatedMessage[T, E]) ClearDirty() {
 }
 
 func (x *RepeatedMessage[T, E]) ClearPersistDirty() {
+	if !x.persistDirty {
+		return
+	}
 	for _, v := range x.data {
 		v.ClearPersistDirty()
 	}

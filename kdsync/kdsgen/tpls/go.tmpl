@@ -581,15 +581,15 @@ func (x *{{.Name}}) ClearPersistDirty() {
 {{- if not .NoPersist}}
 {{- if .Repeated}}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<{{.Number}}) != 0 {
-		x.xxx_hidden_{{.Name}}.ClearDirty()
+		x.xxx_hidden_{{.Name}}.ClearPersistDirty()
 	}
 {{- else if .Map}}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<{{.Number}}) != 0 {
-		x.xxx_hidden_{{.Name}}.ClearDirty()
+		x.xxx_hidden_{{.Name}}.ClearPersistDirty()
 	}
 {{- else if eq .TypeKind "component"}}
 	if x.persistDirty&uint64(0x01) != 0 || x.persistDirty&(uint64(0x01)<<{{.Number}}) != 0 {
-		x.xxx_hidden_{{.Name}}.ClearDirty()
+		x.xxx_hidden_{{.Name}}.ClearPersistDirty()
 	}
 {{- end}}
 {{- end}}
