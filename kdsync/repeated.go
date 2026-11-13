@@ -534,6 +534,8 @@ func (x *RepeatedMessage[T, E]) Append(v ...E) {
 		if x.fieldType.CheckDirtyParent(v[i]) {
 			panic("the component should be removed from its original place first")
 		}
+	}
+	for i := range v {
 		x.fieldType.SetDirtyParent(v[i], x.updateDirty)
 	}
 	x.data = append(x.data, v...)
@@ -575,6 +577,8 @@ func (x *RepeatedMessage[T, E]) Insert(i int, v ...E) {
 		if x.fieldType.CheckDirtyParent(v[j]) {
 			panic("the component should be removed from its original place first")
 		}
+	}
+	for j := range v {
 		x.fieldType.SetDirtyParent(v[j], x.updateDirty)
 	}
 	x.data = slices.Insert(x.data, i, v...)
@@ -621,6 +625,8 @@ func (x *RepeatedMessage[T, E]) Replace(i, j int, v ...E) {
 		if x.fieldType.CheckDirtyParent(v[k]) {
 			panic("the component should be removed from its original place first")
 		}
+	}
+	for k := range v {
 		x.fieldType.SetDirtyParent(v[k], x.updateDirty)
 	}
 	r := x.data[i:j:len(x.data)]

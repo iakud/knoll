@@ -5,7 +5,7 @@ using System;
 
 namespace Kds
 {
-	public class All : Kdsync.IMessage
+	public class All
 	{
 		private readonly long _id;
 		public long Id => _id;
@@ -14,18 +14,66 @@ namespace Kds
 		{
 			_id = id;
 			types_ = new AllType();
+			types_.SetChangedParent(() => UpdateChanged(0x01L << 1));
 			lists_ = new AllList();
+			lists_.SetChangedParent(() => UpdateChanged(0x01L << 2));
 			maps_ = new AllMap();
+			maps_.SetChangedParent(() => UpdateChanged(0x01L << 3));
 		}
 
 		private AllType types_;
-		public AllType Types => types_;
+		public AllType Types
+		{
+			get => types_;
+			set
+			{
+				if (value != null && value.CheckChangedParent())
+					throw new InvalidOperationException("the component should be removed from its original place first");
+
+				if (types_ == value)
+					return;
+				types_?.ClearChangedParent();
+				types_ = value;
+				value?.SetChangedParent(() => UpdateChanged(0x01L << 1));
+				UpdateChanged(0x01L << 1);
+			}
+		}
 
 		private AllList lists_;
-		public AllList Lists => lists_;
+		public AllList Lists
+		{
+			get => lists_;
+			set
+			{
+				if (value != null && value.CheckChangedParent())
+					throw new InvalidOperationException("the component should be removed from its original place first");
+
+				if (lists_ == value)
+					return;
+				lists_?.ClearChangedParent();
+				lists_ = value;
+				value?.SetChangedParent(() => UpdateChanged(0x01L << 2));
+				UpdateChanged(0x01L << 2);
+			}
+		}
 
 		private AllMap maps_;
-		public AllMap Maps => maps_;
+		public AllMap Maps
+		{
+			get => maps_;
+			set
+			{
+				if (value != null && value.CheckChangedParent())
+					throw new InvalidOperationException("the component should be removed from its original place first");
+
+				if (maps_ == value)
+					return;
+				maps_?.ClearChangedParent();
+				maps_ = value;
+				value?.SetChangedParent(() => UpdateChanged(0x01L << 3));
+				UpdateChanged(0x01L << 3);
+			}
+		}
 
 		private long _changed;
 
@@ -34,9 +82,9 @@ namespace Kds
 		public struct EventChanged
 		{
 			public long _changed;
-			public bool Types => (_changed & (0x01 << 1)) != 0;
-			public bool Lists => (_changed & (0x01 << 2)) != 0;
-			public bool Maps => (_changed & (0x01 << 3)) != 0;
+			public bool Types => (_changed & (0x01L << 1)) != 0;
+			public bool Lists => (_changed & (0x01L << 2)) != 0;
+			public bool Maps => (_changed & (0x01L << 3)) != 0;
 
 			public EventChanged(long changed)
 			{
@@ -54,15 +102,12 @@ namespace Kds
 				{
 					case 1:
 						ctx.ReadMessage(types_);
-						_changed |= 0x01 << 1;
 						break;
 					case 2:
 						ctx.ReadMessage(lists_);
-						_changed |= 0x01 << 2;
 						break;
 					case 3:
 						ctx.ReadMessage(maps_);
-						_changed |= 0x01 << 3;
 						break;
 					default:
 						ctx.SkipLastField();
@@ -75,11 +120,11 @@ namespace Kds
 		{
 			if (_changed == 0)
 				return;
-			if ((_changed & (0x01 << 1)) != 0)
+			if ((_changed & (0x01L << 1)) != 0)
 				types_.RaiseChanged();
-			if ((_changed & (0x01 << 2)) != 0)
+			if ((_changed & (0x01L << 2)) != 0)
 				lists_.RaiseChanged();
-			if ((_changed & (0x01 << 3)) != 0)
+			if ((_changed & (0x01L << 3)) != 0)
 				maps_.RaiseChanged();
 			OnChanged?.Invoke(this, new EventChanged(_changed));
 		}
@@ -88,11 +133,11 @@ namespace Kds
 		{
 			if (_changed == 0)
 				return;
-			if ((_changed & (0x01 << 1)) != 0)
+			if ((_changed & (0x01L << 1)) != 0)
 				types_.ClearChanged();
-			if ((_changed & (0x01 << 2)) != 0)
+			if ((_changed & (0x01L << 2)) != 0)
 				lists_.ClearChanged();
-			if ((_changed & (0x01 << 3)) != 0)
+			if ((_changed & (0x01L << 3)) != 0)
 				maps_.ClearChanged();
 			_changed = 0;
 		}
@@ -106,18 +151,23 @@ namespace Kds
 			writer.WriteEndObject();
 		}
 
-		public override string ToString()
-		{
-			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
-			writer.WriteValue(this);
-			return writer.ToString();
-		}
-
 		public void MergeFrom(byte[] buffer)
 		{
 			ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(buffer);
 			Kdsync.ParseContext.Initialize(readOnlySpan, out var ctx);
 			MergeFrom(ref ctx);
+		}
+
+		private void UpdateChanged(long n)
+		{
+			_changed |= n;
+		}
+
+		public override string ToString()
+		{
+			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
+			Write(writer);
+			return writer.ToString();
 		}
 	}
 
@@ -128,64 +178,262 @@ namespace Kds
 			stringVal_ = string.Empty;
 			bytesVal_ = new byte[0];
 			itemData_ = new ItemData();
+			itemData_.SetChangedParent(() => UpdateChanged(0x01L << 20));
 		}
 
 		private int int32Val_;
-		public int Int32Val => int32Val_;
+		public int Int32Val
+		{
+			get => int32Val_;
+			set
+			{
+				if (int32Val_ == value)
+					return;
+				int32Val_ = value;
+				UpdateChanged(0x01L << 1);
+			}
+		}
 
 		private long int64Val_;
-		public long Int64Val => int64Val_;
+		public long Int64Val
+		{
+			get => int64Val_;
+			set
+			{
+				if (int64Val_ == value)
+					return;
+				int64Val_ = value;
+				UpdateChanged(0x01L << 2);
+			}
+		}
 
 		private uint uint32Val_;
-		public uint Uint32Val => uint32Val_;
+		public uint Uint32Val
+		{
+			get => uint32Val_;
+			set
+			{
+				if (uint32Val_ == value)
+					return;
+				uint32Val_ = value;
+				UpdateChanged(0x01L << 3);
+			}
+		}
 
 		private ulong uint64Val_;
-		public ulong Uint64Val => uint64Val_;
+		public ulong Uint64Val
+		{
+			get => uint64Val_;
+			set
+			{
+				if (uint64Val_ == value)
+					return;
+				uint64Val_ = value;
+				UpdateChanged(0x01L << 4);
+			}
+		}
 
 		private long sint64Val_;
-		public long Sint64Val => sint64Val_;
+		public long Sint64Val
+		{
+			get => sint64Val_;
+			set
+			{
+				if (sint64Val_ == value)
+					return;
+				sint64Val_ = value;
+				UpdateChanged(0x01L << 6);
+			}
+		}
 
 		private uint fixed32Val_;
-		public uint Fixed32Val => fixed32Val_;
+		public uint Fixed32Val
+		{
+			get => fixed32Val_;
+			set
+			{
+				if (fixed32Val_ == value)
+					return;
+				fixed32Val_ = value;
+				UpdateChanged(0x01L << 7);
+			}
+		}
 
 		private ulong fixed64Val_;
-		public ulong Fixed64Val => fixed64Val_;
+		public ulong Fixed64Val
+		{
+			get => fixed64Val_;
+			set
+			{
+				if (fixed64Val_ == value)
+					return;
+				fixed64Val_ = value;
+				UpdateChanged(0x01L << 8);
+			}
+		}
 
 		private int sfixed32Val_;
-		public int Sfixed32Val => sfixed32Val_;
+		public int Sfixed32Val
+		{
+			get => sfixed32Val_;
+			set
+			{
+				if (sfixed32Val_ == value)
+					return;
+				sfixed32Val_ = value;
+				UpdateChanged(0x01L << 9);
+			}
+		}
 
 		private long sfixed64Val_;
-		public long Sfixed64Val => sfixed64Val_;
+		public long Sfixed64Val
+		{
+			get => sfixed64Val_;
+			set
+			{
+				if (sfixed64Val_ == value)
+					return;
+				sfixed64Val_ = value;
+				UpdateChanged(0x01L << 10);
+			}
+		}
 
 		private float floatVal_;
-		public float FloatVal => floatVal_;
+		public float FloatVal
+		{
+			get => floatVal_;
+			set
+			{
+				if (floatVal_ == value)
+					return;
+				floatVal_ = value;
+				UpdateChanged(0x01L << 11);
+			}
+		}
 
 		private double doubleVal_;
-		public double DoubleVal => doubleVal_;
+		public double DoubleVal
+		{
+			get => doubleVal_;
+			set
+			{
+				if (doubleVal_ == value)
+					return;
+				doubleVal_ = value;
+				UpdateChanged(0x01L << 12);
+			}
+		}
 
 		private bool boolVal_;
-		public bool BoolVal => boolVal_;
+		public bool BoolVal
+		{
+			get => boolVal_;
+			set
+			{
+				if (boolVal_ == value)
+					return;
+				boolVal_ = value;
+				UpdateChanged(0x01L << 13);
+			}
+		}
 
 		private string stringVal_;
-		public string StringVal => stringVal_;
+		public string StringVal
+		{
+			get => stringVal_;
+			set
+			{
+				if (stringVal_ == value)
+					return;
+				stringVal_ = value;
+				UpdateChanged(0x01L << 14);
+			}
+		}
 
 		private byte[] bytesVal_;
-		public byte[] BytesVal => bytesVal_;
+		public byte[] BytesVal
+		{
+			get => bytesVal_;
+			set
+			{
+				if (value == null && bytesVal_ == null)
+					return;
+				if (ReferenceEquals(value, bytesVal_))
+					return;
+				bytesVal_ = value;
+				UpdateChanged(0x01L << 15);
+			}
+		}
 
 		private Kdsync.Timestamp timestampVal_;
-		public Kdsync.Timestamp TimestampVal => timestampVal_;
+		public Kdsync.Timestamp TimestampVal
+		{
+			get => timestampVal_;
+			set
+			{
+				if (timestampVal_ == value)
+					return;
+				timestampVal_ = value;
+				UpdateChanged(0x01L << 16);
+			}
+		}
 
 		private Kdsync.Duration durationVal_;
-		public Kdsync.Duration DurationVal => durationVal_;
+		public Kdsync.Duration DurationVal
+		{
+			get => durationVal_;
+			set
+			{
+				if (durationVal_ == value)
+					return;
+				durationVal_ = value;
+				UpdateChanged(0x01L << 17);
+			}
+		}
 
 		private Kdsync.Empty emptyVal_;
-		public Kdsync.Empty EmptyVal => emptyVal_;
+		public Kdsync.Empty EmptyVal
+		{
+			get => emptyVal_;
+			set
+			{
+				if (emptyVal_ == value)
+					return;
+				emptyVal_ = value;
+				UpdateChanged(0x01L << 18);
+			}
+		}
 
 		private ItemType enumVal_;
-		public ItemType EnumVal => enumVal_;
+		public ItemType EnumVal
+		{
+			get => enumVal_;
+			set
+			{
+				if (enumVal_ == value)
+					return;
+				enumVal_ = value;
+				UpdateChanged(0x01L << 19);
+			}
+		}
 
 		private ItemData itemData_;
-		public ItemData ItemData => itemData_;
+		public ItemData ItemData
+		{
+			get => itemData_;
+			set
+			{
+				if (value != null && value.CheckChangedParent())
+					throw new InvalidOperationException("the component should be removed from its original place first");
+
+				if (itemData_ == value)
+					return;
+				itemData_?.ClearChangedParent();
+				itemData_ = value;
+				value?.SetChangedParent(() => UpdateChanged(0x01L << 20));
+				UpdateChanged(0x01L << 20);
+			}
+		}
 
 		private long _changed;
 
@@ -194,25 +442,25 @@ namespace Kds
 		public struct EventChanged
 		{
 			public long _changed;
-			public bool Int32Val => (_changed & (0x01 << 1)) != 0;
-			public bool Int64Val => (_changed & (0x01 << 2)) != 0;
-			public bool Uint32Val => (_changed & (0x01 << 3)) != 0;
-			public bool Uint64Val => (_changed & (0x01 << 4)) != 0;
-			public bool Sint64Val => (_changed & (0x01 << 6)) != 0;
-			public bool Fixed32Val => (_changed & (0x01 << 7)) != 0;
-			public bool Fixed64Val => (_changed & (0x01 << 8)) != 0;
-			public bool Sfixed32Val => (_changed & (0x01 << 9)) != 0;
-			public bool Sfixed64Val => (_changed & (0x01 << 10)) != 0;
-			public bool FloatVal => (_changed & (0x01 << 11)) != 0;
-			public bool DoubleVal => (_changed & (0x01 << 12)) != 0;
-			public bool BoolVal => (_changed & (0x01 << 13)) != 0;
-			public bool StringVal => (_changed & (0x01 << 14)) != 0;
-			public bool BytesVal => (_changed & (0x01 << 15)) != 0;
-			public bool TimestampVal => (_changed & (0x01 << 16)) != 0;
-			public bool DurationVal => (_changed & (0x01 << 17)) != 0;
-			public bool EmptyVal => (_changed & (0x01 << 18)) != 0;
-			public bool EnumVal => (_changed & (0x01 << 19)) != 0;
-			public bool ItemData => (_changed & (0x01 << 20)) != 0;
+			public bool Int32Val => (_changed & (0x01L << 1)) != 0;
+			public bool Int64Val => (_changed & (0x01L << 2)) != 0;
+			public bool Uint32Val => (_changed & (0x01L << 3)) != 0;
+			public bool Uint64Val => (_changed & (0x01L << 4)) != 0;
+			public bool Sint64Val => (_changed & (0x01L << 6)) != 0;
+			public bool Fixed32Val => (_changed & (0x01L << 7)) != 0;
+			public bool Fixed64Val => (_changed & (0x01L << 8)) != 0;
+			public bool Sfixed32Val => (_changed & (0x01L << 9)) != 0;
+			public bool Sfixed64Val => (_changed & (0x01L << 10)) != 0;
+			public bool FloatVal => (_changed & (0x01L << 11)) != 0;
+			public bool DoubleVal => (_changed & (0x01L << 12)) != 0;
+			public bool BoolVal => (_changed & (0x01L << 13)) != 0;
+			public bool StringVal => (_changed & (0x01L << 14)) != 0;
+			public bool BytesVal => (_changed & (0x01L << 15)) != 0;
+			public bool TimestampVal => (_changed & (0x01L << 16)) != 0;
+			public bool DurationVal => (_changed & (0x01L << 17)) != 0;
+			public bool EmptyVal => (_changed & (0x01L << 18)) != 0;
+			public bool EnumVal => (_changed & (0x01L << 19)) != 0;
+			public bool ItemData => (_changed & (0x01L << 20)) != 0;
 
 			public EventChanged(long changed)
 			{
@@ -230,79 +478,60 @@ namespace Kds
 				{
 					case 1:
 						int32Val_ = ctx.ReadInt32();
-						_changed |= 0x01 << 1;
 						break;
 					case 2:
 						int64Val_ = ctx.ReadInt64();
-						_changed |= 0x01 << 2;
 						break;
 					case 3:
 						uint32Val_ = ctx.ReadUInt32();
-						_changed |= 0x01 << 3;
 						break;
 					case 4:
 						uint64Val_ = ctx.ReadUInt64();
-						_changed |= 0x01 << 4;
 						break;
 					case 6:
 						sint64Val_ = ctx.ReadSInt64();
-						_changed |= 0x01 << 6;
 						break;
 					case 7:
 						fixed32Val_ = ctx.ReadFixed32();
-						_changed |= 0x01 << 7;
 						break;
 					case 8:
 						fixed64Val_ = ctx.ReadFixed64();
-						_changed |= 0x01 << 8;
 						break;
 					case 9:
 						sfixed32Val_ = ctx.ReadSFixed32();
-						_changed |= 0x01 << 9;
 						break;
 					case 10:
 						sfixed64Val_ = ctx.ReadSFixed64();
-						_changed |= 0x01 << 10;
 						break;
 					case 11:
 						floatVal_ = ctx.ReadFloat();
-						_changed |= 0x01 << 11;
 						break;
 					case 12:
 						doubleVal_ = ctx.ReadDouble();
-						_changed |= 0x01 << 12;
 						break;
 					case 13:
 						boolVal_ = ctx.ReadBool();
-						_changed |= 0x01 << 13;
 						break;
 					case 14:
 						stringVal_ = ctx.ReadString();
-						_changed |= 0x01 << 14;
 						break;
 					case 15:
 						bytesVal_ = ctx.ReadBytes();
-						_changed |= 0x01 << 15;
 						break;
 					case 16:
 						timestampVal_ = ctx.ReadTimestamp();
-						_changed |= 0x01 << 16;
 						break;
 					case 17:
 						durationVal_ = ctx.ReadDuration();
-						_changed |= 0x01 << 17;
 						break;
 					case 18:
 						emptyVal_ = ctx.ReadEmpty();
-						_changed |= 0x01 << 18;
 						break;
 					case 19:
 						enumVal_ = (ItemType)ctx.ReadEnum();
-						_changed |= 0x01 << 19;
 						break;
 					case 20:
 						ctx.ReadMessage(itemData_);
-						_changed |= 0x01 << 20;
 						break;
 					default:
 						ctx.SkipLastField();
@@ -315,7 +544,7 @@ namespace Kds
 		{
 			if (_changed == 0)
 				return;
-			if ((_changed & (0x01 << 20)) != 0)
+			if ((_changed & (0x01L << 20)) != 0)
 				itemData_.RaiseChanged();
 			OnChanged?.Invoke(this, new EventChanged(_changed));
 		}
@@ -324,7 +553,7 @@ namespace Kds
 		{
 			if (_changed == 0)
 				return;
-			if ((_changed & (0x01 << 20)) != 0)
+			if ((_changed & (0x01L << 20)) != 0)
 				itemData_.ClearChanged();
 			_changed = 0;
 		}
@@ -354,6 +583,31 @@ namespace Kds
 			writer.WriteEndObject();
 		}
 
+		private Action? _changedParent;
+
+		private void UpdateChanged(long n)
+		{
+			_changed |= n;
+			_changedParent?.Invoke();
+		}
+
+		public bool CheckChangedParent()
+		{
+			return _changedParent != null;
+		}
+
+		public void SetChangedParent(Action changedParent)
+		{
+			_changedParent = changedParent;
+			_changed = 0x01L;
+		}
+
+		public void ClearChangedParent()
+		{
+			_changedParent = null;
+			ClearChanged();
+		}
+
 		public override string ToString()
 		{
 			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
@@ -367,18 +621,31 @@ namespace Kds
 		public AllList()
 		{
 			int32List_ = new Kdsync.Repeated<int>();
+			int32List_.Init(() => UpdateChanged(0x01L << 1));
 			uint32List_ = new Kdsync.Repeated<uint>();
+			uint32List_.Init(() => UpdateChanged(0x01L << 2));
 			int64List_ = new Kdsync.Repeated<long>();
+			int64List_.Init(() => UpdateChanged(0x01L << 3));
 			uint64List_ = new Kdsync.Repeated<ulong>();
+			uint64List_.Init(() => UpdateChanged(0x01L << 4));
 			floatList_ = new Kdsync.Repeated<float>();
+			floatList_.Init(() => UpdateChanged(0x01L << 5));
 			doubleList_ = new Kdsync.Repeated<double>();
+			doubleList_.Init(() => UpdateChanged(0x01L << 6));
 			boolList_ = new Kdsync.Repeated<bool>();
+			boolList_.Init(() => UpdateChanged(0x01L << 7));
 			stringList_ = new Kdsync.Repeated<string>();
+			stringList_.Init(() => UpdateChanged(0x01L << 8));
 			timestampList_ = new Kdsync.Repeated<Kdsync.Timestamp>();
+			timestampList_.Init(() => UpdateChanged(0x01L << 9));
 			durationList_ = new Kdsync.Repeated<Kdsync.Duration>();
+			durationList_.Init(() => UpdateChanged(0x01L << 10));
 			emptyList_ = new Kdsync.Repeated<Kdsync.Empty>();
+			emptyList_.Init(() => UpdateChanged(0x01L << 11));
 			enumList_ = new Kdsync.Repeated<ItemType>();
+			enumList_.Init(() => UpdateChanged(0x01L << 12));
 			itemList_ = new Kdsync.Repeated<ItemData>();
+			itemList_.Init(() => UpdateChanged(0x01L << 13));
 		}
 
 		private static readonly Kdsync.FieldCodec<int> _list_int32List__codec = Kdsync.FieldCodec.ForIntValue();
@@ -440,19 +707,19 @@ namespace Kds
 		public struct EventChanged
 		{
 			public long _changed;
-			public bool Int32List => (_changed & (0x01 << 1)) != 0;
-			public bool Uint32List => (_changed & (0x01 << 2)) != 0;
-			public bool Int64List => (_changed & (0x01 << 3)) != 0;
-			public bool Uint64List => (_changed & (0x01 << 4)) != 0;
-			public bool FloatList => (_changed & (0x01 << 5)) != 0;
-			public bool DoubleList => (_changed & (0x01 << 6)) != 0;
-			public bool BoolList => (_changed & (0x01 << 7)) != 0;
-			public bool StringList => (_changed & (0x01 << 8)) != 0;
-			public bool TimestampList => (_changed & (0x01 << 9)) != 0;
-			public bool DurationList => (_changed & (0x01 << 10)) != 0;
-			public bool EmptyList => (_changed & (0x01 << 11)) != 0;
-			public bool EnumList => (_changed & (0x01 << 12)) != 0;
-			public bool ItemList => (_changed & (0x01 << 13)) != 0;
+			public bool Int32List => (_changed & (0x01L << 1)) != 0;
+			public bool Uint32List => (_changed & (0x01L << 2)) != 0;
+			public bool Int64List => (_changed & (0x01L << 3)) != 0;
+			public bool Uint64List => (_changed & (0x01L << 4)) != 0;
+			public bool FloatList => (_changed & (0x01L << 5)) != 0;
+			public bool DoubleList => (_changed & (0x01L << 6)) != 0;
+			public bool BoolList => (_changed & (0x01L << 7)) != 0;
+			public bool StringList => (_changed & (0x01L << 8)) != 0;
+			public bool TimestampList => (_changed & (0x01L << 9)) != 0;
+			public bool DurationList => (_changed & (0x01L << 10)) != 0;
+			public bool EmptyList => (_changed & (0x01L << 11)) != 0;
+			public bool EnumList => (_changed & (0x01L << 12)) != 0;
+			public bool ItemList => (_changed & (0x01L << 13)) != 0;
 
 			public EventChanged(long changed)
 			{
@@ -470,55 +737,42 @@ namespace Kds
 				{
 					case 1:
 						int32List_.MergeFrom(ref ctx, _list_int32List__codec);
-						_changed |= 0x01 << 1;
 						break;
 					case 2:
 						uint32List_.MergeFrom(ref ctx, _list_uint32List__codec);
-						_changed |= 0x01 << 2;
 						break;
 					case 3:
 						int64List_.MergeFrom(ref ctx, _list_int64List__codec);
-						_changed |= 0x01 << 3;
 						break;
 					case 4:
 						uint64List_.MergeFrom(ref ctx, _list_uint64List__codec);
-						_changed |= 0x01 << 4;
 						break;
 					case 5:
 						floatList_.MergeFrom(ref ctx, _list_floatList__codec);
-						_changed |= 0x01 << 5;
 						break;
 					case 6:
 						doubleList_.MergeFrom(ref ctx, _list_doubleList__codec);
-						_changed |= 0x01 << 6;
 						break;
 					case 7:
 						boolList_.MergeFrom(ref ctx, _list_boolList__codec);
-						_changed |= 0x01 << 7;
 						break;
 					case 8:
 						stringList_.MergeFrom(ref ctx, _list_stringList__codec);
-						_changed |= 0x01 << 8;
 						break;
 					case 9:
 						timestampList_.MergeFrom(ref ctx, _list_timestampList__codec);
-						_changed |= 0x01 << 9;
 						break;
 					case 10:
 						durationList_.MergeFrom(ref ctx, _list_durationList__codec);
-						_changed |= 0x01 << 10;
 						break;
 					case 11:
 						emptyList_.MergeFrom(ref ctx, _list_emptyList__codec);
-						_changed |= 0x01 << 11;
 						break;
 					case 12:
 						enumList_.MergeFrom(ref ctx, _list_enumList__codec);
-						_changed |= 0x01 << 12;
 						break;
 					case 13:
 						itemList_.MergeFrom(ref ctx, _list_itemList__codec);
-						_changed |= 0x01 << 13;
 						break;
 					default:
 						ctx.SkipLastField();
@@ -531,31 +785,31 @@ namespace Kds
 		{
 			if (_changed == 0)
 				return;
-			if ((_changed & (0x01 << 1)) != 0)
+			if ((_changed & (0x01L << 1)) != 0)
 				int32List_.RaiseChanged();
-			if ((_changed & (0x01 << 2)) != 0)
+			if ((_changed & (0x01L << 2)) != 0)
 				uint32List_.RaiseChanged();
-			if ((_changed & (0x01 << 3)) != 0)
+			if ((_changed & (0x01L << 3)) != 0)
 				int64List_.RaiseChanged();
-			if ((_changed & (0x01 << 4)) != 0)
+			if ((_changed & (0x01L << 4)) != 0)
 				uint64List_.RaiseChanged();
-			if ((_changed & (0x01 << 5)) != 0)
+			if ((_changed & (0x01L << 5)) != 0)
 				floatList_.RaiseChanged();
-			if ((_changed & (0x01 << 6)) != 0)
+			if ((_changed & (0x01L << 6)) != 0)
 				doubleList_.RaiseChanged();
-			if ((_changed & (0x01 << 7)) != 0)
+			if ((_changed & (0x01L << 7)) != 0)
 				boolList_.RaiseChanged();
-			if ((_changed & (0x01 << 8)) != 0)
+			if ((_changed & (0x01L << 8)) != 0)
 				stringList_.RaiseChanged();
-			if ((_changed & (0x01 << 9)) != 0)
+			if ((_changed & (0x01L << 9)) != 0)
 				timestampList_.RaiseChanged();
-			if ((_changed & (0x01 << 10)) != 0)
+			if ((_changed & (0x01L << 10)) != 0)
 				durationList_.RaiseChanged();
-			if ((_changed & (0x01 << 11)) != 0)
+			if ((_changed & (0x01L << 11)) != 0)
 				emptyList_.RaiseChanged();
-			if ((_changed & (0x01 << 12)) != 0)
+			if ((_changed & (0x01L << 12)) != 0)
 				enumList_.RaiseChanged();
-			if ((_changed & (0x01 << 13)) != 0)
+			if ((_changed & (0x01L << 13)) != 0)
 				itemList_.RaiseChanged();
 			OnChanged?.Invoke(this, new EventChanged(_changed));
 		}
@@ -564,31 +818,31 @@ namespace Kds
 		{
 			if (_changed == 0)
 				return;
-			if ((_changed & (0x01 << 1)) != 0)
+			if ((_changed & (0x01L << 1)) != 0)
 				int32List_.ClearChanged();
-			if ((_changed & (0x01 << 2)) != 0)
+			if ((_changed & (0x01L << 2)) != 0)
 				uint32List_.ClearChanged();
-			if ((_changed & (0x01 << 3)) != 0)
+			if ((_changed & (0x01L << 3)) != 0)
 				int64List_.ClearChanged();
-			if ((_changed & (0x01 << 4)) != 0)
+			if ((_changed & (0x01L << 4)) != 0)
 				uint64List_.ClearChanged();
-			if ((_changed & (0x01 << 5)) != 0)
+			if ((_changed & (0x01L << 5)) != 0)
 				floatList_.ClearChanged();
-			if ((_changed & (0x01 << 6)) != 0)
+			if ((_changed & (0x01L << 6)) != 0)
 				doubleList_.ClearChanged();
-			if ((_changed & (0x01 << 7)) != 0)
+			if ((_changed & (0x01L << 7)) != 0)
 				boolList_.ClearChanged();
-			if ((_changed & (0x01 << 8)) != 0)
+			if ((_changed & (0x01L << 8)) != 0)
 				stringList_.ClearChanged();
-			if ((_changed & (0x01 << 9)) != 0)
+			if ((_changed & (0x01L << 9)) != 0)
 				timestampList_.ClearChanged();
-			if ((_changed & (0x01 << 10)) != 0)
+			if ((_changed & (0x01L << 10)) != 0)
 				durationList_.ClearChanged();
-			if ((_changed & (0x01 << 11)) != 0)
+			if ((_changed & (0x01L << 11)) != 0)
 				emptyList_.ClearChanged();
-			if ((_changed & (0x01 << 12)) != 0)
+			if ((_changed & (0x01L << 12)) != 0)
 				enumList_.ClearChanged();
-			if ((_changed & (0x01 << 13)) != 0)
+			if ((_changed & (0x01L << 13)) != 0)
 				itemList_.ClearChanged();
 			_changed = 0;
 		}
@@ -612,6 +866,31 @@ namespace Kds
 			writer.WriteEndObject();
 		}
 
+		private Action? _changedParent;
+
+		private void UpdateChanged(long n)
+		{
+			_changed |= n;
+			_changedParent?.Invoke();
+		}
+
+		public bool CheckChangedParent()
+		{
+			return _changedParent != null;
+		}
+
+		public void SetChangedParent(Action changedParent)
+		{
+			_changedParent = changedParent;
+			_changed = 0x01L;
+		}
+
+		public void ClearChangedParent()
+		{
+			_changedParent = null;
+			ClearChanged();
+		}
+
 		public override string ToString()
 		{
 			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
@@ -625,18 +904,31 @@ namespace Kds
 		public AllMap()
 		{
 			int32Int32Map_ = new Kdsync.Map<int, int>();
+			int32Int32Map_.Init(() => UpdateChanged(0x01L << 1));
 			int64Int64Map_ = new Kdsync.Map<long, long>();
+			int64Int64Map_.Init(() => UpdateChanged(0x01L << 2));
 			uint64Uint64Map_ = new Kdsync.Map<ulong, ulong>();
+			uint64Uint64Map_.Init(() => UpdateChanged(0x01L << 4));
 			boolFloatMap_ = new Kdsync.Map<bool, float>();
+			boolFloatMap_.Init(() => UpdateChanged(0x01L << 5));
 			stringDoubleMap_ = new Kdsync.Map<string, double>();
+			stringDoubleMap_.Init(() => UpdateChanged(0x01L << 6));
 			int32BoolMap_ = new Kdsync.Map<int, bool>();
+			int32BoolMap_.Init(() => UpdateChanged(0x01L << 7));
 			int64StringMap_ = new Kdsync.Map<long, string>();
+			int64StringMap_.Init(() => UpdateChanged(0x01L << 8));
 			uint32BytesMap_ = new Kdsync.Map<uint, byte[]>();
+			uint32BytesMap_.Init(() => UpdateChanged(0x01L << 9));
 			uint64TimestampMap_ = new Kdsync.Map<ulong, Kdsync.Timestamp>();
+			uint64TimestampMap_.Init(() => UpdateChanged(0x01L << 10));
 			boolDurationMap_ = new Kdsync.Map<bool, Kdsync.Duration>();
+			boolDurationMap_.Init(() => UpdateChanged(0x01L << 11));
 			stringEmptyMap_ = new Kdsync.Map<string, Kdsync.Empty>();
+			stringEmptyMap_.Init(() => UpdateChanged(0x01L << 12));
 			int32ItemTypeMap_ = new Kdsync.Map<int, ItemType>();
+			int32ItemTypeMap_.Init(() => UpdateChanged(0x01L << 13));
 			int64ItemDataMap_ = new Kdsync.Map<long, ItemData>();
+			int64ItemDataMap_.Init(() => UpdateChanged(0x01L << 14));
 		}
 
 		private static readonly Kdsync.Map<int, int>.Codec _map_int32Int32Map__codec = new Kdsync.Map<int, int>.Codec(Kdsync.FieldCodec.ForIntKey(), Kdsync.FieldCodec.ForIntValue(), 1);
@@ -698,19 +990,19 @@ namespace Kds
 		public struct EventChanged
 		{
 			public long _changed;
-			public bool Int32Int32Map => (_changed & (0x01 << 1)) != 0;
-			public bool Int64Int64Map => (_changed & (0x01 << 2)) != 0;
-			public bool Uint64Uint64Map => (_changed & (0x01 << 4)) != 0;
-			public bool BoolFloatMap => (_changed & (0x01 << 5)) != 0;
-			public bool StringDoubleMap => (_changed & (0x01 << 6)) != 0;
-			public bool Int32BoolMap => (_changed & (0x01 << 7)) != 0;
-			public bool Int64StringMap => (_changed & (0x01 << 8)) != 0;
-			public bool Uint32BytesMap => (_changed & (0x01 << 9)) != 0;
-			public bool Uint64TimestampMap => (_changed & (0x01 << 10)) != 0;
-			public bool BoolDurationMap => (_changed & (0x01 << 11)) != 0;
-			public bool StringEmptyMap => (_changed & (0x01 << 12)) != 0;
-			public bool Int32ItemTypeMap => (_changed & (0x01 << 13)) != 0;
-			public bool Int64ItemDataMap => (_changed & (0x01 << 14)) != 0;
+			public bool Int32Int32Map => (_changed & (0x01L << 1)) != 0;
+			public bool Int64Int64Map => (_changed & (0x01L << 2)) != 0;
+			public bool Uint64Uint64Map => (_changed & (0x01L << 4)) != 0;
+			public bool BoolFloatMap => (_changed & (0x01L << 5)) != 0;
+			public bool StringDoubleMap => (_changed & (0x01L << 6)) != 0;
+			public bool Int32BoolMap => (_changed & (0x01L << 7)) != 0;
+			public bool Int64StringMap => (_changed & (0x01L << 8)) != 0;
+			public bool Uint32BytesMap => (_changed & (0x01L << 9)) != 0;
+			public bool Uint64TimestampMap => (_changed & (0x01L << 10)) != 0;
+			public bool BoolDurationMap => (_changed & (0x01L << 11)) != 0;
+			public bool StringEmptyMap => (_changed & (0x01L << 12)) != 0;
+			public bool Int32ItemTypeMap => (_changed & (0x01L << 13)) != 0;
+			public bool Int64ItemDataMap => (_changed & (0x01L << 14)) != 0;
 
 			public EventChanged(long changed)
 			{
@@ -728,55 +1020,42 @@ namespace Kds
 				{
 					case 1:
 						int32Int32Map_.MergeFrom(ref ctx, _map_int32Int32Map__codec);
-						_changed |= 0x01 << 1;
 						break;
 					case 2:
 						int64Int64Map_.MergeFrom(ref ctx, _map_int64Int64Map__codec);
-						_changed |= 0x01 << 2;
 						break;
 					case 4:
 						uint64Uint64Map_.MergeFrom(ref ctx, _map_uint64Uint64Map__codec);
-						_changed |= 0x01 << 4;
 						break;
 					case 5:
 						boolFloatMap_.MergeFrom(ref ctx, _map_boolFloatMap__codec);
-						_changed |= 0x01 << 5;
 						break;
 					case 6:
 						stringDoubleMap_.MergeFrom(ref ctx, _map_stringDoubleMap__codec);
-						_changed |= 0x01 << 6;
 						break;
 					case 7:
 						int32BoolMap_.MergeFrom(ref ctx, _map_int32BoolMap__codec);
-						_changed |= 0x01 << 7;
 						break;
 					case 8:
 						int64StringMap_.MergeFrom(ref ctx, _map_int64StringMap__codec);
-						_changed |= 0x01 << 8;
 						break;
 					case 9:
 						uint32BytesMap_.MergeFrom(ref ctx, _map_uint32BytesMap__codec);
-						_changed |= 0x01 << 9;
 						break;
 					case 10:
 						uint64TimestampMap_.MergeFrom(ref ctx, _map_uint64TimestampMap__codec);
-						_changed |= 0x01 << 10;
 						break;
 					case 11:
 						boolDurationMap_.MergeFrom(ref ctx, _map_boolDurationMap__codec);
-						_changed |= 0x01 << 11;
 						break;
 					case 12:
 						stringEmptyMap_.MergeFrom(ref ctx, _map_stringEmptyMap__codec);
-						_changed |= 0x01 << 12;
 						break;
 					case 13:
 						int32ItemTypeMap_.MergeFrom(ref ctx, _map_int32ItemTypeMap__codec);
-						_changed |= 0x01 << 13;
 						break;
 					case 14:
 						int64ItemDataMap_.MergeFrom(ref ctx, _map_int64ItemDataMap__codec);
-						_changed |= 0x01 << 14;
 						break;
 					default:
 						ctx.SkipLastField();
@@ -789,31 +1068,31 @@ namespace Kds
 		{
 			if (_changed == 0)
 				return;
-			if ((_changed & (0x01 << 1)) != 0)
+			if ((_changed & (0x01L << 1)) != 0)
 				int32Int32Map_.RaiseChanged();
-			if ((_changed & (0x01 << 2)) != 0)
+			if ((_changed & (0x01L << 2)) != 0)
 				int64Int64Map_.RaiseChanged();
-			if ((_changed & (0x01 << 4)) != 0)
+			if ((_changed & (0x01L << 4)) != 0)
 				uint64Uint64Map_.RaiseChanged();
-			if ((_changed & (0x01 << 5)) != 0)
+			if ((_changed & (0x01L << 5)) != 0)
 				boolFloatMap_.RaiseChanged();
-			if ((_changed & (0x01 << 6)) != 0)
+			if ((_changed & (0x01L << 6)) != 0)
 				stringDoubleMap_.RaiseChanged();
-			if ((_changed & (0x01 << 7)) != 0)
+			if ((_changed & (0x01L << 7)) != 0)
 				int32BoolMap_.RaiseChanged();
-			if ((_changed & (0x01 << 8)) != 0)
+			if ((_changed & (0x01L << 8)) != 0)
 				int64StringMap_.RaiseChanged();
-			if ((_changed & (0x01 << 9)) != 0)
+			if ((_changed & (0x01L << 9)) != 0)
 				uint32BytesMap_.RaiseChanged();
-			if ((_changed & (0x01 << 10)) != 0)
+			if ((_changed & (0x01L << 10)) != 0)
 				uint64TimestampMap_.RaiseChanged();
-			if ((_changed & (0x01 << 11)) != 0)
+			if ((_changed & (0x01L << 11)) != 0)
 				boolDurationMap_.RaiseChanged();
-			if ((_changed & (0x01 << 12)) != 0)
+			if ((_changed & (0x01L << 12)) != 0)
 				stringEmptyMap_.RaiseChanged();
-			if ((_changed & (0x01 << 13)) != 0)
+			if ((_changed & (0x01L << 13)) != 0)
 				int32ItemTypeMap_.RaiseChanged();
-			if ((_changed & (0x01 << 14)) != 0)
+			if ((_changed & (0x01L << 14)) != 0)
 				int64ItemDataMap_.RaiseChanged();
 			OnChanged?.Invoke(this, new EventChanged(_changed));
 		}
@@ -822,31 +1101,31 @@ namespace Kds
 		{
 			if (_changed == 0)
 				return;
-			if ((_changed & (0x01 << 1)) != 0)
+			if ((_changed & (0x01L << 1)) != 0)
 				int32Int32Map_.ClearChanged();
-			if ((_changed & (0x01 << 2)) != 0)
+			if ((_changed & (0x01L << 2)) != 0)
 				int64Int64Map_.ClearChanged();
-			if ((_changed & (0x01 << 4)) != 0)
+			if ((_changed & (0x01L << 4)) != 0)
 				uint64Uint64Map_.ClearChanged();
-			if ((_changed & (0x01 << 5)) != 0)
+			if ((_changed & (0x01L << 5)) != 0)
 				boolFloatMap_.ClearChanged();
-			if ((_changed & (0x01 << 6)) != 0)
+			if ((_changed & (0x01L << 6)) != 0)
 				stringDoubleMap_.ClearChanged();
-			if ((_changed & (0x01 << 7)) != 0)
+			if ((_changed & (0x01L << 7)) != 0)
 				int32BoolMap_.ClearChanged();
-			if ((_changed & (0x01 << 8)) != 0)
+			if ((_changed & (0x01L << 8)) != 0)
 				int64StringMap_.ClearChanged();
-			if ((_changed & (0x01 << 9)) != 0)
+			if ((_changed & (0x01L << 9)) != 0)
 				uint32BytesMap_.ClearChanged();
-			if ((_changed & (0x01 << 10)) != 0)
+			if ((_changed & (0x01L << 10)) != 0)
 				uint64TimestampMap_.ClearChanged();
-			if ((_changed & (0x01 << 11)) != 0)
+			if ((_changed & (0x01L << 11)) != 0)
 				boolDurationMap_.ClearChanged();
-			if ((_changed & (0x01 << 12)) != 0)
+			if ((_changed & (0x01L << 12)) != 0)
 				stringEmptyMap_.ClearChanged();
-			if ((_changed & (0x01 << 13)) != 0)
+			if ((_changed & (0x01L << 13)) != 0)
 				int32ItemTypeMap_.ClearChanged();
-			if ((_changed & (0x01 << 14)) != 0)
+			if ((_changed & (0x01L << 14)) != 0)
 				int64ItemDataMap_.ClearChanged();
 			_changed = 0;
 		}
@@ -868,6 +1147,31 @@ namespace Kds
 			writer.WriteMap("Int32ItemTypeMap", int32ItemTypeMap_);
 			writer.WriteMap("Int64ItemDataMap", int64ItemDataMap_);
 			writer.WriteEndObject();
+		}
+
+		private Action? _changedParent;
+
+		private void UpdateChanged(long n)
+		{
+			_changed |= n;
+			_changedParent?.Invoke();
+		}
+
+		public bool CheckChangedParent()
+		{
+			return _changedParent != null;
+		}
+
+		public void SetChangedParent(Action changedParent)
+		{
+			_changedParent = changedParent;
+			_changed = 0x01L;
+		}
+
+		public void ClearChangedParent()
+		{
+			_changedParent = null;
+			ClearChanged();
 		}
 
 		public override string ToString()

@@ -53,7 +53,7 @@
 {{- /*Protobuf reserved "Types" "Descriptor" "Equals" "ToString" "GetHashCode" "WriteTo" "Clone" "CalculateSize" "MergeFrom" "OnConstruction" "Parser"*/ -}}
 {{- if eq .Name .Def.Name}}{{.Name}}_
 {{- else if and (eq .Def.Kind "entity") (eq .Name "Id")}}{{.Name}}_
-{{- else if eq .Name "Equals" "ToString" "GetHashCode" "WriteTo" "Clone" "CalculateSize" "MergeFrom" "RaiseChanged" "ClearChanged"}}{{.Name}}_
+{{- else if eq .Name "Equals" "ToString" "GetHashCode" "WriteTo" "Clone" "CalculateSize" "MergeFrom" "RaiseChanged" "ClearChanged" "UpdateChanged" "CheckChangedParent" "SetChangedParent" "ClearChangedParent"}}{{.Name}}_
 {{- else}}{{.Name}}
 {{- end}}
 {{- end}}
@@ -99,10 +99,42 @@
 		public Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}> {{template "PropertyName" .}} => {{template "FieldName" .}};
 {{- else if eq .TypeKind "component"}}
 		private {{.Type}} {{template "FieldName" .}};
-		public {{.Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
+		public {{.Type}} {{template "PropertyName" .}}
+		{
+			get => {{template "FieldName" .}};
+			set
+			{
+				if (value != null && value.CheckChangedParent())
+					throw new InvalidOperationException("the component should be removed from its original place first");
+
+				if ({{template "FieldName" .}} == value)
+					return;
+				{{template "FieldName" .}}?.ClearChangedParent();
+				{{template "FieldName" .}} = value;
+				value?.SetChangedParent(() => UpdateChanged(0x01L << {{.Number}}));
+				UpdateChanged(0x01L << {{.Number}});
+			}
+		}
 {{- else}}
 		private {{template "Type" .Type}} {{template "FieldName" .}};
-		public {{template "Type" .Type}} {{template "PropertyName" .}} => {{template "FieldName" .}};
+		public {{template "Type" .Type}} {{template "PropertyName" .}}
+		{
+			get => {{template "FieldName" .}};
+			set
+			{
+{{- if eq .Type "bytes"}}
+				if (value == null && {{template "FieldName" .}} == null)
+					return;
+				if (ReferenceEquals(value, {{template "FieldName" .}}))
+					return;
+{{- else}}
+				if ({{template "FieldName" .}} == value)
+					return;
+{{- end}}
+				{{template "FieldName" .}} = value;
+				UpdateChanged(0x01L << {{.Number}});
+			}
+		}
 {{- end}}
 {{- end}}
 
@@ -114,7 +146,7 @@
 		{
 			public long _changed;
 {{- range .Fields}}
-			public bool {{.Name}} => (_changed & (0x01 << {{.Number}})) != 0;
+			public bool {{.Name}} => (_changed & (0x01L << {{.Number}})) != 0;
 {{- end}}
 
 			public EventChanged(long changed)
@@ -180,7 +212,6 @@
 {{- else}}
 						ctx.SkipLastField();
 {{- end}}
-						_changed |= 0x01 << {{.Number}};
 						break;
 {{- end}}
 					default:
@@ -196,13 +227,13 @@
 				return;
 {{- range .Fields}}
 {{- if .Repeated}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
+			if ((_changed & (0x01L << {{.Number}})) != 0)
 				{{template "FieldName" .}}.RaiseChanged();
 {{- else if .Map}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
+			if ((_changed & (0x01L << {{.Number}})) != 0)
 				{{template "FieldName" .}}.RaiseChanged();
 {{- else if eq .TypeKind "component"}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
+			if ((_changed & (0x01L << {{.Number}})) != 0)
 				{{template "FieldName" .}}.RaiseChanged();
 {{- end}}
 {{- end}}
@@ -215,13 +246,13 @@
 				return;
 {{- range .Fields}}
 {{- if .Repeated}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
+			if ((_changed & (0x01L << {{.Number}})) != 0)
 				{{template "FieldName" .}}.ClearChanged();
 {{- else if .Map}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
+			if ((_changed & (0x01L << {{.Number}})) != 0)
 				{{template "FieldName" .}}.ClearChanged();
 {{- else if eq .TypeKind "component"}}
-			if ((_changed & (0x01 << {{.Number}})) != 0)
+			if ((_changed & (0x01L << {{.Number}})) != 0)
 				{{template "FieldName" .}}.ClearChanged();
 {{- end}}
 {{- end}}
@@ -268,19 +299,12 @@
 {{- end}}
 			writer.WriteEndObject();
 		}
-
-		public override string ToString()
-		{
-			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
-			writer.WriteValue(this);
-			return writer.ToString();
-		}
 {{- end}}
 
 {{- /* ENTITY */ -}}
 {{- define "Entity"}}
 {{- $EntityName := .Name}}
-	public class {{.Name}} : Kdsync.IMessage
+	public class {{.Name}}
 	{
 		private readonly long _id;
 		public long Id => _id;
@@ -291,10 +315,13 @@
 {{- range .Fields}}
 {{- if .Repeated}}
 			{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>();
+			{{template "FieldName" .}}.Init(() => UpdateChanged(0x01L << {{.Number}}));
 {{- else if .Map}}
 			{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>();
+			{{template "FieldName" .}}.Init(() => UpdateChanged(0x01L << {{.Number}}));
 {{- else if eq .TypeKind "component"}}
 			{{template "FieldName" .}} = new {{.Type}}();
+			{{template "FieldName" .}}.SetChangedParent(() => UpdateChanged(0x01L << {{.Number}}));
 {{- else if eq .Type "string"}}
 			{{template "FieldName" .}} = string.Empty;
 {{- else if eq .Type "bytes"}}
@@ -311,6 +338,18 @@
 			Kdsync.ParseContext.Initialize(readOnlySpan, out var ctx);
 			MergeFrom(ref ctx);
 		}
+
+		private void UpdateChanged(long n)
+		{
+			_changed |= n;
+		}
+
+		public override string ToString()
+		{
+			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
+			Write(writer);
+			return writer.ToString();
+		}
 	}
 {{- end}}
 
@@ -323,10 +362,13 @@
 {{- range .Fields}}
 {{- if .Repeated}}
 			{{template "FieldName" .}} = new Kdsync.Repeated<{{template "Type" .Type}}>();
+			{{template "FieldName" .}}.Init(() => UpdateChanged(0x01L << {{.Number}}));
 {{- else if .Map}}
 			{{template "FieldName" .}} = new Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>();
+			{{template "FieldName" .}}.Init(() => UpdateChanged(0x01L << {{.Number}}));
 {{- else if eq .TypeKind "component"}}
 			{{template "FieldName" .}} = new {{.Type}}();
+			{{template "FieldName" .}}.SetChangedParent(() => UpdateChanged(0x01L << {{.Number}}));
 {{- else if eq .Type "string"}}
 			{{template "FieldName" .}} = string.Empty;
 {{- else if eq .Type "bytes"}}
@@ -336,6 +378,38 @@
 {{- end}}
 		}
 {{- template "Message" .}}
+
+		private Action? _changedParent;
+
+		private void UpdateChanged(long n)
+		{
+			_changed |= n;
+			_changedParent?.Invoke();
+		}
+
+		public bool CheckChangedParent()
+		{
+			return _changedParent != null;
+		}
+
+		public void SetChangedParent(Action changedParent)
+		{
+			_changedParent = changedParent;
+			_changed = 0x01L;
+		}
+
+		public void ClearChangedParent()
+		{
+			_changedParent = null;
+			ClearChanged();
+		}
+
+		public override string ToString()
+		{
+			Kdsync.JsonWriter writer = new Kdsync.JsonWriter();
+			writer.WriteValue(this);
+			return writer.ToString();
+		}
 	}
 {{- end}}
 {{- /* END DEFINE */ -}}

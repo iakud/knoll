@@ -21,13 +21,43 @@ namespace Kds
 		}
 
 		private int id_;
-		public int Id => id_;
+		public int Id
+		{
+			get => id_;
+			set
+			{
+				if (id_ == value)
+					return;
+				id_ = value;
+				UpdateChanged(0x01L << 1);
+			}
+		}
 
 		private string name_;
-		public string Name => name_;
+		public string Name
+		{
+			get => name_;
+			set
+			{
+				if (name_ == value)
+					return;
+				name_ = value;
+				UpdateChanged(0x01L << 2);
+			}
+		}
 
 		private int count_;
-		public int Count => count_;
+		public int Count
+		{
+			get => count_;
+			set
+			{
+				if (count_ == value)
+					return;
+				count_ = value;
+				UpdateChanged(0x01L << 3);
+			}
+		}
 
 		private long _changed;
 
@@ -36,9 +66,9 @@ namespace Kds
 		public struct EventChanged
 		{
 			public long _changed;
-			public bool Id => (_changed & (0x01 << 1)) != 0;
-			public bool Name => (_changed & (0x01 << 2)) != 0;
-			public bool Count => (_changed & (0x01 << 3)) != 0;
+			public bool Id => (_changed & (0x01L << 1)) != 0;
+			public bool Name => (_changed & (0x01L << 2)) != 0;
+			public bool Count => (_changed & (0x01L << 3)) != 0;
 
 			public EventChanged(long changed)
 			{
@@ -56,15 +86,12 @@ namespace Kds
 				{
 					case 1:
 						id_ = ctx.ReadInt32();
-						_changed |= 0x01 << 1;
 						break;
 					case 2:
 						name_ = ctx.ReadString();
-						_changed |= 0x01 << 2;
 						break;
 					case 3:
 						count_ = ctx.ReadInt32();
-						_changed |= 0x01 << 3;
 						break;
 					default:
 						ctx.SkipLastField();
@@ -94,6 +121,31 @@ namespace Kds
 			writer.WriteString("Name", name_);
 			writer.WriteInt("Count", count_);
 			writer.WriteEndObject();
+		}
+
+		private Action? _changedParent;
+
+		private void UpdateChanged(long n)
+		{
+			_changed |= n;
+			_changedParent?.Invoke();
+		}
+
+		public bool CheckChangedParent()
+		{
+			return _changedParent != null;
+		}
+
+		public void SetChangedParent(Action changedParent)
+		{
+			_changedParent = changedParent;
+			_changed = 0x01L;
+		}
+
+		public void ClearChangedParent()
+		{
+			_changedParent = null;
+			ClearChanged();
 		}
 
 		public override string ToString()

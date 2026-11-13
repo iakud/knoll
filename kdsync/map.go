@@ -76,7 +76,7 @@ func (x *MapField[K, V]) Len() int {
 }
 
 func (x *MapField[K, V]) Clear() {
-	if len(x.data) == 0 && len(x.deleted) == 0 {
+	if len(x.data) == 0 {
 		return
 	}
 	clear(x.data)
@@ -121,7 +121,7 @@ func (x *MapField[K, V]) Values() iter.Seq[V] {
 func (x *MapField[K, V]) updateDirtyCleared(t DirtyType) {
 	switch t {
 	case DirtyType_Sync:
-		if len(x.updated) == 0 && len(x.deleted) == 0 {
+		if x.cleared && len(x.updated) == 0 && len(x.deleted) == 0 {
 			return
 		}
 		x.cleared = true
@@ -129,7 +129,7 @@ func (x *MapField[K, V]) updateDirtyCleared(t DirtyType) {
 		clear(x.deleted)
 		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
-		if len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
+		if x.persistCleared && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
 			return
 		}
 		x.persistCleared = true
@@ -137,7 +137,7 @@ func (x *MapField[K, V]) updateDirtyCleared(t DirtyType) {
 		clear(x.persistDeleted)
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		if len(x.updated) == 0 && len(x.deleted) == 0 && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
+		if x.cleared && x.persistCleared && len(x.updated) == 0 && len(x.deleted) == 0 && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
 			return
 		}
 		x.cleared = true
@@ -406,7 +406,7 @@ func (x *MapEnum[K, V]) Len() int {
 }
 
 func (x *MapEnum[K, V]) Clear() {
-	if len(x.data) == 0 && len(x.deleted) == 0 {
+	if len(x.data) == 0 {
 		return
 	}
 	clear(x.data)
@@ -451,7 +451,7 @@ func (x *MapEnum[K, V]) Values() iter.Seq[V] {
 func (x *MapEnum[K, V]) updateDirtyCleared(t DirtyType) {
 	switch t {
 	case DirtyType_Sync:
-		if len(x.updated) == 0 && len(x.deleted) == 0 {
+		if x.cleared && len(x.updated) == 0 && len(x.deleted) == 0 {
 			return
 		}
 		x.cleared = true
@@ -459,7 +459,7 @@ func (x *MapEnum[K, V]) updateDirtyCleared(t DirtyType) {
 		clear(x.deleted)
 		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
-		if len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
+		if x.persistCleared && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
 			return
 		}
 		x.persistCleared = true
@@ -467,7 +467,7 @@ func (x *MapEnum[K, V]) updateDirtyCleared(t DirtyType) {
 		clear(x.persistDeleted)
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		if len(x.updated) == 0 && len(x.deleted) == 0 && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
+		if x.cleared && x.persistCleared && len(x.updated) == 0 && len(x.deleted) == 0 && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
 			return
 		}
 		x.cleared = true
@@ -735,7 +735,7 @@ func (x *MapMessage[K, T, V]) Len() int {
 }
 
 func (x *MapMessage[K, T, V]) Clear() {
-	if len(x.data) == 0 && len(x.deleted) == 0 {
+	if len(x.data) == 0 {
 		return
 	}
 	for _, v := range x.data {
@@ -751,13 +751,14 @@ func (x *MapMessage[K, T, V]) Get(k K) (V, bool) {
 }
 
 func (x *MapMessage[K, T, V]) Set(k K, v V) {
+	e, ok := x.data[k]
+	if ok && e == v {
+		return
+	}
 	if x.valueType.CheckDirtyParent(v) {
 		panic("the component should be removed from its original place first")
 	}
-	if e, ok := x.data[k]; ok {
-		if e == v {
-			return
-		}
+	if ok {
 		x.valueType.ClearDirtyParent(e)
 	}
 	x.valueType.SetDirtyParent(v, func(t DirtyType) {
@@ -792,7 +793,7 @@ func (x *MapMessage[K, T, V]) Values() iter.Seq[V] {
 func (x *MapMessage[K, T, V]) updateDirtyCleared(t DirtyType) {
 	switch t {
 	case DirtyType_Sync:
-		if len(x.updated) == 0 && len(x.deleted) == 0 {
+		if x.cleared && len(x.updated) == 0 && len(x.deleted) == 0 {
 			return
 		}
 		x.cleared = true
@@ -800,7 +801,7 @@ func (x *MapMessage[K, T, V]) updateDirtyCleared(t DirtyType) {
 		clear(x.deleted)
 		x.dirtyParent.Invoke(DirtyType_Sync)
 	case DirtyType_Persist:
-		if len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
+		if x.persistCleared && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
 			return
 		}
 		x.persistCleared = true
@@ -808,7 +809,7 @@ func (x *MapMessage[K, T, V]) updateDirtyCleared(t DirtyType) {
 		clear(x.persistDeleted)
 		x.dirtyParent.Invoke(DirtyType_Persist)
 	case DirtyType_SyncAndPersist:
-		if len(x.updated) == 0 && len(x.deleted) == 0 && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
+		if x.cleared && x.persistCleared && len(x.updated) == 0 && len(x.deleted) == 0 && len(x.persistUpdated) == 0 && len(x.persistDeleted) == 0 {
 			return
 		}
 		x.cleared = true
