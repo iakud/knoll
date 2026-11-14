@@ -1,4 +1,4 @@
-package example
+package kdstest
 
 /*
 #cgo LDFLAGS: -ldl -lm -Wl,-rpath,${SRCDIR}/bin ${SRCDIR}/bin/example.dylib

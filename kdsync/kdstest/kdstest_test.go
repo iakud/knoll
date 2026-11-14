@@ -1,4 +1,4 @@
-package example
+package kdstest
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iakud/knoll/kdsync/example/kds"
+	"github.com/iakud/knoll/kdsync/kdstest/kds"
 )
 
 var all = kds.NewAll(0)

@@ -1,9 +1,10 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Kds;
 using Kdsync;
 
-namespace Kds
+namespace KdsTest
 {
     public static class Example
     {

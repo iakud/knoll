@@ -9,8 +9,4 @@
     <PublishAOT>true</PublishAOT>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Kdsync" Version="1.0.16" />
-  </ItemGroup>
-
 </Project>
