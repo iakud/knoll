@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <LangVersion>9.0</LangVersion>
@@ -12,6 +11,4 @@
   <ItemGroup>
     <ProjectReference Include="../client/Kdsync.csproj" />
   </ItemGroup>
-
-
 </Project>
