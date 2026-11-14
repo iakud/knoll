@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <LangVersion>9.0</LangVersion>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+
+    <PackageId>Kdsync</PackageId>
+    <Version>1.0.15</Version>
+    <Authors>iakud</Authors>
+    <Description>Kdsync library</Description>
+    <RepositoryUrl>https://github.com/iakud/knoll/kdsync/client</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>kdsync</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+  </ItemGroup>
+</Project>

@@ -9,4 +9,9 @@
     <PublishAOT>true</PublishAOT>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../client/Kdsync.csproj" />
+  </ItemGroup>
+
+
 </Project>
