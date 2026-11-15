@@ -65,11 +65,6 @@ namespace Kdsync
             return ComputeLengthSize(byteArraySize) + byteArraySize;
         }
 
-        public static int ComputeGroupSize(IMessage value)
-        {
-            return value.CalculateSize();
-        }
-
         public static int ComputeMessageSize(IMessage value)
         {
             int size = value.CalculateSize();
