@@ -42,19 +42,14 @@ namespace Kdsync
 
             private readonly FieldCodec<TValue> valueCodec;
 
-            private readonly uint mapTag;
-
             internal FieldCodec<TKey> KeyCodec => keyCodec;
 
             internal FieldCodec<TValue> ValueCodec => valueCodec;
 
-            internal uint MapTag => mapTag;
-
-            public Codec(FieldCodec<TKey> keyCodec, FieldCodec<TValue> valueCodec, uint mapTag)
+            public Codec(FieldCodec<TKey> keyCodec, FieldCodec<TValue> valueCodec)
             {
                 this.keyCodec = keyCodec;
                 this.valueCodec = valueCodec;
-                this.mapTag = mapTag;
             }
         }
 
@@ -500,6 +495,46 @@ namespace Kdsync
         public void Init(Action changedParent)
         {
             _changedParent = changedParent;
+        }
+
+        public void WriteTo(ref WriteContext ctx, Codec codec)
+        {
+            FieldCodec<TKey> keyCodec = codec.KeyCodec;
+            FieldCodec<TValue> valueCodec = codec.ValueCodec;
+
+            ctx.WriteTag(ClearFieldNumber, WireFormat.WireType.Varint);
+            ctx.WriteBool(true);
+
+            foreach (KeyValuePair<TKey, TValue> kvp in GetSortedListCopy(list))
+            {
+                ctx.WriteTag(EntriesFieldNumber, WireFormat.WireType.LengthDelimited);
+                ctx.WriteLength(CalculateEntrySize(kvp, keyCodec, valueCodec));
+                ctx.WriteTag(KeyFieldNumber, keyCodec.WireType);
+                keyCodec.ValueWriter(ref ctx, kvp.Key);
+                ctx.WriteTag(ValueFieldNumber, valueCodec.WireType);
+                valueCodec.ValueWriter(ref ctx, kvp.Value);
+            }
+        }
+
+        public int CalculateSize(Codec codec)
+        {
+            int size = WriteComputeSize.ComputeTagSize(ClearFieldNumber) + WriteComputeSize.BoolSize;
+
+            FieldCodec<TKey> keyCodec = codec.KeyCodec;
+            FieldCodec<TValue> valueCodec = codec.ValueCodec;
+
+            foreach (KeyValuePair<TKey, TValue> kvp in GetSortedListCopy(list))
+            {
+                int entrySize = CalculateEntrySize(kvp, keyCodec, valueCodec);
+                size += WriteComputeSize.ComputeTagSize(EntriesFieldNumber) + WriteComputeSize.ComputeLengthSize(entrySize) + entrySize;
+            }
+            return size;
+        }
+
+        private int CalculateEntrySize(KeyValuePair<TKey, TValue> kvp, FieldCodec<TKey> keyCodec, FieldCodec<TValue> valueCodec)
+        {
+            return WriteComputeSize.ComputeTagSize(KeyFieldNumber) + keyCodec.ValueSizeCalculator(kvp.Key)
+                 + WriteComputeSize.ComputeTagSize(ValueFieldNumber) + valueCodec.ValueSizeCalculator(kvp.Value);
         }
 
         public void MergeFrom(ref ParseContext ctx, Codec codec)

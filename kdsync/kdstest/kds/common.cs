@@ -123,7 +123,46 @@ namespace Kds
 			writer.WriteEndObject();
 		}
 
+		public void WriteTo(ref Kdsync.WriteContext ctx)
+		{
+			ctx.WriteTag(1, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteInt32(id_);
+			ctx.WriteTag(2, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteString(name_);
+			ctx.WriteTag(3, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteInt32(count_);
+		}
+
+		public int CalculateSize()
+		{
+			int size = 0;
+			int id_Size = Kdsync.WriteComputeSize.ComputeInt32Size(id_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(1) + id_Size;
+			int name_Size = Kdsync.WriteComputeSize.ComputeStringSize(name_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(2) + name_Size;
+			int count_Size = Kdsync.WriteComputeSize.ComputeInt32Size(count_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(3) + count_Size;
+			return size;
+		}
+
+		public byte[] ToByteArray()
+		{
+			byte[] buffer = new byte[CalculateSize()];
+			Span<byte> span = buffer;
+			Kdsync.WriteContext.Initialize(ref span, out var ctx);
+			WriteTo(ref ctx);
+			ctx.CheckNoSpaceLeft();
+			return buffer;
+		}
+
 		private Action? _changedParent;
+
+		public void MergeFrom(byte[] buffer)
+		{
+			ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(buffer);
+			Kdsync.ParseContext.Initialize(readOnlySpan, out var ctx);
+			MergeFrom(ref ctx);
+		}
 
 		private void UpdateChanged(long n)
 		{

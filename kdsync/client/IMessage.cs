@@ -11,5 +11,8 @@ namespace Kdsync
         void SetChangedParent(Action changedParent);
         void ClearChangedParent();
         void Write(JsonWriter writer);
+
+        void WriteTo(ref WriteContext ctx);
+        int CalculateSize();
     }
 }

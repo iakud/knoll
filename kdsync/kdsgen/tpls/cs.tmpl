@@ -46,14 +46,14 @@
 {{- end}}
 {{- end}}
 
-{{- define "MapCodec"}}Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>.Codec({{template "KeyCodec" .}}, {{template "FieldCodec" .}}, {{.Number}})
+{{- define "MapCodec"}}Kdsync.Map<{{template "Type" .KeyType}}, {{template "Type" .Type}}>.Codec({{template "KeyCodec" .}}, {{template "FieldCodec" .}})
 {{- end}}
 
 {{- define "PropertyName"}}
 {{- /*Protobuf reserved "Types" "Descriptor" "Equals" "ToString" "GetHashCode" "WriteTo" "Clone" "CalculateSize" "MergeFrom" "OnConstruction" "Parser"*/ -}}
 {{- if eq .Name .Def.Name}}{{.Name}}_
 {{- else if and (eq .Def.Kind "entity") (eq .Name "Id")}}{{.Name}}_
-{{- else if eq .Name "Equals" "ToString" "GetHashCode" "WriteTo" "Clone" "CalculateSize" "MergeFrom" "RaiseChanged" "ClearChanged" "UpdateChanged" "CheckChangedParent" "SetChangedParent" "ClearChangedParent"}}{{.Name}}_
+{{- else if eq .Name "Equals" "ToString" "GetHashCode" "WriteTo" "Clone" "CalculateSize" "MergeFrom" "RaiseChanged" "ClearChanged" "UpdateChanged" "CheckChangedParent" "SetChangedParent" "ClearChangedParent" "ToByteArray"}}{{.Name}}_
 {{- else}}{{.Name}}
 {{- end}}
 {{- end}}
@@ -299,6 +299,166 @@
 {{- end}}
 			writer.WriteEndObject();
 		}
+
+		public void WriteTo(ref Kdsync.WriteContext ctx)
+		{
+{{- range .Fields}}
+{{- if .Repeated}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength({{template "FieldName" .}}.CalculateSize(_list_{{template "FieldName" .}}_codec));
+			{{template "FieldName" .}}.WriteTo(ref ctx, _list_{{template "FieldName" .}}_codec);
+{{- else if .Map}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength({{template "FieldName" .}}.CalculateSize(_map_{{template "FieldName" .}}_codec));
+			{{template "FieldName" .}}.WriteTo(ref ctx, _map_{{template "FieldName" .}}_codec);
+{{- else if eq .TypeKind "component"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteMessage({{template "FieldName" .}});
+{{- else if eq .TypeKind "enum"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteEnum(Convert.ToInt32({{template "FieldName" .}}));
+{{- else if eq .Type "bool"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteBool({{template "FieldName" .}});
+{{- else if eq .Type "int32"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteInt32({{template "FieldName" .}});
+{{- else if eq .Type "sint32"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteSInt32({{template "FieldName" .}});
+{{- else if eq .Type "uint32"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteUInt32({{template "FieldName" .}});
+{{- else if eq .Type "int64"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteInt64({{template "FieldName" .}});
+{{- else if eq .Type "sint64"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteSInt64({{template "FieldName" .}});
+{{- else if eq .Type "uint64"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteUInt64({{template "FieldName" .}});
+{{- else if eq .Type "fixed32"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Fixed32);
+			ctx.WriteFixed32({{template "FieldName" .}});
+{{- else if eq .Type "sfixed32"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Fixed32);
+			ctx.WriteSFixed32({{template "FieldName" .}});
+{{- else if eq .Type "fixed64"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Fixed64);
+			ctx.WriteFixed64({{template "FieldName" .}});
+{{- else if eq .Type "sfixed64"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Fixed64);
+			ctx.WriteSFixed64({{template "FieldName" .}});
+{{- else if eq .Type "float"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Fixed32);
+			ctx.WriteFloat({{template "FieldName" .}});
+{{- else if eq .Type "double"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.Fixed64);
+			ctx.WriteDouble({{template "FieldName" .}});
+{{- else if eq .Type "string"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteString({{template "FieldName" .}});
+{{- else if eq .Type "bytes"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteBytes({{template "FieldName" .}});
+{{- else if eq .Type "timestamp"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteTimestamp({{template "FieldName" .}});
+{{- else if eq .Type "duration"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteDuration({{template "FieldName" .}});
+{{- else if eq .Type "empty"}}
+			ctx.WriteTag({{.Number}}, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteEmpty({{template "FieldName" .}});
+{{- end}}
+{{- end}}
+		}
+
+		public int CalculateSize()
+		{
+			int size = 0;
+{{- range .Fields}}
+{{- if .Repeated}}
+			int {{template "FieldName" .}}Size = {{template "FieldName" .}}.CalculateSize(_list_{{template "FieldName" .}}_codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + Kdsync.WriteComputeSize.ComputeLengthSize({{template "FieldName" .}}Size) + {{template "FieldName" .}}Size;
+{{- else if .Map}}
+			int {{template "FieldName" .}}Size = {{template "FieldName" .}}.CalculateSize(_map_{{template "FieldName" .}}_codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + Kdsync.WriteComputeSize.ComputeLengthSize({{template "FieldName" .}}Size) + {{template "FieldName" .}}Size;
+{{- else if eq .TypeKind "component"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeMessageSize({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .TypeKind "enum"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeEnumSize(Convert.ToInt32({{template "FieldName" .}}));
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "bool"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeBoolSize({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "int32"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeInt32Size({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "sint32"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeSInt32Size({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "uint32"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeUInt32Size({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "int64"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeInt64Size({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "sint64"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeSInt64Size({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "uint64"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeUInt64Size({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "fixed32"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeFixed32Size({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "sfixed32"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeSFixed32Size({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "fixed64"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeFixed64Size({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "sfixed64"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeSFixed64Size({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "float"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeFloatSize({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "double"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeDoubleSize({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "string"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeStringSize({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "bytes"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeBytesSize({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "timestamp"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeTimestampSize({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "duration"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeDurationSize({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- else if eq .Type "empty"}}
+			int {{template "FieldName" .}}Size = Kdsync.WriteComputeSize.ComputeEmptySize({{template "FieldName" .}});
+			size += Kdsync.WriteComputeSize.ComputeTagSize({{.Number}}) + {{template "FieldName" .}}Size;
+{{- end}}
+{{- end}}
+			return size;
+		}
+
+		public byte[] ToByteArray()
+		{
+			byte[] buffer = new byte[CalculateSize()];
+			Span<byte> span = buffer;
+			Kdsync.WriteContext.Initialize(ref span, out var ctx);
+			WriteTo(ref ctx);
+			ctx.CheckNoSpaceLeft();
+			return buffer;
+		}
 {{- end}}
 
 {{- /* ENTITY */ -}}
@@ -380,6 +540,13 @@
 {{- template "Message" .}}
 
 		private Action? _changedParent;
+
+		public void MergeFrom(byte[] buffer)
+		{
+			ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(buffer);
+			Kdsync.ParseContext.Initialize(readOnlySpan, out var ctx);
+			MergeFrom(ref ctx);
+		}
 
 		private void UpdateChanged(long n)
 		{

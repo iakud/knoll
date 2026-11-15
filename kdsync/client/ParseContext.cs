@@ -118,6 +118,24 @@ namespace Kdsync
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Timestamp ReadTimestamp()
+        {
+            return ParsingPrimitivesMessages.ReadTimestamp(ref this);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Duration ReadDuration()
+        {
+            return ParsingPrimitivesMessages.ReadDuration(ref this);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Empty ReadEmpty()
+        {
+            return ParsingPrimitivesMessages.ReadEmpty(ref this);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte[] ReadBytes()
         {
             return ParsingPrimitives.ReadBytes(ref buffer, ref state);
@@ -157,24 +175,6 @@ namespace Kdsync
         public long ReadSInt64()
         {
             return ParsingPrimitives.DecodeZigZag64(ParsingPrimitives.ParseRawVarint64(ref buffer, ref state));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Timestamp ReadTimestamp()
-        {
-            return ParsingPrimitivesMessages.ReadTimestamp(ref this);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Duration ReadDuration()
-        {
-            return ParsingPrimitivesMessages.ReadDuration(ref this);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Empty ReadEmpty()
-        {
-            return ParsingPrimitivesMessages.ReadEmpty(ref this);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

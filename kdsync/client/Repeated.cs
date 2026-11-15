@@ -113,6 +113,26 @@ namespace Kdsync
             _changedParent = changedParent;
         }
 
+        public void WriteTo(ref WriteContext ctx, FieldCodec<T> fieldCodec)
+        {
+            ValueWriter<T> valueWriter = fieldCodec.ValueWriter;
+            for (int i = 0; i < count; i++)
+            {
+                valueWriter(ref ctx, array[i]);
+            }
+        }
+
+        public int CalculateSize(FieldCodec<T> fieldCodec)
+        {
+            Func<T, int> sizeCalculator = fieldCodec.ValueSizeCalculator;
+            int size = 0;
+            for (int i = 0; i < count; i++)
+            {
+                size += sizeCalculator(array[i]);
+            }
+            return size;
+        }
+
         public void MergeFrom(ref ParseContext ctx, FieldCodec<T> fieldCodec)
         {
             int byteLimit = ctx.ReadLength();

@@ -151,6 +151,38 @@ namespace Kds
 			writer.WriteEndObject();
 		}
 
+		public void WriteTo(ref Kdsync.WriteContext ctx)
+		{
+			ctx.WriteTag(1, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteMessage(types_);
+			ctx.WriteTag(2, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteMessage(lists_);
+			ctx.WriteTag(3, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteMessage(maps_);
+		}
+
+		public int CalculateSize()
+		{
+			int size = 0;
+			int types_Size = Kdsync.WriteComputeSize.ComputeMessageSize(types_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(1) + types_Size;
+			int lists_Size = Kdsync.WriteComputeSize.ComputeMessageSize(lists_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(2) + lists_Size;
+			int maps_Size = Kdsync.WriteComputeSize.ComputeMessageSize(maps_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(3) + maps_Size;
+			return size;
+		}
+
+		public byte[] ToByteArray()
+		{
+			byte[] buffer = new byte[CalculateSize()];
+			Span<byte> span = buffer;
+			Kdsync.WriteContext.Initialize(ref span, out var ctx);
+			WriteTo(ref ctx);
+			ctx.CheckNoSpaceLeft();
+			return buffer;
+		}
+
 		public void MergeFrom(byte[] buffer)
 		{
 			ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(buffer);
@@ -583,7 +615,110 @@ namespace Kds
 			writer.WriteEndObject();
 		}
 
+		public void WriteTo(ref Kdsync.WriteContext ctx)
+		{
+			ctx.WriteTag(1, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteInt32(int32Val_);
+			ctx.WriteTag(2, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteInt64(int64Val_);
+			ctx.WriteTag(3, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteUInt32(uint32Val_);
+			ctx.WriteTag(4, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteUInt64(uint64Val_);
+			ctx.WriteTag(6, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteSInt64(sint64Val_);
+			ctx.WriteTag(7, Kdsync.WireFormat.WireType.Fixed32);
+			ctx.WriteFixed32(fixed32Val_);
+			ctx.WriteTag(8, Kdsync.WireFormat.WireType.Fixed64);
+			ctx.WriteFixed64(fixed64Val_);
+			ctx.WriteTag(9, Kdsync.WireFormat.WireType.Fixed32);
+			ctx.WriteSFixed32(sfixed32Val_);
+			ctx.WriteTag(10, Kdsync.WireFormat.WireType.Fixed64);
+			ctx.WriteSFixed64(sfixed64Val_);
+			ctx.WriteTag(11, Kdsync.WireFormat.WireType.Fixed32);
+			ctx.WriteFloat(floatVal_);
+			ctx.WriteTag(12, Kdsync.WireFormat.WireType.Fixed64);
+			ctx.WriteDouble(doubleVal_);
+			ctx.WriteTag(13, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteBool(boolVal_);
+			ctx.WriteTag(14, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteString(stringVal_);
+			ctx.WriteTag(15, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteBytes(bytesVal_);
+			ctx.WriteTag(16, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteTimestamp(timestampVal_);
+			ctx.WriteTag(17, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteDuration(durationVal_);
+			ctx.WriteTag(18, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteEmpty(emptyVal_);
+			ctx.WriteTag(19, Kdsync.WireFormat.WireType.Varint);
+			ctx.WriteEnum(Convert.ToInt32(enumVal_));
+			ctx.WriteTag(20, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteMessage(itemData_);
+		}
+
+		public int CalculateSize()
+		{
+			int size = 0;
+			int int32Val_Size = Kdsync.WriteComputeSize.ComputeInt32Size(int32Val_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(1) + int32Val_Size;
+			int int64Val_Size = Kdsync.WriteComputeSize.ComputeInt64Size(int64Val_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(2) + int64Val_Size;
+			int uint32Val_Size = Kdsync.WriteComputeSize.ComputeUInt32Size(uint32Val_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(3) + uint32Val_Size;
+			int uint64Val_Size = Kdsync.WriteComputeSize.ComputeUInt64Size(uint64Val_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(4) + uint64Val_Size;
+			int sint64Val_Size = Kdsync.WriteComputeSize.ComputeSInt64Size(sint64Val_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(6) + sint64Val_Size;
+			int fixed32Val_Size = Kdsync.WriteComputeSize.ComputeFixed32Size(fixed32Val_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(7) + fixed32Val_Size;
+			int fixed64Val_Size = Kdsync.WriteComputeSize.ComputeFixed64Size(fixed64Val_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(8) + fixed64Val_Size;
+			int sfixed32Val_Size = Kdsync.WriteComputeSize.ComputeSFixed32Size(sfixed32Val_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(9) + sfixed32Val_Size;
+			int sfixed64Val_Size = Kdsync.WriteComputeSize.ComputeSFixed64Size(sfixed64Val_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(10) + sfixed64Val_Size;
+			int floatVal_Size = Kdsync.WriteComputeSize.ComputeFloatSize(floatVal_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(11) + floatVal_Size;
+			int doubleVal_Size = Kdsync.WriteComputeSize.ComputeDoubleSize(doubleVal_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(12) + doubleVal_Size;
+			int boolVal_Size = Kdsync.WriteComputeSize.ComputeBoolSize(boolVal_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(13) + boolVal_Size;
+			int stringVal_Size = Kdsync.WriteComputeSize.ComputeStringSize(stringVal_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(14) + stringVal_Size;
+			int bytesVal_Size = Kdsync.WriteComputeSize.ComputeBytesSize(bytesVal_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(15) + bytesVal_Size;
+			int timestampVal_Size = Kdsync.WriteComputeSize.ComputeTimestampSize(timestampVal_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(16) + timestampVal_Size;
+			int durationVal_Size = Kdsync.WriteComputeSize.ComputeDurationSize(durationVal_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(17) + durationVal_Size;
+			int emptyVal_Size = Kdsync.WriteComputeSize.ComputeEmptySize(emptyVal_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(18) + emptyVal_Size;
+			int enumVal_Size = Kdsync.WriteComputeSize.ComputeEnumSize(Convert.ToInt32(enumVal_));
+			size += Kdsync.WriteComputeSize.ComputeTagSize(19) + enumVal_Size;
+			int itemData_Size = Kdsync.WriteComputeSize.ComputeMessageSize(itemData_);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(20) + itemData_Size;
+			return size;
+		}
+
+		public byte[] ToByteArray()
+		{
+			byte[] buffer = new byte[CalculateSize()];
+			Span<byte> span = buffer;
+			Kdsync.WriteContext.Initialize(ref span, out var ctx);
+			WriteTo(ref ctx);
+			ctx.CheckNoSpaceLeft();
+			return buffer;
+		}
+
 		private Action? _changedParent;
+
+		public void MergeFrom(byte[] buffer)
+		{
+			ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(buffer);
+			Kdsync.ParseContext.Initialize(readOnlySpan, out var ctx);
+			MergeFrom(ref ctx);
+		}
 
 		private void UpdateChanged(long n)
 		{
@@ -866,7 +1001,99 @@ namespace Kds
 			writer.WriteEndObject();
 		}
 
+		public void WriteTo(ref Kdsync.WriteContext ctx)
+		{
+			ctx.WriteTag(1, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(int32List_.CalculateSize(_list_int32List__codec));
+			int32List_.WriteTo(ref ctx, _list_int32List__codec);
+			ctx.WriteTag(2, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(uint32List_.CalculateSize(_list_uint32List__codec));
+			uint32List_.WriteTo(ref ctx, _list_uint32List__codec);
+			ctx.WriteTag(3, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(int64List_.CalculateSize(_list_int64List__codec));
+			int64List_.WriteTo(ref ctx, _list_int64List__codec);
+			ctx.WriteTag(4, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(uint64List_.CalculateSize(_list_uint64List__codec));
+			uint64List_.WriteTo(ref ctx, _list_uint64List__codec);
+			ctx.WriteTag(5, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(floatList_.CalculateSize(_list_floatList__codec));
+			floatList_.WriteTo(ref ctx, _list_floatList__codec);
+			ctx.WriteTag(6, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(doubleList_.CalculateSize(_list_doubleList__codec));
+			doubleList_.WriteTo(ref ctx, _list_doubleList__codec);
+			ctx.WriteTag(7, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(boolList_.CalculateSize(_list_boolList__codec));
+			boolList_.WriteTo(ref ctx, _list_boolList__codec);
+			ctx.WriteTag(8, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(stringList_.CalculateSize(_list_stringList__codec));
+			stringList_.WriteTo(ref ctx, _list_stringList__codec);
+			ctx.WriteTag(9, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(timestampList_.CalculateSize(_list_timestampList__codec));
+			timestampList_.WriteTo(ref ctx, _list_timestampList__codec);
+			ctx.WriteTag(10, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(durationList_.CalculateSize(_list_durationList__codec));
+			durationList_.WriteTo(ref ctx, _list_durationList__codec);
+			ctx.WriteTag(11, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(emptyList_.CalculateSize(_list_emptyList__codec));
+			emptyList_.WriteTo(ref ctx, _list_emptyList__codec);
+			ctx.WriteTag(12, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(enumList_.CalculateSize(_list_enumList__codec));
+			enumList_.WriteTo(ref ctx, _list_enumList__codec);
+			ctx.WriteTag(13, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(itemList_.CalculateSize(_list_itemList__codec));
+			itemList_.WriteTo(ref ctx, _list_itemList__codec);
+		}
+
+		public int CalculateSize()
+		{
+			int size = 0;
+			int int32List_Size = int32List_.CalculateSize(_list_int32List__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(1) + Kdsync.WriteComputeSize.ComputeLengthSize(int32List_Size) + int32List_Size;
+			int uint32List_Size = uint32List_.CalculateSize(_list_uint32List__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(2) + Kdsync.WriteComputeSize.ComputeLengthSize(uint32List_Size) + uint32List_Size;
+			int int64List_Size = int64List_.CalculateSize(_list_int64List__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(3) + Kdsync.WriteComputeSize.ComputeLengthSize(int64List_Size) + int64List_Size;
+			int uint64List_Size = uint64List_.CalculateSize(_list_uint64List__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(4) + Kdsync.WriteComputeSize.ComputeLengthSize(uint64List_Size) + uint64List_Size;
+			int floatList_Size = floatList_.CalculateSize(_list_floatList__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(5) + Kdsync.WriteComputeSize.ComputeLengthSize(floatList_Size) + floatList_Size;
+			int doubleList_Size = doubleList_.CalculateSize(_list_doubleList__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(6) + Kdsync.WriteComputeSize.ComputeLengthSize(doubleList_Size) + doubleList_Size;
+			int boolList_Size = boolList_.CalculateSize(_list_boolList__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(7) + Kdsync.WriteComputeSize.ComputeLengthSize(boolList_Size) + boolList_Size;
+			int stringList_Size = stringList_.CalculateSize(_list_stringList__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(8) + Kdsync.WriteComputeSize.ComputeLengthSize(stringList_Size) + stringList_Size;
+			int timestampList_Size = timestampList_.CalculateSize(_list_timestampList__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(9) + Kdsync.WriteComputeSize.ComputeLengthSize(timestampList_Size) + timestampList_Size;
+			int durationList_Size = durationList_.CalculateSize(_list_durationList__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(10) + Kdsync.WriteComputeSize.ComputeLengthSize(durationList_Size) + durationList_Size;
+			int emptyList_Size = emptyList_.CalculateSize(_list_emptyList__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(11) + Kdsync.WriteComputeSize.ComputeLengthSize(emptyList_Size) + emptyList_Size;
+			int enumList_Size = enumList_.CalculateSize(_list_enumList__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(12) + Kdsync.WriteComputeSize.ComputeLengthSize(enumList_Size) + enumList_Size;
+			int itemList_Size = itemList_.CalculateSize(_list_itemList__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(13) + Kdsync.WriteComputeSize.ComputeLengthSize(itemList_Size) + itemList_Size;
+			return size;
+		}
+
+		public byte[] ToByteArray()
+		{
+			byte[] buffer = new byte[CalculateSize()];
+			Span<byte> span = buffer;
+			Kdsync.WriteContext.Initialize(ref span, out var ctx);
+			WriteTo(ref ctx);
+			ctx.CheckNoSpaceLeft();
+			return buffer;
+		}
+
 		private Action? _changedParent;
+
+		public void MergeFrom(byte[] buffer)
+		{
+			ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(buffer);
+			Kdsync.ParseContext.Initialize(readOnlySpan, out var ctx);
+			MergeFrom(ref ctx);
+		}
 
 		private void UpdateChanged(long n)
 		{
@@ -931,55 +1158,55 @@ namespace Kds
 			int64ItemDataMap_.Init(() => UpdateChanged(0x01L << 14));
 		}
 
-		private static readonly Kdsync.Map<int, int>.Codec _map_int32Int32Map__codec = new Kdsync.Map<int, int>.Codec(Kdsync.FieldCodec.ForIntKey(), Kdsync.FieldCodec.ForIntValue(), 1);
+		private static readonly Kdsync.Map<int, int>.Codec _map_int32Int32Map__codec = new Kdsync.Map<int, int>.Codec(Kdsync.FieldCodec.ForIntKey(), Kdsync.FieldCodec.ForIntValue());
 		private Kdsync.Map<int, int> int32Int32Map_;
 		public Kdsync.Map<int, int> Int32Int32Map => int32Int32Map_;
 
-		private static readonly Kdsync.Map<long, long>.Codec _map_int64Int64Map__codec = new Kdsync.Map<long, long>.Codec(Kdsync.FieldCodec.ForLongKey(), Kdsync.FieldCodec.ForLongValue(), 2);
+		private static readonly Kdsync.Map<long, long>.Codec _map_int64Int64Map__codec = new Kdsync.Map<long, long>.Codec(Kdsync.FieldCodec.ForLongKey(), Kdsync.FieldCodec.ForLongValue());
 		private Kdsync.Map<long, long> int64Int64Map_;
 		public Kdsync.Map<long, long> Int64Int64Map => int64Int64Map_;
 
-		private static readonly Kdsync.Map<ulong, ulong>.Codec _map_uint64Uint64Map__codec = new Kdsync.Map<ulong, ulong>.Codec(Kdsync.FieldCodec.ForULongKey(), Kdsync.FieldCodec.ForULongValue(), 4);
+		private static readonly Kdsync.Map<ulong, ulong>.Codec _map_uint64Uint64Map__codec = new Kdsync.Map<ulong, ulong>.Codec(Kdsync.FieldCodec.ForULongKey(), Kdsync.FieldCodec.ForULongValue());
 		private Kdsync.Map<ulong, ulong> uint64Uint64Map_;
 		public Kdsync.Map<ulong, ulong> Uint64Uint64Map => uint64Uint64Map_;
 
-		private static readonly Kdsync.Map<bool, float>.Codec _map_boolFloatMap__codec = new Kdsync.Map<bool, float>.Codec(Kdsync.FieldCodec.ForBoolKey(), Kdsync.FieldCodec.ForFloatValue(), 5);
+		private static readonly Kdsync.Map<bool, float>.Codec _map_boolFloatMap__codec = new Kdsync.Map<bool, float>.Codec(Kdsync.FieldCodec.ForBoolKey(), Kdsync.FieldCodec.ForFloatValue());
 		private Kdsync.Map<bool, float> boolFloatMap_;
 		public Kdsync.Map<bool, float> BoolFloatMap => boolFloatMap_;
 
-		private static readonly Kdsync.Map<string, double>.Codec _map_stringDoubleMap__codec = new Kdsync.Map<string, double>.Codec(Kdsync.FieldCodec.ForStringKey(), Kdsync.FieldCodec.ForDoubleValue(), 6);
+		private static readonly Kdsync.Map<string, double>.Codec _map_stringDoubleMap__codec = new Kdsync.Map<string, double>.Codec(Kdsync.FieldCodec.ForStringKey(), Kdsync.FieldCodec.ForDoubleValue());
 		private Kdsync.Map<string, double> stringDoubleMap_;
 		public Kdsync.Map<string, double> StringDoubleMap => stringDoubleMap_;
 
-		private static readonly Kdsync.Map<int, bool>.Codec _map_int32BoolMap__codec = new Kdsync.Map<int, bool>.Codec(Kdsync.FieldCodec.ForIntKey(), Kdsync.FieldCodec.ForBoolValue(), 7);
+		private static readonly Kdsync.Map<int, bool>.Codec _map_int32BoolMap__codec = new Kdsync.Map<int, bool>.Codec(Kdsync.FieldCodec.ForIntKey(), Kdsync.FieldCodec.ForBoolValue());
 		private Kdsync.Map<int, bool> int32BoolMap_;
 		public Kdsync.Map<int, bool> Int32BoolMap => int32BoolMap_;
 
-		private static readonly Kdsync.Map<long, string>.Codec _map_int64StringMap__codec = new Kdsync.Map<long, string>.Codec(Kdsync.FieldCodec.ForLongKey(), Kdsync.FieldCodec.ForStringValue(), 8);
+		private static readonly Kdsync.Map<long, string>.Codec _map_int64StringMap__codec = new Kdsync.Map<long, string>.Codec(Kdsync.FieldCodec.ForLongKey(), Kdsync.FieldCodec.ForStringValue());
 		private Kdsync.Map<long, string> int64StringMap_;
 		public Kdsync.Map<long, string> Int64StringMap => int64StringMap_;
 
-		private static readonly Kdsync.Map<uint, byte[]>.Codec _map_uint32BytesMap__codec = new Kdsync.Map<uint, byte[]>.Codec(Kdsync.FieldCodec.ForUIntKey(), Kdsync.FieldCodec.ForBytesValue(), 9);
+		private static readonly Kdsync.Map<uint, byte[]>.Codec _map_uint32BytesMap__codec = new Kdsync.Map<uint, byte[]>.Codec(Kdsync.FieldCodec.ForUIntKey(), Kdsync.FieldCodec.ForBytesValue());
 		private Kdsync.Map<uint, byte[]> uint32BytesMap_;
 		public Kdsync.Map<uint, byte[]> Uint32BytesMap => uint32BytesMap_;
 
-		private static readonly Kdsync.Map<ulong, Kdsync.Timestamp>.Codec _map_uint64TimestampMap__codec = new Kdsync.Map<ulong, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForULongKey(), Kdsync.FieldCodec.ForTimestampValue(), 10);
+		private static readonly Kdsync.Map<ulong, Kdsync.Timestamp>.Codec _map_uint64TimestampMap__codec = new Kdsync.Map<ulong, Kdsync.Timestamp>.Codec(Kdsync.FieldCodec.ForULongKey(), Kdsync.FieldCodec.ForTimestampValue());
 		private Kdsync.Map<ulong, Kdsync.Timestamp> uint64TimestampMap_;
 		public Kdsync.Map<ulong, Kdsync.Timestamp> Uint64TimestampMap => uint64TimestampMap_;
 
-		private static readonly Kdsync.Map<bool, Kdsync.Duration>.Codec _map_boolDurationMap__codec = new Kdsync.Map<bool, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForBoolKey(), Kdsync.FieldCodec.ForDurationValue(), 11);
+		private static readonly Kdsync.Map<bool, Kdsync.Duration>.Codec _map_boolDurationMap__codec = new Kdsync.Map<bool, Kdsync.Duration>.Codec(Kdsync.FieldCodec.ForBoolKey(), Kdsync.FieldCodec.ForDurationValue());
 		private Kdsync.Map<bool, Kdsync.Duration> boolDurationMap_;
 		public Kdsync.Map<bool, Kdsync.Duration> BoolDurationMap => boolDurationMap_;
 
-		private static readonly Kdsync.Map<string, Kdsync.Empty>.Codec _map_stringEmptyMap__codec = new Kdsync.Map<string, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForStringKey(), Kdsync.FieldCodec.ForEmptyValue(), 12);
+		private static readonly Kdsync.Map<string, Kdsync.Empty>.Codec _map_stringEmptyMap__codec = new Kdsync.Map<string, Kdsync.Empty>.Codec(Kdsync.FieldCodec.ForStringKey(), Kdsync.FieldCodec.ForEmptyValue());
 		private Kdsync.Map<string, Kdsync.Empty> stringEmptyMap_;
 		public Kdsync.Map<string, Kdsync.Empty> StringEmptyMap => stringEmptyMap_;
 
-		private static readonly Kdsync.Map<int, ItemType>.Codec _map_int32ItemTypeMap__codec = new Kdsync.Map<int, ItemType>.Codec(Kdsync.FieldCodec.ForIntKey(), Kdsync.FieldCodec.ForEnum<ItemType>(), 13);
+		private static readonly Kdsync.Map<int, ItemType>.Codec _map_int32ItemTypeMap__codec = new Kdsync.Map<int, ItemType>.Codec(Kdsync.FieldCodec.ForIntKey(), Kdsync.FieldCodec.ForEnum<ItemType>());
 		private Kdsync.Map<int, ItemType> int32ItemTypeMap_;
 		public Kdsync.Map<int, ItemType> Int32ItemTypeMap => int32ItemTypeMap_;
 
-		private static readonly Kdsync.Map<long, ItemData>.Codec _map_int64ItemDataMap__codec = new Kdsync.Map<long, ItemData>.Codec(Kdsync.FieldCodec.ForLongKey(), Kdsync.FieldCodec.ForMessage<ItemData>(), 14);
+		private static readonly Kdsync.Map<long, ItemData>.Codec _map_int64ItemDataMap__codec = new Kdsync.Map<long, ItemData>.Codec(Kdsync.FieldCodec.ForLongKey(), Kdsync.FieldCodec.ForMessage<ItemData>());
 		private Kdsync.Map<long, ItemData> int64ItemDataMap_;
 		public Kdsync.Map<long, ItemData> Int64ItemDataMap => int64ItemDataMap_;
 
@@ -1149,7 +1376,99 @@ namespace Kds
 			writer.WriteEndObject();
 		}
 
+		public void WriteTo(ref Kdsync.WriteContext ctx)
+		{
+			ctx.WriteTag(1, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(int32Int32Map_.CalculateSize(_map_int32Int32Map__codec));
+			int32Int32Map_.WriteTo(ref ctx, _map_int32Int32Map__codec);
+			ctx.WriteTag(2, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(int64Int64Map_.CalculateSize(_map_int64Int64Map__codec));
+			int64Int64Map_.WriteTo(ref ctx, _map_int64Int64Map__codec);
+			ctx.WriteTag(4, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(uint64Uint64Map_.CalculateSize(_map_uint64Uint64Map__codec));
+			uint64Uint64Map_.WriteTo(ref ctx, _map_uint64Uint64Map__codec);
+			ctx.WriteTag(5, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(boolFloatMap_.CalculateSize(_map_boolFloatMap__codec));
+			boolFloatMap_.WriteTo(ref ctx, _map_boolFloatMap__codec);
+			ctx.WriteTag(6, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(stringDoubleMap_.CalculateSize(_map_stringDoubleMap__codec));
+			stringDoubleMap_.WriteTo(ref ctx, _map_stringDoubleMap__codec);
+			ctx.WriteTag(7, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(int32BoolMap_.CalculateSize(_map_int32BoolMap__codec));
+			int32BoolMap_.WriteTo(ref ctx, _map_int32BoolMap__codec);
+			ctx.WriteTag(8, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(int64StringMap_.CalculateSize(_map_int64StringMap__codec));
+			int64StringMap_.WriteTo(ref ctx, _map_int64StringMap__codec);
+			ctx.WriteTag(9, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(uint32BytesMap_.CalculateSize(_map_uint32BytesMap__codec));
+			uint32BytesMap_.WriteTo(ref ctx, _map_uint32BytesMap__codec);
+			ctx.WriteTag(10, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(uint64TimestampMap_.CalculateSize(_map_uint64TimestampMap__codec));
+			uint64TimestampMap_.WriteTo(ref ctx, _map_uint64TimestampMap__codec);
+			ctx.WriteTag(11, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(boolDurationMap_.CalculateSize(_map_boolDurationMap__codec));
+			boolDurationMap_.WriteTo(ref ctx, _map_boolDurationMap__codec);
+			ctx.WriteTag(12, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(stringEmptyMap_.CalculateSize(_map_stringEmptyMap__codec));
+			stringEmptyMap_.WriteTo(ref ctx, _map_stringEmptyMap__codec);
+			ctx.WriteTag(13, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(int32ItemTypeMap_.CalculateSize(_map_int32ItemTypeMap__codec));
+			int32ItemTypeMap_.WriteTo(ref ctx, _map_int32ItemTypeMap__codec);
+			ctx.WriteTag(14, Kdsync.WireFormat.WireType.LengthDelimited);
+			ctx.WriteLength(int64ItemDataMap_.CalculateSize(_map_int64ItemDataMap__codec));
+			int64ItemDataMap_.WriteTo(ref ctx, _map_int64ItemDataMap__codec);
+		}
+
+		public int CalculateSize()
+		{
+			int size = 0;
+			int int32Int32Map_Size = int32Int32Map_.CalculateSize(_map_int32Int32Map__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(1) + Kdsync.WriteComputeSize.ComputeLengthSize(int32Int32Map_Size) + int32Int32Map_Size;
+			int int64Int64Map_Size = int64Int64Map_.CalculateSize(_map_int64Int64Map__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(2) + Kdsync.WriteComputeSize.ComputeLengthSize(int64Int64Map_Size) + int64Int64Map_Size;
+			int uint64Uint64Map_Size = uint64Uint64Map_.CalculateSize(_map_uint64Uint64Map__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(4) + Kdsync.WriteComputeSize.ComputeLengthSize(uint64Uint64Map_Size) + uint64Uint64Map_Size;
+			int boolFloatMap_Size = boolFloatMap_.CalculateSize(_map_boolFloatMap__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(5) + Kdsync.WriteComputeSize.ComputeLengthSize(boolFloatMap_Size) + boolFloatMap_Size;
+			int stringDoubleMap_Size = stringDoubleMap_.CalculateSize(_map_stringDoubleMap__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(6) + Kdsync.WriteComputeSize.ComputeLengthSize(stringDoubleMap_Size) + stringDoubleMap_Size;
+			int int32BoolMap_Size = int32BoolMap_.CalculateSize(_map_int32BoolMap__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(7) + Kdsync.WriteComputeSize.ComputeLengthSize(int32BoolMap_Size) + int32BoolMap_Size;
+			int int64StringMap_Size = int64StringMap_.CalculateSize(_map_int64StringMap__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(8) + Kdsync.WriteComputeSize.ComputeLengthSize(int64StringMap_Size) + int64StringMap_Size;
+			int uint32BytesMap_Size = uint32BytesMap_.CalculateSize(_map_uint32BytesMap__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(9) + Kdsync.WriteComputeSize.ComputeLengthSize(uint32BytesMap_Size) + uint32BytesMap_Size;
+			int uint64TimestampMap_Size = uint64TimestampMap_.CalculateSize(_map_uint64TimestampMap__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(10) + Kdsync.WriteComputeSize.ComputeLengthSize(uint64TimestampMap_Size) + uint64TimestampMap_Size;
+			int boolDurationMap_Size = boolDurationMap_.CalculateSize(_map_boolDurationMap__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(11) + Kdsync.WriteComputeSize.ComputeLengthSize(boolDurationMap_Size) + boolDurationMap_Size;
+			int stringEmptyMap_Size = stringEmptyMap_.CalculateSize(_map_stringEmptyMap__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(12) + Kdsync.WriteComputeSize.ComputeLengthSize(stringEmptyMap_Size) + stringEmptyMap_Size;
+			int int32ItemTypeMap_Size = int32ItemTypeMap_.CalculateSize(_map_int32ItemTypeMap__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(13) + Kdsync.WriteComputeSize.ComputeLengthSize(int32ItemTypeMap_Size) + int32ItemTypeMap_Size;
+			int int64ItemDataMap_Size = int64ItemDataMap_.CalculateSize(_map_int64ItemDataMap__codec);
+			size += Kdsync.WriteComputeSize.ComputeTagSize(14) + Kdsync.WriteComputeSize.ComputeLengthSize(int64ItemDataMap_Size) + int64ItemDataMap_Size;
+			return size;
+		}
+
+		public byte[] ToByteArray()
+		{
+			byte[] buffer = new byte[CalculateSize()];
+			Span<byte> span = buffer;
+			Kdsync.WriteContext.Initialize(ref span, out var ctx);
+			WriteTo(ref ctx);
+			ctx.CheckNoSpaceLeft();
+			return buffer;
+		}
+
 		private Action? _changedParent;
+
+		public void MergeFrom(byte[] buffer)
+		{
+			ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(buffer);
+			Kdsync.ParseContext.Initialize(readOnlySpan, out var ctx);
+			MergeFrom(ref ctx);
+		}
 
 		private void UpdateChanged(long n)
 		{
