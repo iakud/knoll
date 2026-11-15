@@ -1,7 +1,7 @@
 package kdstest
 
 /*
-#cgo LDFLAGS: -ldl -lm -Wl,-rpath,${SRCDIR}/bin ${SRCDIR}/bin/example.dylib
+#cgo LDFLAGS: -ldl -lm -Wl,-rpath,${SRCDIR}/bin ${SRCDIR}/bin/kdstest.dylib
 #include <stdlib.h>
 
 extern int32_t merge_from(const char* data, int32_t length);

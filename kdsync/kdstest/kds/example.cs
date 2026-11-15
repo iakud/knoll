@@ -81,7 +81,7 @@ namespace Kds
 
 		public struct EventChanged
 		{
-			public long _changed;
+			private long _changed;
 			public bool Types => (_changed & (0x01L << 1)) != 0;
 			public bool Lists => (_changed & (0x01L << 2)) != 0;
 			public bool Maps => (_changed & (0x01L << 3)) != 0;
@@ -473,7 +473,7 @@ namespace Kds
 
 		public struct EventChanged
 		{
-			public long _changed;
+			private long _changed;
 			public bool Int32Val => (_changed & (0x01L << 1)) != 0;
 			public bool Int64Val => (_changed & (0x01L << 2)) != 0;
 			public bool Uint32Val => (_changed & (0x01L << 3)) != 0;
@@ -841,7 +841,7 @@ namespace Kds
 
 		public struct EventChanged
 		{
-			public long _changed;
+			private long _changed;
 			public bool Int32List => (_changed & (0x01L << 1)) != 0;
 			public bool Uint32List => (_changed & (0x01L << 2)) != 0;
 			public bool Int64List => (_changed & (0x01L << 3)) != 0;
@@ -1216,7 +1216,7 @@ namespace Kds
 
 		public struct EventChanged
 		{
-			public long _changed;
+			private long _changed;
 			public bool Int32Int32Map => (_changed & (0x01L << 1)) != 0;
 			public bool Int64Int64Map => (_changed & (0x01L << 2)) != 0;
 			public bool Uint64Uint64Map => (_changed & (0x01L << 4)) != 0;

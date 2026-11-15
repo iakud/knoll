@@ -65,7 +65,7 @@ namespace Kds
 
 		public struct EventChanged
 		{
-			public long _changed;
+			private long _changed;
 			public bool Id => (_changed & (0x01L << 1)) != 0;
 			public bool Name => (_changed & (0x01L << 2)) != 0;
 			public bool Count => (_changed & (0x01L << 3)) != 0;

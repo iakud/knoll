@@ -144,7 +144,7 @@
 
 		public struct EventChanged
 		{
-			public long _changed;
+			private long _changed;
 {{- range .Fields}}
 			public bool {{.Name}} => (_changed & (0x01L << {{.Number}})) != 0;
 {{- end}}
