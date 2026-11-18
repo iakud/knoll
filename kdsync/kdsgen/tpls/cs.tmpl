@@ -102,7 +102,7 @@
 		public {{.Type}} {{template "PropertyName" .}}
 		{
 			get => {{template "FieldName" .}};
-			set
+			private set
 			{
 				if (value != null && value.CheckChangedParent())
 					throw new InvalidOperationException("the component should be removed from its original place first");
@@ -153,6 +153,49 @@
 			{
 				_changed = changed;
 			}
+		}
+
+		public bool CheckChanged()
+		{
+			return _changed == 0;
+		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+{{- range .Fields}}
+{{- if .Repeated}}
+			if ((_changed & (0x01L << {{.Number}})) != 0)
+				{{template "FieldName" .}}.RaiseChanged();
+{{- else if .Map}}
+			if ((_changed & (0x01L << {{.Number}})) != 0)
+				{{template "FieldName" .}}.RaiseChanged();
+{{- else if eq .TypeKind "component"}}
+			if ((_changed & (0x01L << {{.Number}})) != 0)
+				{{template "FieldName" .}}.RaiseChanged();
+{{- end}}
+{{- end}}
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+{{- range .Fields}}
+{{- if .Repeated}}
+			if ((_changed & (0x01L << {{.Number}})) != 0)
+				{{template "FieldName" .}}.ClearChanged();
+{{- else if .Map}}
+			if ((_changed & (0x01L << {{.Number}})) != 0)
+				{{template "FieldName" .}}.ClearChanged();
+{{- else if eq .TypeKind "component"}}
+			if ((_changed & (0x01L << {{.Number}})) != 0)
+				{{template "FieldName" .}}.ClearChanged();
+{{- end}}
+{{- end}}
+			_changed = 0;
 		}
 
 		public void MergeFrom(ref Kdsync.ParseContext ctx)
@@ -219,44 +262,6 @@
 						break;
 				}
 			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (_changed == 0)
-				return;
-{{- range .Fields}}
-{{- if .Repeated}}
-			if ((_changed & (0x01L << {{.Number}})) != 0)
-				{{template "FieldName" .}}.RaiseChanged();
-{{- else if .Map}}
-			if ((_changed & (0x01L << {{.Number}})) != 0)
-				{{template "FieldName" .}}.RaiseChanged();
-{{- else if eq .TypeKind "component"}}
-			if ((_changed & (0x01L << {{.Number}})) != 0)
-				{{template "FieldName" .}}.RaiseChanged();
-{{- end}}
-{{- end}}
-			OnChanged?.Invoke(this, new EventChanged(_changed));
-		}
-
-		public void ClearChanged()
-		{
-			if (_changed == 0)
-				return;
-{{- range .Fields}}
-{{- if .Repeated}}
-			if ((_changed & (0x01L << {{.Number}})) != 0)
-				{{template "FieldName" .}}.ClearChanged();
-{{- else if .Map}}
-			if ((_changed & (0x01L << {{.Number}})) != 0)
-				{{template "FieldName" .}}.ClearChanged();
-{{- else if eq .TypeKind "component"}}
-			if ((_changed & (0x01L << {{.Number}})) != 0)
-				{{template "FieldName" .}}.ClearChanged();
-{{- end}}
-{{- end}}
-			_changed = 0;
 		}
 
 		public void Write(Kdsync.JsonWriter writer)

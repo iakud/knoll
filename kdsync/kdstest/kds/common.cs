@@ -76,6 +76,25 @@ namespace Kds
 			}
 		}
 
+		public bool CheckChanged()
+		{
+			return _changed == 0;
+		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+			_changed = 0;
+		}
+
 		public void MergeFrom(ref Kdsync.ParseContext ctx)
 		{
 			uint tag;
@@ -98,20 +117,6 @@ namespace Kds
 						break;
 				}
 			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (_changed == 0)
-				return;
-			OnChanged?.Invoke(this, new EventChanged(_changed));
-		}
-
-		public void ClearChanged()
-		{
-			if (_changed == 0)
-				return;
-			_changed = 0;
 		}
 
 		public void Write(Kdsync.JsonWriter writer)

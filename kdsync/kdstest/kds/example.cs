@@ -25,7 +25,7 @@ namespace Kds
 		public AllType Types
 		{
 			get => types_;
-			set
+			private set
 			{
 				if (value != null && value.CheckChangedParent())
 					throw new InvalidOperationException("the component should be removed from its original place first");
@@ -43,7 +43,7 @@ namespace Kds
 		public AllList Lists
 		{
 			get => lists_;
-			set
+			private set
 			{
 				if (value != null && value.CheckChangedParent())
 					throw new InvalidOperationException("the component should be removed from its original place first");
@@ -61,7 +61,7 @@ namespace Kds
 		public AllMap Maps
 		{
 			get => maps_;
-			set
+			private set
 			{
 				if (value != null && value.CheckChangedParent())
 					throw new InvalidOperationException("the component should be removed from its original place first");
@@ -92,28 +92,9 @@ namespace Kds
 			}
 		}
 
-		public void MergeFrom(ref Kdsync.ParseContext ctx)
+		public bool CheckChanged()
 		{
-			uint tag;
-			while ((tag = ctx.ReadTag()) != 0)
-			{
-				var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-					case 1:
-						ctx.ReadMessage(types_);
-						break;
-					case 2:
-						ctx.ReadMessage(lists_);
-						break;
-					case 3:
-						ctx.ReadMessage(maps_);
-						break;
-					default:
-						ctx.SkipLastField();
-						break;
-				}
-			}
+			return _changed == 0;
 		}
 
 		public void RaiseChanged()
@@ -140,6 +121,30 @@ namespace Kds
 			if ((_changed & (0x01L << 3)) != 0)
 				maps_.ClearChanged();
 			_changed = 0;
+		}
+
+		public void MergeFrom(ref Kdsync.ParseContext ctx)
+		{
+			uint tag;
+			while ((tag = ctx.ReadTag()) != 0)
+			{
+				var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+					case 1:
+						ctx.ReadMessage(types_);
+						break;
+					case 2:
+						ctx.ReadMessage(lists_);
+						break;
+					case 3:
+						ctx.ReadMessage(maps_);
+						break;
+					default:
+						ctx.SkipLastField();
+						break;
+				}
+			}
 		}
 
 		public void Write(Kdsync.JsonWriter writer)
@@ -453,7 +458,7 @@ namespace Kds
 		public ItemData ItemData
 		{
 			get => itemData_;
-			set
+			private set
 			{
 				if (value != null && value.CheckChangedParent())
 					throw new InvalidOperationException("the component should be removed from its original place first");
@@ -498,6 +503,29 @@ namespace Kds
 			{
 				_changed = changed;
 			}
+		}
+
+		public bool CheckChanged()
+		{
+			return _changed == 0;
+		}
+
+		public void RaiseChanged()
+		{
+			if (_changed == 0)
+				return;
+			if ((_changed & (0x01L << 20)) != 0)
+				itemData_.RaiseChanged();
+			OnChanged?.Invoke(this, new EventChanged(_changed));
+		}
+
+		public void ClearChanged()
+		{
+			if (_changed == 0)
+				return;
+			if ((_changed & (0x01L << 20)) != 0)
+				itemData_.ClearChanged();
+			_changed = 0;
 		}
 
 		public void MergeFrom(ref Kdsync.ParseContext ctx)
@@ -570,24 +598,6 @@ namespace Kds
 						break;
 				}
 			}
-		}
-
-		public void RaiseChanged()
-		{
-			if (_changed == 0)
-				return;
-			if ((_changed & (0x01L << 20)) != 0)
-				itemData_.RaiseChanged();
-			OnChanged?.Invoke(this, new EventChanged(_changed));
-		}
-
-		public void ClearChanged()
-		{
-			if (_changed == 0)
-				return;
-			if ((_changed & (0x01L << 20)) != 0)
-				itemData_.ClearChanged();
-			_changed = 0;
 		}
 
 		public void Write(Kdsync.JsonWriter writer)
@@ -862,58 +872,9 @@ namespace Kds
 			}
 		}
 
-		public void MergeFrom(ref Kdsync.ParseContext ctx)
+		public bool CheckChanged()
 		{
-			uint tag;
-			while ((tag = ctx.ReadTag()) != 0)
-			{
-				var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-					case 1:
-						int32List_.MergeFrom(ref ctx, _list_int32List__codec);
-						break;
-					case 2:
-						uint32List_.MergeFrom(ref ctx, _list_uint32List__codec);
-						break;
-					case 3:
-						int64List_.MergeFrom(ref ctx, _list_int64List__codec);
-						break;
-					case 4:
-						uint64List_.MergeFrom(ref ctx, _list_uint64List__codec);
-						break;
-					case 5:
-						floatList_.MergeFrom(ref ctx, _list_floatList__codec);
-						break;
-					case 6:
-						doubleList_.MergeFrom(ref ctx, _list_doubleList__codec);
-						break;
-					case 7:
-						boolList_.MergeFrom(ref ctx, _list_boolList__codec);
-						break;
-					case 8:
-						stringList_.MergeFrom(ref ctx, _list_stringList__codec);
-						break;
-					case 9:
-						timestampList_.MergeFrom(ref ctx, _list_timestampList__codec);
-						break;
-					case 10:
-						durationList_.MergeFrom(ref ctx, _list_durationList__codec);
-						break;
-					case 11:
-						emptyList_.MergeFrom(ref ctx, _list_emptyList__codec);
-						break;
-					case 12:
-						enumList_.MergeFrom(ref ctx, _list_enumList__codec);
-						break;
-					case 13:
-						itemList_.MergeFrom(ref ctx, _list_itemList__codec);
-						break;
-					default:
-						ctx.SkipLastField();
-						break;
-				}
-			}
+			return _changed == 0;
 		}
 
 		public void RaiseChanged()
@@ -980,6 +941,60 @@ namespace Kds
 			if ((_changed & (0x01L << 13)) != 0)
 				itemList_.ClearChanged();
 			_changed = 0;
+		}
+
+		public void MergeFrom(ref Kdsync.ParseContext ctx)
+		{
+			uint tag;
+			while ((tag = ctx.ReadTag()) != 0)
+			{
+				var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+					case 1:
+						int32List_.MergeFrom(ref ctx, _list_int32List__codec);
+						break;
+					case 2:
+						uint32List_.MergeFrom(ref ctx, _list_uint32List__codec);
+						break;
+					case 3:
+						int64List_.MergeFrom(ref ctx, _list_int64List__codec);
+						break;
+					case 4:
+						uint64List_.MergeFrom(ref ctx, _list_uint64List__codec);
+						break;
+					case 5:
+						floatList_.MergeFrom(ref ctx, _list_floatList__codec);
+						break;
+					case 6:
+						doubleList_.MergeFrom(ref ctx, _list_doubleList__codec);
+						break;
+					case 7:
+						boolList_.MergeFrom(ref ctx, _list_boolList__codec);
+						break;
+					case 8:
+						stringList_.MergeFrom(ref ctx, _list_stringList__codec);
+						break;
+					case 9:
+						timestampList_.MergeFrom(ref ctx, _list_timestampList__codec);
+						break;
+					case 10:
+						durationList_.MergeFrom(ref ctx, _list_durationList__codec);
+						break;
+					case 11:
+						emptyList_.MergeFrom(ref ctx, _list_emptyList__codec);
+						break;
+					case 12:
+						enumList_.MergeFrom(ref ctx, _list_enumList__codec);
+						break;
+					case 13:
+						itemList_.MergeFrom(ref ctx, _list_itemList__codec);
+						break;
+					default:
+						ctx.SkipLastField();
+						break;
+				}
+			}
 		}
 
 		public void Write(Kdsync.JsonWriter writer)
@@ -1237,58 +1252,9 @@ namespace Kds
 			}
 		}
 
-		public void MergeFrom(ref Kdsync.ParseContext ctx)
+		public bool CheckChanged()
 		{
-			uint tag;
-			while ((tag = ctx.ReadTag()) != 0)
-			{
-				var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
-				switch (num)
-				{
-					case 1:
-						int32Int32Map_.MergeFrom(ref ctx, _map_int32Int32Map__codec);
-						break;
-					case 2:
-						int64Int64Map_.MergeFrom(ref ctx, _map_int64Int64Map__codec);
-						break;
-					case 4:
-						uint64Uint64Map_.MergeFrom(ref ctx, _map_uint64Uint64Map__codec);
-						break;
-					case 5:
-						boolFloatMap_.MergeFrom(ref ctx, _map_boolFloatMap__codec);
-						break;
-					case 6:
-						stringDoubleMap_.MergeFrom(ref ctx, _map_stringDoubleMap__codec);
-						break;
-					case 7:
-						int32BoolMap_.MergeFrom(ref ctx, _map_int32BoolMap__codec);
-						break;
-					case 8:
-						int64StringMap_.MergeFrom(ref ctx, _map_int64StringMap__codec);
-						break;
-					case 9:
-						uint32BytesMap_.MergeFrom(ref ctx, _map_uint32BytesMap__codec);
-						break;
-					case 10:
-						uint64TimestampMap_.MergeFrom(ref ctx, _map_uint64TimestampMap__codec);
-						break;
-					case 11:
-						boolDurationMap_.MergeFrom(ref ctx, _map_boolDurationMap__codec);
-						break;
-					case 12:
-						stringEmptyMap_.MergeFrom(ref ctx, _map_stringEmptyMap__codec);
-						break;
-					case 13:
-						int32ItemTypeMap_.MergeFrom(ref ctx, _map_int32ItemTypeMap__codec);
-						break;
-					case 14:
-						int64ItemDataMap_.MergeFrom(ref ctx, _map_int64ItemDataMap__codec);
-						break;
-					default:
-						ctx.SkipLastField();
-						break;
-				}
-			}
+			return _changed == 0;
 		}
 
 		public void RaiseChanged()
@@ -1355,6 +1321,60 @@ namespace Kds
 			if ((_changed & (0x01L << 14)) != 0)
 				int64ItemDataMap_.ClearChanged();
 			_changed = 0;
+		}
+
+		public void MergeFrom(ref Kdsync.ParseContext ctx)
+		{
+			uint tag;
+			while ((tag = ctx.ReadTag()) != 0)
+			{
+				var num = Kdsync.WireFormat.GetTagFieldNumber(tag);
+				switch (num)
+				{
+					case 1:
+						int32Int32Map_.MergeFrom(ref ctx, _map_int32Int32Map__codec);
+						break;
+					case 2:
+						int64Int64Map_.MergeFrom(ref ctx, _map_int64Int64Map__codec);
+						break;
+					case 4:
+						uint64Uint64Map_.MergeFrom(ref ctx, _map_uint64Uint64Map__codec);
+						break;
+					case 5:
+						boolFloatMap_.MergeFrom(ref ctx, _map_boolFloatMap__codec);
+						break;
+					case 6:
+						stringDoubleMap_.MergeFrom(ref ctx, _map_stringDoubleMap__codec);
+						break;
+					case 7:
+						int32BoolMap_.MergeFrom(ref ctx, _map_int32BoolMap__codec);
+						break;
+					case 8:
+						int64StringMap_.MergeFrom(ref ctx, _map_int64StringMap__codec);
+						break;
+					case 9:
+						uint32BytesMap_.MergeFrom(ref ctx, _map_uint32BytesMap__codec);
+						break;
+					case 10:
+						uint64TimestampMap_.MergeFrom(ref ctx, _map_uint64TimestampMap__codec);
+						break;
+					case 11:
+						boolDurationMap_.MergeFrom(ref ctx, _map_boolDurationMap__codec);
+						break;
+					case 12:
+						stringEmptyMap_.MergeFrom(ref ctx, _map_stringEmptyMap__codec);
+						break;
+					case 13:
+						int32ItemTypeMap_.MergeFrom(ref ctx, _map_int32ItemTypeMap__codec);
+						break;
+					case 14:
+						int64ItemDataMap_.MergeFrom(ref ctx, _map_int64ItemDataMap__codec);
+						break;
+					default:
+						ctx.SkipLastField();
+						break;
+				}
+			}
 		}
 
 		public void Write(Kdsync.JsonWriter writer)
